@@ -454,6 +454,11 @@ body.playing #nl-badge-frame,body.playing [id^='nl-badge']{display:none!importan
 .pick3{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important}
 .pick3 .slot.on{border-color:#FFD36B;box-shadow:0 0 0 2px #FFD36B inset;background:#3A2A1A}
 .pick3 .slot[disabled]{opacity:1;cursor:default;border-color:#9BE37A}
+.bond-list{display:grid;gap:8px;margin:8px 0;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+@media (max-height:520px){.bond-who>*{width:30px!important;height:30px!important}.choice.bond{padding:6px 10px}.choice.bond h3{font-size:15px}}
+.choice.bond{flex-direction:row;align-items:center;gap:12px}
+.bond-who{display:flex;gap:4px;flex:0 0 auto}
+.bond-txt{display:flex;flex-direction:column;gap:4px;min-width:0}
 #tut{position:fixed;left:50%;top:max(46px,calc(env(safe-area-inset-top,0px) + 40px));transform:translateX(-50%);z-index:4;pointer-events:none;
   width:min(420px,52vw);padding:7px 12px;border-radius:8px;background:rgba(43,34,25,.88);border:2px solid #FFE6A3;box-shadow:0 4px 0 rgba(0,0,0,.35)}
 #tut .tut-k{font:800 9px var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:#C9BFA8}
@@ -1345,7 +1350,8 @@ function makeMember(id){
   const c=CHARS[id],L=save.chars[id].lvl,w=ROLE_W[c.roleKey],fx=memberFx(id);
   let hp=c.hp*(1+w.hp*(L-1)),atk=c.atk*(1+w.atk*(L-1)),def=c.def+0.003*(L-1);
   if(L>=20){hp*=1.1;atk*=1.1;def+=0.03;}
-  hp=Math.round(hp*(1+(fx.hp||0)));atk=+(atk*(1+(fx.atk||0))).toFixed(1);def=Math.min(0.75,def+(fx.def||0));
+  hp=Math.round(hp*(1+(fx.hp||0)));atk=+(atk*(1+(fx.atk||0))).toFixed(1);
+  if(run&&/^story/.test(run.mode)&&typeof bondOf==='function'){const bk=1+BOND_FX*bondOf(id);hp=Math.round(hp*bk);atk=+(atk*bk).toFixed(1);}def=Math.min(0.75,def+(fx.def||0));
   return {id,ch:c,rec:L,bfx:fx,x:W/2,y:H*0.62,r:12,hp,maxHp:hp,def,atk,aspd:c.aspd,speed:c.spd,
     iframe:0,dodgeCd:0,dodgeT:0,dvx:0,dvy:0,fx:1,fy:0,face:1,atkCd:0,tapBuf:0,swift:0,cd:{sun:0,moon:0},entCd:0,ultT:0,lastSkill:null,lastSkillT:-9,
     dash:null,step:0,lastHitT:-9,empower:0,counterT:0,countered:false,unrecorded:false,ultFire:0,scales2:0,scalesCombo:false,scalesAim:null,
@@ -1816,7 +1822,7 @@ const KITS={
     hold(p){heal(player,player.maxHp*0.08,{sophia:true,show:true,by:p});team.stim=4*larkMul();ring(p.x,p.y,40,C.hp,0.4);p.atkCd=0.5;sfx('heal');},
     sun(p,combo){for(const m of team.members)heal(m,m.maxHp*0.18*starFx(p).sunMul,{sophia:true,show:m===player,by:p});buffAtk(0.2,8);burstParts(p.x,p.y,C.hp,20,140);sfx('heal');},
     moon(p,combo){zones.push({kind:'tide',x:p.x,y:p.y,r:95,t:6,max:6,src:p});team.cleanseT=6;sfx('splash');},
-    ult(p){for(const m of team.members){if(m.down){m.down=false;m.hp=m.maxHp*0.4;addText(p.x,p.y-40,nameOf(m.id).toUpperCase()+' REVIVED',C.hp,12,{life:1.4});}heal(m,m.maxHp*0.4,{sophia:true,show:m===player,by:p});}
+    ult(p){for(const m of team.members){if(m.down&&!m.processed){m.down=false;m.hp=m.maxHp*0.4;addText(p.x,p.y-40,nameOf(m.id).toUpperCase()+' REVIVED',C.hp,12,{life:1.4});}heal(m,m.maxHp*0.4,{sophia:true,show:m===player,by:p});}
       buffAtk(0.25,10+starFx(p).ultDur);burstParts(p.x,p.y,C.hp,40,220);sfx('heal');},
     entrance(p,pw){heal(player,player.maxHp*0.12*pw,{sophia:true,show:true,by:p});burstParts(p.x,p.y,C.hp,12,90);},
     update(p,dt){},
@@ -1942,7 +1948,7 @@ function castSkill(s){
   } else {p.lastSkill=s;p.lastSkillT=T;}
 }
 function castUlt(){
-  if(missionAction())return;
+  if(missionAction()||lossUlt())return;
   const p=player,info=p.ch.kit.ult;
   if(p.ultT>0) return;
   if(team.pn<team.maxPn){addText(p.x,p.y-30,'Pneuma '+Math.floor(team.pn)+'/100',C.ash,10);sfx('nope');return;}
@@ -1953,6 +1959,7 @@ function hurtPlayer(d){
   const p=player;
   if(state!=='play'||p.iframe>0||p.dodgeT>0||p.dash) return;
   if(room&&room.def.kind==='training'){p.iframe=0.4;return;}
+  if(boss&&boss.forced&&boss.proc){p.iframe=0.4;shake(3,0.1);return;}
   d*=((room&&room.atkScale)||1)*(1-0.06*blv('saturn'));
   if(p.unrecorded){p.unrecorded=false;p.iframe=0.45;addText(p.x,p.y-32,'UNRECORDED',C.moon,11,{life:1});sfx('block');burstParts(p.x,p.y,C.moon,10,100);return;}
   if(p.counterT>0){kairosCounter(p);return;}
@@ -2154,6 +2161,7 @@ function makeBoss(){return {x:W/2,y:-60,ty:100,r:34,hp:2600,maxHp:2600,flash:0,p
 function hitBoss(d,col){
   const b=boss;if(!b||b.dead||b.entering>0)return;
   if(b.shieldT>0){if(rand()<0.3)addText(b.x+rr(-20,20),b.y-b.r-6,'FILED',C.moon,9,{life:0.4});return;}
+  if(b.forced)d=Math.min(d,Math.max(0,b.hp-b.maxHp*0.3));
   b.hp-=d;b.flash=0.08;dmgText(b.x+rr(-20,20),b.y-b.r-6,d,col);
   if(b.hp<=0){b.hp=0;bossDie();}
 }
@@ -2197,6 +2205,7 @@ function bossAct(b){
 }
 function updateBoss(dt){
   const b=boss;if(!b||b.dead)return;
+  if(b.forced&&lossUpdate(b,dt))return;
   b.flash-=dt;if(b.markT>0)b.markT-=dt;if(b.anaT>0)b.anaT-=dt;if(b.noHeal>0)b.noHeal-=dt;if(b.indT>0){b.indT-=dt;if(b.indT<=0)b.ind=0;}
   if(b.entering>0){b.entering-=dt;b.y+=(b.ty-b.y)*Math.min(1,dt*3);return;}
   if(b.burnT>0){b.burnT-=dt;b.burnAcc+=dt;if(b.burnAcc>=0.5){b.burnAcc=0;hitBoss(3*(b.burnMul||1),C.fire);if(b.dead)return;}}
@@ -2266,7 +2275,7 @@ function enterRoom(id,opt={}){
   const sub=def.ruleText+(room.res?'  •  Resonance with '+room.res+': +20% damage here':'');
   const title=def.kind==='boss'?'Archon Gate · Horaios':def.num+' · '+(def.place||def.name);
   setBanner(title,sub,def.kind==='boss'?2.2:3.4);
-  if(def.kind==='boss'){boss=makeBoss();state='play';return;}
+  if(def.kind==='boss'){boss=makeBoss();if(def.forced){boss.forced=true;boss.hp=boss.maxHp=1800;}state='play';return;}
   if(def.kind==='mission'){initMission(def);state='play';return;}
   state='play';
   if(def.kind==='house'&&rand()<0.5)setTimeout(()=>{if(state==='play'&&room&&room.def===def)spawnChest();},2500+rand()*5000);
@@ -2460,11 +2469,14 @@ function drawCutPanel(){
   if(P.tint==='night'){g.fillStyle='rgba(10,14,40,0.45)';g.fillRect(0,0,W,H);}
   const ct=fz?0:t;
   for(const c of (P.cast||[])){const [id,x,y,face,o]=c,X=x*W,Y=y*H,oo=o||{};
-    if(id==='voice')drawVoice(g,X,Y,t,oo.scale||1.4);
+    if(id==='horaios'||id==='hand'||id==='gate')drawCutExtra(g,id,X,Y,t,oo);
+    else if(id==='voice')drawVoice(g,X,Y,t,oo.scale||1.4);
     else if(id==='npc')drawNPC(g,X,Y,{frozen:fz||oo.frozen,face,col:oo.col,up:oo.up});
     else if(id==='beam'){g.save();g.translate(X,Y);g.rotate(oo.rot||0.25);g.fillStyle=fz?'#7E8BA6':'#8A6A4A';g.fillRect(-46,-5,92,10);g.fillStyle=fz?'#5E6A82':'#5A4030';g.fillRect(-46,-5,92,2);g.fillRect(-46,3,92,2);g.restore();}
     else if(CHARS[id]){const glow=oo.glow;if(glow){const gl=g.createRadialGradient(X,Y-6,2,X,Y-6,40);gl.addColorStop(0,'rgba(191,243,255,0.7)');gl.addColorStop(1,'rgba(191,243,255,0)');g.fillStyle=gl;g.fillRect(X-40,Y-46,80,80);}
-      drawChar(g,id,X,Y,{face:face||1,scale:oo.scale||1.6,t:ct,moving:!!oo.moving&&!fz,fall:oo.fall,lunge:oo.lunge,hurt:oo.hurt});}}
+      if(oo.grey){g.save();if('filter' in g)g.filter='grayscale(1) brightness(1.15)';}
+      drawChar(g,id,X,Y,{face:face||1,scale:oo.scale||1.6,t:ct,moving:!!oo.moving&&!fz,fall:oo.fall,lunge:oo.lunge,hurt:oo.hurt,alpha:oo.grey&&!('filter' in g)?0.55:1});
+      if(oo.grey)g.restore();}}
   if(P.fx==='rain'){g.strokeStyle='rgba(170,190,230,0.35)';g.lineWidth=1;g.beginPath();for(let i=0;i<70;i++){const x=((i*97+t*60)%W),y=((i*53+t*420)%H);g.moveTo(x,y);g.lineTo(x-3,y+10);}g.stroke();}
   g.setTransform(1,0,0,1,0,0);
   if(P.fx==='flash'||P.fx==='snap'){const a=clamp(1-t/(P.fx==='snap'?0.5:1.1),0,1);g.fillStyle=`rgba(255,255,255,${a})`;g.fillRect(0,0,cw,chh);}
@@ -2486,9 +2498,9 @@ const MISSIONS={
     brief:'Time is stopped for 20 seconds. Carry three people out of the fire.'},
 };
 for(const id in MISSIONS){const M=MISSIONS[id];ROOMS['m_'+id]={id:'m_'+id,kind:'mission',mission:id,num:M.name,name:M.name,place:M.place,theme:M.theme,rule:'none',ruleText:M.brief,pool:M.pool||['gossip','hothead']};}
-function startMission(id,party,done){
+function startMission(id,party,done,opt){
   const M=MISSIONS[id];
-  newRun('story2',party,0);run.stage='m_'+id;run.onDone=done;run.retry=()=>startMission(id,party,done);run.roomNo=(M.lvl||2)-1;
+  newRun('story2',party,0);run.stage='m_'+id;run.onDone=done;run.retry=()=>startMission(id,party,done,opt);run.opt=opt||{};run.roomNo=(M.lvl||2)-1;
   enterRoom('m_'+id);
 }
 function initMission(def){
@@ -2519,6 +2531,7 @@ function initMission(def){
     m.obj={x:W/2,y:AY0+44,r:34,hp:100,max:100,ward:1,label:'Patients’ wing'};
     p.x=W/2;p.y=H*0.55;m.timer=M.dur;
     m.goals=[{def:1,t:'Protect the patients’ wing'}];
+  } else if(M.type==='split'){initSplit(m);
   } else if(M.type==='stealth'){
     p.x=AX0+40;p.y=H*0.8;m.cp={x:p.x,y:p.y};
     m.solids.push({x:W*0.24,y:AY0,w:22,h:H*0.6},{x:W*0.48,y:H*0.4,w:22,h:AY1-H*0.4},{x:W*0.72,y:AY0,w:22,h:H*0.6});
@@ -2587,6 +2600,7 @@ function updateMission(dt){
     if(m.spawnCd<=0&&aliveCount()<(late?7:5)){missionSpawn(late?room.def.pool:room.def.pool.slice(0,4),0.55);m.spawnCd=late?1.5:2.2;}
     if(o.hp<=0){finishRoom(false,'BREACHED');return;}
     if(m.timer<=0){finishRoom(true,'HELD');return;}
+  } else if(m.type==='split'){updateSplit(m,dt);
   } else if(m.type==='stealth'){
     if(m.fcd>0)m.fcd-=dt;
     if(m.freezeT>0){m.freezeT-=dt;if(m.freezeT<=0){m.frozen=false;sfx('resume');}}
@@ -2606,6 +2620,7 @@ function updateMission(dt){
 function drawMission(c){
   const m=mis();if(!m)return;
   const fz=m.frozen;
+  if(m.split)drawSplit(c,m);
   for(const f of m.fires){for(let i=0;i<10;i++){const a=i*0.63,rr2=(i*13%f.r),px=f.x+Math.cos(a)*rr2,py=f.y+Math.sin(a)*rr2*0.8,hh=6+(i%3)*3;c.fillStyle=i%2?'#B9C6E6':'#E3ECFF';c.fillRect(px-2,py-hh,4,hh);}
     c.strokeStyle='rgba(200,215,255,0.35)';c.lineWidth=1;circ(c,f.x,f.y,f.r);c.stroke();}
   if(m.exit){const e=m.exit;c.fillStyle=alpha(C.gold,0.12+0.06*Math.sin(T*4));circ(c,e.x,e.y,e.r);c.fill();c.strokeStyle=alpha(C.gold,0.8);c.lineWidth=2;c.setLineDash([5,4]);circ(c,e.x,e.y,e.r);c.stroke();c.setLineDash([]);}
@@ -2617,7 +2632,7 @@ function drawMission(c){
     if(gd.cam){c.fillStyle='#3A3A44';c.fillRect(gd.x-6,gd.y-4,12,8);c.fillStyle=hot||Math.floor(T*2)%2?C.danger:'#552';c.fillRect(gd.x-1.5,gd.y-1.5,3,3);}
     else drawNPC(c,gd.x,gd.y,{frozen:fz,col:'#2E3B55',hair:'#1C1C22',face:Math.cos(a)>=0?1:-1});}
   for(const s of m.solids){
-    if(s.w){c.fillStyle='#4A3424';c.fillRect(s.x,s.y,s.w,s.h);c.fillStyle='#6B4C33';for(let y=s.y+6;y<s.y+s.h;y+=14)c.fillRect(s.x+2,y,s.w-4,3);continue;}
+    if(s.w){if(s.gate)continue;c.fillStyle='#4A3424';c.fillRect(s.x,s.y,s.w,s.h);c.fillStyle='#6B4C33';for(let y=s.y+6;y<s.y+s.h;y+=14)c.fillRect(s.x+2,y,s.w-4,3);continue;}
     if(s.npc){drawNPC(c,s.x,s.y,{frozen:true,face:s.face,col:s.col,up:s.up});continue;}
     c.save();c.translate(s.x,s.y-6+Math.sin(s.rot)*2);c.rotate(s.rot);c.fillStyle='rgba(0,0,0,0.2)';c.fillRect(-s.r,s.r+6,s.r*2,2);
     c.fillStyle=s.k===0?'#8A9AB8':s.k===1?'#A9B6CF':'#7887A6';c.fillRect(-s.r*0.8,-s.r*0.6,s.r*1.6,s.r*1.2);c.fillStyle='#5E6A82';c.fillRect(-s.r*0.8,-s.r*0.6,s.r*1.6,2);c.restore();}
@@ -2648,6 +2663,7 @@ function drawMissionHUD(){
   if(m.type==='frozen'&&m.M.civ)sub='Saved '+m.saved+' / '+m.M.civ+(m.carry?' · carrying one':'');
   if(m.type==='escort')sub=(m.obj.carried?'Bram is carrying him (no attacks)':(m.obj.hide?'Bram is hiding. Clear the Vices!':'Bram is moving'))+' · Carry '+Math.max(0,Math.ceil(m.obj.hp))+'%';
   if(m.type==='defense')sub='Wing '+Math.max(0,Math.ceil(m.obj.hp))+'% · hold for '+Math.ceil(Math.max(0,m.timer))+'s';
+  if(m.type==='split')sub=splitSub(m);
   if(m.type==='stealth')sub=m.freezeT>0?'Time stopped · '+m.freezeT.toFixed(1)+'s':(m.fcd>0?'Time stop recharging '+Math.ceil(m.fcd)+'s':(isTouch?'Sun button: stop time':'Q: stop time'))+(m.caught?' · spotted '+m.caught+'×':'');
   if(m.timer&&m.type==='frozen')sub=(sub?sub+' · ':'')+Math.ceil(m.timer)+'s left';
   ctx.font=`700 12px ${FONT_UI}`;const w=Math.max(ctx.measureText(txt).width,(ctx.font=`600 10px ${FONT_UI}`,ctx.measureText(sub).width))+30;
@@ -2707,6 +2723,9 @@ function seqStep(){
       if(ok||MISSIONS[s.mission].noFail)nx();else missionFail(()=>go(party));});
     if(s.pick)showPick3(sq.roster,{n:s.pick,must:s.must,prefer:s.prefer,title:s.title,sub:s.sub},go);else go(s.party||MISSIONS[s.mission].party);
   }
+  else if(s.bond)showBond(s.bond,nx);
+  else if(s.split){const go=(a,b)=>startMission(s.split,a,ok=>{if(ok)nx();else missionFail(()=>go(a,b));},{b});showSplitPick(sq.roster,s,go);}
+  else if(s.loss){const go=party=>startLoss(party,ok=>{if(ok)nx();else missionFail(()=>go(party));});showPick3(sq.roster,{n:3,must:s.must,prefer:s.prefer,title:s.title,sub:s.sub},go);}
   else if(s.fn)s.fn(nx);
   else nx();
 }
@@ -2746,6 +2765,271 @@ function showPreviewEnd(){
     h('p',{class:'serpent'},'Next: split teams, Bond scenes, and the full Chapter 1 wired in.'),
     h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>goHome()},'Home'),
       h('button',{class:'btn ghost',type:'button',onclick:()=>startPreview()},'Play again'))));
+}
+
+// ═══════════════════════════════════════════ story tools · Phase 3: split teams, Bonds, the forced loss
+Object.assign(SPK,{horaios:{name:'Horaios',col:'moon'}});
+
+// ── Bonds: camp talks raise a character's Bond (max 5). Each level: +4% HP and ATK in story.
+const BOND_FX=0.04,BOND_MAX=5;
+function bondOf(id){return (save.bonds&&save.bonds[id])|0;}
+function bondUp(id){save.bonds=save.bonds||{};save.bonds[id]=Math.min(BOND_MAX,bondOf(id)+1);persist();return save.bonds[id];}
+function bondHearts(l){return '♥'.repeat(l)+'♡'.repeat(BOND_MAX-l);}
+function showBond(o,done){
+  const left=o.choices.slice();let n=Math.min(o.n||2,left.length);
+  const render=()=>{
+    state='panel';
+    openOverlay(h('div',{class:'form',style:'max-width:680px'},
+      formHead(o.head||'Camp',n===1?'One more talk':'Choose '+n),
+      h('h2',{style:'padding-right:0'},o.title||'Who do you talk to?'),
+      o.sub?h('p',{class:'lede'},o.sub):null,
+      h('div',{class:'bond-list'},...left.map(ch=>h('button',{class:'choice bond',type:'button',onclick:()=>pickIt(ch)},
+        h('div',{class:'bond-who'},...(ch.who.length?ch.who:['kairos']).map(id=>portrait(id,40))),
+        h('div',{class:'bond-txt'},h('h3',null,ch.title),
+          h('p',null,ch.who.length?ch.who.map(id=>nameOf(id)+' '+bondHearts(bondOf(id))).join(' · '):(ch.note||'Alone. No Bond, but something else.'))))))),'mode-select');
+  };
+  const after=()=>{if(n>0&&left.length)render();else done();};
+  const pickIt=ch=>{left.splice(left.indexOf(ch),1);n--;closeOverlay();sfx('select');
+    playCutscene(ch.cut,()=>{
+      if(ch.flag&&sq)sq.flags[ch.flag]=true;
+      if(ch.who.length)bondToast(ch.who.map(id=>[id,bondUp(id)]),after);else after();});};
+  render();
+}
+function bondToast(list,done){
+  state='panel';
+  openOverlay(h('div',{class:'form join',style:'max-width:460px'},formHead('Bond','Closer'),
+    ...list.map(([id,l])=>h('div',{class:'join-row'},portrait(id,56),h('div',null,h('div',{class:'join-nm'},nameOf(id)),
+      h('div',{class:'join-ch'},'Bond '+l+'  '+bondHearts(l)),h('div',{class:'join-ch'},'+'+Math.round(BOND_FX*100*l)+'% HP and ATK in story fights')))),
+    h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>{closeOverlay();done();}},'Continue'))));
+  sfx('bless');
+}
+
+// ── split teams: two squads, two routes, switch at the levers
+MISSIONS.stacks={type:'split',name:'The Stacks',place:'Registry of Births',theme:'office',lvl:5,
+  brief:'Two teams, two routes. Each lever opens the other team’s gate.',pool:['gossip','hothead','waxer','gossip','deadline']};
+ROOMS.m_stacks={id:'m_stacks',kind:'mission',mission:'stacks',num:'The Stacks',name:'The Stacks',place:'Registry of Births',theme:'office',rule:'none',ruleText:MISSIONS.stacks.brief,pool:MISSIONS.stacks.pool};
+function showSplitPick(roster,o,done){
+  showPick3(roster,{n:3,must:o.must||['kairos'],prefer:o.preferA,head:'Team A',title:'Team A: the upper stacks',sub:'Pick three. A second team takes the lower route, and you switch between them at the levers.'},a=>{
+    const rest=roster.filter(id=>!a.includes(id));
+    if(rest.length<=3){done(a,rest.length?rest:a.slice());return;}
+    showPick3(rest,{n:3,prefer:o.preferB,head:'Team B',title:'Team B: the lower stacks',sub:'Three more. Anyone left over guards the entrance.'},b=>done(a,b));});
+}
+function initSplit(m){
+  const p=player,mid=H*0.5,wt=16;
+  m.split=1;m.laneY=[(AY0+mid)/2,(mid+AY1)/2];
+  m.solids.push({x:AX0-30,y:mid-wt/2,w:AX1-AX0+60,h:wt});
+  const gB={x:W*0.40,y:mid+wt/2,w:18,h:AY1-mid+20,gate:1},gA={x:W*0.62,y:AY0-20,w:18,h:mid-AY0+20-wt/2,gate:1};
+  m.solids.push(gA,gB);m.gates=[gA,gB];
+  m.levers=[{x:W*0.5,y:m.laneY[0],opens:gB,t:0},{x:W*0.76,y:m.laneY[1],opens:gA,t:0}];
+  m.goals=[{lane:0,lever:0,t:'Team A: hold the lever to open Team B’s gate'},{lane:1,lever:1,t:'Team B: hold the lever to open Team A’s gate'},
+    {lane:0,end:1,t:'Team A: reach the vault'},{lane:1,end:1,t:'Team B: reach the vault'}];
+  const B=((run.opt&&run.opt.b)||[]).map(makeMember);
+  m.teams=[{members:team.members,ai:0},{members:B.length?B:team.members,ai:0}];
+  m.pos=[{x:AX0+40,y:m.laneY[0]},{x:AX0+40,y:m.laneY[1]}];
+  m.cur=0;p.x=m.pos[0].x;p.y=m.pos[0].y;m.vault={x:AX1-16,y:mid};m.spawnCd=1.5;
+}
+function laneMaxX(m,lane){let mx=AX1-20;for(const g of m.gates)if(!g.open&&(lane?g.y>H*0.5:g.y<H*0.5))mx=Math.min(mx,g.x-14);return mx;}
+function updateSplit(m,dt){
+  const p=player,L=m.goals[m.gi];if(!L)return;
+  for(const e of enemies)if(!e.dead)collideSolids(e,m);
+  if(m.swT>0){m.swT-=dt;return;}
+  m.spawnCd-=dt;
+  if(m.spawnCd<=0&&aliveCount()<4){
+    const mx=laneMaxX(m,L.lane);let x=0;for(let i=0;i<8;i++){x=rr(AX0+30,mx);if(Math.abs(x-p.x)>120)break;}
+    enemies.push(makeEnemy(pick(room.def.pool),x,m.laneY[L.lane]+rr(-25,25)));m.spawnCd=rr(2.6,4);}
+  if(L.lever!=null){
+    const lv=m.levers[L.lever],on=Math.hypot(lv.x-p.x,lv.y-p.y)<28;
+    lv.t=on?lv.t+dt:Math.max(0,lv.t-dt*0.5);
+    if(on&&Math.floor(lv.t*4)!==Math.floor((lv.t-dt)*4))sfx('tick');
+    if(lv.t>=2.5){lv.done=1;lv.opens.open=1;m.solids.splice(m.solids.indexOf(lv.opens),1);
+      sfx('stamp');shake(5,0.2);addText(p.x,p.y-36,'GATE OPEN',C.gold,12,{life:1.2});m.gi++;splitSwitch(m);}
+  } else if(L.end&&p.x>AX1-60){
+    m.gi++;sfx('bless');burstParts(p.x,p.y,C.moon,20,160);
+    if(m.gi>=m.goals.length){finishRoom(true,'INTAKE WINDOW 1');return;}
+    splitSwitch(m);
+  }
+}
+function splitSwitch(m){
+  const k=1-m.cur;
+  m.teams[m.cur]={members:team.members,ai:team.ai};m.pos[m.cur]={x:player.x,y:player.y};
+  const t2=m.teams[k];team.members=t2.members;team.ai=t2.ai;
+  if(team.members[team.ai].down)team.ai=Math.max(0,team.members.findIndex(x=>!x.down));
+  player=team.members[team.ai];player.x=m.pos[k].x;player.y=m.pos[k].y;player.iframe=1.2;player.dash=null;
+  team.shield=null;team.swapCd=0;enemies=[];bullets=[];tels=[];allies=[];zones=[];shots=[];
+  m.cur=k;m.swT=0.9;
+  setBanner(k?'Switch · Team B':'Switch · Team A',m.goals[m.gi].t,2);sfx('swap');
+  burstParts(player.x,player.y,C.moon,20,140);
+}
+function splitSub(m){
+  const L=m.goals[m.gi];let s=team.members.map(x=>nameOf(x.id)).join(', ');
+  if(L&&L.lever!=null){const lv=m.levers[L.lever];if(lv.t>0)s+=' · lever '+Math.min(100,Math.round(lv.t/2.5*100))+'%';}
+  return s;
+}
+function drawSplit(c,m){
+  for(const g of m.gates){
+    if(g.open){c.fillStyle='rgba(0,0,0,0.22)';c.fillRect(g.x,g.y+(g.y<H*0.5?g.h-6:0),g.w,6);continue;}
+    c.fillStyle='#2A2638';c.fillRect(g.x,g.y,g.w,g.h);c.fillStyle='rgba(200,214,255,0.55)';for(let y=g.y+4;y<g.y+g.h;y+=10)c.fillRect(g.x+3,y,g.w-6,3);}
+  const L=m.goals[m.gi];
+  for(const lv of m.levers){const act=L&&L.lever!=null&&m.levers[L.lever]===lv;
+    c.fillStyle=lv.done?'#3E5A34':'#5A4030';c.fillRect(lv.x-9,lv.y-3,18,10);
+    c.strokeStyle=lv.done?C.hp:C.gold;c.lineWidth=3;c.beginPath();c.moveTo(lv.x,lv.y);c.lineTo(lv.x+(lv.done?11:-11),lv.y-18);c.stroke();
+    if(act){c.strokeStyle='rgba(255,211,107,0.35)';c.lineWidth=2;circ(c,lv.x,lv.y,28);c.stroke();
+      if(lv.t>0){c.strokeStyle=C.gold;c.lineWidth=4;c.beginPath();c.arc(lv.x,lv.y,28,-Math.PI/2,-Math.PI/2+TAU*Math.min(1,lv.t/2.5));c.stroke();}}}
+  const v=m.vault;c.fillStyle='#34323E';c.fillRect(v.x-12,AY0+6,24,AY1-AY0-12);
+  c.fillStyle=`rgba(200,214,255,${0.35+0.2*Math.sin(T*2)})`;c.fillRect(v.x-8,AY0+20,16,AY1-AY0-40);
+  const k=1-m.cur,P=m.pos[k];
+  m.teams[k].members.forEach((x,i)=>{if(!x.down)drawChar(c,x.id,P.x-i*15,P.y+(i%2?7:-3),{face:1,alpha:0.7});});
+  c.font=`700 10px ${FONT_UI}`;c.textAlign='center';c.textBaseline='middle';c.fillStyle='rgba(255,230,163,0.85)';c.fillText(k?'Team B · waiting':'Team A · waiting',P.x-14,P.y-32);
+}
+
+// ── the forced loss: Horaios processes the party, then catches Kairos inside his own stopped minute
+ROOMS.m_horaios=Object.assign({},ROOMS.boss,{id:'m_horaios',forced:true});
+function startLoss(party,done){
+  newRun('story2',party,0);run.stage='m_horaios';run.onDone=done;run.retry=()=>startLoss(party,done);run.roomNo=5;
+  enterRoom('m_horaios');
+}
+function lossUpdate(b,dt){
+  if(b.over)return true;
+  if(!b.proc){
+    if(b.entering>0||b.hp>b.maxHp*0.34)return false;
+    b.proc={t:0,q:team.members.filter(x=>x.id!=='kairos'&&!x.down),next:1.6,alone:false,hb:0,wait:0,atk:2,nag:4};
+    b.phase=3;b.enraged=true;b.shieldT=0;b.statues=[];b.pat=-1;
+    bullets=[];tels=[];enemies=[];team.swapCd=999;
+    const k=memberOf('kairos');if(k&&k.down){k.down=false;k.hp=k.maxHp*0.3;}
+    if(!k){lossEnd();return true;}
+    setBanner('Phase III · Processing','Horaios stamps every chart. One by one.',3);
+    bigStamp={text:'PROCESSING',col:C.moon,t:0};setTimeout(()=>{if(bigStamp&&state==='play')bigStamp=null;},1300);
+    shake(9,0.45);sfx('stamp');burstParts(b.x,b.y,C.moon,50,260);
+    return true;
+  }
+  const P=b.proc;P.t+=dt;b.flash-=dt;b.y=b.ty+Math.sin(T*1.3)*8;b.x+=clamp(player.x-b.x,-30*dt,30*dt);
+  if(!paused&&musicDuck!==0.08){musicDuck=0.08;applyVolumes();}
+  P.hb-=dt;if(P.hb<=0){P.hb=P.alone?0.75:1.05;sfx('thud');}
+  team.swapCd=999;
+  if(P.q.length){P.next-=dt;if(P.next<=0){processMember(b,P.q.shift());P.next=1.6;}}
+  else if(!P.alone){
+    P.alone=true;P.wait=0;
+    setBanner('Kairos, alone','Fine. My minute. (Use your Ultimate)',4);
+    addText(player.x,player.y-42,'Fine. My minute.',C.water,12,{life:2.6,bubble:true});
+  } else {
+    P.wait+=dt;player.pn=team.maxPn;P.nag-=dt;
+    if(P.nag<=0){P.nag=3.5;addText(player.x,player.y-44,isTouch?'ULT: stop the minute':'R: stop the minute',C.gold,11,{life:1.6});}
+    if(P.wait>25)lossEnd();
+  }
+  P.atk-=dt;if(P.atk<=0){P.atk=P.alone?2.4:1.5;tels.push({x:clamp(player.x+rr(-40,40),AX0+40,AX1-40),y:clamp(player.y+rr(-30,30),AY0+40,AY1-40),r:54,t:0,dur:1.1,dmg:20});}
+  return true;
+}
+function processMember(b,x){
+  if(!x||x.down)return;
+  let px,py;
+  if(x===player){
+    px=player.x;py=player.y;const ki=team.members.findIndex(m=>m.id==='kairos'),kk=team.members[ki];
+    kk.down=false;kk.x=clamp(px+34,AX0+30,AX1-30);kk.y=py;kk.iframe=1;kk.face=-1;team.ai=ki;player=kk;
+  } else {px=clamp(player.x+rr(-100,100),AX0+40,AX1-40);py=clamp(player.y+rr(-70,50),AY0+60,AY1-30);}
+  x.down=true;x.processed=true;x.hp=0;
+  b.statues.push({id:x.id,x:px,y:py,face:px<player.x?1:-1});
+  decals.push({x:px,y:py,r:42,life:2.4,max:2.4,stamp:true,rot:rr(-0.3,0.3)});
+  burstParts(px,py,C.moon,30,200);shake(7,0.25);sfx('stamp');
+  addText(px,py-46,nameOf(x.id).toUpperCase()+' · PROCESSED',C.moon,12,{life:1.8});
+}
+function lossUlt(){
+  const b=boss;if(!b||!b.forced||!b.proc)return false;
+  if(b.proc.alone&&player.id==='kairos')lossEnd();else sfx('nope');
+  return true;
+}
+function lossEnd(){
+  const b=boss;if(!b||b.over)return;b.over=true;
+  musicDuck=1;applyVolumes();sfx('ult');
+  state='panel';const cb=run.onDone;run.onDone=null;
+  if(cb)cb(true);else goHome();
+}
+function drawStatues(c){
+  const b=boss;if(!b||!b.statues)return;const F='filter' in c;
+  for(const s of b.statues){c.save();if(F)c.filter='grayscale(1) brightness(1.15)';
+    drawChar(c,s.id,s.x,s.y,{face:s.face,t:0,alpha:F?0.95:0.5});c.restore();}
+}
+function drawCutExtra(g,id,X,Y,t,o){
+  const s=o.scale||1;
+  if(id==='horaios'){
+    const oc=ctx,ob=boss;ctx=g;boss=Object.assign(makeBoss(),{x:0,y:0,entering:0,flash:0,phase:o.phase||1,enraged:!!o.angry,pat:o.pat??-1});
+    g.save();g.translate(X,Y);g.scale(s*1.3,s*1.3);try{drawBoss();}finally{ctx=oc;boss=ob;g.restore();}
+  } else if(id==='hand'){
+    g.save();g.translate(X,Y);g.scale(s*(o.face||1),s);
+    const gl=g.createRadialGradient(0,0,4,0,0,90);gl.addColorStop(0,'rgba(220,230,255,0.5)');gl.addColorStop(1,'rgba(220,230,255,0)');g.fillStyle=gl;g.fillRect(-90,-90,180,180);
+    g.fillStyle='#DDE6FF';g.strokeStyle='#8E9CC4';g.lineWidth=2;
+    g.beginPath();g.ellipse(0,10,34,28,0,0,TAU);g.fill();g.stroke();
+    const cl=o.closed?0.55:1;for(let i=0;i<4;i++){g.save();g.translate(-24+i*16,-8);g.rotate((i-1.5)*0.12);g.fillRect(-6,-46*cl,12,46*cl);g.strokeRect(-6,-46*cl,12,46*cl);g.restore();}
+    g.save();g.translate(-36,14);g.rotate(-0.9);g.fillRect(-6,-30,12,30);g.restore();
+    g.restore();
+  } else if(id==='gate'){
+    g.save();g.translate(X,Y);g.scale(s,s);const k=0.8+0.2*Math.sin(t*3);
+    const gl=g.createRadialGradient(0,-40,10,0,-40,140);gl.addColorStop(0,`rgba(255,255,255,${0.9*k})`);gl.addColorStop(1,'rgba(220,230,255,0)');g.fillStyle=gl;g.fillRect(-140,-180,280,280);
+    g.fillStyle='#FFFFFF';g.beginPath();g.moveTo(-40,40);g.lineTo(-40,-60);g.arc(0,-60,40,Math.PI,0);g.lineTo(40,40);g.closePath();g.fill();
+    g.strokeStyle='rgba(180,195,240,0.9)';g.lineWidth=3;g.stroke();g.restore();
+  }
+}
+
+// ── preview of Phase 3, built from Chapter 1 Scenes 10 to 14
+const CAMP_BG={bg:'lobby',tint:'night'};
+const PREVIEW3_SEQ=[
+  {cut:[{...CAMP_BG,cap:'The old clock tower. The giant clock has been dead for years. Tonight it is home.',
+    cast:[['kairos',0.3,0.7,1],['lucan',0.42,0.68,-1],['ines',0.56,0.7,1],['bram',0.64,0.7,-1],['noemi',0.76,0.68,1],['theo',0.84,0.7,-1],['dess',0.18,0.66,1]],
+    lines:[['n','Six of them, one dead clock, and a stolen bag of bread. For one night, nobody is chasing them.']]}]},
+  {bond:{n:2,title:'Who do you sit with tonight?',sub:'Pick two. Each talk raises that character’s Bond, and Bond makes them stronger in story fights.',choices:[
+    {who:['lucan'],title:'Lucan, at the clock face',cut:[{...CAMP_BG,focus:[0.5,0.55],cast:[['kairos',0.44,0.68,1],['lucan',0.56,0.68,-1]],cap:'They sit on the narrow ledge behind the dead clock, like when they were kids.',
+      lines:[['lucan','We used to hide here when the matron did inspections.'],['kairos','You’d make me count the seconds so we knew when to come out.'],['lucan','…You hated it.'],['kairos','I hated it. I did it anyway.'],
+        ['lucan','I’m not good at this. Saying things.'],['kairos','I know.'],['lucan','So I’ll say it once. Whatever this is, the Church, my father, whatever comes out of those rifts. I’m not losing you twice.'],
+        ['kairos','That sounds like a vow.'],['lucan','It is one. Don’t make it weird.']]}]},
+    {who:['ines','bram'],title:'Ines and Bram, by the lantern',cut:[{...CAMP_BG,focus:[0.5,0.55],cast:[['ines',0.4,0.68,1],['bram',0.56,0.68,-1],['kairos',0.7,0.7,-1]],
+      lines:[['bram','Sarge saved my life in the Eastern Rift.'],['ines','You fell into the Eastern Rift.'],['bram','And you saved my life.'],
+        ['ines','He followed me in. I told him to stay, he didn’t. Fourteen Vices. He had a shield and no plan.'],['bram','I had a plan. The plan was you.'],['ines','Eat your toast, Corporal.']]}]},
+    {who:['noemi','theo'],title:'Noemi and Theo, at the window',cut:[{...CAMP_BG,focus:[0.5,0.55],cast:[['noemi',0.42,0.68,1],['theo',0.56,0.68,-1],['kairos',0.28,0.7,1]],
+      lines:[['noemi','I wrote “he glowed” on my arm because I was scared I’d decide it didn’t happen.'],['theo','You always say the scary thing first.'],['noemi','And you always say the exciting thing first.'],
+        ['theo','Between us we say everything.'],['noemi','If this gets dangerous, and it will, I’m not leaving him behind. And I’m not leaving you behind either. That’s not kindness. I’m just stubborn.']]}]},
+    {who:['dess'],title:'Dess, alone with the cores',cut:[{...CAMP_BG,focus:[0.5,0.55],cast:[['dess',0.48,0.68,1],['kairos',0.6,0.7,-1]],
+      lines:[['dess','I can hear them a little. The memories. Mostly ordinary stuff. Someone’s bad day. A song.'],['dess','My dad used to sing to me. I don’t remember the song anymore. Isn’t that funny?'],
+        ['kairos','What did it sound like?'],['dess','I don’t… If I find it in one of these, I’ll let you know.']]}]},
+    {who:[],title:'Kairos, alone, at the dead clock',note:'No Bond. A vision.',flag:'vision',cut:[{...CAMP_BG,tint:'frozen',fx:'flash',focus:[0.5,0.55],cast:[['kairos',0.5,0.7,1,{glow:1}]],
+      cap:'A man’s hand, writing by candlelight. The same handwriting as the folded page.',lines:[['n','A voice, his own but older: “Find me before they do.”'],['n','He snaps out of it. His hand is still on the clock.']]}]},
+  ]}},
+  {cut:[{bg:'lobby',tint:'night',focus:[0.5,0.45],cast:[['kairos',0.4,0.74,1],['npc',0.62,0.34,-1,{col:'#2A2A3A'}]],cap:'Late. Everyone asleep. Someone sits on a beam above them.',
+    lines:[['lyra','Go back to sleep.'],['kairos','Who are you?'],['lyra','Someone who’s supposed to be watching. Not talking.'],['kairos','You’re bad at it.'],['lyra','The festival tomorrow. Don’t drink anything they give you.'],['n','She drops from the beam and is gone. Only Kairos saw her.']]}]},
+  {cut:[{bg:'office',tint:'night',cap:'Night. The Registry of Births. Black stone, endless windows.',cast:[['lucan',0.42,0.7,1],['kairos',0.56,0.7,-1],['dess',0.7,0.7,-1]],
+    lines:[['lucan','My father’s keys. He doesn’t know I took them.'],['kairos','He will.'],['lucan','Then I’d better make it worth it.']]}]},
+  {split:'stacks',preferA:['kairos','lucan','ines'],preferB:['bram','noemi','theo']},
+  {cut:[{bg:'office',tint:'night',fx:'flash',cast:[['kairos',0.5,0.7,1,{glow:1}],['dess',0.66,0.7,-1]],cap:'Kairos touches the vault. Himself, older, at a window, a long queue behind him.',
+    lines:[['kairos','I’ve been here.'],['dess','You’ve never been here. Nobody’s allowed down here.'],['kairos','I know. I’ve still been here.']]}]},
+  {cut:[{bg:'lobby',z:1.1,focus:[0.5,0.42],cast:[['horaios',0.5,0.32,1],['kairos',0.42,0.78,1],['ines',0.3,0.8,1],['theo',0.6,0.8,-1],['lucan',0.7,0.78,-1]],
+    cap:'A vast hall. Rows of empty chairs. Behind a desk as big as a house: Horaios, Kosmokrator of the Moon.',
+    lines:[['horaios','Intake Window 1. Take a number.'],['n','No one moves.'],['horaios','Name. Hour of birth. Sign here. Next.'],['ines','Is that… the Moon?'],['theo','Write this down. Somebody write this down.'],
+      ['horaios','…No number. That isn’t allowed.']]}]},
+  {loss:1,must:['kairos'],prefer:['kairos','lucan','noemi'],title:'Intake Window 1',sub:'Three of you face Horaios. Kairos has to be one of them.'},
+  {cut:[
+    {bg:'lobby',tint:'frozen',fx:'flash',z:1.1,focus:[0.5,0.42],cast:[['horaios',0.5,0.3,1,{phase:3}],['kairos',0.44,0.72,1,{moving:1}],['lucan',0.3,0.74,1,{grey:1}],['noemi',0.66,0.74,-1,{grey:1}]],
+      cap:'Kairos triggers the full time stop. Everything freezes. He runs at Horaios—',lines:[]},
+    {bg:'lobby',tint:'frozen',z:1.1,focus:[0.5,0.4],zoom:0.15,cast:[['horaios',0.5,0.3,1,{phase:3,pat:2}],['kairos',0.48,0.62,1]],cap:'—and Horaios turns its head.',
+      lines:[['horaios','You’re not the only one who’s done this before.']]},
+    {bg:'lobby',tint:'frozen',fx:'shake',z:1.1,focus:[0.5,0.42],cast:[['horaios',0.5,0.3,1,{phase:3}],['kairos',0.44,0.7,1,{hurt:1}],['hand',0.56,0.56,-1,{scale:0.75}]],cap:'Horaios moves inside the stopped minute. A huge hand closes.',
+      lines:[['horaios','Processing.']]},
+    {bg:'lobby',tint:'frozen',fx:'flash',z:1.1,focus:[0.5,0.42],cast:[['horaios',0.52,0.3,1,{phase:3}],['kairos',0.36,0.74,1,{fall:1}],['lucan',0.5,0.66,-1],['hand',0.58,0.56,-1,{closed:1,scale:0.75}]],
+      cap:'Lucan breaks free of the frozen grey. Nobody knows how. He throws himself between the hand and Kairos.',lines:[['lucan','Not him.']]},
+    {bg:'black',focus:[0.5,0.5],cast:[['gate',0.62,0.62,1,{scale:1.2}],['lucan',0.6,0.62,-1,{scale:1.4}],['kairos',0.4,0.66,1]],cap:'The hand takes Lucan instead. Behind Horaios, a gate of white light: the Moon Gate.',
+      lines:[['kairos','LUCAN—'],['horaios','Irregular. But acceptable.'],['lucan','Don’t you dare forget me.'],['kairos','I can’t. I never forget anything.'],['lucan','Good. Then come get me.']]},
+    {bg:'lobby',tint:'night',fx:'shake',cast:[['ines',0.4,0.7,1,{moving:1}],['kairos',0.52,0.72,-1],['bram',0.62,0.7,-1],['theo',0.74,0.7,-1]],cap:'The Gate closes. The hall is just a dark empty room. The ceiling starts to come down.',
+      lines:[['ines','Out! Everybody out, now!']]},
+    {bg:'plaza',cast:[['kairos',0.4,0.7,1],['ines',0.52,0.7,-1],['bram',0.62,0.7,-1],['noemi',0.3,0.7,1]],cap:'Dawn. A rooftop. Every screen in the city shows Chancellor Augustin Crane.',
+      lines:[['crane','Last night a group of heretics attacked the Registry of Births and destroyed it. My son Lucan was taken by them. If you see these people, do not approach them.'],
+        ['n','Their faces appear on the screens.'],['bram','He knows we didn’t take him.']]}]},
+];
+function startPreview3(){ensureAudio();runSeq(PREVIEW3_SEQ,{roster:['kairos','ines','bram','noemi','theo','lucan','dess','cass'],end:showPreview3End});}
+function showPreview3End(){
+  state='panel';const v=sq&&sq.flags.vision;
+  openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story preview','Scenes 10 to 14'),h('div',{class:'stamp'},'To be continued'),
+    h('h2',null,'Then come get me'),
+    h('p',{class:'lede'},'Camp and Bonds, two teams in the Stacks, and the fight you can’t win. '+(v?'You saw the vision at the clock. In the real chapter that changes a line later on.':'You skipped the vision at the clock this time.')),
+    h('p',{class:'serpent'},'Bond levels: '+(CH_ORDER.filter(id=>bondOf(id)).map(id=>nameOf(id)+' '+bondOf(id)).join(' · ')||'none yet')),
+    h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>goHome()},'Home'),
+      h('button',{class:'btn ghost',type:'button',onclick:()=>startPreview3()},'Play again'))));
 }
 
 // ═══════════════════════════════════════════ panels (DOM)
@@ -3443,9 +3727,10 @@ function showStoryStart(){
   state='title';room=null;boss=null;paused=false;playMusic('title');
   if(!window.__oldStory){openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story','Chapter 1 · being rewritten'),
     h('h2',{style:'padding-right:0'},'Chapter 1 is being rebuilt'),
-    h('p',{class:'lede'},'The new Chapter 1, “The Minute Meridian Held Its Breath”, is in progress with a new cast of 8. You can already play a preview of Scenes 2 to 6: cutscenes, the stopped minute, an escort, a hospital defense, plus a stealth and a rescue sample.'),
+    h('p',{class:'lede'},'The new Chapter 1, “The Minute Meridian Held Its Breath”, is in progress with a new cast of 8. You can already play a preview of Scenes 2 to 6: cutscenes, the stopped minute, an escort, a hospital defense, plus a stealth and a rescue sample. A second preview covers Scenes 10 to 14: camp and Bonds, the split-team Stacks, and Horaios.'),
     h('div',{class:'row'},h('button',{class:'btn ghost',type:'button','data-back':'1',onclick:()=>goHome()},'Back'),
       h('button',{class:'btn ghost',type:'button',onclick:()=>showPartySelect('battle')},'Battle mode'),
+      h('button',{class:'btn ghost',type:'button',onclick:()=>startPreview3()},'Preview: camp to Horaios'),
       h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>startPreview()},'Play the preview'))));return;}
   openOverlay(h('div',{class:'form',style:'max-width:640px'},
     formHead('Story','Chapter 1 of 7'),
@@ -4234,7 +4519,7 @@ function drawWorld(){
   const list=[];for(const e of enemies)if(!e.dead)list.push([e.y,0,e]);for(const a of allies)list.push([a.y,1,a]);list.push([player.y,2,player]);if(boss&&!boss.dead)list.push([boss.y-40,3,boss]);
   list.sort((a,b)=>a[0]-b[0]);
   for(const [,k,o] of list){if(k===0)drawEnemy(o);else if(k===1)drawAlly(o);else if(k===2)drawPlayer();else drawBoss();}
-  drawMissionTop(c);
+  drawMissionTop(c);drawStatues(c);
   for(const s of shots){c.save();c.translate(s.x,s.y);c.rotate(Math.atan2(s.vy,s.vx));
     if(s.kind==='arrow'){const L=s.big?16:11;if(s.big){c.strokeStyle=alpha(C.gold,0.35);c.lineWidth=5;c.beginPath();c.moveTo(-L,0);c.lineTo(0,0);c.stroke();}
       c.strokeStyle='#C9A66B';c.lineWidth=1.6;c.beginPath();c.moveTo(-L,0);c.lineTo(0,0);c.stroke();c.fillStyle=s.burn?C.fire:C.paper;c.beginPath();c.moveTo(3,0);c.lineTo(-2,-2.5);c.lineTo(-2,2.5);c.closePath();c.fill();
@@ -4414,7 +4699,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-window.__sf={p:()=>player,team:()=>team,en:()=>enemies,preview:()=>startPreview(),mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+window.__sf={preview3:()=>startPreview3(),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,preview:()=>startPreview(),mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
