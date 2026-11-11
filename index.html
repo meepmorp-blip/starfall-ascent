@@ -2385,14 +2385,22 @@ function frozenTint(g){
 }
 // a plain townsperson (frozen ones are grey-blue)
 function drawNPC(g,x,y,o={}){
-  const fz=!!o.frozen,body=fz?'#8796B0':(o.col||'#B5835A'),skin=fz?'#AEB8CC':'#E8C39E',hair=fz?'#5E6A82':(o.hair||'#4A3020');
-  g.save();g.translate(x,y);if(o.face<0)g.scale(-1,1);
+  const fz=!!o.frozen,body=fz?'#8796B0':(o.col||'#B5835A'),skin=fz?'#AEB8CC':(o.skin||'#E8C39E'),hair=fz?'#5E6A82':(o.hair||'#4A3020'),ink=fz?'#4E5A72':'#24160C';
+  g.save();g.translate(x,y);if(o.face<0)g.scale(-1,1);if(o.small){g.translate(0,3);g.scale(0.78,0.78);}
   g.fillStyle='rgba(0,0,0,0.3)';ell(g,0,10,8,3);g.fill();
-  g.fillStyle=fz?'#6A7590':'#3B2C22';g.fillRect(-4,4,3,6);g.fillRect(1,4,3,6);
+  g.fillStyle=ink;g.fillRect(-5,3,4,8);g.fillRect(1,3,4,8);
+  g.fillStyle=fz?'#6A7590':(o.legs||'#3B2C22');g.fillRect(-4,4,3,6);g.fillRect(1,4,3,6);
+  g.fillStyle=ink;g.fillRect(-7,-7,14,13);
   g.fillStyle=body;g.fillRect(-6,-6,12,11);
-  if(o.up){g.fillRect(-8,-12,3,8);g.fillRect(5,-12,3,8);}
-  g.fillStyle=skin;g.fillRect(-4,-14,8,8);g.fillStyle=hair;g.fillRect(-4,-15,8,3);
-  if(o.small){}
+  g.fillStyle='rgba(0,0,0,0.18)';g.fillRect(-6,2,12,3);
+  if(o.apron&&!fz){g.fillStyle='#F2EBDD';g.fillRect(-4,-3,8,8);g.fillStyle='rgba(0,0,0,0.15)';g.fillRect(-4,1,8,1);}
+  if(o.up){g.fillStyle=ink;g.fillRect(-9,-13,4,10);g.fillRect(5,-13,4,10);g.fillStyle=body;g.fillRect(-8,-12,2,8);g.fillRect(6,-12,2,8);}
+  else{g.fillStyle=ink;g.fillRect(-9,-6,3,10);g.fillRect(6,-6,3,10);g.fillStyle=body;g.fillRect(-8,-5,1.5,7);g.fillRect(6.5,-5,1.5,7);g.fillStyle=skin;g.fillRect(-8,2,2,2);g.fillRect(6,2,2,2);}
+  g.fillStyle=ink;g.fillRect(-5,-15,10,10);
+  g.fillStyle=skin;g.fillRect(-4,-14,8,8);
+  g.fillStyle=hair;g.fillRect(-5,-16,10,4);g.fillRect(-5,-16,3,7);if(o.long)g.fillRect(-5,-16,2,12);
+  if(!fz){g.fillStyle=ink;g.fillRect(0.5,-11,1.5,2);g.fillRect(3,-11,1.5,2);g.fillStyle='rgba(220,120,110,0.5)';g.fillRect(2,-8,2,1);}
+  if(o.hat){g.fillStyle=ink;g.fillRect(-7,-18,14,4);g.fillRect(-5,-22,10,5);g.fillStyle=fz?'#6A7590':o.hat;g.fillRect(-6,-17,12,2);g.fillRect(-4,-21,8,4);}
   g.restore();
 }
 // the Voice: two fish of light circling a clock with no hands
@@ -2661,6 +2669,7 @@ function drawMissionTop(c){
   if(m.carry)drawNPC(c,player.x,player.y-18,{frozen:true,col:'#C96F4A'});
 }
 function drawMissionHUD(){
+  {const mm=mis();if(mm&&mm.type==='walk'&&isTouch){const b=btn.atk;ctx.font=`900 12px ${FONT_UI}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#24160C';ctx.fillText('TALK',b.x+1,b.y+b.r+11);ctx.fillStyle='#FFE6A3';ctx.fillText('TALK',b.x,b.y+b.r+10);}}
   const m=mis();if(!m||room.banner>0)return;
   const g=m.goals[m.gi],x=sw/2,y=safe.t+34;
   let txt=g?g.t:'',sub='';
@@ -3041,7 +3050,7 @@ function showPreview3End(){
 // ═══════════════════════════════════════════ story · Phase 4: Chapter 1, wired end to end
 Object.assign(SPK,{man:{name:'The man in the coat',col:'ash'},nun:{name:'Nun',col:'paper'},matteo:{name:'Old Matteo',col:'paper'},vendor:{name:'Fish vendor',col:'paper'},
   mother:{name:'Tessa’s mother',col:'paper'},clerk:{name:'Clerk',col:'ash'},marr:{name:'Dr. Ezekiel Marr',col:'ash'},aide:{name:'Chancellor’s aide',col:'ash'},
-  vane:{name:'Father Ambrose Vane',col:'ash'},priest:{name:'Priest',col:'paper'},hooded:{name:'Hooded man',col:'ash'}});
+  vane:{name:'Father Ambrose Vane',col:'ash'},guard:{name:'Garrison guard',col:'earth'},baker:{name:'Baker',col:'paper'},rosa:{name:'Rosa',col:'venus'},priest:{name:'Priest',col:'paper'},hooded:{name:'Hooded man',col:'ash'}});
 function addMission(id,M){MISSIONS[id]=M;ROOMS['m_'+id]={id:'m_'+id,kind:'mission',mission:id,num:M.name,name:M.name,place:M.place,theme:M.theme,rule:'none',ruleText:M.brief,pool:M.pool||['gossip','hothead']};}
 addMission('market',{type:'walk',name:'The Boy Who Remembers',place:'Market Ring',theme:'market',party:['kairos'],lvl:1,brief:'A normal morning. Talk to the people who need you.'});
 addMission('first',{type:'fight',name:'First Fight',place:'Market Ring',theme:'market',party:['kairos'],lvl:1,kills:10,max:3,pool:['gossip','hothead','gossip'],brief:'Vices pour out of the rift. Your body knows the stance.',
@@ -3060,10 +3069,51 @@ function initExtra(m){
   const M=m.M,p=player;
   if(M.type==='walk'){
     p.x=AX0+50;p.y=H*0.62;
-    m.npcs=[{x:W*0.34,y:H*0.36,col:'#7A6A5A',name:'matteo',face:-1,lines:[['matteo','Kairos. Kairos! What did I write here? The ink ran.'],['kairos','“Pick up Rosa’s medicine. Thursday.” It’s Tuesday, Matteo.'],['matteo','Tuesday. Right. What would we do without you.'],['kairos','Write bigger.']]},
-      {x:W*0.55,y:H*0.74,col:'#4A7FA0',name:'vendor',face:-1,lines:[['vendor','How much did I charge you last week?'],['kairos','Same as this week. Don’t try it.'],['vendor','Worth a shot.']]},
-      {x:W*0.8,y:H*0.5,col:'#C96F4A',name:'tessa',face:-1,small:1,last:1,lines:[['tessa','Mama says you don’t forget anything. Ever. Is that true?'],['kairos','Most people forget a little. Some forget a lot. I’m just… on the other end.'],['tessa','That sounds nice.'],['kairos','It’s mostly heavy.']]}];
-    m.goals=[{talk:1,t:'Talk to the people in the market'}];
+    m.npcs=[
+      {x:W*0.3,y:H*0.36,col:'#7A6A5A',hair:'#D8D8D8',name:'matteo',need:1,face:-1,lines:[
+        ['matteo','Kairos. Kairos! Come here, look at this. What did I write here? The ink ran in the rain.'],
+        ['kairos','Let me see. It says: “Pick up Rosa’s medicine. Thursday.”'],
+        ['matteo','Thursday! Is it Thursday? Oh no, oh no, what day is it?'],
+        ['kairos','It’s Tuesday, Matteo. You have two days. Look, the chalkboard by the fountain says so too.'],
+        ['matteo','Tuesday. Right. Tuesday.'],
+        ['n','He writes it again in his Ledger, very slowly. In Meridian, people write everything down. Most of them still forget.'],
+        ['matteo','What would we do without you, boy.'],
+        ['kairos','Write bigger. That would help.']]},
+      {x:W*0.52,y:H*0.78,col:'#4A7FA0',hat:'#2E4A6A',apron:1,name:'vendor',need:1,face:-1,lines:[
+        ['vendor','Ah, my favorite customer! Quick question, very innocent: how much did I charge you for mackerel last week?'],
+        ['kairos','Three coins. Same as this week. Same as the week before. Don’t try it.'],
+        ['vendor','Worth a shot. Everybody else forgets and pays four.'],
+        ['kairos','That’s why I tell everybody else it’s three.'],
+        ['vendor','You’re bad for business, you know that?']]},
+      {x:W*0.86,y:H*0.5,col:'#C96F4A',hair:'#6A3A1A',long:1,name:'tessa',need:1,last:1,small:1,face:-1,lines:[
+        ['n','A little girl tugs on his sleeve. Tessa. Her mother sells flowers at the end of the row.'],
+        ['tessa','Mama says you don’t forget anything. Ever. Is that true?'],
+        ['kairos','It’s true.'],
+        ['tessa','Not even what you had for breakfast a hundred days ago?'],
+        ['kairos','Bread and a pear. It was raining. You were wearing a yellow ribbon.'],
+        ['tessa','Whoa.'],
+        ['kairos','Most people forget a little. Some forget a lot. I’m just… on the other end.'],
+        ['tessa','That sounds nice.'],
+        ['kairos','It’s mostly heavy. You carry everything, even the bad days. Especially the bad days.']],
+        wait:[['tessa','Kairos! Are you done helping everybody? Come find me after!']]},
+      {x:W*0.16,y:H*0.8,col:'#5A6A3A',hat:'#3A4A2A',name:'guard',face:1,lines:[
+        ['guard','Morning, Kairos. Quiet day. Haven’t seen a Vice in the Market Ring for a whole month.'],
+        ['kairos','Don’t say that out loud.'],
+        ['guard','Ha! You and your superstitions. The Garrison’s got the rooftops covered. Nothing’s getting in here.']]},
+      {x:W*0.66,y:H*0.3,col:'#E8DCC0',hair:'#3A2A1A',apron:1,name:'baker',face:-1,lines:[
+        ['baker','Kairos! Quick, before it’s gone from my head. What did I name the new loaf yesterday?'],
+        ['kairos','The “Tuesday Twist.” You wrote it on the board, and then you washed the board.'],
+        ['baker','Ha! Of course I did. Thank you. Here, a free roll for the memory man.'],
+        ['n','Kairos takes the roll. He remembers every free roll the baker has ever given him. This is number thirty-one.']]},
+      {x:W*0.42,y:H*0.6,col:'#A0607A',hair:'#2A1A12',long:1,name:'rosa',face:1,lines:[
+        ['rosa','Oh! You’re the boy who remembers, aren’t you? Look, I keep my whole life in this Ledger.'],
+        ['kairos','You wrote your own name on the first page.'],
+        ['rosa','Everyone does, dear. Just in case.'],
+        ['n','In Meridian, that isn’t a joke. People really do write down their own names. Just in case.'],
+        ['rosa','Matteo is picking up my medicine on Thursday. He did write it down… didn’t he?'],
+        ['kairos','He did. I’ll remind him.']]},
+    ];
+    m.goals=[{talk:1,t:'Talk to Matteo, the fish vendor, then Tessa'}];
   } else if(M.type==='fight'){
     p.x=W/2;p.y=H*0.62;m.k0=run.kills;m.spawned=0;m.ti=0;m.spawnCd=0.6;m.still=0;m.ct=2.5;
     if(M.cass){const e=makeEnemy('hothead',W/2,AY0+70,{instant:true});e.cass=1;e.hp=e.maxHp=Math.round(520*room.hpScale);e.r=15;e.spd=95;e.spawnT=0.4;enemies.push(e);m.foe=e;
@@ -3075,10 +3125,17 @@ function missionExtra(m,dt){
   const M=m.M,p=player;
   if(M.fore&&!m.foreDone&&m.t>M.dur*0.5){m.foreDone=1;setBanner('Foresight','Every Vice turns the same way: toward the Registry.',2.6);slowReal=0.6;}
   if(M.type==='walk'){
-    if(m.talk){const tk=m.talk,L=tk.n.lines[tk.i];tk.t+=dt;
-      if(tk.t>Math.max(1.9,L[1].length*0.055)){tk.t=0;tk.i++;sfx('page');if(tk.i>=tk.n.lines.length){tk.n.done=1;m.talk=null;
-        if(m.npcs.every(n=>n.done)){finishRoom(true,'TUESDAY');return true;}}}}
-    else for(const n of m.npcs)if(!n.done&&Math.hypot(n.x-p.x,n.y-p.y)<40&&(!n.last||m.npcs.every(o=>o.last||o.done))){m.talk={n,i:0,t:0};n.face=p.x<n.x?-1:1;sfx('select');break;}
+    if(state!=='play')return true;
+    const open=n=>!n.last||m.npcs.every(o=>!o.need||o.last||o.done);
+    let near=null,bd=48;for(const n of m.npcs){const d=Math.hypot(n.x-p.x,n.y-p.y);if(d<bd){bd=d;near=n;}}
+    m.near=near;
+    const press=atk.down&&!m.held;m.held=atk.down;atk.released=false;
+    if(near&&press){
+      atk.down=false;m.held=true;near.face=p.x<near.x?-1:1;p.face=near.x<p.x?-1:1;sfx('select');
+      const lines=!open(near)?(near.wait||near.lines):(near.done&&near.again?near.again:near.lines);
+      showDialog(lines,()=>{if(open(near))near.done=1;state='play';atk.down=false;m.held=false;
+        if(m.npcs.every(n=>!n.need||n.done))finishRoom(true,'TUESDAY');});
+    }
     return true;
   }
   if(M.type==='fight'){
@@ -3099,10 +3156,34 @@ function missionExtra(m,dt){
   }
   return false;
 }
+function talkBubble(c,x,y,t,fill,big){
+  const w=big?20:18,h=big?20:16;
+  c.fillStyle='#24160C';rrect(c,x-w/2-2,y-h/2-2,w+4,h+4,6);c.fill();
+  c.beginPath();c.moveTo(x-5,y+h/2);c.lineTo(x,y+h/2+7);c.lineTo(x+5,y+h/2);c.closePath();c.fill();
+  c.fillStyle=fill;rrect(c,x-w/2,y-h/2,w,h,5);c.fill();
+  c.beginPath();c.moveTo(x-3,y+h/2-1);c.lineTo(x,y+h/2+4);c.lineTo(x+3,y+h/2-1);c.closePath();c.fill();
+  c.fillStyle='#24160C';c.font=`900 ${big?15:13}px ${FONT_UI}`;c.textAlign='center';c.textBaseline='middle';c.fillText(t,x,y+1);
+}
 function drawExtra(c,m){
-  if(m.npcs)for(const n of m.npcs){drawNPC(c,n.x,n.y,{col:n.col,face:n.face||1});
-    if(!n.done&&!m.talk&&(!n.last||m.npcs.every(o=>o.last||o.done))){c.fillStyle=C.gold;c.font=`700 13px ${FONT_UI}`;c.textAlign='center';c.textBaseline='middle';c.fillText('!',n.x,n.y-34+Math.sin(T*4)*2);}}
-  if(m.talk){const L=m.talk.n.lines[m.talk.i],who=L[0]==='kairos'?player:m.talk.n;c.fillStyle='rgba(255,255,255,0.9)';ell(c,who.x,who.y-38,10,6);c.fill();c.fillStyle='#24160C';c.fillRect(who.x-5,who.y-39,2,2);c.fillRect(who.x-1,who.y-39,2,2);c.fillRect(who.x+3,who.y-39,2,2);}
+  if(m.board){}
+  if(!m.npcs)return;
+  // the chalkboard every Meridian square keeps
+  const bx=W*0.6,by=H*0.56;c.fillStyle='#5A4030';c.fillRect(bx-2,by,4,16);c.fillStyle='#24160C';c.fillRect(bx-24,by-26,48,28);c.fillStyle='#2F4A3A';c.fillRect(bx-22,by-24,44,24);
+  c.fillStyle='#EDEBE0';c.font=`700 7px ${FONT_UI}`;c.textAlign='center';c.textBaseline='middle';c.fillText('TODAY IS:',bx,by-17);c.font=`800 9px ${FONT_UI}`;c.fillText('TUESDAY',bx,by-7);
+  const open=n=>!n.last||m.npcs.every(o=>!o.need||o.last||o.done);
+  for(const n of m.npcs){
+    if(m.near===n&&state==='play'){c.strokeStyle=alpha(C.gold,0.6+0.3*Math.sin(T*6));c.lineWidth=2;ell(c,n.x,n.y+10,15,6);c.stroke();}
+    drawNPC(c,n.x,n.y,{col:n.col,face:n.face||1,hair:n.hair,hat:n.hat,apron:n.apron,small:n.small,long:n.long});
+    const top=n.y-(n.small?32:(n.hat?42:38))+Math.sin(T*4+n.x*0.05)*2.5;
+    if(!n.done){if(n.need&&open(n))talkBubble(c,n.x,top,'!',C.gold,true);else talkBubble(c,n.x,top,'…','#F6EBD2',false);}
+  }
+  const n=m.near;
+  if(n&&state==='play'){
+    const txt=isTouch?'Tap ⚔ to talk':'Press F to talk',y=n.y+24;
+    c.font=`800 10px ${FONT_UI}`;const w=c.measureText(txt).width+16;
+    c.fillStyle='rgba(20,15,10,0.85)';rrect(c,n.x-w/2,y-8,w,16,8);c.fill();c.strokeStyle=C.gold;c.lineWidth=1.2;c.stroke();
+    c.fillStyle='#FFE6A3';c.textAlign='center';c.textBaseline='middle';c.fillText(txt,n.x,y+0.5);
+  }
 }
 function drawCrowd(c,o,m){
   for(let i=0;i<9;i++){const x=o.x-56+(i%5)*28+(i>4?14:0),y=o.y-10+(i>4?18:0);drawNPC(c,x,y,{col:['#C96F4A','#5A7FB0','#B5835A','#7FA36B','#A0607A'][i%5],face:i%2?1:-1});}
@@ -3117,7 +3198,8 @@ function drawCassFoe(e){
 }
 function extraSub(m){
   const M=m.M;
-  if(M.type==='walk'){if(m.talk){const L=m.talk.n.lines[m.talk.i];return (SPK[L[0]]||SPK.n).name+': '+L[1];}return 'Talked to '+m.npcs.filter(n=>n.done).length+' / '+m.npcs.length+(m.npcs.some(n=>n.last&&!n.done)&&m.npcs.every(n=>n.last||n.done)?' · Tessa is waiting':'');}
+  if(M.type==='walk'){const need=m.npcs.filter(n=>n.need),d=need.filter(n=>n.done).length;
+    return 'Talked to '+d+' / '+need.length+(d===need.length-1&&!need.find(n=>n.last).done?' · Tessa is waiting for you':'')+' · '+(isTouch?'walk up and tap ⚔':'walk up and press F');}
   if(M.cass){const e=m.foe;return 'Sister Cass '+Math.max(0,Math.ceil(e.hp/e.maxHp*100))+'% · don’t stand still';}
   if(M.type==='fight')return 'Vices '+Math.min(M.kills,run.kills-m.k0)+' / '+M.kills;
   return '';
