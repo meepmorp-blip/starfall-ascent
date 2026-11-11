@@ -2530,7 +2530,8 @@ function initMission(def){
   } else if(M.type==='defense'){
     m.obj={x:W/2,y:AY0+44,r:34,hp:100,max:100,ward:1,label:'Patients’ wing'};
     p.x=W/2;p.y=H*0.55;m.timer=M.dur;
-    m.goals=[{def:1,t:'Protect the patients’ wing'}];
+    m.goals=[{def:1,t:M.crowd?'Protect the crowd':'Protect the patients’ wing'}];
+  } else if(M.type==='walk'||M.type==='fight'){initExtra(m);
   } else if(M.type==='split'){initSplit(m);
   } else if(M.type==='stealth'){
     p.x=AX0+40;p.y=H*0.8;m.cp={x:p.x,y:p.y};
@@ -2542,7 +2543,7 @@ function initMission(def){
   }
 }
 const mis=()=>room&&room.m;
-function missionNoAtk(p){const m=mis();if(!m)return false;return m.type==='frozen'||m.type==='stealth'||(m.type==='escort'&&p.id===m.M.carrier);}
+function missionNoAtk(p){const m=mis();if(!m)return false;return m.type==='frozen'||m.type==='stealth'||m.type==='walk'||(m.type==='escort'&&p.id===m.M.carrier);}
 function missionSpeed(p){const m=mis();if(!m)return 1;if(m.type==='escort'&&p.id===m.M.carrier)return 0.62;if(m.carry)return 0.8;return 1;}
 function missionTarget(e){
   const m=mis();if(!m||!m.obj||m.obj.hp<=0||m.obj.carried)return null;
@@ -2569,6 +2570,7 @@ function collideSolids(p,m){
 function updateMission(dt){
   const m=room.m,p=player;m.t+=dt;if(m.objHit>0)m.objHit-=dt;
   collideSolids(p,m);
+  if(missionExtra(m,dt))return;
   const g=m.goals[m.gi];
   if(m.type==='frozen'){
     if(m.timer){m.timer-=dt;if(m.timer<=0){m.timer=0;m.partial=m.saved<(m.M.civ||0);finishRoom(true,m.partial?'TIME':'CLEAR');return;}}
@@ -2621,6 +2623,7 @@ function drawMission(c){
   const m=mis();if(!m)return;
   const fz=m.frozen;
   if(m.split)drawSplit(c,m);
+  drawExtra(c,m);
   for(const f of m.fires){for(let i=0;i<10;i++){const a=i*0.63,rr2=(i*13%f.r),px=f.x+Math.cos(a)*rr2,py=f.y+Math.sin(a)*rr2*0.8,hh=6+(i%3)*3;c.fillStyle=i%2?'#B9C6E6':'#E3ECFF';c.fillRect(px-2,py-hh,4,hh);}
     c.strokeStyle='rgba(200,215,255,0.35)';c.lineWidth=1;circ(c,f.x,f.y,f.r);c.stroke();}
   if(m.exit){const e=m.exit;c.fillStyle=alpha(C.gold,0.12+0.06*Math.sin(T*4));circ(c,e.x,e.y,e.r);c.fill();c.strokeStyle=alpha(C.gold,0.8);c.lineWidth=2;c.setLineDash([5,4]);circ(c,e.x,e.y,e.r);c.stroke();c.setLineDash([]);}
@@ -2642,7 +2645,8 @@ function drawMission(c){
   if(g&&g.go){drawVoice(c,g.go.x,g.go.y,T,1);}
   else if(g&&g.push&&m.beam){drawVoice(c,m.beam.x+50,m.beam.y-30,T,0.7);c.strokeStyle=alpha(C.gold,0.5+0.4*Math.sin(T*6));c.lineWidth=2;circ(c,m.beam.x,m.beam.y,m.beam.r+8);c.stroke();}
   if(m.obj){const o=m.obj;
-    if(o.ward){c.fillStyle='#E7DCC6';c.fillRect(o.x-56,o.y-34,112,50);c.fillStyle='#B98C6A';c.fillRect(o.x-60,o.y-40,120,8);c.fillStyle='#5A4030';c.fillRect(o.x-12,o.y-4,24,20);
+    if(o.ward&&m.M.crowd)drawCrowd(c,o,m);
+    else if(o.ward){c.fillStyle='#E7DCC6';c.fillRect(o.x-56,o.y-34,112,50);c.fillStyle='#B98C6A';c.fillRect(o.x-60,o.y-40,120,8);c.fillStyle='#5A4030';c.fillRect(o.x-12,o.y-4,24,20);
       c.fillStyle=C.hp;c.fillRect(o.x-3,o.y-28,6,16);c.fillRect(o.x-8,o.y-23,16,6);
       if(m.objHit>0){c.fillStyle=alpha(C.danger,m.objHit*1.5);c.fillRect(o.x-60,o.y-40,120,58);}}
     else if(!o.carried){drawChar(c,'bram',o.x,o.y,{face:o.face,moving:!!o.mv});drawChar(c,'kairos',o.x+o.face*2,o.y-15,{face:o.face,scale:0.85,noShadow:true,fall:1});
@@ -2662,8 +2666,9 @@ function drawMissionHUD(){
   let txt=g?g.t:'',sub='';
   if(m.type==='frozen'&&m.M.civ)sub='Saved '+m.saved+' / '+m.M.civ+(m.carry?' · carrying one':'');
   if(m.type==='escort')sub=(m.obj.carried?'Bram is carrying him (no attacks)':(m.obj.hide?'Bram is hiding. Clear the Vices!':'Bram is moving'))+' · Carry '+Math.max(0,Math.ceil(m.obj.hp))+'%';
-  if(m.type==='defense')sub='Wing '+Math.max(0,Math.ceil(m.obj.hp))+'% · hold for '+Math.ceil(Math.max(0,m.timer))+'s';
+  if(m.type==='defense')sub=(m.M.crowd?'Crowd ':'Wing ')+Math.max(0,Math.ceil(m.obj.hp))+'% · hold for '+Math.ceil(Math.max(0,m.timer))+'s';
   if(m.type==='split')sub=splitSub(m);
+  if(m.type==='walk'||m.type==='fight')sub=extraSub(m);
   if(m.type==='stealth')sub=m.freezeT>0?'Time stopped · '+m.freezeT.toFixed(1)+'s':(m.fcd>0?'Time stop recharging '+Math.ceil(m.fcd)+'s':(isTouch?'Sun button: stop time':'Q: stop time'))+(m.caught?' · spotted '+m.caught+'×':'');
   if(m.timer&&m.type==='frozen')sub=(sub?sub+' · ':'')+Math.ceil(m.timer)+'s left';
   ctx.font=`700 12px ${FONT_UI}`;const w=Math.max(ctx.measureText(txt).width,(ctx.font=`600 10px ${FONT_UI}`,ctx.measureText(sub).width))+30;
@@ -2711,9 +2716,10 @@ function missionFail(retry,quit){
 }
 // ── sequencer: a story is a list of steps {cut}, {join}, {mission, party|pick}, {fn}
 let sq=null;
-function runSeq(seq,opt={}){sq={seq,i:0,roster:(opt.roster||['kairos']).slice(),end:opt.end||goHome,flags:{}};seqStep();}
+function runSeq(seq,opt={}){sq={seq,i:opt.i||0,roster:(opt.roster||['kairos']).slice(),end:opt.end||goHome,flags:Object.assign({},opt.flags||{}),save:opt.save||null};seqStep();}
 function seqStep(){
   const s=sq.seq[sq.i],nx=()=>{sq.i++;seqStep();};
+  if(sq.save&&s){save[sq.save]={i:sq.i,roster:sq.roster.slice(),flags:Object.assign({},sq.flags)};persist();}
   if(!s){sq.end();return;}
   if(s.cut)playCutscene(s.cut,nx);
   else if(s.join)joinCard(s.join,nx);
@@ -2721,7 +2727,7 @@ function seqStep(){
     const go=party=>startMission(s.mission,party,ok=>{
       if(room&&room.m&&room.m.partial)sq.flags[s.mission+'_partial']=true;
       if(ok||MISSIONS[s.mission].noFail)nx();else missionFail(()=>go(party));});
-    if(s.pick)showPick3(sq.roster,{n:s.pick,must:s.must,prefer:s.prefer,title:s.title,sub:s.sub},go);else go(s.party||MISSIONS[s.mission].party);
+    if(s.pick)showPick3(s.from?sq.roster.filter(x=>s.from.includes(x)):sq.roster,{n:s.pick,must:s.must,prefer:s.prefer,title:s.title,sub:s.sub},go);else go(s.party||MISSIONS[s.mission].party);
   }
   else if(s.bond)showBond(s.bond,nx);
   else if(s.split){const go=(a,b)=>startMission(s.split,a,ok=>{if(ok)nx();else missionFail(()=>go(a,b));},{b});showSplitPick(sq.roster,s,go);}
@@ -3032,6 +3038,271 @@ function showPreview3End(){
       h('button',{class:'btn ghost',type:'button',onclick:()=>startPreview3()},'Play again'))));
 }
 
+// ═══════════════════════════════════════════ story · Phase 4: Chapter 1, wired end to end
+Object.assign(SPK,{man:{name:'The man in the coat',col:'ash'},nun:{name:'Nun',col:'paper'},matteo:{name:'Old Matteo',col:'paper'},vendor:{name:'Fish vendor',col:'paper'},
+  mother:{name:'Tessa’s mother',col:'paper'},clerk:{name:'Clerk',col:'ash'},marr:{name:'Dr. Ezekiel Marr',col:'ash'},aide:{name:'Chancellor’s aide',col:'ash'},
+  vane:{name:'Father Ambrose Vane',col:'ash'},priest:{name:'Priest',col:'paper'},hooded:{name:'Hooded man',col:'ash'}});
+function addMission(id,M){MISSIONS[id]=M;ROOMS['m_'+id]={id:'m_'+id,kind:'mission',mission:id,num:M.name,name:M.name,place:M.place,theme:M.theme,rule:'none',ruleText:M.brief,pool:M.pool||['gossip','hothead']};}
+addMission('market',{type:'walk',name:'The Boy Who Remembers',place:'Market Ring',theme:'market',party:['kairos'],lvl:1,brief:'A normal morning. Talk to the people who need you.'});
+addMission('first',{type:'fight',name:'First Fight',place:'Market Ring',theme:'market',party:['kairos'],lvl:1,kills:10,max:3,pool:['gossip','hothead','gossip'],brief:'Vices pour out of the rift. Your body knows the stance.',
+  tips:[[0,'Attack','Tap attack for the Twin Fish combo. The 5th hit is a finisher.'],[3,'Dodge','Dodge right before a hit. A perfect dodge triggers Slipstream.'],[6,'Tide','Your hits add Tide. At 3 stacks a Vice goes Drowsy.'],[8,'Foresight','Enemies flicker just before they attack. That’s you, seeing it early.']]});
+addMission('garrison',{type:'fight',name:'Garrison',place:'Market Ring',theme:'market',party:['kairos','ines','bram'],lvl:1,kills:16,max:4,pool:['gossip','hothead','waxer','gossip'],brief:'Hold the square with the Garrison until the rift seals.',
+  tips:[[0,'Switch',(isTouch?'Tap a portrait':'Press 1, 2 or 3')+' to switch. Everyone has an Entrance move.'],[4,'Ines','Ines spots enemies so they take more damage, and keeps sniping from the bench.'],[8,'Bram','Bram deals no damage. His bashes stagger, then stun.'],[12,'Aspect combo','Use one skill, then the other, for an Aspect combo.']]});
+addMission('assault',{type:'fight',name:'Breakout · Outside',place:'Institute sub-levels',theme:'office',lvl:3,kills:14,max:4,pool:['hothead','waxer','gossip','deadline'],brief:'Fight down through the Institute. Third sub-level.',
+  tips:[[0,'Lucan','Lucan pins enemies from range. Switching Kairos ↔ Lucan gives a shield.']]});
+addMission('escape',{type:'fight',name:'Escape',place:'Institute sub-levels',theme:'office',lvl:3,kills:10,max:4,pool:['hothead','gossip','waxer'],brief:'Get out. All of you.',
+  tips:[[0,'Dess','Hold attack as Dess to release a spirit from a core. They fight on their own.'],[5,'The Vow','If Kairos would go down, Lucan takes the hit. Once per fight.']]});
+addMission('cass',{type:'fight',name:'The Inquisitor',place:'Rooftops',theme:'plaza',lvl:4,cass:1,pool:['gossip'],brief:'Sister Cass punishes standing still. Keep moving.'});
+addMission('festival',{type:'defense',name:'Festival of the Mercy',place:'Festival Square',theme:'plaza',lvl:5,dur:75,crowd:1,fore:1,
+  brief:'Five rifts at once. Keep the Vices off the crowd.',pool:['hothead','gossip','waxer','devourer','deadline','gossip']});
+
+function initExtra(m){
+  const M=m.M,p=player;
+  if(M.type==='walk'){
+    p.x=AX0+50;p.y=H*0.62;
+    m.npcs=[{x:W*0.34,y:H*0.36,col:'#7A6A5A',name:'matteo',face:-1,lines:[['matteo','Kairos. Kairos! What did I write here? The ink ran.'],['kairos','“Pick up Rosa’s medicine. Thursday.” It’s Tuesday, Matteo.'],['matteo','Tuesday. Right. What would we do without you.'],['kairos','Write bigger.']]},
+      {x:W*0.55,y:H*0.74,col:'#4A7FA0',name:'vendor',face:-1,lines:[['vendor','How much did I charge you last week?'],['kairos','Same as this week. Don’t try it.'],['vendor','Worth a shot.']]},
+      {x:W*0.8,y:H*0.5,col:'#C96F4A',name:'tessa',face:-1,small:1,last:1,lines:[['tessa','Mama says you don’t forget anything. Ever. Is that true?'],['kairos','Most people forget a little. Some forget a lot. I’m just… on the other end.'],['tessa','That sounds nice.'],['kairos','It’s mostly heavy.']]}];
+    m.goals=[{talk:1,t:'Talk to the people in the market'}];
+  } else if(M.type==='fight'){
+    p.x=W/2;p.y=H*0.62;m.k0=run.kills;m.spawned=0;m.ti=0;m.spawnCd=0.6;m.still=0;m.ct=2.5;
+    if(M.cass){const e=makeEnemy('hothead',W/2,AY0+70,{instant:true});e.cass=1;e.hp=e.maxHp=Math.round(520*room.hpScale);e.r=15;e.spd=95;e.spawnT=0.4;enemies.push(e);m.foe=e;
+      m.goals=[{t:'Sister Cass · keep moving'}];}
+    else m.goals=[{t:M.brief}];
+  }
+}
+function missionExtra(m,dt){
+  const M=m.M,p=player;
+  if(M.fore&&!m.foreDone&&m.t>M.dur*0.5){m.foreDone=1;setBanner('Foresight','Every Vice turns the same way: toward the Registry.',2.6);slowReal=0.6;}
+  if(M.type==='walk'){
+    if(m.talk){const tk=m.talk,L=tk.n.lines[tk.i];tk.t+=dt;
+      if(tk.t>Math.max(1.9,L[1].length*0.055)){tk.t=0;tk.i++;sfx('page');if(tk.i>=tk.n.lines.length){tk.n.done=1;m.talk=null;
+        if(m.npcs.every(n=>n.done)){finishRoom(true,'TUESDAY');return true;}}}}
+    else for(const n of m.npcs)if(!n.done&&Math.hypot(n.x-p.x,n.y-p.y)<40&&(!n.last||m.npcs.every(o=>o.last||o.done))){m.talk={n,i:0,t:0};n.face=p.x<n.x?-1:1;sfx('select');break;}
+    return true;
+  }
+  if(M.type==='fight'){
+    const got=run.kills-m.k0;
+    while(M.tips&&m.ti<M.tips.length&&got>=M.tips[m.ti][0]){const tp=M.tips[m.ti++];setBanner(tp[1],tp[2],3);}
+    if(M.cass){const e=m.foe;
+      if(e.dead||e.hp<=e.maxHp*0.5){e.hp=Math.max(1,e.hp);finishRoom(true,'INTERRUPTED');return true;}
+      m.ct-=dt;if(m.ct<=0&&e.spawnT<=0){m.ct=rr(2.2,3);tels.push({x:e.x,y:e.y,r:74,t:0,dur:0.9,dmg:14,vol:1});addText(e.x,e.y-34,'PENANCE',C.fire,11,{life:0.8});}
+      m.still=p.moving?0:m.still+dt;
+      if(m.still>1.1){m.still=-0.6;tels.push({x:p.x,y:p.y,r:52,t:0,dur:0.8,dmg:16,vol:1});addText(p.x,p.y-36,'STANDING STILL',C.fire,10,{life:0.8});}
+      if(aliveCount()<2&&rand()<dt*0.3)missionSpawn(['gossip'],0);
+      return true;}
+    m.spawnCd-=dt;
+    if(m.spawnCd<=0&&m.spawned<M.kills&&aliveCount()<M.max){enemies.push(spawnEdge(pick(M.pool)));m.spawned++;m.spawnCd=rr(0.6,1.4);}
+    if(got>=M.kills){finishRoom(true,'CLEAR');return true;}
+    if(m.spawned>=M.kills&&aliveCount()===0)m.spawned=got;
+    return true;
+  }
+  return false;
+}
+function drawExtra(c,m){
+  if(m.npcs)for(const n of m.npcs){drawNPC(c,n.x,n.y,{col:n.col,face:n.face||1});
+    if(!n.done&&!m.talk&&(!n.last||m.npcs.every(o=>o.last||o.done))){c.fillStyle=C.gold;c.font=`700 13px ${FONT_UI}`;c.textAlign='center';c.textBaseline='middle';c.fillText('!',n.x,n.y-34+Math.sin(T*4)*2);}}
+  if(m.talk){const L=m.talk.n.lines[m.talk.i],who=L[0]==='kairos'?player:m.talk.n;c.fillStyle='rgba(255,255,255,0.9)';ell(c,who.x,who.y-38,10,6);c.fill();c.fillStyle='#24160C';c.fillRect(who.x-5,who.y-39,2,2);c.fillRect(who.x-1,who.y-39,2,2);c.fillRect(who.x+3,who.y-39,2,2);}
+}
+function drawCrowd(c,o,m){
+  for(let i=0;i<9;i++){const x=o.x-56+(i%5)*28+(i>4?14:0),y=o.y-10+(i>4?18:0);drawNPC(c,x,y,{col:['#C96F4A','#5A7FB0','#B5835A','#7FA36B','#A0607A'][i%5],face:i%2?1:-1});}
+  if(m.objHit>0){c.fillStyle=alpha(C.danger,m.objHit*1.2);c.fillRect(o.x-66,o.y-40,132,64);}
+}
+function drawCassFoe(e){
+  const c=ctx;c.save();
+  const gl=c.createRadialGradient(e.x,e.y,4,e.x,e.y,40);gl.addColorStop(0,'rgba(255,140,60,0.35)');gl.addColorStop(1,'rgba(255,140,60,0)');c.fillStyle=gl;c.fillRect(e.x-40,e.y-40,80,80);
+  drawChar(c,'cass',e.x,e.y,{face:(player.x<e.x?-1:1),moving:true});
+  const k=clamp(e.hp/e.maxHp,0,1),bw=40;c.fillStyle='rgba(0,0,0,0.6)';c.fillRect(e.x-bw/2-1,e.y-34,bw+2,5);c.fillStyle=C.fire;c.fillRect(e.x-bw/2,e.y-33,bw*k,3);
+  c.restore();
+}
+function extraSub(m){
+  const M=m.M;
+  if(M.type==='walk'){if(m.talk){const L=m.talk.n.lines[m.talk.i];return (SPK[L[0]]||SPK.n).name+': '+L[1];}return 'Talked to '+m.npcs.filter(n=>n.done).length+' / '+m.npcs.length+(m.npcs.some(n=>n.last&&!n.done)&&m.npcs.every(n=>n.last||n.done)?' · Tessa is waiting':'');}
+  if(M.cass){const e=m.foe;return 'Sister Cass '+Math.max(0,Math.ceil(e.hp/e.maxHp*100))+'% · don’t stand still';}
+  if(M.type==='fight')return 'Vices '+Math.min(M.kills,run.kills-m.k0)+' / '+M.kills;
+  return '';
+}
+
+// ── Chapter 1
+const MATTEO='#7A6A5A',TESSA='#C96F4A',COAT='#2A2A3A',CLERK='#4A4A5A',MARRC='#E7E3DA',VANEC='#D8D2C4';
+const CH1_SEQ=[
+  // 0 · cold open
+  {cut:[
+    {bg:'plaza',tint:'night',fx:'rain',cap:'Twenty years ago. Rain over Meridian. Clock towers everywhere, all lit.',cast:[['npc',0.35,0.66,1,{col:'#5A7FB0'}],['npc',0.62,0.7,-1,{col:'#B5835A'}]],
+      lines:[['n','A woman stops mid-sentence, hand raised to call someone. She lowers it. She can’t remember who.'],['n','A baker stares at his own sign as if he’s never seen it.']]},
+    {bg:'plaza',tint:'night',fx:'rain',focus:[0.5,0.6],cast:[['npc',0.45,0.68,1,{col:COAT}]],cap:'A man in a long coat runs through it all. Pages slip loose and melt into ink in the rain.',
+      lines:[['man','Not yet. Not yet, not yet—']]},
+    {bg:'chapel',tint:'night',fx:'rain',focus:[0.5,0.55],cast:[['npc',0.48,0.66,1,{col:COAT}]],cap:'The orphanage of St. Hesper. Above the gate, a huge clock crawls toward midnight.',
+      lines:[['n','He kneels and sets down a newborn. The baby isn’t crying. It’s watching the clock.'],['man','Hey. Don’t look at it. You’ll hate it later anyway.'],['n','He tucks a folded page into the blanket.'],['man','Find me before they do.']]},
+    {bg:'chapel',tint:'frozen',fx:'flash',cap:'11:59. The clock stops. Every clock in the city stops. The rain hangs in the air.',cast:[['npc',0.48,0.66,1,{col:COAT,frozen:1}]],
+      lines:[['n','The man fades from the edges inward, like a word being rubbed out. Then he’s gone.']]},
+    {bg:'chapel',tint:'night',fx:'rain',cast:[['npc',0.5,0.66,-1,{col:'#E8E2D4'}]],cap:'The rain falls again. A nun opens the gate and finds the baby.',lines:[['nun','…What time is it?'],['n','Nobody answers.']]},
+    {bg:'black',cap:'STARFALL: THE ASCENT',lines:[['n','Chapter 1 · The Minute Meridian Held Its Breath']]}]},
+  // 2 · Scene 1
+  {cut:[{bg:'market',cap:'Present day. Morning. The Market Ring. “TODAY IS: TUESDAY” is chalked on a board.',cast:[['kairos',0.4,0.7,1,{moving:1}],['npc',0.6,0.66,-1,{col:MATTEO}]],
+    lines:[['n','Everyone carries a small notebook. A Ledger. Kairos doesn’t need one.']]}]},
+  {mission:'market'},
+  {cut:[
+    {bg:'market',fx:'shake',cast:[['kairos',0.45,0.7,1],['npc',0.58,0.7,-1,{col:TESSA}]],cap:'The clock tower above the square chimes nine. Kairos flinches hard.',lines:[['tessa','You don’t like clocks.'],['kairos','Never have.']]},
+    {bg:'market',tint:'frozen',fx:'flash',cast:[['beam',0.6,0.4,1,{rot:0.6}],['npc',0.62,0.7,-1,{col:TESSA,up:1}]],cap:'Vision. The crane snapping. Steel falling. Tessa looking up.',lines:[]},
+    {bg:'market',cast:[['kairos',0.45,0.7,1],['npc',0.58,0.7,-1,{col:TESSA}]],lines:[['kairos','Tessa. Go find your mom. Now.'],['tessa','Why?'],['kairos','Please.']]}]},
+  // 5 · Scene 2
+  {cut:[
+    {bg:'market',cast:[['npc',0.78,0.66,-1,{up:1,col:TESSA}],['beam',0.78,0.4,1,{rot:0.5}],['kairos',0.45,0.7,1,{moving:1}]],fx:'shake',cap:'A cable snaps. The crane tilts. People scream. Kairos runs toward Tessa—',lines:[]},
+    {bg:'market',tint:'frozen',focus:[0.6,0.55],cast:[['npc',0.78,0.66,-1,{up:1,col:TESSA}],['beam',0.78,0.45,1,{rot:0.5}],['npc',0.3,0.5,1],['npc',0.62,0.75,-1],['kairos',0.5,0.68,1]],fx:'flash',cap:'—and everything stops.',
+      lines:[['n','Sound gone. Falling steel frozen mid-air. A pigeon frozen mid-flap. Nobody is breathing.'],['kairos','…Hello?']]},
+    {bg:'market',tint:'frozen',focus:[0.7,0.5],zoom:0.12,cast:[['kairos',0.5,0.68,1],['voice',0.75,0.45]],
+      lines:[['voice','You can breathe. You’re the only one who can, right now.'],['kairos','What is this? Who are you?'],['voice','Someone you’ll recognize. Not today.'],['kairos','That’s not an answer.'],['voice','It’s the only honest one I have.']]},
+    {bg:'market',tint:'frozen',fx:'flash',focus:[0.55,0.55],cast:[['kairos',0.5,0.68,1,{glow:1}],['voice',0.68,0.48,1,{scale:1}]],cap:'The two lights fly at him and become two blades, curved and silver-blue, like fins.',
+      lines:[['voice','You hate clocks because you know what they’re for. They measure what can be taken from you.'],['voice','This minute is yours. Use it.'],['kairos','Wait— hey!']]}]},
+  {mission:'chase'},
+  // 7 · Scene 3
+  {cut:[
+    {bg:'market',fx:'snap',cast:[['kairos',0.5,0.7,1,{glow:1}],['npc',0.72,0.68,-1,{col:TESSA}],['beam',0.86,0.82,1,{rot:0.1}]],cap:'Snap. Color and noise slam back.',lines:[['voice','You were there.']]},
+    {bg:'market',cast:[['npc',0.62,0.7,-1,{col:TESSA}],['npc',0.68,0.68,-1,{col:'#A0607A'}],['kairos',0.4,0.7,1]],cap:'The beam crashes harmlessly beside Tessa. Everyone in the square drops to their knees, gasping.',
+      lines:[['mother','I couldn’t breathe— I couldn’t—']]},
+    {bg:'market',fx:'shake',focus:[0.5,0.45],cast:[['kairos',0.45,0.72,1]],cap:'Above the square the air tears, like paper ripping. A rift. Things crawl out: smoke and ash with red-hot eyes. Vices.',
+      lines:[['n','Kairos looks down. He’s still holding the blades.'],['kairos','Okay. Okay.']]}]},
+  {mission:'first'},
+  {cut:[{bg:'market',cast:[['kairos',0.5,0.7,1]],lines:[['kairos','How do I know how to do this?'],['n','More Vices pour out. Too many.'],['n','A gunshot cracks from a rooftop. A Vice drops.']]},
+    {bg:'market',cast:[['kairos',0.4,0.7,1],['ines',0.72,0.6,-1],['bram',0.55,0.72,-1,{fall:1}]],cap:'A huge man in army gear vaults the fruit stall, catches his boot on a crate, and goes down shield-first onto a Vice.',
+      lines:[['ines','Civilian with the swords. Get down or keep fighting, but pick one.'],['bram','I’m okay!'],['ines','You’re always okay, Bram.'],['bram','Sorry.'],['kairos','Did he just apologize to a box?'],['ines','He does that. Bram, cover the kids.'],['bram','Behind me, everybody! Behind the big guy!']]}]},
+  {join:'ines'},{join:'bram'},
+  {mission:'garrison'},
+  // 14 · Scene 4 end
+  {cut:[{bg:'market',cast:[['ines',0.6,0.7,-1],['kairos',0.42,0.7,1],['bram',0.72,0.7,-1]],cap:'The rift seals with a sound like a book slamming. Silence. Smoke.',
+    lines:[['ines','Sergeant Ines Calder, Meridian Garrison. You’re not army.'],['kairos','I fix— I don’t fix anything. I just live here.'],['ines','Where’d you get those?'],['kairos','You wouldn’t believe me.'],['ines','Try me. I’ve had a strange morning.']]},
+    {bg:'market',fx:'flash',cast:[['kairos',0.45,0.7,1,{glow:1}],['ines',0.6,0.7,-1],['bram',0.7,0.7,-1]],cap:'A mark glows through his shirt: two fish circling a clock face with no hands.',
+      lines:[['bram','Uh. Sarge. He’s glowing.'],['ines','I can see that, Bram.'],['kairos','That’s… new.'],['n','He collapses. Bram catches him a second too late and they both go down.'],['bram','I’m okay! He’s okay! …I think he’s okay.']]}]},
+  // 15 · Scene 5
+  {cut:[{bg:'yard',cast:[['bram',0.45,0.68,1,{moving:1}],['kairos',0.452,0.6,1,{fall:1,scale:1.3}],['ines',0.62,0.66,1,{moving:1}]],
+    lines:[['bram','He’s light. Is he supposed to be this light?'],['ines','Eat less bread and you’ll stop noticing.'],['bram','I’ll never eat less bread, Sarge.']]}]},
+  {mission:'carry'},
+  // 17 · Scene 6
+  {cut:[
+    {bg:'chapel',tint:'night',cast:[['noemi',0.42,0.66,1],['kairos',0.58,0.7,-1,{fall:1}],['ines',0.72,0.66,-1]],cap:'St. Lucia’s. Half the city came in short of breath.',
+      lines:[['noemi','Pulse normal. Oxygen normal. Patient was glowing. I wrote that down because I knew I’d talk myself out of it.'],['ines','He was. Bright as a lamp.'],['noemi','People don’t glow, Sergeant.'],['ines','Agreed. Write that down too.']]},
+    {bg:'chapel',tint:'night',cast:[['noemi',0.42,0.66,1],['kairos',0.58,0.7,-1],['bram',0.74,0.66,-1]],
+      lines:[['kairos','The crane. Is the girl okay?'],['noemi','Everyone in your square is fine. What do you remember?'],['kairos','Everything. Time stopped. Everyone stopped. I was the only one moving.'],['noemi','Concussion, possibly.'],['kairos','I don’t have a concussion.'],['noemi','That’s what people with concussions say.']]},
+    {bg:'chapel',tint:'night',cast:[['theo',0.3,0.66,1,{moving:1}],['noemi',0.45,0.66,-1],['kairos',0.6,0.7,-1]],
+      lines:[['theo','He doesn’t have a concussion.'],['noemi','Theo. You’re not allowed in the ward.'],['theo','I’m your husband, I’m allowed everywhere.'],
+        ['theo','At 9:04 this morning every clock in the city lost the same sixty seconds, and the rifts opened right after. And you were standing at the exact center of it.'],['kairos','…You believe me?'],
+        ['theo','I’ve been waiting six years for something weird enough to prove I’m not crazy. You’re my favorite person today.'],['noemi','He means well.'],['theo','I mean extremely well.'],['n','The lights flicker. A rift tears open in the hospital courtyard.']]}]},
+  {join:'noemi'},{join:'theo'},
+  {mission:'lucia',pick:3,prefer:['kairos','noemi','theo'],title:'Defend St. Lucia’s',sub:'Five of you now. Only three fit in the courtyard. The others guard the doors.'},
+  {cut:[{bg:'chapel',tint:'night',cast:[['noemi',0.45,0.7,1],['theo',0.55,0.7,-1]],cap:'Noemi sits down hard. Theo quietly fixes her collar.',lines:[['noemi','You enjoyed that.'],['theo','Parts of it.'],['noemi','Me too. Don’t tell anyone.']]}]},
+  // 22 · Scene 7
+  {cut:[
+    {bg:'office',cap:'The Concord Council’s offices. Marble, filing cabinets to the ceiling.',cast:[['kairos',0.4,0.7,1],['npc',0.6,0.66,-1,{col:CLERK}],['theo',0.28,0.7,1]],
+      lines:[['clerk','Name.'],['kairos','Kairos.'],['clerk','Surname.'],['kairos','Don’t have one.'],['clerk','Birth record?'],['kairos','You have it. I’ve never seen it.']]},
+    {bg:'office',cast:[['kairos',0.4,0.7,1],['lucan',0.6,0.7,-1],['npc',0.72,0.66,-1,{col:CLERK}]],cap:'A young man in a sharp grey coat. Cold eyes. Perfect posture. Lucan Crane.',
+      lines:[['lucan','Is there a problem?'],['clerk','Mr. Crane. This one has an irregular file.'],['lucan','Everyone’s file is irregular this week. …This is blank.'],['kairos','Lucan?'],['lucan','Do I know you?'],
+        ['kairos','We grew up in the same place. St. Hesper. You used to steal bread from the kitchen and blame the cat.'],['lucan','I’m sorry. I don’t—'],['kairos','There wasn’t a cat.']]},
+    {bg:'office',cast:[['kairos',0.4,0.7,1],['npc',0.62,0.68,-1,{col:MARRC}],['npc',0.74,0.66,-1,{col:'#3A4A6A'}],['bram',0.24,0.7,1]],cap:'Dr. Ezekiel Marr. Friendly face. Reading glasses on a chain.',
+      lines:[['marr','Is this him? The one who doesn’t forget? Hello. I’ve been hoping to meet you since about nine this morning.'],['aide','The Registry flagged him a long time ago. Unclassifiable.'],
+        ['marr','A defect, then. That’s not an insult. It just means nobody’s had the chance to look properly. I’d like to.'],['kairos','And if I say no?'],['marr','Then I’d have to ask the Chancellor, and he’ll say yes for you.'],
+        ['ines','Not here. Not like this.'],['bram','But he—'],['ines','I know.'],['n','Kairos is led away. He looks back at Lucan. Lucan looks at the floor.']]}]},
+  // 23 · Scene 8
+  {cut:[
+    {bg:'office',tint:'night',cap:'Dr. Marr’s laboratory under the Institute. White tiles, and a huge ticking clock.',cast:[['kairos',0.45,0.7,1,{hurt:1}],['npc',0.6,0.68,-1,{col:MARRC}],['dess',0.76,0.7,-1]],
+      lines:[['marr','You really don’t like that, do you. Your heart rate jumps every time it ticks.'],['kairos','Could you take it down?'],['marr','Not yet. It’s useful. Dess, bring me a core.']]},
+    {bg:'office',tint:'night',fx:'flash',cast:[['kairos',0.45,0.7,1,{glow:1}],['npc',0.6,0.68,-1,{col:MARRC}],['dess',0.7,0.7,-1]],cap:'The core lights up. A child laughing. A woman’s voice: “Lili, come inside, it’s getting dark.”',
+      lines:[['dess','That’s… that’s a person.'],['marr','It’s a memory. It reacts to him. Twelve years of these things on my shelves, and they’ve never made a sound.'],['dess','Dad. That’s a person’s memory. Inside a Vice.'],['marr','Yes, Dess, that’s rather the point. Write it down.']]},
+    {bg:'yard',tint:'night',cap:'Meanwhile. A Garrison safehouse.',cast:[['ines',0.35,0.7,1],['bram',0.47,0.7,1],['noemi',0.6,0.7,-1],['theo',0.7,0.7,-1],['lucan',0.86,0.7,-1]],
+      lines:[['bram','We just let them take him.'],['ines','We let them take him so we’d still be free to get him back.'],['lucan','The lab is under the Institute. Third sub-level. Guard change at eleven.'],['ines','Why help?'],['lucan','There wasn’t a cat.'],
+        ['lucan','I remembered on the way home. I forgot him. How do you forget someone like that?'],['noemi','The same way everyone forgets everything. It’s not your fault.'],['lucan','It’s going to stop being my fault starting now.']]}]},
+  {join:'lucan'},
+  {mission:'assault',pick:3,from:['ines','bram','noemi','theo','lucan'],prefer:['lucan','ines','noemi'],title:'Breakout · outside team',sub:'Kairos is locked inside. Pick three to fight down through the sub-levels.'},
+  {cut:[{bg:'office',tint:'night',fx:'flash',cast:[['kairos',0.5,0.7,1,{glow:1}]],cap:'Inside. Kairos stops time for three seconds and slips the straps.',lines:[['n','Freeze time, walk through the guards’ sight lines, reach the sealed door.']]}]},
+  {mission:'sneak'},
+  {cut:[{bg:'office',tint:'night',cast:[['kairos',0.36,0.7,1],['dess',0.56,0.7,-1],['lucan',0.74,0.7,-1],['ines',0.84,0.7,-1]],cap:'The two groups meet at the sealed door. Dess is there with a key card.',
+    lines:[['dess','My father’s going to hate me.'],['kairos','Then why?'],['dess','Because that core had a little girl in it. And he wanted to know if he could make more.'],['dess','And I’m taking these. They’re people.']]}]},
+  {join:'dess'},
+  {mission:'escape',pick:3,must:['dess'],prefer:['dess','kairos','lucan'],title:'Escape',sub:'Dess must go: her spirits are new. Try switching Lucan to Kairos.'},
+  {cut:[{bg:'office',tint:'night',cast:[['lucan',0.45,0.7,1,{moving:1}],['kairos',0.58,0.7,1,{moving:1}]],lines:[['lucan','I’m sorry.'],['kairos','For what?'],['lucan','For forgetting you.'],['kairos','You came back.'],['lucan','That’s the minimum.']]}]},
+  // 32 · Scene 9
+  {cut:[{bg:'plaza',tint:'night',cast:[['cass',0.68,0.66,-1],['kairos',0.4,0.7,1],['ines',0.3,0.7,1]],cap:'Rooftops. Night. Bells. A figure in grey and red, swinging a chained iron censer. Fire drips from it.',
+    lines:[['cass','By order of the Office of Correction, the Unrecorded comes with me. The rest of you can go home.'],['ines','That’s generous.'],['cass','It’s not an offer.']]}]},
+  {mission:'cass',pick:3,prefer:['kairos','lucan','noemi'],title:'The Inquisitor',sub:'Sister Cass. She punishes standing still.'},
+  {cut:[{bg:'plaza',tint:'night',cast:[['cass',0.62,0.66,-1],['npc',0.82,0.78,-1,{col:VANEC}],['kairos',0.4,0.7,1]],cap:'A voice from the street below. Father Ambrose Vane, calm, robes immaculate.',
+    lines:[['vane','Sister. The building beneath them is a lodging house.'],['cass','Yes, Father.'],['vane','Burn it.'],['cass','There are people inside.'],['vane','Faithful people, who’ll be forgiven. Burn it.'],['n','Cass hesitates. Too long. Vane throws a flask himself. The roof catches fire.'],['kairos','No—']]}]},
+  {mission:'rescue'},
+  {fn:nx=>playCutscene([{bg:'plaza',tint:'night',cast:[['kairos',0.4,0.7,1],['cass',0.6,0.66,-1],['npc',0.25,0.78,1,{col:TESSA}]],cap:'Time snaps back.',
+    lines:[sq.flags.rescue_partial?['n','Most of the people are safe on the street. Not all. Cass is staring at Kairos.']:['n','The people are safe on the street. Cass is staring at Kairos.'],
+      ['cass',sq.flags.rescue_partial?'You went back in. Even when you knew you couldn’t get them all.':'You could’ve run.'],['kairos','So could you.'],['n','Cass looks down at Vane, then back at them. She lowers the censer.'],['cass','Go. Before I remember my orders.']]}],nx)},
+  // 37 · Scene 10 (camp)
+  {cut:[{bg:'lobby',tint:'night',fx:'rain',cap:'The abandoned clock tower of St. Hesper’s. The same dead clock from twenty years ago.',
+    cast:[['kairos',0.3,0.7,1],['lucan',0.42,0.68,-1],['ines',0.56,0.7,1],['bram',0.64,0.7,-1],['noemi',0.76,0.68,1],['theo',0.84,0.7,-1],['dess',0.18,0.66,1]],
+    lines:[['theo','So. Recap. Time stopped. You got magic fish swords. Rifts. A Vice core sang. The Church wants you. The government wants you. And you don’t forget anything.'],
+      ['kairos','When you say it like that it sounds bad.'],['theo','It sounds AMAZING.'],['noemi','Theo.'],['theo','Amazing and bad.']]}]},
+  {bondRef:1},
+  {lyraRef:1},
+  // 40 · Scene 11
+  {cut:[
+    {bg:'plaza',cap:'Festival Square. Banners. Music. Priests hand out cups of clear water from silver bowls.',cast:[['npc',0.5,0.66,1,{col:VANEC}],['npc',0.62,0.7,-1,{col:'#A0607A'}],['npc',0.67,0.74,-1,{col:TESSA}]],
+      lines:[['priest','Drink, and be forgiven. Drink, and let it go.'],['n','A mother drinks, smiles peacefully, and looks down at the toddler holding her skirt.'],['mother','…Whose child is this?']]},
+    {bg:'plaza',cast:[['cass',0.45,0.68,1],['npc',0.6,0.66,-1,{col:VANEC}]],
+      lines:[['vane','Sister. The line is waiting.'],['cass','She forgot her son.'],['vane','She forgot her pain. Her son came with it. That’s mercy.'],['cass','That’s not mercy. That’s a theft with a hymn over it.'],
+        ['vane','Cass.'],['cass','I’ve taken my vows seriously my whole life, Father. That’s exactly why I can’t stay.']]},
+    {bg:'plaza',cast:[['cass',0.6,0.7,-1],['kairos',0.42,0.7,1],['theo',0.3,0.7,1],['noemi',0.22,0.7,1]],
+      lines:[['cass','I don’t want to hear “told you so.”'],['kairos','I wasn’t going to.'],['theo','I was.'],['noemi','He wasn’t.']]},
+    {bg:'plaza',tint:'night',fx:'shake',focus:[0.5,0.4],cast:[['kairos',0.45,0.72,1],['cass',0.58,0.72,-1]],cap:'Overhead, the moon darkens. An eclipse. Every clock stops for one second. Then the sky splits into five rifts at once.',lines:[]}]},
+  {join:'cass'},
+  {mission:'festival',pick:3,prefer:['kairos','cass','noemi'],title:'Festival of the Mercy',sub:'All eight of you, for the first time. Choose your three.'},
+  {cut:[{bg:'plaza',tint:'night',cast:[['theo',0.4,0.7,1],['ines',0.55,0.7,-1],['lucan',0.68,0.7,-1]],
+    lines:[['theo','They’re not attacking. They’re migrating. Everything that came through is heading for the Registry.'],['ines','What’s in the Registry?'],['lucan','Every birth record in Meridian. And his blank one.']]}]},
+  {stacksRef:1},
+];
+const CH1_END=[
+  {bg:'plaza',cast:[['ines',0.4,0.7,1],['cass',0.52,0.7,-1],['bram',0.64,0.7,-1]],lines:[['ines','He knows. He just doesn’t care.'],['cass','Welcome to the Church’s side of things.']]},
+  {bg:'plaza',fx:'flash',cast:[['kairos',0.5,0.7,1,{glow:1}],['theo',0.64,0.7,-1]],cap:'Kairos is staring at the sunrise. His chest glows faintly.',lines:[['theo','Kairos. Where did it take him?'],['kairos','I don’t know. But I’m going to find out.']]},
+  {bg:'plaza',tint:'night',cap:'Another rooftop, across the city. A folder: KAIROS · BIRTH RECORD · (blank).',cast:[['npc',0.42,0.68,1,{col:'#2A2A3A'}],['npc',0.6,0.68,-1,{col:COAT}]],
+    lines:[['lyra','He used it twice. The minute. Horaios moved inside it.'],['hooded','He’s awake, then.'],['lyra','He asked me who I was.'],['hooded','Did you tell him?'],['lyra','No.']]},
+  {bg:'plaza',tint:'night',fx:'flash',focus:[0.6,0.55],cast:[['npc',0.6,0.68,-1,{col:COAT}],['voice',0.6,0.56,1,{scale:0.7}]],cap:'The man turns. On his chest, a mark glows: two fish circling a clock face with no hands.',lines:[['hooded','Good. It’s too early.']]},
+  {bg:'white',cast:[['lucan',0.5,0.7,1,{grey:1}]],cap:'Vision. A white room. Rows of desks. Lucan in a clerk’s uniform at Window 1.',lines:[['n','He reaches the line “NAME” and stops. Pen hovering. He doesn’t know what to write.']]},
+  {bg:'black',cap:'CHAPTER 2: THE ARCHIVE',lines:[['n','To be continued.']]},
+];
+function ch1Seq(){
+  // reuse the Phase 3 scenes (camp, Lyra, the Stacks, Horaios, the Moon Gate) so there is one copy of each
+  const P=PREVIEW3_SEQ,out=[];
+  for(const s of CH1_SEQ){
+    if(s.bondRef)out.push(P[1]);
+    else if(s.lyraRef)out.push(P[2]);
+    else if(s.stacksRef){out.push(P[3],P[4],P[5],P[6],P[7]);
+      out.push({cut:P[8].cut.concat(CH1_END)});}
+    else out.push(s);
+  }
+  return out;
+}
+let CH1=null;
+function startCh1(fresh){
+  ensureAudio();CH1=CH1||ch1Seq();
+  const sv=!fresh&&save.ch1&&!save.ch1.done?save.ch1:null;
+  runSeq(CH1,{roster:sv?sv.roster:['kairos'],flags:sv?sv.flags:{},i:sv?sv.i:0,save:'ch1',end:showCh1End});
+}
+function ch1Label(i){
+  const marks=[[0,'Cold open'],[1,'Scene 1 · The Boy Who Remembers'],[4,'Scene 2 · The Stopped Minute'],[6,'Scene 3 · Meridian Holds Its Breath'],[8,'Scene 4 · Garrison'],[13,'Scene 5 · Carry Him'],[15,'Scene 6 · St. Lucia’s'],
+    [20,'Scene 7 · The Concord Office'],[21,'Scene 8 · The Lab'],[30,'Scene 9 · The Inquisitor'],[35,'Scene 10 · The Clock Tower'],[38,'Scene 11 · Festival of the Mercy'],[42,'Scene 12 · The Registry'],[45,'Scene 13 · Intake Window 1']];
+  let l=marks[0][1];for(const [k,t] of marks)if(i>=k)l=t;return l;
+}
+function showCh1Menu(){
+  const sv=save.ch1,cont=sv&&!sv.done&&sv.i>0;
+  openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story','Chapter 1'),
+    h('h2',{style:'padding-right:0'},'The Minute Meridian Held Its Breath'),
+    h('p',{class:'lede'},cont?'Saved at: '+ch1Label(sv.i)+'. Party: '+sv.roster.map(nameOf).join(', ')+'.':(sv&&sv.done?'Chapter 1 complete. Play it again any time; your Bonds carry over.':'About 40 minutes. Progress saves at every scene, so you can stop any time.')),
+    h('div',{class:'row'},h('button',{class:'btn ghost',type:'button','data-back':'1',onclick:()=>goHome()},'Back'),
+      cont?h('button',{class:'btn ghost',type:'button',onclick:()=>{if(confirm('Start Chapter 1 over? Your saved scene is replaced (Bonds stay).'))startCh1(true);}},'Start over'):null,
+      h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>startCh1(!cont)},cont?'Continue':'Start Chapter 1'))));
+}
+function showCh1End(){
+  state='panel';save.ch1=Object.assign(save.ch1||{},{done:true,i:0});persist();
+  openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story','Chapter 1 complete'),h('div',{class:'stamp'},'Chapter 1'),
+    h('h2',null,'Then come get me'),
+    h('p',{class:'lede'},'Lucan is behind the Moon Gate, and the whole city is looking for you. Chapter 2, The Archive, is next.'),
+    h('p',{class:'serpent'},'Bonds: '+(CH_ORDER.filter(id=>bondOf(id)).map(id=>nameOf(id)+' '+bondHearts(bondOf(id))).join(' · ')||'none yet')),
+    h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>goHome()},'Home'))));
+}
+
 // ═══════════════════════════════════════════ panels (DOM)
 function h(tag,attrs,...kids){
   const e=document.createElement(tag);
@@ -3150,7 +3421,7 @@ function goHome(){
       h('button',{class:'btn outline',type:'button',onclick:()=>{ensureAudio();showBuilds(goHome);}},'Builds'),
       h('button',{class:'btn outline'+(loadPrefs().tutDone?'':' guide-new'),type:'button',onclick:()=>{ensureAudio();startTutorial();}},'Training'),
       h('button',{class:'btn outline'+(loadPrefs().guideSeen?'':' guide-new'),type:'button',onclick:()=>{ensureAudio();showGuide(goHome);}},'Guide')),
-    h('p',{class:'hint'},'New cast of 8! Chapter 1 is being rebuilt, but Story has a playable preview of the new scenes. Battle mode: pick any party of 3 and jump into any district, trial, or the boss.'),
+    h('p',{class:'hint'},'New: the full Chapter 1 with a cast of 8, about 40 minutes, saved at every scene. Battle mode: pick any party of 3 and jump into any district, trial, or the boss.'),
     h('p',{class:'hint'},isTouch?'Left thumb moves. Portraits on the left switch characters. Right thumb: ATTACK (tap or hold), DODGE, SUN, MOON, ULT.':'WASD move · J or click attack (hold to charge) · Space dodge · Q Sun · E Moon · R Ultimate · 1 2 3 switch · Esc pause'),
     h('p',{class:'hint'},'Sound plays only if your iPhone’s silent switch is off.'));
   openOverlay(card,'mode-title');
@@ -3725,13 +3996,7 @@ function showGuide(back,tab){
 function storySlot(id){const c=CHARS[id];return h('div',{class:'slot',style:'cursor:default'},portrait(id,44),h('span',{class:'nm'},nameOf(id)),h('span',{class:'rl '+ROLE_COL[c.roleKey]},c.role));}
 function showStoryStart(){
   state='title';room=null;boss=null;paused=false;playMusic('title');
-  if(!window.__oldStory){openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story','Chapter 1 · being rewritten'),
-    h('h2',{style:'padding-right:0'},'Chapter 1 is being rebuilt'),
-    h('p',{class:'lede'},'The new Chapter 1, “The Minute Meridian Held Its Breath”, is in progress with a new cast of 8. You can already play a preview of Scenes 2 to 6: cutscenes, the stopped minute, an escort, a hospital defense, plus a stealth and a rescue sample. A second preview covers Scenes 10 to 14: camp and Bonds, the split-team Stacks, and Horaios.'),
-    h('div',{class:'row'},h('button',{class:'btn ghost',type:'button','data-back':'1',onclick:()=>goHome()},'Back'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>showPartySelect('battle')},'Battle mode'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>startPreview3()},'Preview: camp to Horaios'),
-      h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>startPreview()},'Play the preview'))));return;}
+  if(!window.__oldStory){showCh1Menu();return;}
   openOverlay(h('div',{class:'form',style:'max-width:640px'},
     formHead('Story','Chapter 1 of 7'),
     h('h2',{style:'padding-right:0'},'Chapter 1 · Vigil'),
@@ -4039,6 +4304,7 @@ function drawAlly(a){
 
 // ═══════════════════════════════════════════ art: enemies + boss
 function drawEnemy(e){
+  if(e.cass&&!e.dead&&e.spawnT<=0){drawCassFoe(e);return;}
   if(e.dead||e.spawnT>0){drawEnemyBody(e);return;}
   const c=ctx,k=clamp((e.hitT||0)/0.14,0,1);
   if(k>0){c.save();c.translate(e.x+(e.hdx||0)*3*k,e.y+(e.hdy||0)*3*k);c.scale(1+0.22*k,1-0.2*k);c.translate(-e.x,-e.y);}
@@ -4699,7 +4965,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-window.__sf={preview3:()=>startPreview3(),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,preview:()=>startPreview(),mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+window.__sf={kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),preview3:()=>startPreview3(),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,preview:()=>startPreview(),mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
