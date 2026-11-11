@@ -1,0 +1,19 @@
+# Netlify: plain static site, no build step.
+[build]
+  publish = "."
+
+# Keep the game out of search engines: only people with the link can find it.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+# Always re-check the page and service worker so updates arrive quickly.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
