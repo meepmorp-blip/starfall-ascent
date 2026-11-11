@@ -818,8 +818,8 @@ const CHARS={
     kit:{
       entrance:{name:'Borrowed Hour',el:null,desc:'He has no Rising, so he copies the Entrance of whoever he switched from, at 120% power. If he enters first, he dashes in with a slash.'},
       basic:{name:'Twin Fish',tap:'A fast 5-hit combo with both blades. The 5th hit is a spinning double slash.',hold:'Current: a dash-slash through the nearest enemy that adds 2 Tide.'},
-      sun:{name:'Riptide',short:'RIPTIDE',el:'Water',cd:7,dur:0,desc:'Dashes through a line of enemies, adding 2 Tide to each, and leaves a slowing water trail.'},
-      moon:{name:'Shell',short:'SHELL',el:'Water',cd:9,dur:1.2,desc:'A short counter stance. If something hits him, he blocks it and releases a pulse that makes everyone nearby Drowsy.'},
+      sun:{name:'Riptide',short:'RIPTIDE',el:'Water',cd:5,dur:0,desc:'Dashes through a line of enemies for heavy damage (300%), adds 2 Tide to each, and leaves a slowing water trail.'},
+      moon:{name:'Shell',short:'SHELL',el:'Water',cd:6,dur:1.2,desc:'A short counter stance. If something hits him, he blocks it and releases a big pulse (320%) that makes everyone nearby Drowsy.'},
       combo:{name:'Trine · Flow',desc:'Riptide then Shell: half of Riptide’s cooldown comes back. Shell then Riptide: the dash hits twice.'},
       ult:{name:'The Unwritten Minute',short:'MINUTE',dur:8,desc:'Stops time for 1 second, then Overflow for 8s: +35% damage, +30% attack speed, and every dodge resets Riptide.'},
       p1:{name:'Foresight',desc:'His visions: enemy attack warnings appear earlier while he is on the field.'},
@@ -833,10 +833,10 @@ const CHARS={
     kit:{
       entrance:{name:'Overwatch Drop',el:'Fire',desc:'Fires one piercing shot as she lands. Everything it hits is Spotted.'},
       basic:{name:'Rifle',tap:'Slow, heavy single shots.',hold:'Headshot: a charged shot that pierces the whole line and always crits on Spotted enemies.'},
-      sun:{name:'Flare',short:'FLARE',el:'Earth',cd:9,dur:0,desc:'A flare round that Spots every enemy in a wide area.'},
-      moon:{name:'Smoke & Reposition',short:'SMOKE',el:'Water',cd:12,dur:4,desc:'Drops smoke and rolls back. While you stand in the smoke, most attacks miss you.'},
-      combo:{name:'Sextile · Crossfire',desc:'Flare then Smoke: the smoke Spots too. Smoke then Flare: the flare explodes for damage.'},
-      ult:{name:'Killzone',short:'KILLZONE',dur:8,desc:'For 8s her sniping (on or off the field) fires 3× faster, and Spotted gives +30% instead of +15%.'},
+      sun:{name:'Flare',short:'FLARE',el:'Earth',cd:9,dur:0,desc:'A flare round that Spots every enemy in a wide area. Spotted enemies take 15% more damage from everyone.'},
+      moon:{name:'Soaking Round',short:'SOAK',el:'Water',cd:11,dur:5,desc:'Fires a water shell and rolls back. The splash leaves a pool for 5s: enemies in it are slowed and take 10% more damage.'},
+      combo:{name:'Sextile · Crossfire',desc:'Flare then Soak: the pool Spots too. Soak then Flare: the flare explodes for damage.'},
+      ult:{name:'Killzone',short:'KILLZONE',dur:3,desc:'For 3s, on or off the field, she fires a heavy shot every 0.8s at the toughest enemy and Spots it.'},
       p1:{name:'Overwatch',desc:'While on the bench she snipes the strongest Spotted enemy (or the closest one) every 2 seconds.'},
       p2:{name:'Sergeant',desc:'While she is in the party, switching characters recharges faster (1s → 0.7s).'}}},
   bram:{id:'bram',name:'Bram',role:'Shielder · Control',roleKey:'shield',col:'#B08A52',who:'25 · corporal, Meridian Garrison',
@@ -846,27 +846,27 @@ const CHARS={
     rulers:{venus:'Taurus Sun',jupiter:'Sagittarius Rising'},
     mech:'Stagger: his hits deal light damage and fill an enemy’s Stagger bar. Full bar = stunned for 2s.',
     kit:{
-      entrance:{name:'Coming Through!',el:'Fire',desc:'Trips into the fight. The shockwave knocks everyone back and adds a lot of Stagger.'},
-      basic:{name:'Shield Bash',tap:'Heavy shoves with big knockback.',hold:'Plant: slams the shield down and briefly stuns everything nearby.'},
+      entrance:{name:'Coming Through!',el:'Fire',desc:'Trips into the fight. The shockwave knocks everyone back, deals a little damage and adds a lot of Stagger.'},
+      basic:{name:'Shield Bash',tap:'Heavy shoves: light damage, big knockback, fills Stagger.',hold:'Plant: slams the shield down and briefly stuns everything nearby.'},
       sun:{name:'Sandbag Wall',short:'WALL',el:'Earth',cd:12,dur:8,desc:'Builds a wall that blocks bullets and draws enemies to it.'},
-      moon:{name:'Hold the Line',short:'HOLD',el:'Water',cd:14,dur:8,desc:'Gives the active character a shield worth 25% of Bram’s HP. It stays when you switch.'},
+      moon:{name:'Hold the Line',short:'HOLD',el:'Water',cd:13,dur:10,desc:'Gives the active character a big shield worth 35% of Bram’s HP. It stays when you switch.'},
       combo:{name:'Sextile · Fortify',desc:'Walls and shields last 50% longer, and the wall knocks back anything that hits it.'},
       ult:{name:'Bram’s Stand',short:'STAND',dur:6,desc:'A shield dome for 6s. Enemies are pushed out and stunned; nobody inside can be pulled or knocked back.'},
-      p1:{name:'Oops',desc:'Every 10 seconds he stumbles by accident, and the little quake stuns enemies around him.'},
+      p1:{name:'Oops',desc:'Every 4 seconds, on the field or from the bench, he stumbles by accident: a little quake around the active character that deals light damage and adds Stagger.'},
       p2:{name:'Guard Duty',desc:'While on the bench he blocks one bullet aimed at the active character every 8 seconds.'}}},
   noemi:{id:'noemi',name:'Dr. Noemi Lark',short:'Noemi',role:'Healer · Buffer',roleKey:'heal',col:'#7BE0A8',who:'30 · ER doctor at St. Lucia’s',
     blurb:'Precise and permanently tired. Writes the things she’s afraid of forgetting on her arm. Married to Theo.',
     sun:'Virgo',moon:'Taurus',rising:'Cancer',aspect:'Trine',atkLabel:'DARTS',
     hp:90,atk:7,def:0.15,aspd:2.4,spd:152,range:'Mid',bars:{HP:3,ATK:1,DEF:3,ASPD:3,SPD:3,RANGE:3},
     rulers:{mercury:'Virgo Sun',venus:'Taurus Moon'},
-    mech:'Adrenaline: her heals also boost the team’s attack.',
+    mech:'Adrenaline: her skills heal and boost the team’s attack.',
     kit:{
       entrance:{name:'House Call',el:'Water',desc:'Heals the active character for 12% of their HP as she arrives.'},
-      basic:{name:'Dart Syringes',tap:'Light darts. Every 4th dart heals her a little.',hold:'Stim Shot: heals 8% and gives +15% attack speed to the team for 4s.'},
-      sun:{name:'Triage',short:'TRIAGE',el:'Earth',cd:12,dur:8,desc:'Heals the whole team for 18% (bench included) and gives +20% damage for 8s.'},
-      moon:{name:'Recovery Field',short:'FIELD',el:'Earth',cd:15,dur:6,desc:'A healing zone for 6s that slows enemies and protects the team from drain and pull.'},
+      basic:{name:'Dart Syringes',tap:'Light darts that deal small damage.',hold:'Spot Treatment: heals the one ally with the lowest HP (bench included) for 10%.'},
+      sun:{name:'Triage',short:'TRIAGE',el:'Earth',cd:12,dur:8,desc:'One quick heal for the whole team (8%), and +20% damage for 8s.'},
+      moon:{name:'Recovery Field',short:'FIELD',el:'Earth',cd:15,dur:6,desc:'A healing zone for 6s. Whoever stands in it heals 3% HP every second; the bench heals slowly too. Slows enemies.'},
       combo:{name:'Trine · Steady Hands',desc:'For 6s, any healing above full HP turns into a shield.'},
-      ult:{name:'Code Blue',short:'CODE BLUE',dur:10,desc:'Revives every downed ally at 40% HP, heals everyone 40%, and gives +25% damage for 10s. Revives every time.'},
+      ult:{name:'Code Blue',short:'CODE BLUE',dur:10,desc:'Revives every downed ally at 40% HP, heals everyone 40%, and gives +25% damage for 10s.'},
       p1:{name:'Notes on My Arm',desc:'Her healing is 30% stronger on anyone below 40% HP.'},
       p2:{name:'Lark & Lark',desc:'If Theo is in the party, every damage buff either of them gives lasts 50% longer.'}}},
   theo:{id:'theo',name:'Theo Lark',short:'Theo',role:'Support DPS · Inventor',roleKey:'sub',col:'#59DDEB',who:'31 · rift researcher nobody takes seriously',
@@ -874,61 +874,61 @@ const CHARS={
     sun:'Aquarius',moon:'Gemini',rising:'Leo',aspect:'Trine',atkLabel:'ZAP',
     hp:88,atk:8,def:0.12,aspd:2.6,spd:155,range:'Mid',bars:{HP:2,ATK:2,DEF:2,ASPD:4,SPD:3,RANGE:4},
     rulers:{saturn:'Aquarius Sun',uranus:'Aquarius Sun',mercury:'Gemini Moon'},
-    mech:'Prototypes: his turrets and drones keep fighting after he switches out.',
+    mech:'Calibrated: while a turret is up, he and his machines deal +20% damage.',
     kit:{
-      entrance:{name:'Field Test',el:'Fire',desc:'Drops a little zap drone that shocks enemies for 8s.'},
-      basic:{name:'Arc Pistol',tap:'Lightning shots that jump to 2 more enemies.',hold:'Deploy: places a small turret (up to 2).'},
-      sun:{name:'Prototype Turret',short:'TURRET',el:'Air',cd:13,dur:12,desc:'A big turret that fires for 12s.'},
-      moon:{name:'Overclock',short:'OVERCLOCK',el:'Air',cd:15,dur:8,desc:'Team +20% damage and +20% attack speed for 8s. Turrets and drones fire twice as fast.'},
-      combo:{name:'Trine · Eureka',desc:'The big turret gains a laser for the rest of its life.'},
+      entrance:{name:'Field Test',el:'Fire',desc:'Drops a little fan drone that blasts enemies with air for 8s.'},
+      basic:{name:'Air Pistol',tap:'Mid-range compressed-air shots. Aims itself at the nearest enemy.',hold:'Pressure Burst: a blast of air that hits up to 3 enemies at once.'},
+      sun:{name:'Wind Turret',short:'TURRET',el:'Air',cd:12,dur:12,desc:'Builds a turret that fires once a second at enemies in its range for 12s. It keeps working while Theo is on the bench.'},
+      moon:{name:'Overclock',short:'OVERCLOCK',el:'Air',cd:15,dur:8,desc:'Team +20% damage and +20% attack speed for 8s. His machines fire twice as fast.'},
+      combo:{name:'Trine · Eureka',desc:'His turrets last 50% longer.'},
       ult:{name:'Big Idea',short:'BIG IDEA',dur:12,desc:'Summons a walking machine that fights next to you with missiles for 12s.'},
-      p1:{name:'Workshop',desc:'His machines keep fighting while he is on the bench.'},
+      p1:{name:'Calibrated',desc:'While one of his turrets is up, everything Theo and his machines hit takes 20% more damage.'},
       p2:{name:'Show-off',desc:'When one of his machines gets a kill, the active character gains a little Ultimate energy.'}}},
   lucan:{id:'lucan',name:'Lucan Crane',short:'Lucan',role:'Main DPS · Long range',roleKey:'burst',col:'#BFE6FF',who:'19 · Council aide, the Chancellor’s adopted son',
     blurb:'Cold, controlled, and hard to reach. Grew up with Kairos in the orphanage, forgot him, and swore never to again.',
     sun:'Scorpio',moon:'Capricorn',rising:'Virgo',aspect:'Sextile',atkLabel:'SHARDS',
-    hp:92,atk:12,def:0.12,aspd:2.4,spd:160,range:'Long',bars:{HP:3,ATK:5,DEF:2,ASPD:3,SPD:4,RANGE:5},
+    hp:92,atk:12,def:0.12,aspd:1.4,spd:160,range:'Long',bars:{HP:3,ATK:5,DEF:2,ASPD:1,SPD:4,RANGE:5},
     rulers:{mars:'Scorpio Sun',saturn:'Capricorn Moon',mercury:'Virgo Rising'},
     mech:'Vow: with Kairos in the party, switching between them shields the one coming in, and Drowsy enemies take +25% from Lucan.',
     kit:{
-      entrance:{name:'Cold Entry',el:'Earth',desc:'Fires a fan of crystal shards and gives a small shield (8% HP).'},
-      basic:{name:'Shardwork',tap:'His rapier launches crystal needles: long range, precise.',hold:'Lance: a charged beam of crystal that pierces everything in a line.'},
-      sun:{name:'Pin',short:'PIN',el:'Water',cd:9,dur:0,desc:'A volley of shards that pins enemies in place for 1.5s.'},
-      moon:{name:'Composure',short:'COMPOSURE',el:'Earth',cd:12,dur:6,desc:'A small shield, and +30% crit chance for 6s.'},
-      combo:{name:'Sextile · Discipline',desc:'Pin then Composure: pinned enemies always take crits. Composure then Pin: twice as many shards.'},
-      ult:{name:'Glacier Verdict',short:'GLACIER',dur:3,desc:'Freezes a wide area in crystal for 2.5s, then shatters it for heavy damage.'},
+      entrance:{name:'Cold Entry',el:'Earth',desc:'Fires a fan of stone shards and gives a small shield (8% HP).'},
+      basic:{name:'Iceneedle',tap:'Slow, long-range ice needles that hit hard.',hold:'Lance: his main move. A charged spear of ice that pierces through every enemy in a line for heavy damage.'},
+      sun:{name:'Pin',short:'PIN',el:'Water',cd:9,dur:0,desc:'A volley of ice needles that pins enemies in place for 3s.'},
+      moon:{name:'Composure',short:'COMPOSURE',el:'Earth',cd:12,dur:6,desc:'A small stone shield, and +30% crit chance for 6s.'},
+      combo:{name:'Sextile · Discipline',desc:'Using both skills in a row: his crits deal 50% more damage for 6s.'},
+      ult:{name:'Petrify',short:'PETRIFY',dur:3,desc:'Turns every enemy in a wide area to stone for 3s, then shatters them for big damage.'},
       p1:{name:'Vow',desc:'With Kairos: switching between them shields the incoming one; Drowsy enemies take +25% from Lucan; once per fight, Lucan takes a killing blow meant for Kairos.'},
-      p2:{name:'Cold Precision',desc:'Shards deal +15% damage to targets far away.'}}},
-  cass:{id:'cass',name:'Sister Cass Vire',short:'Cass',role:'Healer · Sub DPS',roleKey:'heal',col:'#FF7A45',who:'21 · former agent of the Office of Correction',
+      p2:{name:'Cold Precision',desc:'Needles deal +15% damage to targets far away.'}}},
+  cass:{id:'cass',name:'Sister Cass Vire',short:'Cass',role:'Burn DPS · Healer',roleKey:'sub',col:'#FF7A45',who:'21 · former agent of the Office of Correction',
     blurb:'A true believer who saw what the Church calls mercy, and broke her chain. Fierce, blunt, all or nothing.',
     sun:'Sagittarius',moon:'Virgo',rising:'Aries',aspect:'Square',atkLabel:'CENSER',
     hp:105,atk:9,def:0.18,aspd:2.0,spd:156,range:'Mid',bars:{HP:4,ATK:3,DEF:3,ASPD:2,SPD:3,RANGE:2},
     rulers:{jupiter:'Sagittarius Sun',mercury:'Virgo Moon',mars:'Aries Rising'},
-    mech:'Holy Fire: enemies she sets burning heal the active character.',
+    mech:'Scorched: her burns hit hard, burning enemies take +10% damage, and allies take 10% less damage while she is in the party.',
     kit:{
       entrance:{name:'Charge of Faith',el:'Fire',desc:'Leaps in with a fire slam that sets everything nearby burning.'},
-      basic:{name:'Censer Swings',tap:'Wide flail swings that set enemies burning.',hold:'Thurible Spin: a spinning ring of fire.'},
-      sun:{name:'Penance',short:'PENANCE',el:'Fire',cd:10,dur:5,desc:'Hurls the censer like a meteor. The area burns for 5s.'},
-      moon:{name:'Absolution',short:'ABSOLVE',el:'Earth',cd:12,dur:0,desc:'Heals the active character 20% and cleanses them. Burning enemies nearby take extra damage.'},
+      basic:{name:'Censer Swings',tap:'Wide flail swings that set enemies burning.',hold:'Thurible Spin: a spinning ring of fire that burns longer.'},
+      sun:{name:'Penance',short:'PENANCE',el:'Fire',cd:10,dur:6,desc:'Hurls the censer like a meteor. The area burns for 6s.'},
+      moon:{name:'Absolution',short:'ABSOLVE',el:'Earth',cd:12,dur:0,desc:'A small heal on the active character (12%) and a cleanse. Every burning enemy nearby takes a burst of fire damage.'},
       combo:{name:'Square · Zeal',desc:'Penance then Absolution: double heal. Absolution then Penance: double fire.'},
-      ult:{name:'Burn the Mercy',short:'MERCY',dur:0,desc:'A wave of fire across the field. Heals the team for every enemy it hits.'},
-      p1:{name:'Vigil Flame',desc:'While she is on the bench, enemies that get close to the active character catch fire, and every burning enemy nearby heals them.'},
-      p2:{name:'Recant',desc:'She takes 20% less damage while standing in her own fire.'}}},
-  dess:{id:'dess',name:'Dess Marr',short:'Dess',role:'Shielder · Sub DPS',roleKey:'shield',col:'#9BD4FF',who:'20 · lab assistant, Dr. Marr’s daughter',
+      ult:{name:'Burn the Mercy',short:'MERCY',dur:0,desc:'A wave of fire across the field that sets everything burning, and one heal for the team (15%).'},
+      p1:{name:'Scorched',desc:'Her burns hurt much more than normal fire, and burning enemies take 10% more damage from everyone.'},
+      p2:{name:'Sanctuary',desc:'While she is in the party, every ally takes 10% less damage.'}}},
+  dess:{id:'dess',name:'Dess Marr',short:'Dess',role:'Support · Buffer',roleKey:'heal',col:'#9BD4FF',who:'20 · lab assistant, Dr. Marr’s daughter',
     blurb:'Nervous, brilliant and guilty. She learned what her father keeps on his shelves, and took them with her.',
     sun:'Cancer',moon:'Libra',rising:'Gemini',aspect:'Square',atkLabel:'PULSE',
     hp:110,atk:8,def:0.2,aspd:2.4,spd:150,range:'Mid',bars:{HP:4,ATK:2,DEF:4,ASPD:3,SPD:3,RANGE:3},
     rulers:{venus:'Libra Moon',mercury:'Gemini Rising'},
-    mech:'Released Memories: she frees the memories inside Vice cores as spirits that fight beside you, even after she switches out.',
+    mech:'Pure support: she barely fights, but makes everyone else hit harder, crit harder and charge their Ultimates faster.',
     kit:{
-      entrance:{name:'Unlocked',el:'Air',desc:'Releases 2 memory spirits that circle the active character and attack.'},
-      basic:{name:'Core Pulse',tap:'Small pulses of light from a core.',hold:'Release: frees a spirit that keeps fighting (up to 4).'},
-      sun:{name:'Memory Barrier',short:'BARRIER',el:'Water',cd:12,dur:8,desc:'Shields the active character for 15% of their HP, +5% for each spirit.'},
-      moon:{name:'Balance',short:'BALANCE',el:'Air',cd:12,dur:0,desc:'All spirits burst for damage, and the team heals a little for each one.'},
-      combo:{name:'Square · Torn',desc:'Barrier then Balance: the bursts also stun. Balance then Barrier: double shield.'},
-      ult:{name:'Recollection',short:'RECALL',dur:12,desc:'Releases 8 spirits at once and shields the whole team.'},
-      p1:{name:'Guardians',desc:'Her spirits keep fighting while she is on the bench.'},
-      p2:{name:'Apology',desc:'When a spirit fades, it sometimes returns a lost memory: a short damage boost and a line from someone’s forgotten life.'}}},
+      entrance:{name:'Unlocked',el:'Air',desc:'Gives the active character a small shield (10% HP) as she arrives.'},
+      basic:{name:'Core Pulse',tap:'Weak pulses of light from a core.',hold:'Calm Pulse: a soft wave that nudges nearby enemies away. That’s it.'},
+      sun:{name:'Tidal Focus',short:'FOCUS',el:'Water',cd:14,dur:10,desc:'All allies deal 20% more damage for 10s.'},
+      moon:{name:'Clear Sky',short:'CLEAR',el:'Air',cd:14,dur:10,desc:'All allies deal 40% more crit damage for 10s.'},
+      combo:{name:'Square · Insight',desc:'Using both skills in a row: allies get +15% crit chance for 10s.'},
+      ult:{name:'Recollection',short:'RECALL',dur:8,desc:'A wave of memories that deals small damage and Marks every enemy it hits for 8s: they take 10% more damage.'},
+      p1:{name:'Steady Hands',desc:'While she is in the party, all allies gain Pneuma 20% faster.'},
+      p2:{name:'Team Notes',desc:'While she is in the party, every ally deals 5% more damage.'}}},
 };
 const CH_ORDER=['kairos','ines','bram','noemi','theo','lucan','cass','dess'];
 
@@ -1056,9 +1056,9 @@ const STARS={
     15:[['Deep Shell','Shell recharges 25% faster.',{moonCd:0.75}],['High Tide','All his skills hit 15% harder.',{sunMul:1.15,moonMul:1.15}]],
     20:[['Overtime','Overflow lasts 3s longer.',{ultDur:3}],['Final Second','Overflow damage hits 25% harder.',{ultMul:1.25,basicMul:1.05}]]},
   ines:{5:[['Steady Aim','Basic shots hit 20% harder.',{basicMul:1.2}],['Spotter','Flare recharges 25% faster.',{sunCd:0.75}]],
-    10:[['Hot Flare','Flare explosions hit 50% harder.',{sunMul:1.5}],['Thick Smoke','Smoke recharges 25% faster.',{moonCd:0.75}]],
+    10:[['Hot Flare','Flare explosions hit 50% harder.',{sunMul:1.5}],['Deep Water','Soaking Round recharges 25% faster.',{moonCd:0.75}]],
     15:[['Patience','Every hit she lands deals 10% more.',{basicMul:1.1,sunMul:1.1}],['Field Medic','Healing on her is 25% stronger.',{healMul:1.25}]],
-    20:[['Long Watch','Killzone lasts 3s longer.',{ultDur:3}],['Overkill','Damage during Killzone +20%.',{ultMul:1.2,basicMul:1.05}]]},
+    20:[['Long Watch','Killzone lasts 2s longer.',{ultDur:2}],['Overkill','Damage during Killzone +20%.',{ultMul:1.2,basicMul:1.05}]]},
   bram:{5:[['Heavy Hands','Bashes fill Stagger 30% faster.',{basicMul:1.3}],['Big Wall','Walls are 40% tougher and last longer.',{sunMul:1.4}]],
     10:[['Quick Wall','Sandbag Wall recharges 25% faster.',{sunCd:0.75}],['Thick Skin','Shields he gives are 30% stronger.',{shieldMul:1.3}]],
     15:[['Hold Fast','Hold the Line recharges 25% faster.',{moonCd:0.75}],['Bear Hug','Shields he gives are 20% stronger.',{shieldMul:1.2}]],
@@ -1067,40 +1067,40 @@ const STARS={
     10:[['Overdose','Triage heals 30% more.',{sunMul:1.3}],['Rounds','Triage recharges 25% faster.',{sunCd:0.75}]],
     15:[['Wide Field','Recovery Field recharges 25% faster.',{moonCd:0.75}],['Good Hands','All healing +15%.',{healMul:1.15}]],
     20:[['Second Opinion','Code Blue buffs last 4s longer.',{ultDur:4}],['Bedside Manner','All healing +20%.',{healMul:1.2}]]},
-  theo:{5:[['Live Wire','Arc Pistol hits 20% harder.',{basicMul:1.2}],['Spare Parts','His machines deal 20% more damage.',{summonMul:1.2}]],
-    10:[['Version 2','The big turret lasts 40% longer.',{sunMul:1.4}],['Quick Build','Prototype Turret recharges 25% faster.',{sunCd:0.75}]],
+  theo:{5:[['Tailwind','Air Pistol hits 20% harder.',{basicMul:1.2}],['Spare Parts','His machines deal 20% more damage.',{summonMul:1.2}]],
+    10:[['Version 2','The turret lasts 40% longer.',{sunMul:1.4}],['Quick Build','Prototype Turret recharges 25% faster.',{sunCd:0.75}]],
     15:[['Overclocker','Overclock recharges 25% faster.',{moonCd:0.75}],['Tuned','His machines deal 20% more damage.',{summonMul:1.2}]],
     20:[['Bigger Idea','Big Idea lasts 4s longer.',{ultDur:4}],['Missile Rain','Big Idea’s missiles hit 30% harder.',{summonMul:1.15,ultMul:1.3}]]},
   lucan:{5:[['Fine Point','Shards hit 15% harder.',{basicMul:1.15}],['Long Lance','Lance hits harder.',{basicMul:1.1}]],
     10:[['Pinpoint','Pin hits 35% harder.',{sunMul:1.35}],['Quick Pin','Pin recharges 25% faster.',{sunCd:0.75}]],
-    15:[['Ice Armor','Composure shields are 40% stronger.',{shieldMul:1.4}],['Cold Focus','Composure recharges 25% faster.',{moonCd:0.75}]],
-    20:[['Long Winter','Glacier Verdict shatters 30% harder.',{ultMul:1.3}],['Oathkeeper','Every hit he lands deals 10% more.',{basicMul:1.1,sunMul:1.1}]]},
+    15:[['Stone Skin','Composure shields are 40% stronger.',{shieldMul:1.4}],['Cold Focus','Composure recharges 25% faster.',{moonCd:0.75}]],
+    20:[['Bedrock','Petrify shatters 30% harder.',{ultMul:1.3}],['Oathkeeper','Every hit he lands deals 10% more.',{basicMul:1.1,sunMul:1.1}]]},
   cass:{5:[['Zealot','Censer swings hit 20% harder.',{basicMul:1.2}],['Gentle Flame','Her heals are 20% stronger.',{healMul:1.2}]],
     10:[['Wildfire','Penance burns 40% harder.',{sunMul:1.4}],['Quick Penance','Penance recharges 25% faster.',{sunCd:0.75}]],
     15:[['Grace','Absolution heals 30% more.',{moonMul:1.3}],['Confession','Absolution recharges 25% faster.',{moonCd:0.75}]],
     20:[['Inferno','Burn the Mercy hits 30% harder.',{ultMul:1.3}],['Sanctuary','Burn the Mercy heals 30% more.',{healMul:1.3}]]},
-  dess:{5:[['Bright Core','Pulses hit 20% harder.',{basicMul:1.2}],['Kind Spirits','Spirits deal 20% more damage.',{summonMul:1.2}]],
-    10:[['Thick Barrier','Memory Barrier is 30% stronger.',{shieldMul:1.3}],['Quick Barrier','Memory Barrier recharges 25% faster.',{sunCd:0.75}]],
-    15:[['Loud Memories','Balance bursts hit 40% harder.',{moonMul:1.4}],['Quiet Mind','Balance recharges 25% faster.',{moonCd:0.75}]],
-    20:[['Total Recall','Recollection spirits deal 25% more damage.',{summonMul:1.25}],['Remembered','Recollection shields are 30% stronger.',{shieldMul:1.3}]]},
+  dess:{5:[['Bright Core','Pulses hit 20% harder.',{basicMul:1.2}],['Gentle Hands','Her entrance shield is 30% stronger.',{shieldMul:1.3}]],
+    10:[['Deep Focus','Tidal Focus lasts 30% longer.',{sunMul:1.3}],['Quick Focus','Tidal Focus recharges 25% faster.',{sunCd:0.75}]],
+    15:[['Wide Sky','Clear Sky lasts 30% longer.',{moonMul:1.3}],['Quiet Mind','Clear Sky recharges 25% faster.',{moonCd:0.75}]],
+    20:[['Total Recall','Recollection hits 40% harder.',{ultMul:1.4}],['Remembered','Recollection hits 20% harder.',{ultMul:1.2}]]},
 };
 const KIT_INFO={
-  kairos:{tldr:'Close-range damage. Stack Tide with your hits until enemies go Drowsy, dodge at the last moment, and save the Minute for when you need a second to breathe.',
-    entrance:['Copies an Entrance ×120%'],basic:['85% ATK ×4','5th: spin 170%','Hold: dash 180%'],sun:['Dash 200% ATK','+2 Tide'],moon:['Counter pulse 220%','Makes Drowsy'],ult:['Stops time 1s','+35% damage, 8s']},
-  ines:{tldr:'Sniper support. Spot enemies so the whole team hits harder, then switch out: she keeps sniping from the bench.',
-    entrance:['Piercing shot 200%','Spots'],basic:['160% ATK per shot','Hold: 320% pierce'],sun:['Spots an area','Combo: explosion 250%'],moon:['Smoke: attacks miss you'],ult:['Sniping ×3 speed','Spotted +30%']},
-  bram:{tldr:'The wall. Only light damage, but knocks enemies away, stuns them, blocks bullets and shields whoever is fighting.',
-    entrance:['Big knockback','Heavy Stagger'],basic:['No damage','Stagger 34 per hit','Hold: stun 1.1s'],sun:['Wall blocks bullets','Draws enemies'],moon:['Shield 25% of Bram’s HP'],ult:['Dome 6s','Pushes out + stuns']},
-  noemi:{tldr:'The doctor. Heals everyone, even the bench, boosts the team’s damage, and her Ultimate revives anyone who is down, every single time.',
-    entrance:['Heal 12%'],basic:['100% ATK darts','Hold: heal 8% + speed'],sun:['Heal team 18%','+20% damage 8s'],moon:['Healing zone 6s','Blocks drain/pull'],ult:['Revive all','Heal 40% · +25% damage']},
-  theo:{tldr:'The inventor. Build turrets and drones that keep fighting after you switch out, and overclock the whole team.',
-    entrance:['Zap drone 8s'],basic:['95% ATK, chains ×2','Hold: small turret'],sun:['Big turret 12s'],moon:['+20% damage & speed','Machines ×2 fire rate'],ult:['Walking machine 12s']},
-  lucan:{tldr:'Long-range damage. Pin enemies in place, stay calm behind small shields, and fight back to back with Kairos.',
-    entrance:['Shard fan 90% ×5','Shield 8%'],basic:['105% ATK shards','Hold: 320% beam'],sun:['5 shards 110% each','Pin 1.5s'],moon:['Shield 12%','+30% crit'],ult:['Freeze 2.5s','Shatter 500%']},
-  cass:{tldr:'Fire and faith. Set enemies burning, heal through the flames, and keep the active character alive from the bench.',
-    entrance:['Fire slam 140%','Burns'],basic:['100% ATK, burns','Hold: spin 170%'],sun:['Fire area 5s'],moon:['Heal 20%','Burning foes take 150%'],ult:['Fire wave 300%','Heals per enemy hit']},
-  dess:{tldr:'Memories and shields. Release spirits that fight on their own, then trade them for shields or a healing burst.',
-    entrance:['2 spirits'],basic:['95% ATK pulse','Hold: release a spirit'],sun:['Shield 15% + 5% per spirit'],moon:['Spirits burst 130%','Heal 2% each'],ult:['8 spirits','Team shield 20%']},
+  kairos:{tldr:'Main damage. Close range, strong skills on short cooldowns. Stack Tide until enemies go Drowsy, dodge at the last moment.',
+    entrance:['Copies an Entrance ×120%'],basic:['85% ATK ×4','5th: spin 170%','Hold: dash 180%'],sun:['Dash 300% ATK','+2 Tide · 5s cd'],moon:['Counter pulse 320%','Makes Drowsy · 6s cd'],ult:['Stops time 1s','+35% damage, 8s']},
+  ines:{tldr:'Sniper sub-DPS. Spot enemies so the whole team hits 15% harder, soak them to slow them, then switch out: she keeps sniping.',
+    entrance:['Piercing shot 200%','Spots'],basic:['160% ATK per shot','Hold: 320% pierce'],sun:['Spots an area (+15%)','Combo: explosion 250%'],moon:['Water pool 5s','Slow · +10% damage taken'],ult:['3s: 240% shot every 0.8s','Works off-field']},
+  bram:{tldr:'The wall. Light damage, big shields, knockback and Stagger. Even on the bench he stumbles into enemies every 4s.',
+    entrance:['Big knockback','Heavy Stagger'],basic:['Light damage','Stagger 34 per hit','Hold: stun 1.1s'],sun:['Wall blocks bullets','Draws enemies'],moon:['Shield 35% of Bram’s HP'],ult:['Dome 6s','Pushes out + stuns']},
+  noemi:{tldr:'The doctor. Heals, boosts attack, does little damage. Hold to heal whoever is lowest, even on the bench.',
+    entrance:['Heal 12%'],basic:['70% ATK darts','Hold: heal lowest ally 10%'],sun:['Heal team 8% once','+20% damage 8s'],moon:['Zone 6s','Heals 3%/s'],ult:['Revive all','Heal 40% · +25% damage']},
+  theo:{tldr:'The inventor. Air pistol that aims itself, bursts that hit 3 enemies, and a wind turret that keeps working after you switch out.',
+    entrance:['Fan drone 8s'],basic:['100% ATK, auto-aim','Hold: 150% ×3 enemies'],sun:['Turret 12s','1 shot/s, short range'],moon:['+20% damage & speed','Machines ×2 fire rate'],ult:['Walking machine 12s']},
+  lucan:{tldr:'Long-range damage built around the charged Lance. Slow, heavy needles; pin enemies, then pierce the whole line.',
+    entrance:['Stone fan 90% ×5','Shield 8%'],basic:['160% ATK, slow','Hold: 440% pierce'],sun:['6 needles 110% each','Pin 3s'],moon:['Shield 12%','+30% crit'],ult:['Petrify 3s','Shatter 600%']},
+  cass:{tldr:'Burn damage. Sets everything on fire; burning enemies take more damage and allies take less. Small heals.',
+    entrance:['Fire slam 140%','Burns'],basic:['90% ATK, burns','Hold: spin 150%, long burn'],sun:['Fire area 6s'],moon:['Heal 12%','Burning foes take 200%'],ult:['Fire wave 300%','Team heal 15% once']},
+  dess:{tldr:'Pure support. Weak attacks, but she makes the whole team hit harder, crit harder and charge Ultimates faster.',
+    entrance:['Shield 10%'],basic:['50% ATK pulse','Hold: small push'],sun:['Team +20% damage 10s'],moon:['Team +40% crit damage 10s'],ult:['Small damage','Marks: +10% taken, 8s']},
 };
 const CHAR_FIT={
   kairos:{t:{tide:2,soak:2,quick:2,fury:2,mirror:1,swift:1,gust:1},why:'fast blade work, slows and dodges'},
@@ -1114,13 +1114,13 @@ const CHAR_FIT={
 };
 const CHAR_HOW={
   kairos:['Stay close and keep cutting. Your hits add Tide; at 3 stacks enemies go Drowsy and slow to a crawl.',['Riptide through a group','Shell right before a hit','Ult when overwhelmed']],
-  ines:['Stay far back. Spot enemies so everyone hits harder, then switch out: she keeps sniping.',['Flare a group','switch to a damage dealer','Killzone for bosses']],
+  ines:['Stay far back. Spot and soak enemies so everyone hits harder, then switch out: she keeps sniping.',['Flare a group','Soak them','Killzone works from the bench']],
   bram:['Light damage only: knock enemies away, stun them, and shield whoever fights next.',['Wall in front of shooters','Hold the Line','switch to damage']],
-  noemi:['Heal and buff, then switch out. Her Ultimate revives everyone who is down.',['Triage before a big fight','Field when it gets messy','Code Blue to undo a disaster']],
-  theo:['Set up machines, then switch out and let them work.',['Hold: 2 small turrets','Sun: big turret','Moon: Overclock']],
-  lucan:['Shoot from far away. Pin enemies, then finish them. Best next to Kairos.',['Pin a group','Composure','Lance the pinned ones']],
-  cass:['Set everything on fire. Burning enemies keep the team alive.',['Penance a group','fight inside it','Absolution when hurt']],
-  dess:['Release spirits, let them fight, then spend them on shields or a burst.',['Hold ×3: spirits','Sun: shield','Moon: burst + heal']],
+  noemi:['Heal and buff, then switch out. Hold attack to heal whoever is lowest.',['Triage before a big fight','Field when it gets messy','Code Blue to undo a disaster']],
+  theo:['Drop a turret, then switch out and let it work. Hold attack to hit 3 at once.',['Sun: turret','Moon: Overclock','Hold: Pressure Burst']],
+  lucan:['Stay far back and charge the Lance. Pin enemies, then pierce the whole line.',['Pin a group','Composure','Lance the pinned ones']],
+  cass:['Set everything on fire. Burning enemies take more damage and allies take less.',['Penance a group','swing inside it','Absolution to detonate']],
+  dess:['Buff, then switch out. Use both skills for extra crit chance.',['Sun: team damage','Moon: crit damage','Ult: Mark them']],
 };
 const CHART_DEG={kairos:{sun:18,moon:9,rising:null},ines:{sun:24,moon:6,rising:12},bram:{sun:3,moon:21,rising:27},noemi:{sun:14,moon:11,rising:2},
   theo:{sun:8,moon:16,rising:25},lucan:{sun:29,moon:4,rising:19},cass:{sun:11,moon:26,rising:7},dess:{sun:20,moon:13,rising:5}};
@@ -1399,7 +1399,7 @@ function effDef(p){return Math.min(0.85,p.def+(team.benedT>0?0.2:0));}
 function effAspd(p){return p.aspd*(1+0.1*blv('mercury'))*(1+(p.bfx.aspd||0))*(team.tailwind>0?1.15:1)*(p.id==='kairos'&&p.ultT>0?1.3:1)*(team.stim>0?1.15:1)*(team.overclock>0?1.2:1);}
 function effSpeed(p){return missionSpeed(p)*p.speed*(1+(p.bfx.spd||0))*(team.tailwind>0?1.1:1)*(room&&room.def.rule==='rush'?1.25:1);}
 // every character has their own Ultimate meter: the active one fills at full rate, the bench at 40%
-function gainPn(v){const k=1;for(const m of team.members){if(m.down)continue;const a=v*k*(m===player?1:0.4)*(1+(m.bfx.pn||0));m.pn=Math.min(team.maxPn,(m.pn||0)+a);}}
+function gainPn(v){const k=inParty('dess')?1.2:1;for(const m of team.members){if(m.down)continue;const a=v*k*(m===player?1:0.4)*(1+(m.bfx.pn||0));m.pn=Math.min(team.maxPn,(m.pn||0)+a);}}
 function consumeSwift(){const s=player.swift;player.swift=0;return s;}
 function heal(m,amt,o={}){
   if(!m||m.down||amt<=0)return 0;
@@ -1523,23 +1523,31 @@ function playerHit(t,dmg,o={}){
   let m=(room&&room.dmgMult)||1;
   if(room&&room.spot&&dist(player,room.spot)<room.spot.r) m*=2;
   if(o.mult) m*=o.mult;
-  if(t.markT>0) m*=1+(team.killzone>0?0.3:0.15);
+  if(t.markT>0) m*=1.15;
   if(t.anaT>0) m*=1.15;
   if(team.atkBuffT>0)m*=1+team.atkBuffV;
+  if(team.dessDmgT>0)m*=1.2;
+  if(inParty('dess'))m*=1.05;
+  if(t.dmarkUntil>T)m*=1.1;
+  if(t.soakUntil>T)m*=1.1;
+  if(t.burnT>0&&inParty('cass'))m*=1.1;
+  if(src&&src.id==='theo'&&allies.some(a=>a.kind==='turret'&&!a.dead))m*=1.2;
+  if(team.crT>0&&!o.crit&&rand()<0.15)o=Object.assign({},o,{crit:true});
   if(src&&src.id&&STARS[src.id]){const F=starFx(src);if(o.basic)m*=F.basicMul;if(o.skill==='sun')m*=F.sunMul;else if(o.skill==='moon')m*=F.moonMul;else if(o.skill==='ult')m*=F.ultMul;
     if(src.id==='kairos'&&src.ultT>0)m*=1.35;
     if(t.drowsyT>0){if(src.id==='kairos')m*=1.15;if(src.id==='lucan'&&inParty('kairos'))m*=1.25;}
     if(src.id==='lucan'&&o.shard&&dist(src,t)>200)m*=1.15;}
   if((o.critMarked&&t.markT>0)||(src&&src.id==='lucan'&&((src.critT>0&&rand()<0.3)||t.pinCritT>0)))o=Object.assign({},o,{crit:true});
   if(o.basic){const lv=blv('mars');if(lv>0){if(player.marsT===t)player.marsS=Math.min(5,player.marsS+1);else{player.marsT=t;player.marsS=1;}m*=1+(0.06*lv+(rul('mars')?0.03:0))*player.marsS;}}
-  if(o.crit){m*=2;addText(t.x,t.y-(t.r||20)-10,'CRIT',C.gold,11);}
+  if(o.crit){m*=2+(team.cdmgT>0?0.4:0)+(src&&src.cdmgT>0?0.5:0);addText(t.x,t.y-(t.r||20)-10,'CRIT',C.gold,11);}
   dmg*=m;
   if(o.pn) gainPn(o.pn);
   const sfx2=src.bfx||{};
   if(sfx2.dmgPct) dmg*=1+sfx2.dmgPct;
   if(sfx2.heat&&t.burnT>0) dmg*=1+sfx2.heat;
   if(o.basic&&sfx2.ignite&&rand()<sfx2.ignite) o=Object.assign({},o,{burn:Math.max(o.burn||0,2)});
-  if(o.burn){t.burnT=Math.max(t.burnT||0,o.burn);t.burnMul=Math.max(t.burnMul||1,1+(sfx2.burnMult||0));}
+  if(o.dmark)t.dmarkUntil=T+8;
+  if(o.burn){t.burnT=Math.max(t.burnT||0,o.burn);t.burnDmg=Math.max(t.burnDmg||0,src&&src.id==='cass'?src.atk*0.7:3);t.burnMul=Math.max(t.burnMul||1,1+(sfx2.burnMult||0));}
   if(o.mark) t.markT=6;
   if(o.ana) t.anaT=8;
   if(o.indict){t.ind=Math.min(3,(t.ind||0)+o.indict);t.indT=8;}
@@ -1610,7 +1618,7 @@ function updateEnemies(dt){
     if(e.indT>0){e.indT-=dt;if(e.indT<=0)e.ind=0;}
     if(e.shMax){if(e.shRegen>0)e.shRegen-=dt;else e.sh=Math.min(e.shMax,e.sh+e.shMax*0.25*dt);}
     if(e.spawnT>0){e.spawnT-=dt;continue;}
-    if(e.burnT>0){e.burnT-=dt;e.burnAcc+=dt;if(rand()<0.3)part(e.x+rr(-e.r,e.r),e.y-rr(0,e.r),rr(-10,10),-rr(30,60),0.4,C.fire,2);if(e.burnAcc>=0.5){e.burnAcc=0;hitEnemy(e,3*(e.burnMul||1),C.fire);if(e.dead)continue;}}
+    if(e.burnT>0){e.burnT-=dt;e.burnAcc+=dt;if(rand()<0.3)part(e.x+rr(-e.r,e.r),e.y-rr(0,e.r),rr(-10,10),-rr(30,60),0.4,C.fire,2);if(e.burnAcc>=0.5){e.burnAcc=0;hitEnemy(e,(e.burnDmg||3)*(e.burnMul||1),C.fire);if(e.dead)continue;}}
     const slow=e.drowsyT>0?0.25:(e.slowT>0?0.5:1); if(e.slowT>0) e.slowT-=dt;
     e.x+=e.kx*dt; e.y+=e.ky*dt; const kd=Math.max(0,1-9*dt); e.kx*=kd; e.ky*=kd;
     if(e.stunT>0){e.stunT-=dt;if(e.stunT<=0&&e.st==='stun'){e.st='walk';e.cd=rr(0.8,1.4);}clampE(e);contact(e,dt);continue;}
@@ -1802,7 +1810,7 @@ const KITS={
       p.x=clamp(p.x+a.x*5,AX0+p.r,AX1-p.r);p.y=clamp(p.y+a.y*5,AY0+p.r,AY1-p.r);p.atkCd=1/effAspd(p);sfx('slash');},
     hold(p){p.lastAtkT=T;const t=nearestTarget(p.x,p.y,150,null);const a=t?(()=>{const dx=t.x-p.x,dy=t.y-p.y,d=Math.hypot(dx,dy)||1;return {x:dx/d,y:dy/d};})():aimDir(150);faceTo(a);
       startDash(a,{dist:t?Math.min(150,Math.hypot(t.x-p.x,t.y-p.y)+20):110,time:0.14,kind:'current',dmg:p.atk*1.8,mult:1+consumeSwift(),knock:120,basic:true,tide:2});p.atkCd=0.45;sfx('heavy');},
-    sun(p,combo){const a=aimDir(220);faceTo(a);startDash(a,{dist:170,time:0.18,kind:'riptide',dmg:p.atk*2,knock:90,tide:2,skill:'sun',twice:combo});
+    sun(p,combo){const a=aimDir(220);faceTo(a);startDash(a,{dist:170,time:0.18,kind:'riptide',dmg:p.atk*3,knock:90,tide:2,skill:'sun',twice:combo});
       zones.push({kind:'slowpool',x:p.x+a.x*85,y:p.y+a.y*85,r:70,t:3,max:3});sfx('splash');},
     moon(p,combo){p.counterT=1.2;p.countered=false;ring(p.x,p.y,40,C.water,0.4);if(combo)p.cd.sun=Math.max(0,p.cd.sun*0.5);},
     ult(p){team.timeStop=1.0;sfx('clock');burstParts(p.x,p.y,'#7FE3F0',40,240);},
@@ -1816,91 +1824,94 @@ const KITS={
     hold(p){const a=aimDir(600);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*3.2,mult:1+consumeSwift(),basic:true,spd:1100,r:6,life:0.8,pierce:true,big:true,kind:'arrow',src:p,pn:2,col:'#FFE6A3',knock:200,critMarked:true}));p.atkCd=0.5;sfx('laser');shake(3,0.08);},
     sun(p,combo){const at=aimPoint(p,420);let n=0;for(const t of allTargets())if(Math.hypot(t.x-at.x,t.y-at.y)<130){t.markT=8;n++;}
       ring(at.x,at.y,130,C.gold,0.6);burstParts(at.x,at.y,C.gold,20,160);
-      if(combo){radial(at.x,at.y,120,p.atk*2.5,{skill:'sun',burn:2,col:C.fire,src:p});shake(4,0.12);}
+      if(combo){radial(at.x,at.y,120,p.atk*2.5,{skill:'sun',col:C.gold,src:p});shake(4,0.12);}
       sfx('spark');},
-    moon(p,combo){zones.push({kind:'smoke',x:p.x,y:p.y,r:85,t:4*(1),max:4,mark:combo});
-      if(combo)for(const t of allTargets())if(Math.hypot(t.x-p.x,t.y-p.y)<95)t.markT=8;
-      const bx=-p.fx,by=-p.fy;p.dodgeT=0.18;p.dvx=bx*420;p.dvy=by*420;p.iframe=Math.max(p.iframe,0.3);sfx('dodge');},
-    ult(p){team.killzone=8+starFx(p).ultDur;sfx('ult');},
+    moon(p,combo){const at=aimPoint(p,300);zones.push({kind:'soak',x:at.x,y:at.y,r:90,t:5,max:5,mark:combo,src:p});radial(at.x,at.y,90,p.atk*1.2,{skill:'moon',slow:2,col:C.water,src:p,mark:combo});
+      burstParts(at.x,at.y,C.water,22,170);
+      const bx=-p.fx,by=-p.fy;p.dodgeT=0.18;p.dvx=bx*420;p.dvy=by*420;p.iframe=Math.max(p.iframe,0.3);sfx('splash');},
+    ult(p){team.killzone=3+starFx(p).ultDur;for(const m of team.members)if(m.id==='ines')m.kzT=0;sfx('ult');},
     entrance(p,pw){const a=aimDir(600);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*2*pw,spd:1000,pierce:true,mark:true,big:true,r:6,kind:'arrow',src:p,pn:0.5,col:'#FFD38A'}));sfx('heavy');},
-    update(p,dt){},
-    bench(m,dt){m.owT=(m.owT??1.5)-dt*(team.killzone>0?3:1);if(m.owT>0)return;m.owT=2;
+    update(p,dt){if(team.killzone>0&&!p.down){p.kzT=(p.kzT||0)-dt;if(p.kzT<=0){p.kzT=0.8;let best=null;for(const t of allTargets())if(!best||t.hp>best.hp)best=t;
+      if(best){playerHit(best,p.atk*2.4*starFx(p).ultMul,{src:p,col:'#FFD38A',mark:true,skill:'ult',knock:{x:0,y:-1,f:80}});beams.push({a:{x:best.x+(best.x<W/2?-260:260),y:AY0+6},b:best,life:0.25,col:'#FFE6A3'});sfx('heavy');shake(2,0.05);}}}},
+    bench(m,dt){m.owT=(m.owT??1.5)-dt;if(m.owT>0)return;m.owT=2;
       let best=null;for(const t of allTargets())if(t.markT>0&&(!best||t.hp>best.hp))best=t;if(!best)best=nearestTarget(player.x,player.y,600,null);
       if(best){playerHit(best,m.atk*1.6,{src:m,col:'#FFD38A',knock:{x:0,y:-1,f:60},skill:'bench'});beams.push({a:{x:best.x+(best.x<W/2?-260:260),y:AY0+6},b:best,life:0.25,col:'#FFD38A'});sfx('heavy');}},
-    status(p){const l=[];if(team.killzone>0)l.push([C.gold,'KILLZONE '+team.killzone.toFixed(1)+'s']);for(const z of zones)if(z.kind==='smoke'){l.push([C.ash,'SMOKE '+z.t.toFixed(1)+'s']);break;}return l;},
-    sunUp:p=>0, moonUp:p=>{let m=0;for(const z of zones)if(z.kind==='smoke')m=Math.max(m,z.t);return m;}},
+    status(p){const l=[];if(team.killzone>0)l.push([C.gold,'KILLZONE '+team.killzone.toFixed(1)+'s']);for(const z of zones)if(z.kind==='soak'){l.push([C.water,'SOAK '+z.t.toFixed(1)+'s']);break;}return l;},
+    sunUp:p=>0, moonUp:p=>{let m=0;for(const z of zones)if(z.kind==='soak')m=Math.max(m,z.t);return m;}},
   // ───────── Bram: light damage, Stagger/stun, walls, shields
   bram:{chargeT:0.55,
     tap(p){const a=aimDir(130);faceTo(a);meleeArc(a,54,0.95,p.atk*1.0,{basic:true,knock:300,stag:34*starFx(p).basicMul,pn:1.2,col:C.earth,src:p});p.atkCd=1/effAspd(p);sfx('thud');},
     hold(p){stunWave(p.x,p.y,85,1.1,40,200,p,p.atk*1.4);burstParts(p.x,p.y,C.earth,18,150);shake(3,0.1);p.atkCd=0.5;sfx('stamp');},
     sun(p,combo){const g=spawnGuard(p.x+p.fx*60,p.y+p.fy*60,true,(combo?12:8)*starFx(p).sunMul);g.wall=true;g.hp=g.max=240*starFx(p).sunMul;g.fort=combo;sfx('thud');shake(3,0.1);},
-    moon(p,combo){addShield(p.maxHp*0.25*starFx(p).shieldMul,combo?12:8,true);ring(player.x,player.y,50,C.gold,0.5);sfx('block');},
+    moon(p,combo){addShield(p.maxHp*0.35*starFx(p).shieldMul,combo?15:10,true);ring(player.x,player.y,50,C.gold,0.5);sfx('block');},
     ult(p){team.stand=6+starFx(p).ultDur;sfx('ult');shake(5,0.2);},
     entrance(p,pw){stunWave(p.x,p.y,105,0.6,55*pw,320,p,p.atk*1.2*pw);burstParts(p.x,p.y,C.earth,22,160);shake(4,0.12);sfx('thud');addText(p.x,p.y-36,'COMING THROUGH!',C.earth,10,{life:0.8});},
-    update(p,dt){if(p!==player)return;p.oopsT=(p.oopsT??10)-dt;if(p.oopsT<=0){p.oopsT=10;stunWave(p.x,p.y,70,0.8,30,140,p,p.atk*0.6);addText(p.x,p.y-34,'OOPS',C.earth,10,{life:0.7});shake(2,0.08);sfx('thud');}},
+    update(p,dt){if(p.down)return;p.oopsT=(p.oopsT??4)-dt;if(p.oopsT<=0){p.oopsT=4;const q=player;radial(q.x,q.y,80,p.atk*0.7,{stag:35,knock:120,col:C.earth,src:p});ring(q.x,q.y,80,C.earth,0.35);addText(q.x,q.y-34,p===player?'OOPS':'OOPS (BRAM)',C.earth,10,{life:0.7});shake(2,0.08);sfx('thud');}},
     status(p){const l=[];if(team.stand>0)l.push([C.earth,'STAND '+team.stand.toFixed(1)+'s']);const w=allies.filter(a=>a.wall).length;if(w)l.push([C.earth,'WALL']);return l;},
     sunUp:p=>{let m=0;for(const a of allies)if(a.wall)m=Math.max(m,a.life);return m;}, moonUp:p=>team.shield?team.shield.t:0},
   // ───────── Noemi: heals, damage buffs, revive ult
   noemi:{chargeT:0.5,
-    tap(p){const a=aimDir(420);faceTo(a);p.dartN=((p.dartN||0)+1)%4;shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*1.0,mult:1+consumeSwift(),basic:true,spd:640,r:4,kind:'dart',src:p,pn:0.6,col:C.hp}));
-      if(p.dartN===0)heal(p,p.maxHp*0.03,{sophia:true,by:p});p.atkCd=1/effAspd(p);sfx('dart');},
-    hold(p){heal(player,player.maxHp*0.08,{sophia:true,show:true,by:p});team.stim=4*larkMul();ring(p.x,p.y,40,C.hp,0.4);p.atkCd=0.5;sfx('heal');},
-    sun(p,combo){for(const m of team.members)heal(m,m.maxHp*0.18*starFx(p).sunMul,{sophia:true,show:m===player,by:p});buffAtk(0.2,8);burstParts(p.x,p.y,C.hp,20,140);sfx('heal');},
-    moon(p,combo){zones.push({kind:'tide',x:p.x,y:p.y,r:95,t:6,max:6,src:p});team.cleanseT=6;sfx('splash');},
+    tap(p){const a=aimDir(420);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*0.7,mult:1+consumeSwift(),basic:true,spd:640,r:4,kind:'dart',src:p,pn:0.6,col:C.hp}));p.atkCd=1/effAspd(p);sfx('dart');},
+    hold(p){let low=null;for(const m of team.members)if(!m.down&&(!low||m.hp/m.maxHp<low.hp/low.maxHp))low=m;
+      if(low){heal(low,low.maxHp*0.10,{sophia:true,show:true,by:p});if(low!==player)addText(player.x,player.y-46,'+ '+nameOf(low.id).toUpperCase(),C.hp,10,{life:0.9});}
+      ring(p.x,p.y,40,C.hp,0.4);p.atkCd=0.5;sfx('heal');},
+    sun(p,combo){for(const m of team.members)heal(m,m.maxHp*0.08*starFx(p).sunMul,{sophia:true,show:m===player,by:p});buffAtk(0.2,8);burstParts(p.x,p.y,C.hp,20,140);sfx('heal');if(combo)team.overheal=6;},
+    moon(p,combo){zones.push({kind:'tide',x:p.x,y:p.y,r:95,t:6,max:6,src:p,pct:1});team.cleanseT=6;sfx('splash');if(combo)team.overheal=6;},
     ult(p){for(const m of team.members){if(m.down&&!m.processed){m.down=false;m.hp=m.maxHp*0.4;addText(p.x,p.y-40,nameOf(m.id).toUpperCase()+' REVIVED',C.hp,12,{life:1.4});}heal(m,m.maxHp*0.4,{sophia:true,show:m===player,by:p});}
       buffAtk(0.25,10+starFx(p).ultDur);burstParts(p.x,p.y,C.hp,40,220);sfx('heal');},
     entrance(p,pw){heal(player,player.maxHp*0.12*pw,{sophia:true,show:true,by:p});burstParts(p.x,p.y,C.hp,12,90);},
     update(p,dt){},
-    status(p){const l=[];if(team.atkBuffT>0)l.push([C.hp,'ADRENALINE +'+Math.round(team.atkBuffV*100)+'% · '+team.atkBuffT.toFixed(1)+'s']);if(team.stim>0)l.push([C.hp,'STIM']);return l;},
+    status(p){const l=[];if(team.atkBuffT>0)l.push([C.hp,'ADRENALINE +'+Math.round(team.atkBuffV*100)+'% · '+team.atkBuffT.toFixed(1)+'s']);return l;},
     sunUp:p=>team.atkBuffT, moonUp:p=>{let m=0;for(const z of zones)if(z.kind==='tide')m=Math.max(m,z.t);return m;}},
   // ───────── Theo: chain zaps, turrets, overclock, mech
   theo:{chargeT:0.5,
-    tap(p){const a=aimDir(400);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*0.95,mult:1+consumeSwift(),basic:true,spd:720,r:4,kind:'dart',src:p,pn:0.6,col:C.mercury,chain:2}));p.atkCd=1/effAspd(p);sfx('dart');},
-    hold(p){spawnTurret(p,false,15,p.x+p.fx*30,p.y+p.fy*30);p.atkCd=0.5;},
-    sun(p,combo){spawnTurret(p,true,12*starFx(p).sunMul,p.x+p.fx*50,p.y+p.fy*50);if(combo)for(const a of allies)if(a.kind==='turret'&&a.big)a.laser=true;},
-    moon(p,combo){team.overclock=8*larkMul();buffAtk(0.2,8);ring(p.x,p.y,60,C.mercury,0.5);sfx('skill');if(combo)for(const a of allies)if(a.kind==='turret'&&a.big)a.laser=true;},
-    ult(p){allies.push({kind:'mech',x:p.x-30,y:p.y,r:16,life:12+starFx(p).ultDur,max:12+starFx(p).ultDur,zap:0.6,src:p,dead:false});burstParts(p.x,p.y,C.mercury,30,200);sfx('boom');},
+    tap(p){const t=nearestTarget(p.x,p.y,280,null);let a;if(t){const dx=t.x-p.x,dy=t.y-p.y,d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(280);faceTo(a);
+      shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*1.0,mult:1+consumeSwift(),basic:true,spd:620,r:5,life:0.45,kind:'dart',src:p,pn:0.6,col:'#CFEAFF'}));p.atkCd=1/effAspd(p);sfx('dart');},
+    hold(p){const ts=allTargets().filter(t=>Math.hypot(t.x-p.x,t.y-p.y)<260).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,3);
+      for(const t of ts){playerHit(t,p.atk*1.5,{basic:true,src:p,col:'#CFEAFF',knock:{x:Math.sign(t.x-p.x)||1,y:0,f:90},pn:0.8});beams.push({a:{x:p.x,y:p.y-8},b:t,life:0.14,col:'#CFEAFF'});}
+      ring(p.x,p.y,50,'#CFEAFF',0.35);p.atkCd=0.5;sfx('dodge');},
+    sun(p,combo){spawnTurret(p,true,12*starFx(p).sunMul*(combo?1.5:1),p.x+p.fx*50,p.y+p.fy*50);if(combo)for(const a of allies)if(a.kind==='turret'){a.life*=1.5;a.max*=1.5;}},
+    moon(p,combo){team.overclock=8*larkMul();buffAtk(0.2,8);ring(p.x,p.y,60,'#CFEAFF',0.5);sfx('skill');if(combo)for(const a of allies)if(a.kind==='turret'){a.life*=1.5;a.max*=1.5;}},
+    ult(p){allies.push({kind:'mech',x:p.x-30,y:p.y,r:16,life:12+starFx(p).ultDur,max:12+starFx(p).ultDur,zap:0.6,src:p,dead:false});burstParts(p.x,p.y,'#CFEAFF',30,200);sfx('boom');},
     entrance(p,pw){allies.push({kind:'zap',x:p.x,y:p.y-20,r:5,life:8*pw,max:8*pw,zap:0.5,src:p,dead:false});},
     update(p,dt){},
-    status(p){const l=[];const n=allies.filter(a=>a.kind==='turret').length;if(n)l.push([C.mercury,'TURRETS '+n]);if(team.overclock>0)l.push([C.mercury,'OVERCLOCK '+team.overclock.toFixed(1)+'s']);return l;},
-    sunUp:p=>{let m=0;for(const a of allies)if(a.kind==='turret'&&a.big)m=Math.max(m,a.life);return m;}, moonUp:p=>team.overclock},
+    status(p){const l=[];const n=allies.filter(a=>a.kind==='turret').length;if(n)l.push(['#CFEAFF','TURRET · +20% DMG']);if(team.overclock>0)l.push(['#CFEAFF','OVERCLOCK '+team.overclock.toFixed(1)+'s']);return l;},
+    sunUp:p=>{let m=0;for(const a of allies)if(a.kind==='turret')m=Math.max(m,a.life);return m;}, moonUp:p=>team.overclock},
   // ───────── Lucan: long-range shards, pins, Vow with Kairos
-  lucan:{chargeT:0.55,
-    tap(p){const a=aimDir(560);faceTo(a);shard(p,Math.atan2(a.y,a.x),{dmg:p.atk*1.05,mult:1+consumeSwift(),basic:true});p.atkCd=1/effAspd(p);sfx('dart');},
-    hold(p){const a=aimDir(620);faceTo(a);shard(p,Math.atan2(a.y,a.x),{dmg:p.atk*3.2,mult:1+consumeSwift(),basic:true,pierce:true,big:true,r:7,spd:1000,life:1,pn:1.6});p.atkCd=0.5;sfx('laser');},
-    sun(p,combo){const a=aimDir(560),b=Math.atan2(a.y,a.x),n=combo?10:5;for(let i=0;i<n;i++)shard(p,b+(i-(n-1)/2)*0.11,{dmg:p.atk*1.1,skill:'sun',stun:1.5,pin:true});sfx('slash');},
-    moon(p,combo){addShield(p.maxHp*0.12*starFx(p).shieldMul,6,false);p.critT=6;if(combo)for(const t of allTargets())if(t.stunT>0)t.pinCritT=4;sfx('block');},
-    ult(p){const at=aimPoint(p,500);zones.push({kind:'ice',x:at.x,y:at.y,r:130,t:2.5,max:2.5,src:p});sfx('break');shake(4,0.15);},
-    entrance(p,pw){const a=aimDir(500),b=Math.atan2(a.y,a.x);for(let i=0;i<5;i++)shard(p,b+(i-2)*0.16,{dmg:p.atk*0.9*pw});addShield(player.maxHp*0.08,5,false);},
-    update(p,dt){if(p.critT>0)p.critT-=dt;},
-    status(p){const l=[];if(p.critT>0)l.push([C.moon,'COMPOSURE '+p.critT.toFixed(1)+'s']);if(inParty('kairos'))l.push(['#BFE6FF',team.vowUsed?'VOW · spent':'VOW · ready']);return l;},
+  lucan:{chargeT:0.6,
+    tap(p){const a=aimDir(600);faceTo(a);shard(p,Math.atan2(a.y,a.x),{dmg:p.atk*1.6,mult:1+consumeSwift(),basic:true,spd:820,life:0.95});p.atkCd=1/effAspd(p);sfx('dart');},
+    hold(p){const a=aimDir(660);faceTo(a);shard(p,Math.atan2(a.y,a.x),{dmg:p.atk*4.4,mult:1+consumeSwift(),basic:true,pierce:true,big:true,r:8,spd:1100,life:1,pn:2});p.atkCd=0.45;sfx('laser');shake(2,0.06);},
+    sun(p,combo){const a=aimDir(560),b=Math.atan2(a.y,a.x),n=6;for(let i=0;i<n;i++)shard(p,b+(i-(n-1)/2)*0.11,{dmg:p.atk*1.1,skill:'sun',stun:3,pin:true});sfx('slash');if(combo)p.cdmgT=6;},
+    moon(p,combo){addShield(p.maxHp*0.12*starFx(p).shieldMul,6,false);p.critT=6;if(combo)p.cdmgT=6;sfx('block');},
+    ult(p){const at=aimPoint(p,500);zones.push({kind:'ice',x:at.x,y:at.y,r:140,t:3,max:3,src:p});sfx('break');shake(4,0.15);},
+    entrance(p,pw){const a=aimDir(500),b=Math.atan2(a.y,a.x);for(let i=0;i<5;i++)shard(p,b+(i-2)*0.16,{dmg:p.atk*0.9*pw,col:'#C8BEA8'});addShield(player.maxHp*0.08,5,false);},
+    update(p,dt){if(p.critT>0)p.critT-=dt;if(p.cdmgT>0)p.cdmgT-=dt;},
+    status(p){const l=[];if(p.critT>0)l.push([C.moon,'COMPOSURE '+p.critT.toFixed(1)+'s']);if(p.cdmgT>0)l.push(['#BFE6FF','CRIT DMG +50% '+p.cdmgT.toFixed(1)+'s']);if(inParty('kairos'))l.push(['#BFE6FF',team.vowUsed?'VOW · spent':'VOW · ready']);return l;},
     sunUp:p=>0, moonUp:p=>p.critT||0},
   // ───────── Cass: holy fire, healing, censer
   cass:{chargeT:0.55,
-    tap(p){const a=aimDir(150);faceTo(a);meleeArc(a,68,1.15,p.atk*1.0,{basic:true,mult:1+consumeSwift(),burn:2,knock:80,pn:0.9,col:C.fire,src:p});p.atkCd=1/effAspd(p);sfx('slash');},
-    hold(p){radial(p.x,p.y,92,p.atk*1.7,{basic:true,mult:1+consumeSwift(),burn:3,knock:180,pn:1.4,col:C.fire,src:p});burstParts(p.x,p.y,C.fire,24,180);p.atkCd=0.5;sfx('boom');},
-    sun(p,combo){const at=aimPoint(p,320);zones.push({kind:'fire',x:at.x,y:at.y,r:85,t:5,max:5,acc:0,src:p,dm:(combo?2:1)*starFx(p).sunMul});radial(at.x,at.y,85,p.atk*1.6,{burn:3,skill:'sun',col:C.fire,src:p});shake(4,0.12);sfx('boom');},
-    moon(p,combo){heal(player,player.maxHp*0.2*(combo?2:1)*starFx(p).moonMul,{show:true,by:p});team.cleanseT=3;for(const t of allTargets())if(t.burnT>0&&Math.hypot(t.x-p.x,t.y-p.y)<200)playerHit(t,p.atk*1.5,{skill:'moon',col:C.fire,src:p});ring(p.x,p.y,60,C.gold,0.5);sfx('heal');},
-    ult(p){const n=radial(p.x,p.y,300,p.atk*3,{burn:4,knock:200,skill:'ult',col:C.fire,src:p});for(const m of team.members)heal(m,m.maxHp*0.03*Math.max(1,n),{show:m===player,by:p});burstParts(p.x,p.y,C.fire,60,320);shake(7,0.3);sfx('boom');},
-    entrance(p,pw){radial(p.x,p.y,85,p.atk*1.4*pw,{burn:3,knock:160,col:C.fire,src:p});burstParts(p.x,p.y,C.fire,22,170);sfx('boom');},
+    tap(p){const a=aimDir(150);faceTo(a);meleeArc(a,68,1.15,p.atk*0.9,{basic:true,mult:1+consumeSwift(),burn:3,knock:80,pn:0.9,col:C.fire,src:p});p.atkCd=1/effAspd(p);sfx('slash');},
+    hold(p){radial(p.x,p.y,92,p.atk*1.5,{basic:true,mult:1+consumeSwift(),burn:5,knock:180,pn:1.4,col:C.fire,src:p});burstParts(p.x,p.y,C.fire,24,180);p.atkCd=0.5;sfx('boom');},
+    sun(p,combo){const at=aimPoint(p,320);zones.push({kind:'fire',x:at.x,y:at.y,r:90,t:6,max:6,acc:0,src:p,dm:(combo?2:1)*starFx(p).sunMul});radial(at.x,at.y,90,p.atk*1.6,{burn:5,skill:'sun',col:C.fire,src:p});shake(4,0.12);sfx('boom');},
+    moon(p,combo){heal(player,player.maxHp*0.12*(combo?2:1)*starFx(p).moonMul,{show:true,by:p});team.cleanseT=3;for(const t of allTargets())if(t.burnT>0&&Math.hypot(t.x-p.x,t.y-p.y)<220){playerHit(t,p.atk*2,{skill:'moon',col:C.fire,src:p,burn:4});}ring(p.x,p.y,60,C.gold,0.5);sfx('heal');},
+    ult(p){radial(p.x,p.y,300,p.atk*3,{burn:6,knock:200,skill:'ult',col:C.fire,src:p});for(const m of team.members)heal(m,m.maxHp*0.15,{show:m===player,by:p});burstParts(p.x,p.y,C.fire,60,320);shake(7,0.3);sfx('boom');},
+    entrance(p,pw){radial(p.x,p.y,85,p.atk*1.4*pw,{burn:4,knock:160,col:C.fire,src:p});burstParts(p.x,p.y,C.fire,22,170);sfx('boom');},
     update(p,dt){},
-    bench(m,dt){m.flT=(m.flT??0.5)-dt;if(m.flT>0)return;m.flT=0.5;let b=0;
-      for(const e of enemies){if(e.dead||e.spawnT>0)continue;const d=dist(e,player);if(d<e.r+player.r+30)e.burnT=Math.max(e.burnT,2);if(e.burnT>0&&d<140)b++;}
-      if(b)heal(player,player.maxHp*0.01*0.5*Math.min(4,b),{by:m});},
+    bench(m,dt){m.flT=(m.flT??0.5)-dt;if(m.flT>0)return;m.flT=0.5;
+      for(const e of enemies){if(e.dead||e.spawnT>0)continue;if(dist(e,player)<e.r+player.r+30){e.burnT=Math.max(e.burnT,2);e.burnDmg=Math.max(e.burnDmg||0,m.atk*0.7);}}},
     status(p){const l=[];for(const z of zones)if(z.kind==='fire'){l.push([C.fire,'PENANCE '+z.t.toFixed(1)+'s']);break;}return l;},
     sunUp:p=>{let m=0;for(const z of zones)if(z.kind==='fire')m=Math.max(m,z.t);return m;}, moonUp:p=>0},
   // ───────── Dess: memory spirits, shields
   dess:{chargeT:0.5,
-    tap(p){const a=aimDir(380);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*0.95,mult:1+consumeSwift(),basic:true,spd:560,r:5,kind:'dart',src:p,pn:0.6,col:'#9BD4FF'}));p.atkCd=1/effAspd(p);sfx('dart');},
-    hold(p){const s=spiritsOf();if(s.length>=4)s.sort((m,n)=>m.life-n.life)[0].life=0;spawnSpirit(p,14);p.atkCd=0.5;sfx('spark');},
-    sun(p,combo){const k=(0.15+0.05*spiritsOf().length)*(combo?2:1)*starFx(p).shieldMul;addShield(player.maxHp*k,8,true);ring(player.x,player.y,50,'#9BD4FF',0.5);sfx('block');},
-    moon(p,combo){const s=spiritsOf();for(const a of s){radial(a.x,a.y,60,p.atk*1.3*starFx(p).moonMul,{skill:'moon',stun:combo?1:0,col:'#9BD4FF',src:p});a.life=0;}
-      for(const m of team.members)heal(m,m.maxHp*0.02*s.length,{show:m===player,by:p});if(s.length)shake(3,0.1);sfx('spark');},
-    ult(p){for(let i=0;i<8;i++)spawnSpirit(p,12);addShield(player.maxHp*0.2*starFx(p).shieldMul,8,true);sfx('bless');},
-    entrance(p,pw){spawnSpirit(p,10*pw);spawnSpirit(p,10*pw);},
+    tap(p){const a=aimDir(380);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*0.5,mult:1+consumeSwift(),basic:true,spd:560,r:4,kind:'dart',src:p,pn:0.6,col:'#9BD4FF'}));p.atkCd=1/effAspd(p);sfx('dart');},
+    hold(p){radial(p.x,p.y,70,0,{knock:140,col:'#9BD4FF',src:p});ring(p.x,p.y,70,'#9BD4FF',0.3);p.atkCd=0.6;sfx('dodge');},
+    sun(p,combo){team.dessDmgT=10*starFx(p).sunMul;if(combo)team.crT=10;ring(player.x,player.y,60,'#7FD0FF',0.5);burstParts(player.x,player.y,'#7FD0FF',16,120);setBanner('Tidal Focus','Team +20% damage',1);sfx('bless');},
+    moon(p,combo){team.cdmgT=10*starFx(p).moonMul;if(combo)team.crT=10;ring(player.x,player.y,60,'#CFEAFF',0.5);burstParts(player.x,player.y,'#CFEAFF',16,120);setBanner('Clear Sky','Team +40% crit damage',1);sfx('bless');},
+    ult(p){radial(p.x,p.y,280,p.atk*1.2*starFx(p).ultMul,{skill:'ult',col:'#9BD4FF',src:p,dmark:1});burstParts(p.x,p.y,'#9BD4FF',50,280);ring(p.x,p.y,280,'#9BD4FF',0.6);shake(4,0.15);sfx('bless');},
+    entrance(p,pw){addShield(player.maxHp*0.10*pw,6,false);ring(player.x,player.y,40,'#9BD4FF',0.4);},
     update(p,dt){},
-    status(p){const n=spiritsOf().length;return n?[['#9BD4FF','SPIRITS '+n]]:[];},
-    sunUp:p=>team.shield?team.shield.t:0, moonUp:p=>0},
+    status(p){const l=[];if(team.dessDmgT>0)l.push(['#7FD0FF','FOCUS +20% '+team.dessDmgT.toFixed(1)+'s']);if(team.cdmgT>0)l.push(['#CFEAFF','CRIT DMG +40% '+team.cdmgT.toFixed(1)+'s']);if(team.crT>0)l.push([C.gold,'CRIT +15% '+team.crT.toFixed(1)+'s']);return l;},
+    sunUp:p=>team.dessDmgT||0, moonUp:p=>team.cdmgT||0},
 };
 
 // ═══════════════════════════════════════════ team actions
@@ -1989,7 +2000,7 @@ function hurtPlayer(d){
   if(p.unrecorded){p.unrecorded=false;p.iframe=0.45;addText(p.x,p.y-32,'UNRECORDED',C.moon,11,{life:1});sfx('block');burstParts(p.x,p.y,C.moon,10,100);return;}
   if(p.counterT>0){kairosCounter(p);return;}
   if(zoneAt('smoke',p.x,p.y)&&rand()<0.6){p.iframe=0.3;addText(p.x,p.y-30,'MISS',C.ash,10,{life:0.5});return;}
-  if(p.id==='cass'&&zoneAt('fire',p.x,p.y))d*=0.8;
+  if(inParty('cass'))d*=0.9;
   missionHurt(d);
   d*=(1-effDef(p));
   const s=team.shield;
@@ -2013,7 +2024,7 @@ function hurtPlayer(d){
 }
 function kairosCounter(p){
   p.counterT=0;p.countered=true;p.iframe=0.5;slowReal=0.25;
-  radial(p.x,p.y,105,p.atk*2.2,{tide:3,knock:200,skill:'moon',col:C.water,src:p,pn:3});
+  radial(p.x,p.y,115,p.atk*3.2,{tide:3,knock:200,skill:'moon',col:C.water,src:p,pn:3});
   addText(p.x,p.y-34,'SHELL',C.water,12,{life:1});burstParts(p.x,p.y,C.water,30,220);shake(5,0.15);sfx('counter');
 }
 function detonateSeconds(m){
@@ -2058,7 +2069,7 @@ function updatePlayer(dt){
 function updateTeam(dt){
   const cdm=team.cdFast>0?2:1;
   team.swapCd-=dt;
-  for(const k of ['tailwind','benedT','firstClay','cdFast','starBoost','reflect','overheal','cleanseT','interCd','atkBuffT','stim','killzone','overclock','stand','bramBlock'])if(team[k]>0)team[k]-=dt;
+  for(const k of ['tailwind','benedT','firstClay','cdFast','starBoost','reflect','overheal','cleanseT','interCd','atkBuffT','stim','killzone','overclock','stand','bramBlock','dessDmgT','cdmgT','crT'])if(team[k]>0)team[k]-=dt;
   if(team.shield){team.shield.t-=dt;if(team.shield.t<=0||team.shield.hp<=0)team.shield=null;}
   for(const m of team.members){
     m.cd.sun=Math.max(0,m.cd.sun-dt*cdm);m.cd.moon=Math.max(0,m.cd.moon-dt*cdm);m.entCd-=dt;
@@ -2096,13 +2107,13 @@ function updSummon(a,dt){
     a.zap-=dt*ov;if(a.zap<=0){a.zap=0.75;const t=nearestTarget(a.x,a.y,170,null);if(t){playerHit(t,src.atk*0.55*sm,{src,col:'#9BD4FF',summon:true});beams.push({a,b:t,life:0.15,col:'#9BD4FF'});}}
     if(a.life<=0){a.dead=true;burstParts(a.x,a.y,'#9BD4FF',8,80);if(rand()<0.2){buffAtk(0.1,3);addText(player.x,player.y-46,pick(MEMORY_LINES),'#CFEAFF',9,{life:1.6});}}
     return true;}
-  if(a.kind==='turret'){a.zap-=dt*ov;const rate=1.0;if(a.zap<=0){a.zap=rate;const t=nearestTarget(a.x,a.y,150,null);if(t){playerHit(t,src.atk*(a.laser?0.22:(a.big?0.6:0.45))*sm,{src,col:a.laser?C.danger:C.mercury,summon:true});beams.push({a:{x:a.x,y:a.y-4},b:t,life:a.laser?0.1:0.08,col:a.laser?C.danger:C.mercury});if(t.dead)gainPn(1.5);}}
-    if(a.life<=0){a.dead=true;burstParts(a.x,a.y,C.mercury,10,90);}return true;}
+  if(a.kind==='turret'){a.zap-=dt*ov;const rate=1.0;if(a.zap<=0){a.zap=rate;const t=nearestTarget(a.x,a.y,150,null);if(t){playerHit(t,src.atk*(a.laser?0.22:(a.big?0.6:0.45))*sm,{src,col:a.laser?C.danger:'#CFEAFF',summon:true});beams.push({a:{x:a.x,y:a.y-4},b:t,life:a.laser?0.1:0.08,col:a.laser?C.danger:'#CFEAFF'});if(t.dead)gainPn(1.5);}}
+    if(a.life<=0){a.dead=true;burstParts(a.x,a.y,'#CFEAFF',10,90);}return true;}
   if(a.kind==='mech'){const tx=player.x-34,ty=player.y+6;a.x+=(tx-a.x)*Math.min(1,dt*2.5);a.y+=(ty-a.y)*Math.min(1,dt*2.5);
-    a.zap-=dt*ov;if(a.zap<=0){a.zap=0.55;const t=nearestTarget(a.x,a.y,320,null);if(t){radial(t.x,t.y,42,src.atk*1.1*sm*starFx(src).ultMul,{src,col:C.mercury,knock:80,summon:true});beams.push({a:{x:a.x,y:a.y-14},b:t,life:0.12,col:C.fire});sfx('thud');if(t.dead)gainPn(1.5);}}
-    if(a.life<=0){a.dead=true;burstParts(a.x,a.y,C.mercury,30,200);}return true;}
+    a.zap-=dt*ov;if(a.zap<=0){a.zap=0.55;const t=nearestTarget(a.x,a.y,320,null);if(t){radial(t.x,t.y,42,src.atk*1.1*sm*starFx(src).ultMul,{src,col:'#CFEAFF',knock:80,summon:true});beams.push({a:{x:a.x,y:a.y-14},b:t,life:0.12,col:C.fire});sfx('thud');if(t.dead)gainPn(1.5);}}
+    if(a.life<=0){a.dead=true;burstParts(a.x,a.y,'#CFEAFF',30,200);}return true;}
   if(a.kind==='zap'){const tx=player.x+Math.cos(T*2)*24,ty=player.y-24;a.x+=(tx-a.x)*Math.min(1,dt*5);a.y+=(ty-a.y)*Math.min(1,dt*5);
-    a.zap-=dt*ov;if(a.zap<=0){a.zap=0.5;const t=nearestTarget(a.x,a.y,170,null);if(t){playerHit(t,src.atk*0.5*sm,{src,col:C.mercury,summon:true});beams.push({a,b:t,life:0.12,col:C.mercury});if(t.dead)gainPn(1.5);}}
+    a.zap-=dt*ov;if(a.zap<=0){a.zap=0.5;const t=nearestTarget(a.x,a.y,170,null);if(t){playerHit(t,src.atk*0.5*sm,{src,col:'#CFEAFF',summon:true});beams.push({a,b:t,life:0.12,col:'#CFEAFF'});if(t.dead)gainPn(1.5);}}
     if(a.life<=0)a.dead=true;return true;}
   return false;}
 function updateAllies(dt){
@@ -2131,15 +2142,16 @@ function updateZones(dt){
       if(z.follow){z.x+=(player.x-z.x)*Math.min(1,dt*4);z.y+=(player.y-z.y)*Math.min(1,dt*4);}
       z.acc+=dt;if(z.acc>=0.25){z.acc=0;for(const t of allTargets())if(Math.hypot(t.x-z.x,t.y-z.y)<z.r+(t.r||20)*0.5)playerHit(t,z.src.atk*0.5*(z.dm||1),{burn:2,mark:z.mark,src:z.src,col:C.fire});}
     } else if(z.kind==='tide'){
-      if(dist(player,z)<z.r)heal(player,4*dt,{sophia:true});
+      if(dist(player,z)<z.r)heal(player,z.pct?player.maxHp*0.03*dt:4*dt,{sophia:true,by:z.pct?z.src:null});
       if(z.hurt){z.acc=(z.acc||0)+dt;if(z.acc>=0.5){z.acc=0;for(const t of allTargets())if(Math.hypot(t.x-z.x,t.y-z.y)<z.r)playerHit(t,z.src.atk*0.4,{src:z.src,col:C.water});}}
-      for(const m of team.members)if(m!==player)heal(m,2*dt,{sophia:true});
+      for(const m of team.members)if(m!==player)heal(m,z.pct?m.maxHp*0.012*dt:2*dt,{sophia:true});
       for(const e of enemies)if(!e.dead&&dist(e,z)<z.r)e.slowT=Math.max(e.slowT,0.2);
     } else if(z.kind==='fire'){
       z.acc=(z.acc||0)+dt;if(z.acc>=0.3){z.acc=0;for(const t of allTargets())if(Math.hypot(t.x-z.x,t.y-z.y)<z.r+(t.r||20)*0.5)playerHit(t,z.src.atk*0.4*(z.dm||1),{burn:2,src:z.src,col:C.fire,skill:'sun'});}
+    } else if(z.kind==='soak'){for(const t of allTargets())if(Math.hypot(t.x-z.x,t.y-z.y)<z.r+(t.r||20)*0.5){t.soakUntil=T+0.3;if(t!==boss)t.slowT=Math.max(t.slowT||0,0.3);if(z.mark)t.markT=Math.max(t.markT||0,1);}
     } else if(z.kind==='slowpool'){for(const e of enemies)if(!e.dead&&dist(e,z)<z.r)e.slowT=Math.max(e.slowT,0.3);
     } else if(z.kind==='ice'){for(const e of enemies)if(!e.dead&&dist(e,z)<z.r+e.r){e.stunT=Math.max(e.stunT,0.2);e.st='stun';}
-      if(z.t<=0&&!z.done){z.done=true;radial(z.x,z.y,z.r,z.src.atk*5,{skill:'ult',src:z.src,col:'#BFE6FF',knock:160});burstParts(z.x,z.y,'#E7F7FF',50,260);shake(6,0.25);sfx('break');}
+      if(z.t<=0&&!z.done){z.done=true;radial(z.x,z.y,z.r,z.src.atk*6,{skill:'ult',src:z.src,col:'#BFE6FF',knock:160});burstParts(z.x,z.y,'#E7F7FF',50,260);shake(6,0.25);sfx('break');}
     } else if(z.kind==='decree'){
       for(const e of enemies)if(!e.dead&&dist(e,z)<z.r){e.slowT=Math.max(e.slowT,0.2);e.noHeal=0.3;}
       if(boss&&!boss.dead&&dist(boss,z)<z.r)boss.noHeal=0.3;
@@ -2233,7 +2245,7 @@ function updateBoss(dt){
   if(b.forced&&lossUpdate(b,dt))return;
   b.flash-=dt;if(b.markT>0)b.markT-=dt;if(b.anaT>0)b.anaT-=dt;if(b.noHeal>0)b.noHeal-=dt;if(b.indT>0){b.indT-=dt;if(b.indT<=0)b.ind=0;}
   if(b.entering>0){b.entering-=dt;b.y+=(b.ty-b.y)*Math.min(1,dt*3);return;}
-  if(b.burnT>0){b.burnT-=dt;b.burnAcc+=dt;if(b.burnAcc>=0.5){b.burnAcc=0;hitBoss(3*(b.burnMul||1),C.fire);if(b.dead)return;}}
+  if(b.burnT>0){b.burnT-=dt;b.burnAcc+=dt;if(b.burnAcc>=0.5){b.burnAcc=0;hitBoss((b.burnDmg||3)*(b.burnMul||1),C.fire);if(b.dead)return;}}
   b.x+=clamp(player.x-b.x,-60*dt,60*dt);b.x=clamp(b.x,AX0+b.r+50,AX1-b.r-50);
   b.y=b.ty+Math.sin(T*1.3)*8;
   if(b.shieldT>0)b.shieldT-=dt;
@@ -3130,11 +3142,11 @@ addMission('market',{type:'walk',name:'Tuesday Errands',place:'Market Ring',them
 addMission('first',{type:'fight',name:'First Fight',place:'Market Ring',theme:'market',party:['kairos'],lvl:1,kills:30,max:3,tut:1,pool:['gossip','hothead','gossip'],brief:'Vices pour out of the rift. Your body knows the stance.',
   tips:[[0,'Attack','Tap attack for the Twin Fish combo. The 5th hit is a finisher.'],[3,'Dodge','Dodge right before a hit. A perfect dodge triggers Slipstream.'],[6,'Tide','Your hits add Tide. At 3 stacks a Vice goes Drowsy.'],[8,'Foresight','Enemies flicker just before they attack. That’s you, seeing it early.']]});
 addMission('garrison',{type:'fight',name:'Garrison',place:'Market Ring',theme:'market',party:['kairos','ines','bram'],lvl:1,kills:24,max:5,pool:['gossip','hothead','waxer','gossip'],brief:'Hold the square with the Garrison until the rift seals.',
-  tips:[[0,'Switch',(isTouch?'Tap a portrait':'Press 1, 2 or 3')+' to switch. Everyone has an Entrance move.'],[4,'Ines','Ines spots enemies so they take more damage, and keeps sniping from the bench.'],[8,'Bram','Bram hits light. His bashes stagger, then stun.'],[12,'Aspect combo','Use one skill, then the other, for an Aspect combo.']]});
+  tips:[[0,'Switch',(isTouch?'Tap a portrait':'Press 1, 2 or 3')+' to switch. Everyone has an Entrance move.'],[4,'Ines','Ines Spots enemies (+15% damage taken) and keeps sniping from the bench.'],[8,'Bram','Bram hits light. His bashes stagger, then stun.'],[12,'Aspect combo','Use one skill, then the other, for an Aspect combo.']]});
 addMission('assault',{type:'fight',name:'Breakout · Outside',place:'Institute sub-levels',theme:'lab',lvl:3,kills:20,max:5,pool:['hothead','waxer','gossip','deadline'],brief:'Fight down through the Institute. Third sub-level.',
   tips:[[0,'Lucan','Lucan pins enemies from range. Switching Kairos ↔ Lucan gives a shield.']]});
 addMission('escape',{type:'fight',name:'Escape',place:'Institute sub-levels',theme:'lab',lvl:3,kills:16,max:5,pool:['hothead','gossip','waxer'],brief:'Get out. All of you.',
-  tips:[[0,'Dess','Hold attack as Dess to release a spirit from a core. They fight on their own.'],[5,'The Vow','If Kairos would go down, Lucan takes the hit. Once per fight.']]});
+  tips:[[0,'Dess','Dess is pure support: Sun = team damage, Moon = team crit damage. Use both for a crit chance bonus.'],[5,'The Vow','If Kairos would go down, Lucan takes the hit. Once per fight.']]});
 addMission('cass',{type:'fight',name:'The Inquisitor',place:'Ash Lane rooftops',theme:'rooftop',lvl:4,cass:1,pool:['gossip'],brief:'Sister Cass punishes standing still. Keep moving.'});
 addMission('festival',{type:'defense',name:'Festival of the Mercy',place:'Festival Square',theme:'plaza',lvl:5,dur:100,crowd:1,fore:1,
   brief:'Five rifts at once. Keep the Vices off the crowd.',pool:['hothead','gossip','waxer','devourer','deadline','gossip']});
@@ -5522,7 +5534,8 @@ function drawWorld(){
     else if(z.kind==='fire'){c.fillStyle=alpha(C.fire,0.12*fa);circ(c,z.x,z.y,z.r);c.fill();for(let i=0;i<12;i++){const a=i*0.63+T*0.5,rr2=(i*13%z.r),px=z.x+Math.cos(a)*rr2,py=z.y+Math.sin(a)*rr2*0.8,hh=4+3*Math.sin(T*9+i);c.fillStyle=alpha(i%2?C.fire:C.gold,0.8*fa);c.fillRect(px-1.5,py-hh,3,hh);}}
     else if(z.kind==='smoke'){for(let i=0;i<9;i++){const a=i/9*TAU+T*0.3,rr2=z.r*(0.3+0.5*((i*7)%5)/5);c.fillStyle=alpha('#C9BFA8',0.3*fa);circ(c,z.x+Math.cos(a)*rr2,z.y+Math.sin(a)*rr2*0.7,z.r*0.42);c.fill();}}
     else if(z.kind==='slowpool'){c.fillStyle=alpha(C.water,0.18*fa);ell(c,z.x,z.y,z.r,z.r*0.6);c.fill();}
-    else if(z.kind==='ice'){c.fillStyle=alpha('#BFE6FF',0.22);circ(c,z.x,z.y,z.r);c.fill();c.strokeStyle=alpha('#E7F7FF',0.8);c.lineWidth=2;circ(c,z.x,z.y,z.r*(0.8+k*0.2));c.stroke();for(let i=0;i<8;i++){const a=i/8*TAU;c.fillStyle='#E7F7FF';c.fillRect(z.x+Math.cos(a)*z.r*0.6-2,z.y+Math.sin(a)*z.r*0.6-6,4,8);}}
+    else if(z.kind==='soak'){c.fillStyle=alpha(C.water,0.16*fa);circ(c,z.x,z.y,z.r);c.fill();c.strokeStyle=alpha('#BFE6FF',0.5*fa);c.lineWidth=1.5;circ(c,z.x,z.y,z.r*(0.9+0.05*Math.sin(T*3)));c.stroke();}
+    else if(z.kind==='ice'){c.fillStyle=alpha('#9A8F7C',0.35);circ(c,z.x,z.y,z.r);c.fill();c.strokeStyle=alpha('#D8CFBE',0.8);c.lineWidth=2;circ(c,z.x,z.y,z.r*(0.8+k*0.2));c.stroke();for(let i=0;i<8;i++){const a=i/8*TAU;c.fillStyle='#E7F7FF';c.fillRect(z.x+Math.cos(a)*z.r*0.6-2,z.y+Math.sin(a)*z.r*0.6-6,4,8);}}
     else if(z.kind==='decree'){c.fillStyle=alpha(C.jupiter,0.06*fa);circ(c,z.x,z.y,z.r);c.fill();c.strokeStyle=alpha(C.jupiter,0.7*fa);c.lineWidth=2;c.setLineDash([10,4,2,4]);circ(c,z.x,z.y,z.r);c.stroke();c.setLineDash([]);
       c.strokeStyle=alpha(C.jupiter,0.35*fa);c.lineWidth=1.5;c.beginPath();c.moveTo(z.x-16,z.y-6);c.lineTo(z.x+16,z.y-6);c.moveTo(z.x,z.y-12);c.lineTo(z.x,z.y+10);c.moveTo(z.x-16,z.y-6);c.lineTo(z.x-20,z.y+2);c.lineTo(z.x-12,z.y+2);c.closePath();c.moveTo(z.x+16,z.y-6);c.lineTo(z.x+12,z.y+2);c.lineTo(z.x+20,z.y+2);c.closePath();c.stroke();
       c.beginPath();c.arc(z.x,z.y,z.r+4,-Math.PI/2,-Math.PI/2+TAU*k);c.stroke();}}
