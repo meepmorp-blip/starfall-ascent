@@ -844,7 +844,7 @@ const CHARS={
     sun:'Taurus',moon:'Cancer',rising:'Sagittarius',aspect:'Sextile',atkLabel:'BASH',
     hp:170,atk:6,def:0.32,aspd:1.8,spd:132,range:'Close',bars:{HP:5,ATK:1,DEF:5,ASPD:2,SPD:1,RANGE:1},
     rulers:{venus:'Taurus Sun',jupiter:'Sagittarius Rising'},
-    mech:'Stagger: his hits deal no damage, but fill an enemy’s Stagger bar. Full bar = stunned for 2s.',
+    mech:'Stagger: his hits deal light damage and fill an enemy’s Stagger bar. Full bar = stunned for 2s.',
     kit:{
       entrance:{name:'Coming Through!',el:'Fire',desc:'Trips into the fight. The shockwave knocks everyone back and adds a lot of Stagger.'},
       basic:{name:'Shield Bash',tap:'Heavy shoves with big knockback.',hold:'Plant: slams the shield down and briefly stuns everything nearby.'},
@@ -1089,7 +1089,7 @@ const KIT_INFO={
     entrance:['Copies an Entrance ×120%'],basic:['85% ATK ×4','5th: spin 170%','Hold: dash 180%'],sun:['Dash 200% ATK','+2 Tide'],moon:['Counter pulse 220%','Makes Drowsy'],ult:['Stops time 1s','+35% damage, 8s']},
   ines:{tldr:'Sniper support. Spot enemies so the whole team hits harder, then switch out: she keeps sniping from the bench.',
     entrance:['Piercing shot 200%','Spots'],basic:['160% ATK per shot','Hold: 320% pierce'],sun:['Spots an area','Combo: explosion 250%'],moon:['Smoke: attacks miss you'],ult:['Sniping ×3 speed','Spotted +30%']},
-  bram:{tldr:'The wall. Deals no damage, but knocks enemies away, stuns them, blocks bullets and shields whoever is fighting.',
+  bram:{tldr:'The wall. Only light damage, but knocks enemies away, stuns them, blocks bullets and shields whoever is fighting.',
     entrance:['Big knockback','Heavy Stagger'],basic:['No damage','Stagger 34 per hit','Hold: stun 1.1s'],sun:['Wall blocks bullets','Draws enemies'],moon:['Shield 25% of Bram’s HP'],ult:['Dome 6s','Pushes out + stuns']},
   noemi:{tldr:'The doctor. Heals everyone, even the bench, boosts the team’s damage, and her Ultimate revives anyone who is down, every single time.',
     entrance:['Heal 12%'],basic:['100% ATK darts','Hold: heal 8% + speed'],sun:['Heal team 18%','+20% damage 8s'],moon:['Healing zone 6s','Blocks drain/pull'],ult:['Revive all','Heal 40% · +25% damage']},
@@ -1115,7 +1115,7 @@ const CHAR_FIT={
 const CHAR_HOW={
   kairos:['Stay close and keep cutting. Your hits add Tide; at 3 stacks enemies go Drowsy and slow to a crawl.',['Riptide through a group','Shell right before a hit','Ult when overwhelmed']],
   ines:['Stay far back. Spot enemies so everyone hits harder, then switch out: she keeps sniping.',['Flare a group','switch to a damage dealer','Killzone for bosses']],
-  bram:['He deals no damage: knock enemies away, stun them, and shield whoever fights next.',['Wall in front of shooters','Hold the Line','switch to damage']],
+  bram:['Light damage only: knock enemies away, stun them, and shield whoever fights next.',['Wall in front of shooters','Hold the Line','switch to damage']],
   noemi:['Heal and buff, then switch out. Her Ultimate revives everyone who is down.',['Triage before a big fight','Field when it gets messy','Code Blue to undo a disaster']],
   theo:['Set up machines, then switch out and let them work.',['Hold: 2 small turrets','Sun: big turret','Moon: Overclock']],
   lucan:['Shoot from far away. Pin enemies, then finish them. Best next to Kairos.',['Pin a group','Composure','Lance the pinned ones']],
@@ -1791,7 +1791,7 @@ function spiritsOf(){return allies.filter(a=>a.kind==='spirit'&&!a.dead);}
 function spawnSpirit(src,life){const a=rand()*TAU;allies.push({kind:'spirit',x:player.x+Math.cos(a)*30,y:player.y-10+Math.sin(a)*20,r:6,life:life||14,max:life||14,ang:a,zap:0.4+rand()*0.5,src,dead:false});}
 function spawnTurret(src,big,life,x,y){const own=allies.filter(a=>a.kind==='turret'&&!a.big);if(!big&&own.length>=2)own.sort((m,n)=>m.life-n.life)[0].life=0;
   allies.push({kind:'turret',big,x:clamp(x,AX0+16,AX1-16),y:clamp(y,AY0+16,AY1-16),r:big?11:7,life,max:life,zap:0.3,src,laser:false,dead:false});burstParts(x,y,C.mercury,10,90);sfx('thud');}
-function stunWave(x,y,R,stun,stag,knock,src){radial(x,y,R,0,{stun,stag,knock,col:C.earth,src});}
+function stunWave(x,y,R,stun,stag,knock,src,dmg){radial(x,y,R,dmg||0,{stun,stag,knock,col:C.earth,src});}
 
 const KITS={
   // ───────── Kairos: twin blades, Tide → Drowsy, time stop
@@ -1829,15 +1829,15 @@ const KITS={
       if(best){playerHit(best,m.atk*1.6,{src:m,col:'#FFD38A',knock:{x:0,y:-1,f:60},skill:'bench'});beams.push({a:{x:best.x+(best.x<W/2?-260:260),y:AY0+6},b:best,life:0.25,col:'#FFD38A'});sfx('heavy');}},
     status(p){const l=[];if(team.killzone>0)l.push([C.gold,'KILLZONE '+team.killzone.toFixed(1)+'s']);for(const z of zones)if(z.kind==='smoke'){l.push([C.ash,'SMOKE '+z.t.toFixed(1)+'s']);break;}return l;},
     sunUp:p=>0, moonUp:p=>{let m=0;for(const z of zones)if(z.kind==='smoke')m=Math.max(m,z.t);return m;}},
-  // ───────── Bram: no damage, Stagger/stun, walls, shields
+  // ───────── Bram: light damage, Stagger/stun, walls, shields
   bram:{chargeT:0.55,
-    tap(p){const a=aimDir(130);faceTo(a);meleeArc(a,54,0.95,0,{basic:true,knock:300,stag:34*starFx(p).basicMul,pn:1.2,col:C.earth,src:p});p.atkCd=1/effAspd(p);sfx('thud');},
-    hold(p){stunWave(p.x,p.y,85,1.1,40,200,p);burstParts(p.x,p.y,C.earth,18,150);shake(3,0.1);p.atkCd=0.5;sfx('stamp');},
+    tap(p){const a=aimDir(130);faceTo(a);meleeArc(a,54,0.95,p.atk*1.0,{basic:true,knock:300,stag:34*starFx(p).basicMul,pn:1.2,col:C.earth,src:p});p.atkCd=1/effAspd(p);sfx('thud');},
+    hold(p){stunWave(p.x,p.y,85,1.1,40,200,p,p.atk*1.4);burstParts(p.x,p.y,C.earth,18,150);shake(3,0.1);p.atkCd=0.5;sfx('stamp');},
     sun(p,combo){const g=spawnGuard(p.x+p.fx*60,p.y+p.fy*60,true,(combo?12:8)*starFx(p).sunMul);g.wall=true;g.hp=g.max=240*starFx(p).sunMul;g.fort=combo;sfx('thud');shake(3,0.1);},
     moon(p,combo){addShield(p.maxHp*0.25*starFx(p).shieldMul,combo?12:8,true);ring(player.x,player.y,50,C.gold,0.5);sfx('block');},
     ult(p){team.stand=6+starFx(p).ultDur;sfx('ult');shake(5,0.2);},
-    entrance(p,pw){stunWave(p.x,p.y,105,0.6,55*pw,320,p);burstParts(p.x,p.y,C.earth,22,160);shake(4,0.12);sfx('thud');addText(p.x,p.y-36,'COMING THROUGH!',C.earth,10,{life:0.8});},
-    update(p,dt){if(p!==player)return;p.oopsT=(p.oopsT??10)-dt;if(p.oopsT<=0){p.oopsT=10;stunWave(p.x,p.y,70,0.8,30,140,p);addText(p.x,p.y-34,'OOPS',C.earth,10,{life:0.7});shake(2,0.08);sfx('thud');}},
+    entrance(p,pw){stunWave(p.x,p.y,105,0.6,55*pw,320,p,p.atk*1.2*pw);burstParts(p.x,p.y,C.earth,22,160);shake(4,0.12);sfx('thud');addText(p.x,p.y-36,'COMING THROUGH!',C.earth,10,{life:0.8});},
+    update(p,dt){if(p!==player)return;p.oopsT=(p.oopsT??10)-dt;if(p.oopsT<=0){p.oopsT=10;stunWave(p.x,p.y,70,0.8,30,140,p,p.atk*0.6);addText(p.x,p.y-34,'OOPS',C.earth,10,{life:0.7});shake(2,0.08);sfx('thud');}},
     status(p){const l=[];if(team.stand>0)l.push([C.earth,'STAND '+team.stand.toFixed(1)+'s']);const w=allies.filter(a=>a.wall).length;if(w)l.push([C.earth,'WALL']);return l;},
     sunUp:p=>{let m=0;for(const a of allies)if(a.wall)m=Math.max(m,a.life);return m;}, moonUp:p=>team.shield?team.shield.t:0},
   // ───────── Noemi: heals, damage buffs, revive ult
@@ -3130,7 +3130,7 @@ addMission('market',{type:'walk',name:'Tuesday Errands',place:'Market Ring',them
 addMission('first',{type:'fight',name:'First Fight',place:'Market Ring',theme:'market',party:['kairos'],lvl:1,kills:30,max:3,tut:1,pool:['gossip','hothead','gossip'],brief:'Vices pour out of the rift. Your body knows the stance.',
   tips:[[0,'Attack','Tap attack for the Twin Fish combo. The 5th hit is a finisher.'],[3,'Dodge','Dodge right before a hit. A perfect dodge triggers Slipstream.'],[6,'Tide','Your hits add Tide. At 3 stacks a Vice goes Drowsy.'],[8,'Foresight','Enemies flicker just before they attack. That’s you, seeing it early.']]});
 addMission('garrison',{type:'fight',name:'Garrison',place:'Market Ring',theme:'market',party:['kairos','ines','bram'],lvl:1,kills:24,max:5,pool:['gossip','hothead','waxer','gossip'],brief:'Hold the square with the Garrison until the rift seals.',
-  tips:[[0,'Switch',(isTouch?'Tap a portrait':'Press 1, 2 or 3')+' to switch. Everyone has an Entrance move.'],[4,'Ines','Ines spots enemies so they take more damage, and keeps sniping from the bench.'],[8,'Bram','Bram deals no damage. His bashes stagger, then stun.'],[12,'Aspect combo','Use one skill, then the other, for an Aspect combo.']]});
+  tips:[[0,'Switch',(isTouch?'Tap a portrait':'Press 1, 2 or 3')+' to switch. Everyone has an Entrance move.'],[4,'Ines','Ines spots enemies so they take more damage, and keeps sniping from the bench.'],[8,'Bram','Bram hits light. His bashes stagger, then stun.'],[12,'Aspect combo','Use one skill, then the other, for an Aspect combo.']]});
 addMission('assault',{type:'fight',name:'Breakout · Outside',place:'Institute sub-levels',theme:'lab',lvl:3,kills:20,max:5,pool:['hothead','waxer','gossip','deadline'],brief:'Fight down through the Institute. Third sub-level.',
   tips:[[0,'Lucan','Lucan pins enemies from range. Switching Kairos ↔ Lucan gives a shield.']]});
 addMission('escape',{type:'fight',name:'Escape',place:'Institute sub-levels',theme:'lab',lvl:3,kills:16,max:5,pool:['hothead','gossip','waxer'],brief:'Get out. All of you.',
