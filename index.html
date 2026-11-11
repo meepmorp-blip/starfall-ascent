@@ -3291,7 +3291,7 @@ function showCh1Menu(){
     h('h2',{style:'padding-right:0'},'The Minute Meridian Held Its Breath'),
     h('p',{class:'lede'},cont?'Saved at: '+ch1Label(sv.i)+'. Party: '+sv.roster.map(nameOf).join(', ')+'.':(sv&&sv.done?'Chapter 1 complete. Play it again any time; your Bonds carry over.':'About 40 minutes. Progress saves at every scene, so you can stop any time.')),
     h('div',{class:'row'},h('button',{class:'btn ghost',type:'button','data-back':'1',onclick:()=>goHome()},'Back'),
-      cont?h('button',{class:'btn ghost',type:'button',onclick:()=>{if(confirm('Start Chapter 1 over? Your saved scene is replaced (Bonds stay).'))startCh1(true);}},'Start over'):null,
+      cont?h('button',{class:'btn ghost',type:'button',onclick:()=>openOverlay(h('div',{class:'form',style:'max-width:460px'},formHead('Story','Start over?'),h('p',{class:'lede'},'Start Chapter 1 from the beginning? Your saved scene is replaced. Bond levels stay.'),h('div',{class:'row'},h('button',{class:'btn ghost',type:'button','data-back':'1',onclick:()=>showCh1Menu()},'Cancel'),h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>startCh1(true)},'Start over'))))},'Start over'):null,
       h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>startCh1(!cont)},cont?'Continue':'Start Chapter 1'))));
 }
 function showCh1End(){
