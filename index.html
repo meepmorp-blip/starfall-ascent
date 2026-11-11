@@ -892,7 +892,7 @@ const CHARS={
     mech:'Vow: with Kairos in the party, switching between them shields the one coming in, and Drowsy enemies take +25% from Lucan.',
     kit:{
       entrance:{name:'Cold Entry',el:'Earth',desc:'Fires a fan of stone shards and gives a small shield (8% HP).'},
-      basic:{name:'Iceneedle',tap:'Slow, long-range ice needles that hit hard.',hold:'Lance: his main move. A charged spear of ice that pierces through every enemy in a line for heavy damage.'},
+      basic:{name:'Iceneedle',tap:'Slow, long-range ice needles that hit hard.',hold:'Lance: his main move. A charged spear of ice that locks onto the nearest enemy and pierces through everything behind it for heavy damage.'},
       sun:{name:'Pin',short:'PIN',el:'Water',cd:9,dur:0,desc:'A volley of ice needles that pins enemies in place for 3s.'},
       moon:{name:'Composure',short:'COMPOSURE',el:'Earth',cd:12,dur:6,desc:'A small stone shield, and +30% crit chance for 6s.'},
       combo:{name:'Sextile · Discipline',desc:'Using both skills in a row: his crits deal 50% more damage for 6s.'},
@@ -1880,7 +1880,7 @@ const KITS={
   // ───────── Lucan: long-range shards, pins, Vow with Kairos
   lucan:{chargeT:0.6,
     tap(p){const a=aimDir(600);faceTo(a);shard(p,Math.atan2(a.y,a.x),{dmg:p.atk*1.6,mult:1+consumeSwift(),basic:true,spd:820,life:0.95});p.atkCd=1/effAspd(p);sfx('dart');},
-    hold(p){const a=aimDir(660);faceTo(a);shard(p,Math.atan2(a.y,a.x),{dmg:p.atk*4.4,mult:1+consumeSwift(),basic:true,pierce:true,big:true,r:8,spd:1100,life:1,pn:2});p.atkCd=0.45;sfx('laser');shake(2,0.06);},
+    hold(p){const t=nearestTarget(p.x,p.y,660,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(660);faceTo(a);shard(p,Math.atan2(a.y,a.x),{dmg:p.atk*4.4,mult:1+consumeSwift(),basic:true,pierce:true,big:true,r:8,spd:1100,life:1,pn:2});p.atkCd=0.45;sfx('laser');shake(2,0.06);},
     sun(p,combo){const a=aimDir(560),b=Math.atan2(a.y,a.x),n=6;for(let i=0;i<n;i++)shard(p,b+(i-(n-1)/2)*0.11,{dmg:p.atk*1.1,skill:'sun',stun:3,pin:true});sfx('slash');if(combo)p.cdmgT=6;},
     moon(p,combo){addShield(p.maxHp*0.12*starFx(p).shieldMul,6,false);p.critT=6;if(combo)p.cdmgT=6;sfx('block');},
     ult(p){const at=aimPoint(p,500);zones.push({kind:'ice',x:at.x,y:at.y,r:140,t:3,max:3,src:p});sfx('break');shake(4,0.15);},
