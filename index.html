@@ -3124,169 +3124,610 @@ function extraSub(m){
 }
 
 // ── Chapter 1
-const MATTEO='#7A6A5A',TESSA='#C96F4A',COAT='#2A2A3A',CLERK='#4A4A5A',MARRC='#E7E3DA',VANEC='#D8D2C4';
+// ── Chapter 1, script v2: slower, more talk, every jump explained
+const MATTEO='#7A6A5A',TESSA='#C96F4A',COAT='#2A2A3A',CLERK='#4A4A5A',MARRC='#E7E3DA',VANEC='#D8D2C4',LYRAC='#2A2A3A';
+const pn=(bg,cast,lines,o)=>Object.assign({bg,cast,lines},o||{});
+const NIGHT={tint:'night'},FROZEN={tint:'frozen'};
+const CAMPB='lobby';
 const CH1_SEQ=[
-  // 0 · cold open
-  {cut:[
-    {bg:'plaza',tint:'night',fx:'rain',cap:'Twenty years ago. Rain over Meridian. Clock towers everywhere, all lit.',cast:[['npc',0.35,0.66,1,{col:'#5A7FB0'}],['npc',0.62,0.7,-1,{col:'#B5835A'}]],
-      lines:[['n','A woman stops mid-sentence, hand raised to call someone. She lowers it. She can’t remember who.'],['n','A baker stares at his own sign as if he’s never seen it.']]},
-    {bg:'plaza',tint:'night',fx:'rain',focus:[0.5,0.6],cast:[['npc',0.45,0.68,1,{col:COAT}]],cap:'A man in a long coat runs through it all. Pages slip loose and melt into ink in the rain.',
-      lines:[['man','Not yet. Not yet, not yet—']]},
-    {bg:'chapel',tint:'night',fx:'rain',focus:[0.5,0.55],cast:[['npc',0.48,0.66,1,{col:COAT}]],cap:'The orphanage of St. Hesper. Above the gate, a huge clock crawls toward midnight.',
-      lines:[['n','He kneels and sets down a newborn. The baby isn’t crying. It’s watching the clock.'],['man','Hey. Don’t look at it. You’ll hate it later anyway.'],['n','He tucks a folded page into the blanket.'],['man','Find me before they do.']]},
-    {bg:'chapel',tint:'frozen',fx:'flash',cap:'11:59. The clock stops. Every clock in the city stops. The rain hangs in the air.',cast:[['npc',0.48,0.66,1,{col:COAT,frozen:1}]],
-      lines:[['n','The man fades from the edges inward, like a word being rubbed out. Then he’s gone.']]},
-    {bg:'chapel',tint:'night',fx:'rain',cast:[['npc',0.5,0.66,-1,{col:'#E8E2D4'}]],cap:'The rain falls again. A nun opens the gate and finds the baby.',lines:[['nun','…What time is it?'],['n','Nobody answers.']]},
-    {bg:'black',cap:'STARFALL: THE ASCENT',lines:[['n','Chapter 1 · The Minute Meridian Held Its Breath']]}]},
-  // 2 · Scene 1
-  {cut:[{bg:'market',cap:'Present day. Morning. The Market Ring. “TODAY IS: TUESDAY” is chalked on a board.',cast:[['kairos',0.4,0.7,1,{moving:1}],['npc',0.6,0.66,-1,{col:MATTEO}]],
-    lines:[['n','Everyone carries a small notebook. A Ledger. Kairos doesn’t need one.']]}]},
+  // ───────── COLD OPEN
+  {sc:'Cold open · Twenty Years Ago',cut:[
+    pn('plaza',[['npc',0.35,0.66,1,{col:'#5A7FB0'}],['npc',0.62,0.7,-1,{col:'#B5835A'}]],[
+      ['n','This is Meridian, the last city. Every night, monsters called Vices fall out of the sky, and the people here have learned to live with it.'],
+      ['n','But there is something else wrong with Meridian. People here forget things. Small things at first: names, faces, what day it is.'],
+      ['n','Twenty years ago, on a rainy night, the forgetting got much worse.'],
+      ['n','A woman stops in the middle of the street, hand raised to call out to someone. She lowers it. She can’t remember who she was calling.'],
+      ['n','A baker stares at the sign above his own shop as if he has never seen it before.']],{...NIGHT,fx:'rain',cap:'Meridian. Twenty years ago. Night. Rain.'}),
+    pn('plaza',[['npc',0.45,0.68,1,{col:COAT}]],[
+      ['n','Through all of it, a man in a long coat is running. We never see his face.'],
+      ['n','He holds a bundle of papers against his chest. Pages slip loose and melt into ink in the rain, like the city is erasing them.'],
+      ['man','Not yet. Not yet, not yet—']],{...NIGHT,fx:'rain',focus:[0.5,0.6]}),
+    pn('chapel',[['npc',0.48,0.66,1,{col:COAT}]],[
+      ['n','He stops at the gate of St. Hesper’s, the city orphanage. Above the gate hangs a huge clock. Its hands are crawling toward midnight.'],
+      ['n','He kneels and sets down what he’s been carrying under the papers: a newborn baby, wrapped in the lining of a coat.'],
+      ['n','The baby isn’t crying. It’s staring up at the clock.'],
+      ['man','Hey. Don’t look at it. You’ll hate it later anyway.'],
+      ['n','He tucks a single folded page into the blanket.'],
+      ['man','Find me before they do.']],{...NIGHT,fx:'rain',focus:[0.5,0.55]}),
+    pn('chapel',[['npc',0.48,0.66,1,{col:COAT,frozen:1}]],[
+      ['n','The clock reaches 11:59. And stops.'],
+      ['n','Every clock in the city stops at the same moment. Even the rain stops, hanging in the air.'],
+      ['n','The man begins to fade, from the edges inward, like a word being rubbed out with an eraser. Then he is gone.']],{...FROZEN,fx:'flash'}),
+    pn('chapel',[['npc',0.5,0.66,-1,{col:'#E8E2D4'}]],[
+      ['n','The rain falls again. A nun opens the gate, finds the baby, and looks up at the clock. It’s dead. It never moves again.'],
+      ['nun','…What time is it?'],
+      ['n','Nobody answers. Nobody in the city remembers the man in the coat. Nobody remembers that the clocks stopped at all.'],
+      ['n','The baby grows up at St. Hesper’s. They name him Kairos.']],{...NIGHT,fx:'rain'}),
+    pn('black',[],[['n','STARFALL: THE ASCENT'],['n','Chapter 1 · The Minute Meridian Held Its Breath']],{cap:'STARFALL: THE ASCENT'})]},
+
+  // ───────── SCENE 1
+  {sc:'Scene 1 · The Boy Who Remembers',cut:[
+    pn('market',[['kairos',0.4,0.7,1,{moving:1}],['npc',0.6,0.66,-1,{col:MATTEO}]],[
+      ['n','Twenty years later. A normal Tuesday morning in the Market Ring.'],
+      ['n','Look at the signs: prices painted huge, names written on every door, and a chalkboard that says “TODAY IS: TUESDAY.” People here need reminders for everything.'],
+      ['n','Almost everyone carries a small notebook called a Ledger, where they write down what they must not forget.'],
+      ['n','This is Kairos, twenty years old. He grew up at St. Hesper’s orphanage. He has no family name and no birth record.'],
+      ['n','And he is the only person in Meridian who forgets nothing. Not a face, not a word, not a single day. Ever.'],
+      ['kairos','Morning, everyone. Who needs me today?']],{cap:'Present day. The Market Ring.'})]},
   {mission:'market'},
   {cut:[
-    {bg:'market',fx:'shake',cast:[['kairos',0.45,0.7,1],['npc',0.58,0.7,-1,{col:TESSA}]],cap:'The clock tower above the square chimes nine. Kairos flinches hard.',lines:[['tessa','You don’t like clocks.'],['kairos','Never have.']]},
-    {bg:'market',tint:'frozen',fx:'flash',cast:[['beam',0.6,0.4,1,{rot:0.6}],['npc',0.62,0.7,-1,{col:TESSA,up:1}]],cap:'Vision. The crane snapping. Steel falling. Tessa looking up.',lines:[]},
-    {bg:'market',cast:[['kairos',0.45,0.7,1],['npc',0.58,0.7,-1,{col:TESSA}]],lines:[['kairos','Tessa. Go find your mom. Now.'],['tessa','Why?'],['kairos','Please.']]}]},
-  // 5 · Scene 2
-  {cut:[
-    {bg:'market',cast:[['npc',0.78,0.66,-1,{up:1,col:TESSA}],['beam',0.78,0.4,1,{rot:0.5}],['kairos',0.45,0.7,1,{moving:1}]],fx:'shake',cap:'A cable snaps. The crane tilts. People scream. Kairos runs toward Tessa—',lines:[]},
-    {bg:'market',tint:'frozen',focus:[0.6,0.55],cast:[['npc',0.78,0.66,-1,{up:1,col:TESSA}],['beam',0.78,0.45,1,{rot:0.5}],['npc',0.3,0.5,1],['npc',0.62,0.75,-1],['kairos',0.5,0.68,1]],fx:'flash',cap:'—and everything stops.',
-      lines:[['n','Sound gone. Falling steel frozen mid-air. A pigeon frozen mid-flap. Nobody is breathing.'],['kairos','…Hello?']]},
-    {bg:'market',tint:'frozen',focus:[0.7,0.5],zoom:0.12,cast:[['kairos',0.5,0.68,1],['voice',0.75,0.45]],
-      lines:[['voice','You can breathe. You’re the only one who can, right now.'],['kairos','What is this? Who are you?'],['voice','Someone you’ll recognize. Not today.'],['kairos','That’s not an answer.'],['voice','It’s the only honest one I have.']]},
-    {bg:'market',tint:'frozen',fx:'flash',focus:[0.55,0.55],cast:[['kairos',0.5,0.68,1,{glow:1}],['voice',0.68,0.48,1,{scale:1}]],cap:'The two lights fly at him and become two blades, curved and silver-blue, like fins.',
-      lines:[['voice','You hate clocks because you know what they’re for. They measure what can be taken from you.'],['voice','This minute is yours. Use it.'],['kairos','Wait— hey!']]}]},
+    pn('market',[['kairos',0.45,0.7,1],['npc',0.58,0.7,-1,{col:TESSA,small:1}]],[
+      ['tessa','Why do you help everybody remember stuff?'],
+      ['kairos','Because I can. If I can carry it, they don’t have to.'],
+      ['n','The big clock tower above the square chimes nine. Kairos flinches hard, like someone slammed a door next to his ear.'],
+      ['tessa','You don’t like clocks.'],
+      ['kairos','Never have. Every time one ticks, it feels like it’s counting something it’s going to take away.']],{fx:'shake',cap:'9:00. The clock tower chimes.'}),
+    pn('market',[['beam',0.6,0.4,1,{rot:0.6}],['npc',0.62,0.7,-1,{col:TESSA,up:1}]],[
+      ['n','Then Kairos sees something that hasn’t happened yet.'],
+      ['n','The construction crane over the fruit stalls snaps. A steel beam falls. Tessa looks up, and it’s coming straight at her.'],
+      ['n','It lasts half a second. Then the vision is gone and the market is normal again.']],{...FROZEN,fx:'flash',cap:'A vision. Half a second of the future.'}),
+    pn('market',[['kairos',0.45,0.7,1],['npc',0.58,0.7,-1,{col:TESSA}]],[
+      ['n','Kairos stares at the crane. Nothing has happened. Yet.'],
+      ['kairos','Tessa. Go find your mom. Right now.'],
+      ['tessa','Why? What’s wrong?'],
+      ['kairos','I can’t explain. Please. Just go.']])]},
+
+  // ───────── SCENE 2
+  {sc:'Scene 2 · The Stopped Minute',cut:[
+    pn('market',[['npc',0.78,0.66,-1,{up:1,col:TESSA}],['beam',0.78,0.4,1,{rot:0.5}],['kairos',0.45,0.7,1,{moving:1}]],[
+      ['n','Too late. A cable snaps, exactly like in the vision. The crane tilts. People scream.'],
+      ['n','Tessa didn’t move. Kairos runs toward her, knowing he is too far away—']],{fx:'shake'}),
+    pn('market',[['npc',0.78,0.66,-1,{up:1,col:TESSA}],['beam',0.78,0.45,1,{rot:0.5}],['npc',0.3,0.5,1],['npc',0.62,0.75,-1],['kairos',0.5,0.68,1]],[
+      ['n','—and everything stops.'],
+      ['n','The sound is gone. The falling beam hangs frozen in mid-air. A pigeon is stuck mid-flap. Every person in the square is frozen like a statue, and none of them are breathing.'],
+      ['n','The colors drain out of the world. Only Kairos can still move.'],
+      ['kairos','…Hello? Can anyone hear me?']],{...FROZEN,fx:'flash',focus:[0.6,0.55]}),
+    pn('market',[['kairos',0.5,0.68,1],['voice',0.75,0.45]],[
+      ['n','At the end of the street, a light appears: two shapes of light circling each other like fish, around a clock face with no hands.'],
+      ['voice','You can breathe. You’re the only one who can, right now.'],
+      ['kairos','What is this? Did I do this? Who are you?'],
+      ['voice','Someone you’ll recognize. Not today.'],
+      ['kairos','That’s not an answer.'],
+      ['voice','It’s the only honest one I have. Listen. Time has stopped. One minute, held still. It won’t last.']],{...FROZEN,focus:[0.7,0.5],zoom:0.12}),
+    pn('market',[['kairos',0.5,0.68,1,{glow:1}],['voice',0.68,0.48,1,{scale:1}]],[
+      ['n','The two lights split apart and fly into his hands. They become two blades, curved and silver-blue, shaped like fins.'],
+      ['voice','You hate clocks because you know what they’re for. They measure what can be taken from you.'],
+      ['voice','This minute is yours. Use it. The girl is still under the beam.'],
+      ['n','The light turns and drifts away down the street.'],
+      ['kairos','Wait— hey! Come back!']],{...FROZEN,fx:'flash',focus:[0.55,0.55]})]},
   {mission:'chase'},
-  // 7 · Scene 3
-  {cut:[
-    {bg:'market',fx:'snap',cast:[['kairos',0.5,0.7,1,{glow:1}],['npc',0.72,0.68,-1,{col:TESSA}],['beam',0.86,0.82,1,{rot:0.1}]],cap:'Snap. Color and noise slam back.',lines:[['voice','You were there.']]},
-    {bg:'market',cast:[['npc',0.62,0.7,-1,{col:TESSA}],['npc',0.68,0.68,-1,{col:'#A0607A'}],['kairos',0.4,0.7,1]],cap:'The beam crashes harmlessly beside Tessa. Everyone in the square drops to their knees, gasping.',
-      lines:[['mother','I couldn’t breathe— I couldn’t—']]},
-    {bg:'market',fx:'shake',focus:[0.5,0.45],cast:[['kairos',0.45,0.72,1]],cap:'Above the square the air tears, like paper ripping. A rift. Things crawl out: smoke and ash with red-hot eyes. Vices.',
-      lines:[['n','Kairos looks down. He’s still holding the blades.'],['kairos','Okay. Okay.']]}]},
+
+  // ───────── SCENE 3
+  {sc:'Scene 3 · Meridian Holds Its Breath',cut:[
+    pn('market',[['kairos',0.5,0.7,1,{glow:1}],['voice',0.66,0.5,1,{scale:0.8}]],[
+      ['n','The light stops and turns to face him, if light can face anyone.'],
+      ['voice','You were there.'],
+      ['kairos','Where? There where? What does that mean?'],
+      ['n','The light doesn’t answer. It just fades.']],{...FROZEN}),
+    pn('market',[['kairos',0.5,0.7,1,{glow:1}],['npc',0.72,0.68,-1,{col:TESSA}],['beam',0.86,0.82,1,{rot:0.1}]],[
+      ['n','Snap. Color and noise slam back into the world.'],
+      ['n','The beam crashes into the stones, harmlessly, right next to Tessa. Because Kairos pushed it.']],{fx:'snap'}),
+    pn('market',[['npc',0.62,0.7,-1,{col:TESSA}],['npc',0.68,0.68,-1,{col:'#A0607A'}],['kairos',0.4,0.7,1]],[
+      ['n','Everyone in the square drops to their knees, gasping, like they’ve been holding their breath underwater.'],
+      ['n','For them, no time passed. But their bodies felt it: a whole minute without air.'],
+      ['mother','Tessa! I couldn’t breathe— I couldn’t—'],
+      ['tessa','Mama, the big pole almost fell on me, but then it didn’t.'],
+      ['n','All over the city, the same thing is happening. Clocks restart. People clutch their chests. Nobody understands what just happened. Except Kairos.']]),
+    pn('market',[['kairos',0.45,0.72,1]],[
+      ['n','Then the sky above the square tears open, like a sheet of paper being ripped. A glowing crack: a rift.'],
+      ['n','Things crawl out of it. Shapes made of smoke and ash, with red-hot eyes. Vices. The monsters Meridian fears.'],
+      ['n','Normally only soldiers fight Vices. Kairos looks down. He is still holding the two blades.'],
+      ['kairos','Okay. Okay. I don’t know how to use these. I don’t know how to fight.'],
+      ['n','A Vice lunges at a fruit stall where a family is hiding. Kairos moves before he decides to. His body knows the stance, even if he doesn’t.']],{fx:'shake',focus:[0.5,0.45]})]},
   {mission:'first'},
-  {cut:[{bg:'market',cast:[['kairos',0.5,0.7,1]],lines:[['kairos','How do I know how to do this?'],['n','More Vices pour out. Too many.'],['n','A gunshot cracks from a rooftop. A Vice drops.']]},
-    {bg:'market',cast:[['kairos',0.4,0.7,1],['ines',0.72,0.6,-1],['bram',0.55,0.72,-1,{fall:1}]],cap:'A huge man in army gear vaults the fruit stall, catches his boot on a crate, and goes down shield-first onto a Vice.',
-      lines:[['ines','Civilian with the swords. Get down or keep fighting, but pick one.'],['bram','I’m okay!'],['ines','You’re always okay, Bram.'],['bram','Sorry.'],['kairos','Did he just apologize to a box?'],['ines','He does that. Bram, cover the kids.'],['bram','Behind me, everybody! Behind the big guy!']]}]},
-  {join:'ines'},{join:'bram'},
-  {mission:'garrison'},
-  // 14 · Scene 4 end
-  {cut:[{bg:'market',cast:[['ines',0.6,0.7,-1],['kairos',0.42,0.7,1],['bram',0.72,0.7,-1]],cap:'The rift seals with a sound like a book slamming. Silence. Smoke.',
-    lines:[['ines','Sergeant Ines Calder, Meridian Garrison. You’re not army.'],['kairos','I fix— I don’t fix anything. I just live here.'],['ines','Where’d you get those?'],['kairos','You wouldn’t believe me.'],['ines','Try me. I’ve had a strange morning.']]},
-    {bg:'market',fx:'flash',cast:[['kairos',0.45,0.7,1,{glow:1}],['ines',0.6,0.7,-1],['bram',0.7,0.7,-1]],cap:'A mark glows through his shirt: two fish circling a clock face with no hands.',
-      lines:[['bram','Uh. Sarge. He’s glowing.'],['ines','I can see that, Bram.'],['kairos','That’s… new.'],['n','He collapses. Bram catches him a second too late and they both go down.'],['bram','I’m okay! He’s okay! …I think he’s okay.']]}]},
-  // 15 · Scene 5
-  {cut:[{bg:'yard',cast:[['bram',0.45,0.68,1,{moving:1}],['kairos',0.452,0.6,1,{fall:1,scale:1.3}],['ines',0.62,0.66,1,{moving:1}]],
-    lines:[['bram','He’s light. Is he supposed to be this light?'],['ines','Eat less bread and you’ll stop noticing.'],['bram','I’ll never eat less bread, Sarge.']]}]},
-  {mission:'carry'},
-  // 17 · Scene 6
   {cut:[
-    {bg:'chapel',tint:'night',cast:[['noemi',0.42,0.66,1],['kairos',0.58,0.7,-1,{fall:1}],['ines',0.72,0.66,-1]],cap:'St. Lucia’s. Half the city came in short of breath.',
-      lines:[['noemi','Pulse normal. Oxygen normal. Patient was glowing. I wrote that down because I knew I’d talk myself out of it.'],['ines','He was. Bright as a lamp.'],['noemi','People don’t glow, Sergeant.'],['ines','Agreed. Write that down too.']]},
-    {bg:'chapel',tint:'night',cast:[['noemi',0.42,0.66,1],['kairos',0.58,0.7,-1],['bram',0.74,0.66,-1]],
-      lines:[['kairos','The crane. Is the girl okay?'],['noemi','Everyone in your square is fine. What do you remember?'],['kairos','Everything. Time stopped. Everyone stopped. I was the only one moving.'],['noemi','Concussion, possibly.'],['kairos','I don’t have a concussion.'],['noemi','That’s what people with concussions say.']]},
-    {bg:'chapel',tint:'night',cast:[['theo',0.3,0.66,1,{moving:1}],['noemi',0.45,0.66,-1],['kairos',0.6,0.7,-1]],
-      lines:[['theo','He doesn’t have a concussion.'],['noemi','Theo. You’re not allowed in the ward.'],['theo','I’m your husband, I’m allowed everywhere.'],
-        ['theo','At 9:04 this morning every clock in the city lost the same sixty seconds, and the rifts opened right after. And you were standing at the exact center of it.'],['kairos','…You believe me?'],
-        ['theo','I’ve been waiting six years for something weird enough to prove I’m not crazy. You’re my favorite person today.'],['noemi','He means well.'],['theo','I mean extremely well.'],['n','The lights flicker. A rift tears open in the hospital courtyard.']]}]},
+    pn('market',[['kairos',0.5,0.7,1]],[
+      ['kairos','How do I know how to do this?'],
+      ['n','He has never held a weapon in his life. But his hands moved like they had done it a thousand times.'],
+      ['n','There’s no time to think about it. The rift is still open, and more Vices are pouring out. Too many for one person.'],
+      ['n','A gunshot cracks from a rooftop. The closest Vice drops.']]),
+    pn('market',[['kairos',0.4,0.7,1],['ines',0.72,0.6,-1],['bram',0.55,0.72,-1,{fall:1}]],[
+      ['n','On the roof stands a woman in a Garrison uniform, holding a long rifle. The Garrison is Meridian’s army, the people whose job is to fight Vices.'],
+      ['ines','Civilian with the swords. Get down or keep fighting, but pick one.'],
+      ['kairos','Who—'],
+      ['n','Before he can ask, a huge man in army gear vaults over the fruit stall, catches his boot on a crate, and falls shield-first onto a Vice. It flattens.'],
+      ['bram','I’m okay!'],
+      ['ines','You’re always okay, Bram.'],
+      ['bram','Sorry. Sorry, box.'],
+      ['kairos','Did he just apologize to a box?'],
+      ['ines','He does that. He’s polite to everything. Bram, cover the kids. Swords, you’re with me.'],
+      ['bram','Behind me, everybody! Behind the big guy! I’m very wide!']])]},
+  {join:'ines'},{join:'bram'},
+  {cut:[pn('market',[['ines',0.6,0.7,-1],['kairos',0.44,0.7,1],['bram',0.32,0.7,1]],[
+      ['ines','Listen, Swords. I don’t know who you are, but you’re fighting, so you’re on my team for the next five minutes.'],
+      ['ines','I shoot from far away and mark targets. Bram stands in front and stops things from hitting people. You hit whatever I mark.'],
+      ['kairos','I can do that.'],
+      ['bram','He says that like he’s done it before.'],
+      ['kairos','I haven’t. That’s the strange part.']])]},
+  {mission:'garrison'},
+
+  // ───────── SCENE 4 (after)
+  {sc:'Scene 4 · Garrison',cut:[
+    pn('market',[['ines',0.6,0.7,-1],['kairos',0.42,0.7,1],['bram',0.72,0.7,-1]],[
+      ['n','The rift seals with a sound like a heavy book slamming shut. Silence. Smoke. Fruit everywhere.'],
+      ['ines','Sergeant Ines Calder, Meridian Garrison. And this is Corporal Bram. You’re not army.'],
+      ['kairos','My name is Kairos. I fix— no. I don’t fix anything. I just live here. I help people remember things.'],
+      ['ines','You fought like you’ve been doing it for ten years. Where did you get those blades?'],
+      ['kairos','You wouldn’t believe me.'],
+      ['ines','Try me. I’ve had a strange morning. Everyone in the city stopped breathing for a minute, and then the sky ripped open.'],
+      ['kairos','It wasn’t strange for me. For me, the minute didn’t stop. Everyone else did. A light gave me these.'],
+      ['n','Ines looks at Bram. Bram looks at Ines. Neither of them laughs.']]),
+    pn('market',[['kairos',0.45,0.7,1,{glow:1}],['ines',0.6,0.7,-1],['bram',0.7,0.7,-1]],[
+      ['n','Then Kairos’s chest begins to glow through his shirt. A mark: two fish circling a clock face with no hands. The same shape as the light.'],
+      ['bram','Uh. Sarge. He’s glowing.'],
+      ['ines','I can see that, Bram.'],
+      ['kairos','That’s… new.'],
+      ['n','Whatever he did to stop time, it cost him. His legs give out.'],
+      ['n','He collapses. Bram tries to catch him, a second too late, and they both go down.'],
+      ['bram','I’m okay! He’s okay! …I think he’s okay. Sarge, is he okay?'],
+      ['ines','He needs a doctor. St. Lucia’s is the closest hospital. Pick him up, Corporal. We’re going.']],{fx:'flash'})]},
+
+  // ───────── SCENE 5
+  {sc:'Scene 5 · Carry Him',cut:[pn('yard',[['bram',0.45,0.68,1,{moving:1}],['kairos',0.452,0.6,1,{fall:1,scale:1.3}],['ines',0.62,0.66,1,{moving:1}]],[
+      ['n','The road to St. Lucia’s Hospital. Small rifts are still opening all over the city.'],
+      ['n','Bram carries the unconscious Kairos. Ines walks ahead with her rifle, clearing the way.'],
+      ['bram','He’s light. Is he supposed to be this light?'],
+      ['ines','Eat less bread and you’ll stop noticing.'],
+      ['bram','I’ll never eat less bread, Sarge.'],
+      ['ines','I know. Stay behind me. If Vices get close to you, stop and hide. I’ll handle them.']])]},
+  {mission:'carry'},
+
+  // ───────── SCENE 6
+  {sc:'Scene 6 · St. Lucia’s',cut:[
+    pn('chapel',[['noemi',0.42,0.66,1],['kairos',0.58,0.7,-1,{fall:1}],['ines',0.72,0.66,-1]],[
+      ['n','St. Lucia’s Hospital. It’s packed. Half the city came in short of breath after the stopped minute.'],
+      ['n','This is Dr. Noemi Lark. She is calm, careful, and very honest. Her forearm is covered in neat handwriting, because she writes down anything she’s afraid she’ll forget.'],
+      ['noemi','Pulse normal. Oxygen normal. And… “patient was glowing.” I wrote that on my arm because I knew I’d talk myself out of it later.'],
+      ['ines','He was. Bright as a lamp.'],
+      ['noemi','People don’t glow, Sergeant.'],
+      ['ines','Agreed. Write that down too.']],{...NIGHT}),
+    pn('chapel',[['noemi',0.42,0.66,1],['kairos',0.58,0.7,-1],['bram',0.74,0.66,-1]],[
+      ['n','Kairos wakes with a gasp.'],
+      ['kairos','The crane. The girl, Tessa. Is she okay?'],
+      ['noemi','Everyone in your square is fine. Better than most of the city, actually. What do you remember?'],
+      ['kairos','Everything. I always remember everything.'],
+      ['kairos','Time stopped. Everyone froze. I was the only one moving. A light talked to me, and I pushed the beam away.'],
+      ['n','A pause. Bram looks at Ines. Ines looks at Noemi. Noemi sighs and writes something on her arm.'],
+      ['noemi','Concussion, possibly.'],
+      ['kairos','I don’t have a concussion.'],
+      ['noemi','That’s exactly what people with concussions say.']],{...NIGHT}),
+    pn('chapel',[['theo',0.3,0.66,1,{moving:1}],['noemi',0.45,0.66,-1],['kairos',0.6,0.7,-1]],[
+      ['n','The door bangs open. A man with wild hair rushes in, holding a beeping device. This is Theo Lark, an inventor. Noemi’s husband.'],
+      ['theo','He doesn’t have a concussion.'],
+      ['noemi','Theo. You’re not allowed in the ward.'],
+      ['theo','I’m your husband, I’m allowed everywhere. Listen, all of you.'],
+      ['theo','At 9:04 this morning, every instrument I own lost sixty seconds. Not a glitch. Every clock in the city lost the same minute.'],
+      ['theo','And right after that, the rifts opened. I measured where the missing minute started. The exact center of it was the Market Ring.'],
+      ['theo','The exact center of it was him.'],
+      ['kairos','…You believe me?'],
+      ['theo','I’ve been waiting six years for something weird enough to prove I’m not crazy. You’re my favorite person today.'],
+      ['noemi','He means well.'],
+      ['theo','I mean extremely well.']],{...NIGHT}),
+    pn('chapel',[['noemi',0.42,0.66,1],['theo',0.56,0.66,-1],['kairos',0.7,0.7,-1]],[
+      ['n','The lights flicker. Every light in the ward, at the same time.'],
+      ['theo','That’s not the power. My reader’s spiking. Something is tearing open. Close. Very close.'],
+      ['n','Through the window: a rift, ripping open in the hospital courtyard, right next to the patients’ wing.'],
+      ['noemi','There are thirty patients in that wing who can barely breathe. They can’t run.'],
+      ['ines','Then we don’t let anything reach them.'],
+      ['noemi','I’m coming. I can keep people standing while they fight.'],
+      ['theo','And I have turrets in my bag. Don’t ask why I carry turrets in my bag.']],{...NIGHT,fx:'shake'})]},
   {join:'noemi'},{join:'theo'},
   {mission:'lucia',pick:3,prefer:['kairos','noemi','theo'],title:'Defend St. Lucia’s',sub:'Five of you now. Only three fit in the courtyard. The others guard the doors.'},
-  {cut:[{bg:'chapel',tint:'night',cast:[['noemi',0.45,0.7,1],['theo',0.55,0.7,-1]],cap:'Noemi sits down hard. Theo quietly fixes her collar.',lines:[['noemi','You enjoyed that.'],['theo','Parts of it.'],['noemi','Me too. Don’t tell anyone.']]}]},
-  // 22 · Scene 7
   {cut:[
-    {bg:'office',cap:'The Concord Council’s offices. Marble, filing cabinets to the ceiling.',cast:[['kairos',0.4,0.7,1],['npc',0.6,0.66,-1,{col:CLERK}],['theo',0.28,0.7,1]],
-      lines:[['clerk','Name.'],['kairos','Kairos.'],['clerk','Surname.'],['kairos','Don’t have one.'],['clerk','Birth record?'],['kairos','You have it. I’ve never seen it.']]},
-    {bg:'office',cast:[['kairos',0.4,0.7,1],['lucan',0.6,0.7,-1],['npc',0.72,0.66,-1,{col:CLERK}]],cap:'A young man in a sharp grey coat. Cold eyes. Perfect posture. Lucan Crane.',
-      lines:[['lucan','Is there a problem?'],['clerk','Mr. Crane. This one has an irregular file.'],['lucan','Everyone’s file is irregular this week. …This is blank.'],['kairos','Lucan?'],['lucan','Do I know you?'],
-        ['kairos','We grew up in the same place. St. Hesper. You used to steal bread from the kitchen and blame the cat.'],['lucan','I’m sorry. I don’t—'],['kairos','There wasn’t a cat.']]},
-    {bg:'office',cast:[['kairos',0.4,0.7,1],['npc',0.62,0.68,-1,{col:MARRC}],['npc',0.74,0.66,-1,{col:'#3A4A6A'}],['bram',0.24,0.7,1]],cap:'Dr. Ezekiel Marr. Friendly face. Reading glasses on a chain.',
-      lines:[['marr','Is this him? The one who doesn’t forget? Hello. I’ve been hoping to meet you since about nine this morning.'],['aide','The Registry flagged him a long time ago. Unclassifiable.'],
-        ['marr','A defect, then. That’s not an insult. It just means nobody’s had the chance to look properly. I’d like to.'],['kairos','And if I say no?'],['marr','Then I’d have to ask the Chancellor, and he’ll say yes for you.'],
-        ['ines','Not here. Not like this.'],['bram','But he—'],['ines','I know.'],['n','Kairos is led away. He looks back at Lucan. Lucan looks at the floor.']]}]},
-  // 23 · Scene 8
+    pn('chapel',[['noemi',0.45,0.7,1],['theo',0.55,0.7,-1]],[
+      ['n','The courtyard rift closes. The patients’ wing is safe.'],
+      ['n','Noemi sits down hard on the steps, exhausted. Theo sits next to her and quietly fixes her collar.'],
+      ['noemi','You enjoyed that.'],
+      ['theo','Parts of it.'],
+      ['noemi','Me too. Don’t tell anyone.']],{...NIGHT}),
+    pn('chapel',[['ines',0.32,0.7,1],['kairos',0.46,0.7,1],['theo',0.6,0.7,-1],['noemi',0.72,0.7,-1],['bram',0.2,0.7,1]],[
+      ['ines','So. What now? Three rifts in one day. That’s never happened.'],
+      ['theo','Now we report it. The Concord Council runs this city. They keep every record in Meridian, every clock, every birth.'],
+      ['theo','If a minute went missing, they have to know. And they need to see him. Proof.'],
+      ['kairos','Proof of what?'],
+      ['theo','That you’re real. That this isn’t a bunch of people who forgot to breathe.'],
+      ['noemi','Tomorrow morning. He needs to sleep first. All of you do.'],
+      ['n','So the next morning, they go to the Concord Office in the city center. It seems like the responsible thing to do.']],{...NIGHT})]},
+
+  // ───────── SCENE 7
+  {sc:'Scene 7 · The Concord Office',cut:[
+    pn('office',[['kairos',0.4,0.7,1],['npc',0.6,0.66,-1,{col:CLERK}],['theo',0.28,0.7,1]],[
+      ['n','The next morning. The Concord Council’s offices: marble floors, filing cabinets up to the ceiling, clerks writing in ledgers.'],
+      ['n','In Meridian, every person has a birth record, filed here, with their birth chart: the stars and Houses they were born under. It decides a lot about your life.'],
+      ['theo','We’re here to report the time event. And to register a witness.'],
+      ['clerk','Name.'],
+      ['kairos','Kairos.'],
+      ['clerk','Surname.'],
+      ['kairos','Don’t have one. I grew up at St. Hesper’s.'],
+      ['clerk','Birth record?'],
+      ['kairos','You have it. I’ve never seen it. Nobody ever showed me.']],{cap:'The next morning. The Concord Office.'}),
+    pn('office',[['kairos',0.4,0.7,1],['lucan',0.6,0.7,-1],['npc',0.72,0.66,-1,{col:CLERK}]],[
+      ['n','A young man in a sharp grey coat walks past, reading a file. Cold eyes. Perfect posture. He stops.'],
+      ['n','This is Lucan Crane, a senior clerk. He is also the son of Chancellor Augustin Crane, the most powerful man in Meridian.'],
+      ['lucan','Is there a problem?'],
+      ['clerk','Mr. Crane. This one has an irregular file.'],
+      ['lucan','Everyone’s file is irregular this week. Give it here.'],
+      ['n','He opens the folder. Reads. Stops.'],
+      ['lucan','…This is blank. There’s nothing in it. No hour of birth. No chart. No Houses.'],
+      ['n','Kairos isn’t looking at the folder. He’s looking at Lucan’s face.'],
+      ['kairos','Lucan?']]),
+    pn('office',[['kairos',0.4,0.7,1],['lucan',0.6,0.7,-1]],[
+      ['lucan','Do I know you?'],
+      ['n','It hurts. Kairos remembers everything, so he remembers Lucan perfectly. And Lucan doesn’t remember him at all.'],
+      ['kairos','We grew up in the same place. St. Hesper’s. We shared a room for nine years.'],
+      ['kairos','You used to steal bread from the kitchen and blame the cat.'],
+      ['lucan','I’m sorry. I was adopted when I was young. I don’t remember much before the Crane house. I don’t—'],
+      ['kairos','There wasn’t a cat.'],
+      ['n','Lucan’s face doesn’t change. But his hand on the folder tightens.']],{focus:[0.5,0.55],zoom:0.1}),
+    pn('office',[['kairos',0.4,0.7,1],['npc',0.62,0.68,-1,{col:MARRC}],['npc',0.74,0.66,-1,{col:'#3A4A6A'}],['bram',0.24,0.7,1]],[
+      ['n','Footsteps. The Chancellor’s aide arrives with two guards, and a man in a white coat with a friendly face and reading glasses on a chain.'],
+      ['n','Dr. Ezekiel Marr. A famous scientist. He studies Vices for the government.'],
+      ['marr','Is this him? The one who doesn’t forget? Hello. I’ve been hoping to meet you since about nine o’clock yesterday morning.'],
+      ['theo','Dr. Marr. We came to report the rift event, not to—'],
+      ['marr','And I’m grateful, Mr. Lark. Truly. Aide, what does his file say?'],
+      ['aide','No Houses at all, Doctor. The Registry flagged him years ago. Unclassifiable.'],
+      ['marr','A defect, then. Don’t look so worried, that’s not an insult. It just means nobody has had the chance to look at you properly. I’d like to.'],
+      ['kairos','And if I say no?'],
+      ['marr','Then I’d have to ask the Chancellor. And he’ll say yes for you.']]),
+    pn('office',[['kairos',0.4,0.7,1],['ines',0.24,0.7,1],['bram',0.3,0.7,1],['npc',0.62,0.66,-1,{col:'#3A4A6A'}],['lucan',0.78,0.7,-1]],[
+      ['n','The guards step forward. Bram moves to stop them. Ines puts a hand on his arm.'],
+      ['ines','Not here. Not like this. If we fight the Council’s guards in the Council’s building, we all go to prison, and then nobody can help him.'],
+      ['bram','But he—'],
+      ['ines','I know, Bram. I know.'],
+      ['n','Kairos is led away. At the door, he looks back at Lucan.'],
+      ['n','Lucan looks at the floor.']])]},
+
+  // ───────── SCENE 8
+  {sc:'Scene 8 · The Lab',cut:[
+    pn('office',[['kairos',0.45,0.7,1,{hurt:1}],['npc',0.6,0.68,-1,{col:MARRC}],['dess',0.76,0.7,-1]],[
+      ['n','Dr. Marr’s laboratory, deep under the Institute. White tiles. And on the wall, a huge ticking clock.'],
+      ['n','Kairos is strapped into a chair. He can’t stop looking at the clock.'],
+      ['marr','You really don’t like that, do you. Your heart rate jumps every time it ticks.'],
+      ['kairos','Could you take it down?'],
+      ['marr','Not yet. It’s useful. Relax. I’m not going to hurt you. I just want to know why your head works when everybody else’s doesn’t.'],
+      ['n','At the console sits a young woman with nervous, quick hands. She won’t look at Kairos. This is Dess Marr, the doctor’s daughter and assistant.'],
+      ['marr','Dess, bring me a core.']],{...NIGHT,cap:'The Institute. Third sub-level.'}),
+    pn('office',[['kairos',0.45,0.7,1,{glow:1}],['npc',0.6,0.68,-1,{col:MARRC}],['dess',0.7,0.7,-1]],[
+      ['n','Dess carries over a fist-sized smoky crystal. A Vice core: what is left behind when a Vice is destroyed. Dr. Marr has shelves full of them.'],
+      ['n','Marr puts it in Kairos’s strapped hand. The core lights up.'],
+      ['n','And a sound comes out of it. A child laughing. Then a woman’s voice, tired and kind: “Lili, come inside, it’s getting dark.”'],
+      ['n','Dess drops her tablet.'],
+      ['dess','That’s… that’s a person.'],
+      ['marr','It’s a memory. It reacts to him! Twelve years of these things on my shelves, and they’ve never made a sound.'],
+      ['dess','Dad. Listen to what you’re saying. That’s a person’s memory. Inside a Vice. The monsters are made of something people lost.'],
+      ['marr','Yes, Dess, that’s rather the point. Write it down.'],
+      ['n','Dess stares at the core. Then at her father. She doesn’t write anything down.']],{...NIGHT,fx:'flash'})]},
+  // the new scene: how Lucan remembers
   {cut:[
-    {bg:'office',tint:'night',cap:'Dr. Marr’s laboratory under the Institute. White tiles, and a huge ticking clock.',cast:[['kairos',0.45,0.7,1,{hurt:1}],['npc',0.6,0.68,-1,{col:MARRC}],['dess',0.76,0.7,-1]],
-      lines:[['marr','You really don’t like that, do you. Your heart rate jumps every time it ticks.'],['kairos','Could you take it down?'],['marr','Not yet. It’s useful. Dess, bring me a core.']]},
-    {bg:'office',tint:'night',fx:'flash',cast:[['kairos',0.45,0.7,1,{glow:1}],['npc',0.6,0.68,-1,{col:MARRC}],['dess',0.7,0.7,-1]],cap:'The core lights up. A child laughing. A woman’s voice: “Lili, come inside, it’s getting dark.”',
-      lines:[['dess','That’s… that’s a person.'],['marr','It’s a memory. It reacts to him. Twelve years of these things on my shelves, and they’ve never made a sound.'],['dess','Dad. That’s a person’s memory. Inside a Vice.'],['marr','Yes, Dess, that’s rather the point. Write it down.']]},
-    {bg:'yard',tint:'night',cap:'Meanwhile. A Garrison safehouse.',cast:[['ines',0.35,0.7,1],['bram',0.47,0.7,1],['noemi',0.6,0.7,-1],['theo',0.7,0.7,-1],['lucan',0.86,0.7,-1]],
-      lines:[['bram','We just let them take him.'],['ines','We let them take him so we’d still be free to get him back.'],['lucan','The lab is under the Institute. Third sub-level. Guard change at eleven.'],['ines','Why help?'],['lucan','There wasn’t a cat.'],
-        ['lucan','I remembered on the way home. I forgot him. How do you forget someone like that?'],['noemi','The same way everyone forgets everything. It’s not your fault.'],['lucan','It’s going to stop being my fault starting now.']]}]},
+    pn('chapel',[['lucan',0.45,0.7,1,{moving:1}]],[
+      ['n','That evening. Lucan walks home from the Concord Office. He takes the long way. He doesn’t know why.'],
+      ['n','His feet take him to an old building he hasn’t visited in years: St. Hesper’s orphanage. The clock above the gate is dead, stuck at 11:59.'],
+      ['lucan','“There wasn’t a cat.” Why would anyone say that?']],{...NIGHT,cap:'That evening. Lucan walks home.'}),
+    pn('chapel',[['lucan',0.5,0.7,1]],[
+      ['n','The bakery next to the orphanage is closing. The smell of warm bread drifts out.'],
+      ['n','And something in Lucan’s head cracks open.'],
+      ['n','A kitchen at night. Two boys, nine years old, stealing a loaf of bread. One of them is him.'],
+      ['n','The other boy whispers: “If they catch us, say it was the cat.” And Lucan whispers back: “There isn’t a cat.” And they laugh until they can’t breathe.'],
+      ['n','Two boys hiding under the big dead clock during inspections. Counting the seconds out loud. The other boy always counting, never missing a number.']],{...FROZEN,fx:'flash'}),
+    pn('chapel',[['lucan',0.5,0.7,1,{hurt:1}]],[
+      ['lucan','Kairos.'],
+      ['n','He remembers now. Not everything, but enough.'],
+      ['n','When the Chancellor adopted him at nine years old, the Church gave him a cup of the Mercy: holy water that makes your sad memories go away. “So the new life can begin clean,” they said.'],
+      ['n','It took his whole childhood with it. Including his best friend.'],
+      ['lucan','I let them take him. I looked at the floor.']],{...NIGHT})]},
+  {cut:[
+    pn('yard',[['ines',0.35,0.7,1],['bram',0.47,0.7,1],['noemi',0.6,0.7,-1],['theo',0.7,0.7,-1]],[
+      ['n','The same night. A Garrison safehouse on the edge of the city.'],
+      ['bram','We just let them take him. We just stood there.'],
+      ['ines','We let them take him so we’d still be free to get him back. If we fought there, we’d all be in cells right now.'],
+      ['theo','The Institute is a fortress. We don’t even know where they’re keeping him.'],
+      ['noemi','Then we find out. Someone in that building knows.'],
+      ['n','A knock at the door. Everyone freezes.']],{...NIGHT,cap:'The same night. A Garrison safehouse.'}),
+    pn('yard',[['ines',0.35,0.7,1],['bram',0.47,0.7,1],['noemi',0.6,0.7,-1],['theo',0.7,0.7,-1],['lucan',0.86,0.7,-1]],[
+      ['n','It’s Lucan, hood up, holding a folded paper.'],
+      ['lucan','The lab is under the Institute. Third sub-level. The guards change shifts at eleven. That’s your gap.'],
+      ['ines','You’re the Chancellor’s son. Why would you help us?'],
+      ['lucan','There wasn’t a cat.'],
+      ['n','A beat. Nobody understands.'],
+      ['lucan','When I was a boy, I lived at St. Hesper’s with Kairos. He was my best friend. When the Chancellor adopted me, the Church gave me the Mercy, and it erased him.'],
+      ['lucan','Tonight I smelled bread from the old kitchen, and it came back. He was right. I forgot him. How do you forget someone like that?'],
+      ['noemi','The same way everyone in this city forgets everything. It’s not your fault.'],
+      ['lucan','Maybe. But it’s going to stop being my fault starting now. I’m coming with you.']],{...NIGHT})]},
   {join:'lucan'},
+  {cut:[pn('office',[['ines',0.3,0.7,1],['lucan',0.44,0.7,1],['bram',0.58,0.7,-1],['theo',0.7,0.7,-1]],[
+      ['n','Eleven o’clock. The guard change. The plan: the team fights down through the Institute’s sub-levels, while Kairos is still locked inside.'],
+      ['ines','We go down fast. Three of us push through, the rest watch the stairs.'],
+      ['lucan','I know the layout. Follow me.']],{...NIGHT})]},
   {mission:'assault',pick:3,from:['ines','bram','noemi','theo','lucan'],prefer:['lucan','ines','noemi'],title:'Breakout · outside team',sub:'Kairos is locked inside. Pick three to fight down through the sub-levels.'},
-  {cut:[{bg:'office',tint:'night',fx:'flash',cast:[['kairos',0.5,0.7,1,{glow:1}]],cap:'Inside. Kairos stops time for three seconds and slips the straps.',lines:[['n','Freeze time, walk through the guards’ sight lines, reach the sealed door.']]}]},
+  {cut:[pn('office',[['kairos',0.5,0.7,1,{glow:1}]],[
+      ['n','Meanwhile, inside the lab. Kairos hears the alarms from the floors above. Someone is coming for him.'],
+      ['n','He looks at the ticking clock on the wall, and he remembers how the stopped minute felt. He reaches for it.'],
+      ['n','For three seconds, everything freezes again. Just three. Enough to slip his hands out of the straps.'],
+      ['kairos','Okay. I can do it on purpose. Only for a few seconds. But I can do it.'],
+      ['n','Now he has to get out. Guards and cameras watch every hallway. Stop time to walk through their sight lines.']],{...NIGHT,fx:'flash'})]},
   {mission:'sneak'},
-  {cut:[{bg:'office',tint:'night',cast:[['kairos',0.36,0.7,1],['dess',0.56,0.7,-1],['lucan',0.74,0.7,-1],['ines',0.84,0.7,-1]],cap:'The two groups meet at the sealed door. Dess is there with a key card.',
-    lines:[['dess','My father’s going to hate me.'],['kairos','Then why?'],['dess','Because that core had a little girl in it. And he wanted to know if he could make more.'],['dess','And I’m taking these. They’re people.']]}]},
+  {cut:[
+    pn('office',[['kairos',0.36,0.7,1],['dess',0.56,0.7,-1],['lucan',0.74,0.7,-1],['ines',0.84,0.7,-1]],[
+      ['n','The two groups meet at a sealed steel door. Kairos from the inside, the others from the stairs. And someone is already standing there.'],
+      ['n','Dess Marr, holding her father’s key card. Shaking.'],
+      ['kairos','Lucan? You came?'],
+      ['lucan','I remembered. The bread. The clock. I’m sorry. Later. We have to move.'],
+      ['dess','My father’s going to hate me.'],
+      ['kairos','Then why are you helping?'],
+      ['dess','Because that core had a little girl in it. And when I asked him what that meant, he only wanted to know if he could make more.']],{...NIGHT}),
+    pn('office',[['dess',0.5,0.7,1,{glow:1}],['kairos',0.36,0.7,1]],[
+      ['n','She opens the door. Then she grabs a satchel of Vice cores off the shelf.'],
+      ['dess','And I’m taking these. They’re not specimens. They’re people. Pieces of people.'],
+      ['n','She opens her hand over one core. A soft blue figure of light rises out of it: a little girl. She looks around, waves at Dess, and floats beside her, ready to help.'],
+      ['dess','Hi, Lili. Will you help us get out?']],{...NIGHT})]},
   {join:'dess'},
   {mission:'escape',pick:3,must:['dess'],prefer:['dess','kairos','lucan'],title:'Escape',sub:'Dess must go: her spirits are new. Try switching Lucan to Kairos.'},
-  {cut:[{bg:'office',tint:'night',cast:[['lucan',0.45,0.7,1,{moving:1}],['kairos',0.58,0.7,1,{moving:1}]],lines:[['lucan','I’m sorry.'],['kairos','For what?'],['lucan','For forgetting you.'],['kairos','You came back.'],['lucan','That’s the minimum.']]}]},
-  // 32 · Scene 9
-  {cut:[{bg:'plaza',tint:'night',cast:[['cass',0.68,0.66,-1],['kairos',0.4,0.7,1],['ines',0.3,0.7,1]],cap:'Rooftops. Night. Bells. A figure in grey and red, swinging a chained iron censer. Fire drips from it.',
-    lines:[['cass','By order of the Office of Correction, the Unrecorded comes with me. The rest of you can go home.'],['ines','That’s generous.'],['cass','It’s not an offer.']]}]},
+  {cut:[pn('office',[['lucan',0.45,0.7,1,{moving:1}],['kairos',0.58,0.7,1,{moving:1}]],[
+      ['n','They burst out of the Institute into the night air and keep running.'],
+      ['lucan','I’m sorry.'],
+      ['kairos','For what?'],
+      ['lucan','For forgetting you. For looking at the floor.'],
+      ['kairos','You came back.'],
+      ['lucan','That’s the minimum.'],
+      ['kairos','It’s more than anyone else ever did.']],{...NIGHT})]},
+
+  // ───────── SCENE 9
+  {sc:'Scene 9 · The Inquisitor',cut:[pn('plaza',[['cass',0.68,0.66,-1],['kairos',0.4,0.7,1],['ines',0.3,0.7,1]],[
+      ['n','The rooftops. Night. Church bells are ringing all over the city. Somebody has noticed the escape.'],
+      ['n','A figure in grey and red blocks the path, swinging a chained iron censer. Fire drips from it.'],
+      ['n','This is Sister Cass Vire, an Inquisitor of the Church’s Office of Correction. Their job is to hunt down anything the Church calls “unnatural.”'],
+      ['cass','By order of the Office of Correction, the Unrecorded comes with me. The rest of you can go home.'],
+      ['kairos','The Unrecorded? That’s what you call me?'],
+      ['cass','A person with no birth record. No stars, no Houses. The Church says you shouldn’t exist.'],
+      ['ines','That’s generous of you, letting the rest of us go.'],
+      ['cass','It’s not an offer, Sergeant.']],{...NIGHT})]},
   {mission:'cass',pick:3,prefer:['kairos','lucan','noemi'],title:'The Inquisitor',sub:'Sister Cass. She punishes standing still.'},
-  {cut:[{bg:'plaza',tint:'night',cast:[['cass',0.62,0.66,-1],['npc',0.82,0.78,-1,{col:VANEC}],['kairos',0.4,0.7,1]],cap:'A voice from the street below. Father Ambrose Vane, calm, robes immaculate.',
-    lines:[['vane','Sister. The building beneath them is a lodging house.'],['cass','Yes, Father.'],['vane','Burn it.'],['cass','There are people inside.'],['vane','Faithful people, who’ll be forgiven. Burn it.'],['n','Cass hesitates. Too long. Vane throws a flask himself. The roof catches fire.'],['kairos','No—']]}]},
+  {cut:[pn('plaza',[['cass',0.62,0.66,-1],['npc',0.82,0.78,-1,{col:VANEC}],['kairos',0.4,0.7,1]],[
+      ['n','Mid-fight, a calm voice from the street below. An older priest in perfect white robes: Father Ambrose Vane, Cass’s superior.'],
+      ['vane','Sister. The building beneath them is a lodging house.'],
+      ['cass','Yes, Father.'],
+      ['vane','Burn it. If they won’t come down, bring the roof down with them.'],
+      ['cass','Father, there are people inside. Families.'],
+      ['vane','Faithful people, who will be forgiven. Burn it.'],
+      ['n','Cass hesitates. Too long. Vane sighs, and throws a flask of fire himself. The roof catches. People start screaming inside.'],
+      ['kairos','No— no, no!'],
+      ['n','Kairos reaches for the minute again. It’s hard. It hurts. It will only hold for about twenty seconds.']],{...NIGHT,fx:'shake'})]},
   {mission:'rescue'},
-  {fn:nx=>playCutscene([{bg:'plaza',tint:'night',cast:[['kairos',0.4,0.7,1],['cass',0.6,0.66,-1],['npc',0.25,0.78,1,{col:TESSA}]],cap:'Time snaps back.',
-    lines:[sq.flags.rescue_partial?['n','Most of the people are safe on the street. Not all. Cass is staring at Kairos.']:['n','The people are safe on the street. Cass is staring at Kairos.'],
-      ['cass',sq.flags.rescue_partial?'You went back in. Even when you knew you couldn’t get them all.':'You could’ve run.'],['kairos','So could you.'],['n','Cass looks down at Vane, then back at them. She lowers the censer.'],['cass','Go. Before I remember my orders.']]}],nx)},
-  // 37 · Scene 10 (camp)
-  {cut:[{bg:'lobby',tint:'night',fx:'rain',cap:'The abandoned clock tower of St. Hesper’s. The same dead clock from twenty years ago.',
-    cast:[['kairos',0.3,0.7,1],['lucan',0.42,0.68,-1],['ines',0.56,0.7,1],['bram',0.64,0.7,-1],['noemi',0.76,0.68,1],['theo',0.84,0.7,-1],['dess',0.18,0.66,1]],
-    lines:[['theo','So. Recap. Time stopped. You got magic fish swords. Rifts. A Vice core sang. The Church wants you. The government wants you. And you don’t forget anything.'],
-      ['kairos','When you say it like that it sounds bad.'],['theo','It sounds AMAZING.'],['noemi','Theo.'],['theo','Amazing and bad.']]}]},
-  {bondRef:1},
-  {lyraRef:1},
-  // 40 · Scene 11
-  {cut:[
-    {bg:'plaza',cap:'Festival Square. Banners. Music. Priests hand out cups of clear water from silver bowls.',cast:[['npc',0.5,0.66,1,{col:VANEC}],['npc',0.62,0.7,-1,{col:'#A0607A'}],['npc',0.67,0.74,-1,{col:TESSA}]],
-      lines:[['priest','Drink, and be forgiven. Drink, and let it go.'],['n','A mother drinks, smiles peacefully, and looks down at the toddler holding her skirt.'],['mother','…Whose child is this?']]},
-    {bg:'plaza',cast:[['cass',0.45,0.68,1],['npc',0.6,0.66,-1,{col:VANEC}]],
-      lines:[['vane','Sister. The line is waiting.'],['cass','She forgot her son.'],['vane','She forgot her pain. Her son came with it. That’s mercy.'],['cass','That’s not mercy. That’s a theft with a hymn over it.'],
-        ['vane','Cass.'],['cass','I’ve taken my vows seriously my whole life, Father. That’s exactly why I can’t stay.']]},
-    {bg:'plaza',cast:[['cass',0.6,0.7,-1],['kairos',0.42,0.7,1],['theo',0.3,0.7,1],['noemi',0.22,0.7,1]],
-      lines:[['cass','I don’t want to hear “told you so.”'],['kairos','I wasn’t going to.'],['theo','I was.'],['noemi','He wasn’t.']]},
-    {bg:'plaza',tint:'night',fx:'shake',focus:[0.5,0.4],cast:[['kairos',0.45,0.72,1],['cass',0.58,0.72,-1]],cap:'Overhead, the moon darkens. An eclipse. Every clock stops for one second. Then the sky splits into five rifts at once.',lines:[]}]},
+  {fn:nx=>playCutscene([pn('plaza',[['kairos',0.4,0.7,1],['cass',0.6,0.66,-1],['npc',0.25,0.78,1,{col:TESSA}]],[
+      ['n','Time snaps back.'],
+      sq.flags.rescue_partial?['n','Most of the people are safe on the street, coughing and crying. Not all of them. Kairos ran out of time.']:['n','The people are safe on the street, coughing and crying, alive. All of them.'],
+      ['n','Cass saw everything. She saw him go back into the fire, again and again.'],
+      ['cass',sq.flags.rescue_partial?'You went back in. Even when you knew you couldn’t save them all.':'You could’ve run. You had a clear way out. You went into the fire instead.'],
+      ['kairos','So could you. You didn’t throw that flask. You hesitated.'],
+      ['n','Cass looks down at Father Vane. Then back at them. Slowly, she lowers the censer.'],
+      ['cass','Go. Before I remember my orders.']],{...NIGHT})],nx)},
+
+  // ───────── SCENE 10 (camp)
+  {sc:'Scene 10 · The Clock Tower',cut:[
+    pn(CAMPB,[['kairos',0.3,0.7,1],['lucan',0.42,0.68,-1],['ines',0.56,0.7,1],['bram',0.64,0.7,-1],['noemi',0.76,0.68,1],['theo',0.84,0.7,-1],['dess',0.18,0.66,1]],[
+      ['n','Lucan leads them somewhere nobody will look: the abandoned clock tower of St. Hesper’s, where he and Kairos used to hide as kids.'],
+      ['n','It’s the same dead clock from twenty years ago, still stuck at 11:59. Rain outside.'],
+      ['n','Everyone is exhausted. Bram makes toast over a lantern. Theo fixes a drone. Noemi checks everyone’s cuts.'],
+      ['theo','So. Let me recap, because I think I need to hear it out loud.'],
+      ['theo','Time stopped. You got magic fish swords from a talking light. Rifts are opening everywhere. A Vice core sang a lullaby.'],
+      ['theo','The Church wants you. The government wants you. And you’re the only person in the city who doesn’t forget anything.'],
+      ['kairos','When you say it like that it sounds bad.'],
+      ['theo','It sounds AMAZING.'],
+      ['noemi','Theo.'],
+      ['theo','Amazing and bad.'],
+      ['ines','Tomorrow we figure out what comes next. Tonight, everyone sleeps. Kairos, go talk to people. You look like you need it.']],{...NIGHT,fx:'rain',cap:'The abandoned clock tower of St. Hesper’s.'})]},
+  {bond:{n:2,title:'Who do you sit with tonight?',sub:'Pick two. Each talk raises that character’s Bond, and Bond makes them stronger in story fights.',choices:[
+    {who:['lucan'],title:'Lucan, at the clock face',cut:[pn(CAMPB,[['kairos',0.44,0.68,1],['lucan',0.56,0.68,-1]],[
+      ['n','They sit on the narrow ledge behind the dead clock, legs hanging over the edge, like when they were kids.'],
+      ['lucan','We used to hide here when the matron did inspections.'],
+      ['kairos','You’d make me count the seconds so we knew when to come out.'],
+      ['lucan','…You hated it.'],
+      ['kairos','I hated it. I did it anyway. Because you asked.'],
+      ['lucan','I’m not good at this. Saying things.'],
+      ['kairos','I know. You never were.'],
+      ['lucan','So I’ll say it once. Whatever this is, the Church, my father, whatever comes out of those rifts. I’m not losing you twice.'],
+      ['kairos','That sounds like a vow.'],
+      ['lucan','It is one. Don’t make it weird.']],{...NIGHT,focus:[0.5,0.55]})]},
+    {who:['ines','bram'],title:'Ines and Bram, by the lantern',cut:[pn(CAMPB,[['ines',0.4,0.68,1],['bram',0.56,0.68,-1],['kairos',0.7,0.7,-1]],[
+      ['kairos','How long have you two been partners?'],
+      ['bram','Three years. Sarge saved my life in the Eastern Rift.'],
+      ['ines','You fell into the Eastern Rift.'],
+      ['bram','And you saved my life.'],
+      ['ines','He followed me in. I told him to stay, he didn’t. Fourteen Vices. He had a shield and no plan.'],
+      ['bram','I had a plan. The plan was you.'],
+      ['ines','Eat your toast, Corporal.'],
+      ['n','She looks away, almost smiling. It’s the softest Kairos has seen her.']],{...NIGHT,focus:[0.5,0.55]})]},
+    {who:['noemi','theo'],title:'Noemi and Theo, at the window',cut:[pn(CAMPB,[['noemi',0.42,0.68,1],['theo',0.56,0.68,-1],['kairos',0.28,0.7,1]],[
+      ['kairos','Why do you write on your arm?'],
+      ['noemi','I wrote “he glowed” on my arm because I was scared I’d decide it didn’t happen. Everyone in this city talks themselves out of the scary things.'],
+      ['theo','You always say the scary thing first.'],
+      ['noemi','And you always say the exciting thing first.'],
+      ['theo','Between us we say everything.'],
+      ['noemi','Kairos. If this gets dangerous, and it will, I’m not leaving him behind. And I’m not leaving you behind either.'],
+      ['noemi','That’s not kindness. I’m just stubborn.']],{...NIGHT,focus:[0.5,0.55]})]},
+    {who:['dess'],title:'Dess, alone with the cores',cut:[pn(CAMPB,[['dess',0.48,0.68,1],['kairos',0.6,0.7,-1]],[
+      ['kairos','Are you okay? You left your father tonight.'],
+      ['dess','I don’t know yet. Ask me tomorrow.'],
+      ['dess','I can hear them a little. The memories in the cores. Mostly ordinary stuff. Someone’s bad day. A song.'],
+      ['dess','My dad used to sing to me, before he got busy. I don’t remember the song anymore. Isn’t that funny?'],
+      ['kairos','What did it sound like?'],
+      ['dess','I don’t… If I find it in one of these, I’ll let you know.']],{...NIGHT,focus:[0.5,0.55]})]},
+    {who:[],title:'Kairos, alone, at the dead clock',note:'No Bond. A vision.',flag:'vision',cut:[pn(CAMPB,[['kairos',0.5,0.7,1,{glow:1}]],[
+      ['n','Kairos puts his hand on the dead clock. The same one that stopped the night he was left here.'],
+      ['n','A vision: a man’s hand, writing on a page by candlelight. The handwriting is the same as the folded page that was tucked into his blanket as a baby.'],
+      ['n','A voice, his own voice, but older: “Find me before they do.”'],
+      ['n','He snaps out of it. His hand is still on the clock.']],{...FROZEN,fx:'flash',focus:[0.5,0.55]})]},
+  ]}},
+  {cut:[pn(CAMPB,[['kairos',0.4,0.74,1],['npc',0.62,0.34,-1,{col:LYRAC}]],[
+      ['n','Late. Everyone is asleep. Kairos opens his eyes. On a beam above them sits a young woman in a dark courier’s coat, watching him.'],
+      ['lyra','Go back to sleep.'],
+      ['kairos','Who are you?'],
+      ['lyra','Someone who’s supposed to be watching. Not talking.'],
+      ['kairos','You’re bad at it.'],
+      ['lyra','…Tomorrow is the Church’s Festival of the Mercy. They hand out cups of water to everyone. Don’t drink anything they give you.'],
+      ['kairos','Why? What’s in it?'],
+      ['n','She doesn’t answer. She drops from the beam and slips out through the window. Kairos is the only one who saw her.']],{...NIGHT,focus:[0.5,0.45]})]},
+
+  // ───────── SCENE 11
+  {sc:'Scene 11 · Festival of the Mercy',cut:[
+    pn('plaza',[['npc',0.5,0.66,1,{col:VANEC}],['npc',0.62,0.7,-1,{col:'#A0607A'}],['npc',0.67,0.74,-1,{col:TESSA}]],[
+      ['n','The next day. Festival Square. Banners, music, food. The whole city comes to the Church’s yearly Festival of the Mercy.'],
+      ['n','Priests hand out cups of clear water from silver bowls. This is the Mercy, the same water Lucan was given as a boy.'],
+      ['priest','Drink, and be forgiven. Drink, and let it go.'],
+      ['n','A mother drinks. She smiles peacefully. Then she looks down at the toddler holding her skirt, as if she has never seen him before.'],
+      ['mother','…Whose child is this?'],
+      ['n','Kairos understands now what Lyra meant. The Mercy doesn’t heal pain. It erases memories. All of them, good ones too.']],{cap:'The next day. Festival Square.'}),
+    pn('plaza',[['cass',0.45,0.68,1],['npc',0.6,0.66,-1,{col:VANEC}]],[
+      ['n','Sister Cass is at the bowls in her grey and red, ladle in hand. She saw it too. She sets the ladle down.'],
+      ['vane','Sister. The line is waiting.'],
+      ['cass','She forgot her son, Father.'],
+      ['vane','She forgot her pain. Her son came with it. That’s mercy.'],
+      ['cass','That’s not mercy. That’s a theft with a hymn over it.'],
+      ['n','She unhooks her censer from the altar and lights it.'],
+      ['vane','Cass.'],
+      ['cass','I’ve taken my vows seriously my whole life, Father. That’s exactly why I can’t stay.']]),
+    pn('plaza',[['cass',0.6,0.7,-1],['kairos',0.42,0.7,1],['theo',0.3,0.7,1],['noemi',0.22,0.7,1]],[
+      ['n','She walks away from him, through the crowd, straight to Kairos and the others.'],
+      ['cass','I don’t want to hear “told you so.”'],
+      ['kairos','I wasn’t going to.'],
+      ['theo','I was.'],
+      ['noemi','He wasn’t.'],
+      ['cass','Last night I hesitated on that roof. Today I’m done hesitating. If you’ll have me.']]),
+    pn('plaza',[['kairos',0.45,0.72,1],['cass',0.58,0.72,-1]],[
+      ['n','Overhead, the moon begins to cover the sun. An eclipse.'],
+      ['n','Every clock in the square stops for one second. The crowd gasps.'],
+      ['n','Then the sky above the festival splits open into five rifts at once.']],{...NIGHT,fx:'shake',focus:[0.5,0.4]})]},
   {join:'cass'},
   {mission:'festival',pick:3,prefer:['kairos','cass','noemi'],title:'Festival of the Mercy',sub:'All eight of you, for the first time. Choose your three.'},
-  {cut:[{bg:'plaza',tint:'night',cast:[['theo',0.4,0.7,1],['ines',0.55,0.7,-1],['lucan',0.68,0.7,-1]],
-    lines:[['theo','They’re not attacking. They’re migrating. Everything that came through is heading for the Registry.'],['ines','What’s in the Registry?'],['lucan','Every birth record in Meridian. And his blank one.']]}]},
-  {stacksRef:1},
+  {cut:[pn('plaza',[['theo',0.4,0.7,1],['ines',0.55,0.7,-1],['lucan',0.68,0.7,-1],['kairos',0.28,0.7,1]],[
+      ['n','The crowd is safe. But something about the fight was wrong.'],
+      ['kairos','During the fight, I saw it again. The future. All the Vices turned and faced the same direction at once.'],
+      ['theo','He’s right. Look at my reader. They’re not attacking anymore. They’re migrating. Everything that came through the rifts is heading to one place.'],
+      ['ines','Where?'],
+      ['theo','The Registry of Births.'],
+      ['ines','What’s in the Registry?'],
+      ['lucan','Every birth record in Meridian. Every person’s chart, every hour of birth.'],
+      ['lucan','And his blank one.']],{...NIGHT})]},
+
+  // ───────── SCENE 12
+  {sc:'Scene 12 · The Registry',cut:[
+    pn('office',[['lucan',0.42,0.7,1],['kairos',0.56,0.7,-1],['dess',0.7,0.7,-1]],[
+      ['n','Night. The Registry of Births: a huge black stone building with endless windows. Guards everywhere.'],
+      ['n','Lucan holds up a ring of keys.'],
+      ['lucan','My father’s keys. He doesn’t know I took them.'],
+      ['kairos','He will.'],
+      ['lucan','Then I’d better make it worth it.'],
+      ['theo','The building goes down for floors and floors. The records are stored in the Stacks.'],
+      ['ines','We split into two teams. Two routes down. Each team opens the gates for the other one.']],{...NIGHT,cap:'Night. The Registry of Births.'})]},
+  {split:'stacks',preferA:['kairos','lucan','ines'],preferB:['bram','noemi','theo']},
+  {cut:[pn('office',[['kairos',0.5,0.7,1,{glow:1}],['dess',0.66,0.7,-1]],[
+      ['n','At the bottom, both teams reach a huge vault door marked INTAKE WINDOW 1. Kairos touches it.'],
+      ['n','Another vision: himself, older, standing at this same window, with a long queue of people behind him, shouting at someone he can’t see.'],
+      ['kairos','I’ve been here.'],
+      ['dess','You’ve never been here. Nobody’s allowed down here.'],
+      ['kairos','I know. I’ve still been here.']],{...NIGHT,fx:'flash'})]},
+
+  // ───────── SCENE 13
+  {sc:'Scene 13 · Intake Window 1',cut:[pn('lobby',[['horaios',0.5,0.32,1],['kairos',0.42,0.78,1],['ines',0.3,0.8,1],['theo',0.6,0.8,-1],['lucan',0.7,0.78,-1]],[
+      ['n','The vault opens onto a vast hall. Rows and rows of empty chairs, like a waiting room for the whole city.'],
+      ['n','At the far end, behind a desk as big as a house, sits a figure made of moonlight in a clerk’s coat. Its face is a pale disc.'],
+      ['n','This is Horaios, the Kosmokrator of the Moon. One of the powers that rule over the stars, and over every birth chart in Meridian.'],
+      ['horaios','Intake Window 1. Take a number.'],
+      ['n','No one moves.'],
+      ['horaios','Name. Hour of birth. Sign here. Next.'],
+      ['ines','Is that… the Moon?'],
+      ['theo','Write this down. Somebody write this down.'],
+      ['horaios','…No number. That one has no number. That isn’t allowed.']],{z:1.1,focus:[0.5,0.42]})]},
+  {loss:1,must:['kairos'],prefer:['kairos','lucan','noemi'],title:'Intake Window 1',sub:'Three of you face Horaios. Kairos has to be one of them.'},
+  {cut:[
+    pn('lobby',[['horaios',0.5,0.3,1,{phase:3}],['kairos',0.44,0.72,1,{moving:1}],['lucan',0.3,0.74,1,{grey:1}],['noemi',0.66,0.74,-1,{grey:1}]],[
+      ['n','Horaios has stamped everyone else. Processed. Frozen grey.'],
+      ['kairos','Fine. My minute.'],
+      ['n','Kairos stops time completely. Everything freezes. He runs at Horaios—']],{...FROZEN,fx:'flash',z:1.1,focus:[0.5,0.42]}),
+    pn('lobby',[['horaios',0.5,0.3,1,{phase:3,pat:2}],['kairos',0.48,0.62,1]],[
+      ['n','—and Horaios turns its head. And looks right at him. Inside the stopped minute.'],
+      ['horaios','You’re not the only one who’s done this before.']],{...FROZEN,z:1.1,focus:[0.5,0.4],zoom:0.15}),
+    pn('lobby',[['horaios',0.5,0.3,1,{phase:3}],['kairos',0.44,0.7,1,{hurt:1}],['hand',0.56,0.56,-1,{scale:0.75}]],[
+      ['n','Horaios moves inside the stopped minute, as easily as Kairos does. A huge hand of moonlight closes around him.'],
+      ['horaios','Processing.']],{...FROZEN,fx:'shake',z:1.1,focus:[0.5,0.42]}),
+    pn('lobby',[['horaios',0.52,0.3,1,{phase:3}],['kairos',0.36,0.74,1,{fall:1}],['lucan',0.5,0.66,-1],['hand',0.58,0.56,-1,{closed:1,scale:0.75}]],[
+      ['n','Then Lucan breaks free of the frozen grey. Nobody knows how. Maybe it’s the vow he made last night.'],
+      ['n','He throws himself between the hand and Kairos.'],
+      ['lucan','Not him.']],{...FROZEN,fx:'flash',z:1.1,focus:[0.5,0.42]}),
+    pn('black',[['gate',0.62,0.62,1,{scale:1.2}],['lucan',0.6,0.62,-1,{scale:1.4}],['kairos',0.4,0.66,1]],[
+      ['n','The hand closes around Lucan instead. Behind Horaios, a gate of white light opens: the Moon Gate.'],
+      ['kairos','LUCAN—'],
+      ['horaios','Irregular. But acceptable.'],
+      ['n','Lucan is pulled backward into the light. He doesn’t fight it. He looks straight at Kairos, calm.'],
+      ['lucan','Don’t you dare forget me.'],
+      ['kairos','I can’t. I never forget anything.'],
+      ['lucan','Good. Then come get me.']]),
+    pn('lobby',[['ines',0.4,0.7,1,{moving:1}],['kairos',0.52,0.72,-1],['bram',0.62,0.7,-1],['theo',0.74,0.7,-1]],[
+      ['n','The Gate closes. Horaios is gone. The great hall is just a dark, empty room.'],
+      ['n','The others unfreeze, gasping. And the ceiling starts to come down.'],
+      ['ines','Out! Everybody out, now!'],
+      ['n','They run. The Registry collapses behind them, with every birth record in Meridian inside it.']],{...NIGHT,fx:'shake'}),
+    pn('plaza',[['kairos',0.4,0.7,1],['ines',0.52,0.7,-1],['bram',0.62,0.7,-1],['noemi',0.3,0.7,1]],[
+      ['n','Dawn. A rooftop. Six of them now, bruised and silent. Lucan’s place is empty.'],
+      ['n','Every screen in the city lights up with the same face: Chancellor Augustin Crane. Lucan’s adoptive father.'],
+      ['crane','Last night, a group of heretics attacked the Registry of Births and destroyed it. My son Lucan was taken by them.'],
+      ['crane','If you see these people, do not approach them.'],
+      ['n','Their faces appear on every screen.'],
+      ['bram','He knows we didn’t take him. He has to know.'],
+      ['ines','He knows. He just doesn’t care. It’s a better story for him this way.'],
+      ['cass','Welcome to the Church’s side of things. This is how they do it.']]),
+    pn('plaza',[['kairos',0.5,0.7,1,{glow:1}],['theo',0.64,0.7,-1]],[
+      ['n','Kairos is staring at the sunrise. His chest glows faintly.'],
+      ['theo','Kairos. Where did it take him?'],
+      ['kairos','I don’t know.'],
+      ['kairos','But I remember everything. Every word Horaios said. Every inch of that hall. I’m going to find out.']],{fx:'flash'}),
+    pn('plaza',[['npc',0.42,0.68,1,{col:LYRAC}],['npc',0.6,0.68,-1,{col:COAT}]],[
+      ['n','Another rooftop, across the city. Lyra hands a folder to a hooded man. On the folder: KAIROS · BIRTH RECORD · (blank).'],
+      ['lyra','He used it twice. The minute. And Horaios moved inside it.'],
+      ['hooded','He’s awake, then.'],
+      ['lyra','He asked me who I was.'],
+      ['hooded','Did you tell him?'],
+      ['lyra','No.']],{...NIGHT}),
+    pn('plaza',[['npc',0.6,0.68,-1,{col:COAT}],['voice',0.6,0.56,1,{scale:0.7}]],[
+      ['n','The man turns. Under his hood, on his chest, a mark glows: two fish circling a clock face with no hands.'],
+      ['n','The same mark as Kairos.'],
+      ['hooded','Good. It’s too early.']],{...NIGHT,fx:'flash',focus:[0.6,0.55]}),
+    pn('white',[['lucan',0.5,0.7,1,{grey:1}]],[
+      ['n','One last vision. A white room. Rows of desks.'],
+      ['n','Lucan, in a clerk’s uniform, sits at Window 1, filling out a form. He reaches the line that says NAME, and stops. Pen hovering.'],
+      ['n','He doesn’t know what to write.']]),
+    pn('black',[],[['n','CHAPTER 2: THE ARCHIVE'],['n','To be continued.']],{cap:'CHAPTER 2: THE ARCHIVE'})]},
 ];
-const CH1_END=[
-  {bg:'plaza',cast:[['ines',0.4,0.7,1],['cass',0.52,0.7,-1],['bram',0.64,0.7,-1]],lines:[['ines','He knows. He just doesn’t care.'],['cass','Welcome to the Church’s side of things.']]},
-  {bg:'plaza',fx:'flash',cast:[['kairos',0.5,0.7,1,{glow:1}],['theo',0.64,0.7,-1]],cap:'Kairos is staring at the sunrise. His chest glows faintly.',lines:[['theo','Kairos. Where did it take him?'],['kairos','I don’t know. But I’m going to find out.']]},
-  {bg:'plaza',tint:'night',cap:'Another rooftop, across the city. A folder: KAIROS · BIRTH RECORD · (blank).',cast:[['npc',0.42,0.68,1,{col:'#2A2A3A'}],['npc',0.6,0.68,-1,{col:COAT}]],
-    lines:[['lyra','He used it twice. The minute. Horaios moved inside it.'],['hooded','He’s awake, then.'],['lyra','He asked me who I was.'],['hooded','Did you tell him?'],['lyra','No.']]},
-  {bg:'plaza',tint:'night',fx:'flash',focus:[0.6,0.55],cast:[['npc',0.6,0.68,-1,{col:COAT}],['voice',0.6,0.56,1,{scale:0.7}]],cap:'The man turns. On his chest, a mark glows: two fish circling a clock face with no hands.',lines:[['hooded','Good. It’s too early.']]},
-  {bg:'white',cast:[['lucan',0.5,0.7,1,{grey:1}]],cap:'Vision. A white room. Rows of desks. Lucan in a clerk’s uniform at Window 1.',lines:[['n','He reaches the line “NAME” and stops. Pen hovering. He doesn’t know what to write.']]},
-  {bg:'black',cap:'CHAPTER 2: THE ARCHIVE',lines:[['n','To be continued.']]},
-];
-function ch1Seq(){
-  // reuse the Phase 3 scenes (camp, Lyra, the Stacks, Horaios, the Moon Gate) so there is one copy of each
-  const P=PREVIEW3_SEQ,out=[];
-  for(const s of CH1_SEQ){
-    if(s.bondRef)out.push(P[1]);
-    else if(s.lyraRef)out.push(P[2]);
-    else if(s.stacksRef){out.push(P[3],P[4],P[5],P[6],P[7]);
-      out.push({cut:P[8].cut.concat(CH1_END)});}
-    else out.push(s);
-  }
-  return out;
-}
+function ch1Seq(){return CH1_SEQ;}
 let CH1=null;
 function startCh1(fresh){
   ensureAudio();CH1=CH1||ch1Seq();
-  const sv=!fresh&&save.ch1&&!save.ch1.done?save.ch1:null;
-  runSeq(CH1,{roster:sv?sv.roster:['kairos'],flags:sv?sv.flags:{},i:sv?sv.i:0,save:'ch1',end:showCh1End});
+  const sv=!fresh&&save.ch1b&&!save.ch1b.done?save.ch1b:null;
+  runSeq(CH1,{roster:sv?sv.roster:['kairos'],flags:sv?sv.flags:{},i:sv?sv.i:0,save:'ch1b',end:showCh1End});
 }
-function ch1Label(i){
-  const marks=[[0,'Cold open'],[1,'Scene 1 · The Boy Who Remembers'],[4,'Scene 2 · The Stopped Minute'],[6,'Scene 3 · Meridian Holds Its Breath'],[8,'Scene 4 · Garrison'],[13,'Scene 5 · Carry Him'],[15,'Scene 6 · St. Lucia’s'],
-    [20,'Scene 7 · The Concord Office'],[21,'Scene 8 · The Lab'],[30,'Scene 9 · The Inquisitor'],[35,'Scene 10 · The Clock Tower'],[38,'Scene 11 · Festival of the Mercy'],[42,'Scene 12 · The Registry'],[45,'Scene 13 · Intake Window 1']];
-  let l=marks[0][1];for(const [k,t] of marks)if(i>=k)l=t;return l;
-}
+function ch1Label(i){const q=CH1||(CH1=ch1Seq());let l='Cold open';for(let k=0;k<=i&&k<q.length;k++)if(q[k].sc)l=q[k].sc;return l;}
 function showCh1Menu(){
-  const sv=save.ch1,cont=sv&&!sv.done&&sv.i>0;
+  const sv=save.ch1b,cont=sv&&!sv.done&&sv.i>0;
   openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story','Chapter 1'),
     h('h2',{style:'padding-right:0'},'The Minute Meridian Held Its Breath'),
     h('p',{class:'lede'},cont?'Saved at: '+ch1Label(sv.i)+'. Party: '+sv.roster.map(nameOf).join(', ')+'.':(sv&&sv.done?'Chapter 1 complete. Play it again any time; your Bonds carry over.':'About 40 minutes. Progress saves at every scene, so you can stop any time.')),
@@ -3295,7 +3736,7 @@ function showCh1Menu(){
       h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>startCh1(!cont)},cont?'Continue':'Start Chapter 1'))));
 }
 function showCh1End(){
-  state='panel';save.ch1=Object.assign(save.ch1||{},{done:true,i:0});persist();
+  state='panel';save.ch1b=Object.assign(save.ch1b||{},{done:true,i:0});persist();
   openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story','Chapter 1 complete'),h('div',{class:'stamp'},'Chapter 1'),
     h('h2',null,'Then come get me'),
     h('p',{class:'lede'},'Lucan is behind the Moon Gate, and the whole city is looking for you. Chapter 2, The Archive, is next.'),
