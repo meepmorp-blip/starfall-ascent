@@ -199,6 +199,11 @@ canvas#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-ac
 .bv-equip{width:100%;margin:2px 0 4px}
 .bv-salv{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 6px;padding:6px 8px;border:1.5px dashed #B5523A;border-radius:8px;background:rgba(181,82,58,0.08)}
 .ftiles.salv .ftile{cursor:pointer}.ftile.pick{outline:3px solid #B5523A;outline-offset:-3px;background:rgba(181,82,58,0.15)!important}.ftile.pick::after{content:'✕';position:absolute;bottom:3px;right:5px;font:900 12px var(--f-ui);color:#B5523A}.ftile.locked{opacity:.45}
+.sk-row{display:flex;gap:10px;align-items:center;border:1.5px solid var(--ink-line);border-radius:8px;padding:8px 10px;margin-top:6px}
+.sk-ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#3B2617;color:#F6EBD2;flex:0 0 auto}
+.sk-bd{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.sk-k{font:800 9px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.sk-bar{display:flex;gap:3px}.sk-bar i{flex:1;height:6px;border-radius:3px;background:rgba(59,38,23,.18)}.sk-bar i.on{background:#C9A25A}.sk-bar i.lock{background:repeating-linear-gradient(45deg,rgba(59,38,23,.18) 0 3px,transparent 3px 6px)}
+.sk-fx{font:600 11px var(--f-form);color:var(--ink-soft)}.sk-max{font:900 12px var(--f-ui);color:#C9A25A}
 .bv-cmp{margin:0;font:600 12px var(--f-form);color:var(--ink-soft)}
 @media (max-height:520px){
   .vault{gap:6px}.vault .select-head .eyebrow{display:none}.vault .select-head h2{font-size:17px;margin:0}
@@ -1116,7 +1121,7 @@ function fragFx(f,charId){
 const SETS={Fire:[{dmgPct:0.08},{heat:0.15,burnMult:0.3}],Earth:[{def:0.06},{shield:0.3,hp:0.08}],Air:[{aspd:0.08},{spd:0.08,dodge:0.15}],Water:[{heal:0.15},{killHeal:0.01,swapShield:0.06}]};
 const SET_TXT={Fire:['+8% damage','+15% vs burning, burns +30%'],Earth:['+6% DEF','shields +30%, +8% HP'],Air:['+8% attack speed','+8% move speed, dodge CD −15%'],Water:['+15% healing','heal 1% on kill, switch-in shield 6%']};
 function setCount(id){const c={};for(const s of ['sun','moon','rising']){const f=fragById(save.chars[id].slots[s]);if(f){const el=SIGN_EL[f.sign];c[el]=(c[el]||0)+1;}}return c;}
-// Constellation Choices: at Lv 5/10/15/20 each character picks 1 of 2 ways a skill works (free to swap in Builds)
+// Turning Points: at Lv 5/10/15/20 each character picks 1 of 2 ways a skill works (free to swap in Builds)
 const STARS={
   kairos:{5:[['Riverbed','Basic attacks hit 15% harder.',{basicMul:1.15}],['Undercurrent','Riptide recharges 20% faster.',{sunCd:0.8}]],
     10:[['Flood','Riptide hits 35% harder.',{sunMul:1.35}],['Still Water','Shell’s counter hits 50% harder.',{moonMul:1.5}]],
@@ -1261,6 +1266,18 @@ function drawLoot(c){
     if(l.f.rar===2){c.fillStyle=C.gold;c.fillRect(x+6,y-13+bob,2,2);c.fillRect(x-8,y-9+bob,2,2);}}
 }
 // shared by Battle/Climb results, story missions and the chapter clear
+// Skill Mastery: each character levels Entrance / Basic / Sun / Moon / Ultimate (1-10) with Mastery points earned after every match.
+// A skill can never be higher than the character's Recollection level.
+const SKILLS=['entrance','basic','sun','moon','ult'],SKILL_MAX=10;
+const SKILL_NAME={entrance:'Entrance',basic:'Basic attack',sun:'Sun skill',moon:'Moon skill',ult:'Ultimate'};
+function skLv(id,k){const c=save.chars[id];return (c&&c.sk&&c.sk[k])||1;}
+function skMul(id,k){return 1+0.05*(skLv(id,k)-1);}
+function skCost(lv){return {mp:lv,dust:15*lv};}
+function giveMp(ids,n){if(n<=0)return;for(const id of ids){const c=save.chars[id];c.mp=(c.mp|0)+n;}}
+// Memories drop from Vices; the total is split between the party at the end of the stage
+function memDrop(e){if(!run||run.practice)return;const v=e.type==='champion'?30:e.elite?12:e.gen?1.5:4.5;run.mem=(run.mem||0)+v;
+  if(rand()<0.6)part(e.x,e.y-6,rr(-30,30),-rr(40,90),0.7,'#B9A6FF',2.6);}
+function memShare(){return Math.round((run.mem||0)/Math.max(1,run.party.length)*1.5);}
 function giveXp(ids,xp){const ups=[];
   for(const id of ids){const s=save.chars[id];let up=false;
     if(s.lvl<MAX_LVL){s.xp+=xp;while(s.lvl<MAX_LVL&&s.xp>=xpNeed(s.lvl)){s.xp-=xpNeed(s.lvl);s.lvl++;up=true;}if(s.lvl>=MAX_LVL)s.xp=0;}
@@ -1268,20 +1285,23 @@ function giveXp(ids,xp){const ups=[];
   return ups;}
 function storyMissionAward(){
   if(!run||run.awarded)return null;run.awarded=true;
-  const xp=Math.round(25+run.kills*1.5),dust=Math.round(5+run.kills*0.5);
-  const ups=giveXp(run.party,xp);save.dust+=dust;persist();
+  const xp=Math.round(20+memShare()),dust=Math.round(5+run.kills*0.5);
+  const ups=giveXp(run.party,xp);save.dust+=dust;giveMp(run.party,2);persist();
   const up=ups.filter(u=>u.up).map(u=>nameOf(u.id)+' Lv '+u.lvl);
-  setBanner('Memories +'+xp,(up.length?'Level up: '+up.join(' · ')+' · ':'')+'+'+dust+' Stardust',1.4);
-  return {xp,ups,dust};}
+  setBanner('Memories +'+xp+' each · Mastery +2',(up.length?'Level up: '+up.join(' · ')+' · ':'')+'+'+dust+' Stardust',1.4);
+  return {xp,ups,dust,mp:2};}
 function awardRun(won){
   if(!run||run.awarded)return null;run.awarded=true;
   if(run.practice)return {xp:0,ups:run.party.map(id=>({id,lvl:save.chars[id].lvl,up:false})),dust:0};
   // P1-7: starting Blessings make Battle easier, so they pay less (None 100%, Lv 1 60%, Lv 3 25%)
   const farm=run.mode==='battle'?[1,0.6,0.6,0.25][run.bless|0]:1;
-  const xp=Math.round((run.kills*1.5+(run.mode==='battle'?15:run.roomNo*15)+(won?60:0))*farm);
+  const mem=memShare(),xp=Math.round((mem+(run.mode==='battle'?10:run.roomNo*10)+(won?40:0))*farm);
   const ups=giveXp(run.party,xp);
+  const d=ROOMS[run.stage]||{};
+  const mp=Math.round((!won?1:d.kind==='rift'?1+(run.tier||1):run.stage==='boss'?3+2*(run.diff|0):d.kind==='trial'?2:run.mode==='climb'?6:1)*(farm>=1?1:farm>0.5?0.5:0.25))||0;
+  giveMp(run.party,mp);
   const dust=Math.round(run.kills*0.5*farm);save.dust+=dust;persist();
-  return {xp,ups,dust};
+  return {xp,ups,dust,mp,mem:Math.round(run.mem||0)};
 }
 
 // ═══════════════════════════════════════════ blessings + rooms + words
@@ -1584,6 +1604,7 @@ function playerHit(t,dmg,o={}){
 }
 function killEnemy(e){
   if(e.dead) return;
+  memDrop(e);
   e.dead=true; run.kills++; ring(e.x,e.y,e.r+12,colorOf(e),0.35); for(let i=0;i<10;i++)part(e.x,e.y,rr(-220,220),rr(-240,60),rr(0.3,0.6),i%3?colorOf(e):'#24160C',rr(2,4)); decals.push({x:e.x,y:e.y+e.r*0.6,r:e.r*0.9,life:2.5,max:2.5,splat:true,col:colorOf(e)});
   sfx(e.elite||e.type==='champion'?'killBig':'kill'); burstParts(e.x,e.y,colorOf(e),e.elite?24:14);burstParts(e.x,e.y,C.paper,6,90);
   let n=e.type==='champion'?4:(rand()<0.4?1:0);
@@ -1812,6 +1833,7 @@ function finisherFx(p,col){if(tut)tut.fin++;
 // ═══ shared kit helpers
 function starFx(p){const f={basicMul:1,sunMul:1,moonMul:1,ultMul:1,sunCd:1,moonCd:1,ultDur:0,healMul:1,shieldMul:1,summonMul:1};
   const id=p&&p.id;if(!id||!STARS[id])return f;
+  if(save.chars[id]){f.basicMul*=skMul(id,'basic');f.sunMul*=skMul(id,'sun');f.moonMul*=skMul(id,'moon');f.ultMul*=skMul(id,'ult');}
   for(const L of [5,10,15,20]){const c=cst(id,L);if(c<0)continue;const fx=STARS[id][L][c][2]||{};
     for(const k in fx){if(k==='ultDur')f.ultDur+=fx[k];else f[k]=(f[k]??1)*fx[k];}}
   return f;}
@@ -1975,7 +1997,7 @@ function swapTo(i,o={}){
   if((old.id==='kairos'&&nm.id==='lucan')||(old.id==='lucan'&&nm.id==='kairos'))addShield(nm.maxHp*0.1,4,false);
   burstParts(nm.x,nm.y,nm.ch.col,16,140);ring(nm.x,nm.y,34,nm.ch.col,0.35);sfx('swap');
   if(nm.entCd<=0&&!o.noEntrance){
-    nm.entCd=(nm.rec>=5?6:8)-blv('uranus');const epw=nm.rec>=5?1.3:1;
+    nm.entCd=(nm.rec>=5?6:8)-blv('uranus');const epw=(nm.rec>=5?1.3:1)*skMul(nm.id,'entrance');
     if(nm.id==='kairos'&&old.id!=='kairos'){KITS[old.id].entrance(nm,1.2*epw,true);addText(nm.x,nm.y-40,'BORROWED HOUR · '+old.ch.kit.entrance.name.toUpperCase(),C.gold,10,{life:1.1});}
     else KITS[nm.id].entrance(nm,epw,false);
   }
@@ -2314,6 +2336,7 @@ function updateBoss(dt){
 }
 function bossDie(){
   const b=boss;b.dead=true;run.won=true;
+  if(!run.practice)run.mem=(run.mem||0)+150;
   run.weekly=bossWeekly();
   gainFrag('boss',b.x-30,b.y);if(run.mode!=='battle')gainFrag('boss',b.x+30,b.y);
   burstParts(b.x,b.y,C.moon,60,260);burstParts(b.x,b.y,C.paper,40,200);shake(10,0.5);sfx('stamp');sfx('bless');
@@ -4098,7 +4121,7 @@ function showCh1Menu(){
 function showCh1End(){
   state='panel';
   const first=!save.ch1Clears;save.ch1Clears=(save.ch1Clears|0)+1;
-  const xp=first?200:60,dust=first?100:30,ups=giveXp(CH_ORDER,xp);save.dust+=dust;
+  const xp=first?200:60,dust=first?100:30,ups=giveXp(CH_ORDER,xp);save.dust+=dust;giveMp(CH_ORDER,first?5:2);
   const found=[];if(first)for(let i=0;i<2;i++){gainFrag('boss');found.push(save.frags[save.frags.length-1]);}
   save.ch1b=Object.assign(save.ch1b||{},{done:true,i:0,k:null});persist();
   const rw=h('div',{class:'mech rw'},h('div',{class:'rwh'},ico('memory'),'Memories +'+xp+' for all eight'+(first?' (first clear)':'')),
@@ -4138,7 +4161,7 @@ function rewardBlock(won){
   const a=awardRun(won)||run.lastAward;if(!a)return null;run.lastAward=a;
   const found=run.found.map(fragById).filter(Boolean);
   return h('div',{class:'mech rw'},
-    h('div',{class:'rwh'},ico('memory'),'Memories +'+a.xp+' each'),
+    h('div',{class:'rwh'},ico('memory'),(a.mem!=null?'Memories collected '+a.mem+' → +'+a.xp+' each':'Memories +'+a.xp+' each')+(a.mp?'  ·  Skill Mastery +'+a.mp+' each':'')),
     h('div',{class:'row1'},...a.ups.map(u=>h('span',{class:'lvchip'+(u.up?' up':'')},nameOf(u.id)+' Lv '+u.lvl+(u.up?' ↑':'')))),
     h('div',{class:'rwh'},ico('gem'),found.length?'Star Fragments found':'No Star Fragments this time'),
     found.length?h('div',{class:'row1'},...found.map(f=>{const b=bestFor(f);return h('span',{class:'fr el-'+SIGN_EL[f.sign]},gemEl(f),(f.rar===2?'★ ':'')+f.sign+' '+f.deg+'° · '+SLOT_INFO[f.slot].name+(b.tier?' · '+(b.tier===2?'great':'good')+' for '+nameOf(b.id):''));})):null,
@@ -4641,7 +4664,8 @@ function showBuilds(back){
       h('div',{class:'xpbar',style:'height:6px;background:var(--ink-line)'},h('i',{style:'background:var(--star-ink);width:'+(cs.lvl<MAX_LVL?Math.round(cs.xp/need*100):100)+'%'})),
       h('div',{class:'sect'},ico('star'),'Milestones'),
       h('ul',{class:'miles'},...MILESTONES.map(([lv,t])=>h('li',{class:cs.lvl>=lv?'on':null},ico(cs.lvl>=lv?'check':'lock'),h('b',null,'Lv '+lv),h('span',null,t)))),
-      h('div',{class:'sect'},ico('star'),'Constellation'),
+      h('div',{class:'sect'},ico('star'),'Turning Points'),
+      h('p',{class:'bv-tip'},'At Lv 5, 10, 15 and 20, choose how one skill works. Swap any time.'),
       h('div',{class:'cons'},...[5,10,15,20].map(L=>{const lock=cs.lvl<L,ch=cs.stars&&cs.stars[L]!=null?cs.stars[L]:-1,kind={5:'Basic',10:'Sun skill',15:'Moon skill',20:'Ultimate'}[L];
         return h('div',{class:'cons-row'+(lock?' locked':'')},h('div',{class:'cons-lv'},h('b',null,'Lv '+L),h('span',null,kind)),
           ...STARS[cid][L].map(([nm,ds],i)=>h('button',{class:'cons-opt',type:'button',disabled:lock?'disabled':null,'aria-pressed':String(ch===i),
@@ -4727,11 +4751,30 @@ function showBuilds(back){
       h('div',{class:'bv-scroll'},list.length?grid:h('p',{class:'lede'},'No '+SLOT_INFO[filter].name+' fragments yet. Rifts drop Fragments of one element each; Trials and Horaios always drop one.'),more));
     const sheet=detail?h('div',{class:'bv-detail form',style:'max-width:none;padding:8px',onclick:e=>{if(e.target===e.currentTarget){sel=null;render();}}},detail):h('div',{class:'bv-detail empty form',style:'max-width:none'},h('p',{class:'lede'},'Tap a fragment to see it here.'));
     const vtabs=h('div',{class:'seg bv-view'},h('button',{type:'button','aria-pressed':String(view==='frags'),onclick:()=>{view='frags';render();}},ico('gem'),' Fragments'),
+      h('button',{type:'button','aria-pressed':String(view==='skills'),onclick:()=>{view='skills';render();}},ico('up'),' Skills'),
       h('button',{type:'button','aria-pressed':String(view==='recoll'),onclick:()=>{view='recoll';render();}},ico('star'),' Recollection'));
     root.replaceChildren(
       h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},'Builds · Recollection and Star Fragments'),h('h2',null,'Who are you building?')),
         h('div',{class:'row'},h('button',{class:'btn outline',type:'button',onclick:()=>showBackup(()=>showBuilds(back))},'Backup'),h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>{(back||goHome)();}},'Back'))),
-      tabs,vtabs,view==='frags'?h('div',{class:'bv-body'},left,right,sheet):h('div',{class:'vault-body'},left));
+      tabs,vtabs,view==='frags'?h('div',{class:'bv-body'},left,right,sheet):view==='skills'?skillsView():h('div',{class:'vault-body'},left));
+    function skillsView(){
+      const mp=cs.mp|0,K=c.kit;
+      const row=k=>{const lv=skLv(cid,k),max=lv>=SKILL_MAX,capped=lv>=cs.lvl,cost=skCost(lv),can=!max&&!capped&&mp>=cost.mp&&save.dust>=cost.dust;
+        const nm=k==='basic'?K.basic.name:K[k].name;
+        return h('div',{class:'sk-row'},
+          h('div',{class:'sk-ic'},ico(k==='entrance'?'rising':k==='basic'?'atk':k==='ult'?'star':k)),
+          h('div',{class:'sk-bd'},h('div',{class:'sk-k'},SKILL_NAME[k]),h('b',null,nm),
+            h('div',{class:'sk-bar'},...Array.from({length:SKILL_MAX},(_,i)=>h('i',{class:i<lv?'on':i<cs.lvl?'':'lock'}))),
+            h('div',{class:'sk-fx'},'Lv '+lv+' · +'+Math.round((skMul(cid,k)-1)*100)+'% power'+(max?' · max':' → Lv '+(lv+1)+': +'+Math.round(lv*5)+'%'))),
+          max?h('span',{class:'sk-max'},'MAX')
+            :h('button',{class:'btn small'+(can?'':' ghost'),type:'button',disabled:can?null:'disabled',title:capped?'Raise '+nameOf(cid)+' to Lv '+(lv+1)+' first':'',
+              onclick:()=>{if(!can)return;cs.mp=mp-cost.mp;save.dust-=cost.dust;cs.sk=cs.sk||{};cs.sk[k]=lv+1;persist();msg=SKILL_NAME[k]+' → Lv '+(lv+1)+'.';sfx('bless');render();}},
+              capped?'Needs Lv '+(lv+1):h('span',null,'Upgrade · '+cost.mp+' ',ico('up'),' '+cost.dust+' ',ico('star'))));};
+      return h('div',{class:'form',style:'max-width:760px'},formHead('Skill Mastery · '+nameOf(cid),'Recollection Lv '+cs.lvl),
+        h('div',{class:'row',style:'gap:8px;margin:0 0 6px;flex-wrap:wrap'},h('span',{class:'dustpill'},ico('up'),mp+' Mastery'),h('span',{class:'dustpill'},ico('star'),save.dust+' Stardust')),
+        h('p',{class:'bv-tip'},'Every match gives Mastery to each party member. Each skill level adds +5% power (damage, heals, shields or buff strength). Skills can’t go above '+nameOf(cid)+'’s level.'),
+        msg?h('p',{class:'note',style:'color:var(--res-ink);margin:0 0 6px'},msg):null,
+        ...SKILLS.map(row));}
   }
   render();openOverlay(root,'mode-select');
 }
@@ -4824,7 +4867,9 @@ function guidePage(tab){
       gcard('Fire','Traits','Each fragment has 1 to 3 traits from its element. Pick ones that fit the character, like Fire for burn damage or Water for healing.'),
       gcard('star','Rarity','Common, Rare and ★ Star-born. Elites, Trials and the boss drop the better ones.'),
       gcard('transit','Aspects (the deep grind)','Each fragment has a degree (0–29°). If it lines up with the character’s chart (shown on the slot), you get a bonus. Exact is best.'),
-      gcard('star','Constellation','At Lv 5, 10, 15 and 20 each character picks 1 of 2 ways a skill works. Swap any time in Builds, for free.'),
+      gcard('star','Turning Points','At Lv 5, 10, 15 and 20 each character picks 1 of 2 ways a skill works. Swap any time in Builds, for free.'),
+      gcard('up','Skill Mastery','Every match gives each party member Mastery points. Spend them (plus a little Stardust) in Builds → Skills to level Entrance, Basic, Sun, Moon and Ultimate up to Lv 10. A skill can’t go above the character’s level.'),
+      gcard('memory','Memories (XP)','Vices drop Memories when they die. At the end of the stage the total is split between the party.'),
       gcard('team','Element sets','Equip 2 or 3 fragments of the same element for an extra set bonus.'),
       gcard('up','Tools','Attune: level up. Retrograde: reroll a trait. Transit: move 1° closer to exact. Salvage: turn fragments you don’t need into Stardust.')),
     h('ol',{class:'gsteps'},
