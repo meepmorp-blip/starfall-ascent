@@ -1221,21 +1221,23 @@ function awardRun(won){
 
 // ═══════════════════════════════════════════ blessings + rooms + words
 const BL={
-  saturn:{g:'♄︎',planet:'Saturn',name:'Discipline',col:'saturn',bonus:'+3% less damage',
-    desc:l=>`Take ${6*l}% less damage from everything.`},
+  saturn:{g:'♄︎',planet:'Saturn',name:'Discipline',col:'saturn',bonus:'shields +10% more',
+    desc:l=>`Shields you get are ${15*l}% stronger. While a shield is up, take ${8*l}% less damage.`},
   uranus:{g:'♅︎',planet:'Uranus',name:'Upheaval',col:'uranus',bonus:'bigger shockwave',
-    desc:l=>`Switching characters sends out a shockwave: ${60*l}% ATK and a big knockback.`},
-  neptune:{g:'♆︎',planet:'Neptune',name:'Dissolution',col:'neptune',bonus:'longer mist',
-    desc:l=>`Every dodge heals ${2*l} HP and leaves a mist that slows nearby Vices for ${(1.2*l).toFixed(1)}s.`},
-  mercury:{g:'☿︎',planet:'Mercury',name:'Swiftness',col:'mercury',bonus:'+15% more',
-    desc:l=>`+${10*l}% attack speed. After a dodge, the next basic attack deals +${35*l}% damage.`},
-  venus:{g:'♀︎',planet:'Venus',name:'Devotion',col:'venus',bonus:'+2 HP more',
-    desc:l=>`Every Vice you destroy heals the active character ${2*l} HP.`},
-  mars:{g:'♂︎',planet:'Mars',name:'Fury',col:'mars',bonus:'+3% more per stack',
-    desc:l=>`Basic hits on the same Vice stack +${6*l}% damage, up to 5 stacks.`},
-  jupiter:{g:'♃︎',planet:'Jupiter',name:'Fortune',col:'jupiter',bonus:'needs 1 fewer kill',
-    desc:l=>`Every ${8-2*l} kills, the active character’s Sun and Moon cooldowns drop by 4s.`},
+    desc:l=>`Switching sends out a shockwave (${60*l}% ATK, big knockback). Entrances recharge ${l}s faster.`},
+  neptune:{g:'♆︎',planet:'Neptune',name:'Dissolution',col:'neptune',bonus:'+10% longer',
+    desc:l=>`Spotted, Soak, Drowsy and Marks last ${25*l}% longer. Turrets and other summons last ${20*l}% longer.`},
+  mercury:{g:'☿︎',planet:'Mercury',name:'Swiftness',col:'mercury',bonus:'+3% crit chance',
+    desc:l=>`+${5*l}% crit chance. Every crit you land cuts your Sun and Moon cooldowns by 0.2s.`},
+  venus:{g:'♀︎',planet:'Venus',name:'Devotion',col:'venus',bonus:'+2 HP per kill',
+    desc:l=>`Healing on the team is ${15*l}% stronger. Every Vice you destroy heals the active character ${2*l} HP.`},
+  mars:{g:'♂︎',planet:'Mars',name:'Fury',col:'mars',bonus:'+5% vs burning',
+    desc:l=>`Basic hits have a ${10*l}% chance to set Vices burning. You deal +${8*l}% damage to burning Vices.`},
+  jupiter:{g:'♃︎',planet:'Jupiter',name:'Fortune',col:'jupiter',bonus:'+5% Ultimate charge',
+    desc:l=>`Ultimates charge ${10*l}% faster. Using an Ultimate cuts that character’s Sun and Moon cooldowns by ${2*l}s.`},
 };
+const debuffK=()=>1+0.25*blv('neptune')+(rul('neptune')?0.1:0);
+const summonK=()=>1+0.2*blv('neptune')+(rul('neptune')?0.1:0);
 const ROOMS={
   house1:{id:'house1',kind:'house',num:'1st House',name:'Self',sign:'Aries',place:'Vigil Yard',theme:'yard',rule:'rush',
     ruleText:'Everyone moves 25% faster here, you included.',pool:['hothead','hothead','gossip','waxer','collector','spotlight']},
@@ -1412,27 +1414,26 @@ function newRun(mode,party,bless){
 }
 const blv=k=>run?run.bl[k]:0;
 const rul=k=>!!(player&&player.ch.rulers[k]);
-const jupNeed=()=>8-2*blv('jupiter')-(rul('jupiter')?1:0);
 const memberOf=id=>team&&team.members.find(m=>m.id===id);
 const inParty=id=>{const m=memberOf(id);return !!(m&&!m.down);};
 function effDef(p){return Math.min(0.85,p.def+(team.benedT>0?0.2:0));}
-function effAspd(p){return p.aspd*(1+0.1*blv('mercury'))*(1+(p.bfx.aspd||0))*(team.tailwind>0?1.15:1)*(p.id==='kairos'&&p.ultT>0?1.3:1)*(team.stim>0?1.15:1)*(team.overclock>0?1.2:1);}
+function effAspd(p){return p.aspd*(1+(p.bfx.aspd||0))*(team.tailwind>0?1.15:1)*(p.id==='kairos'&&p.ultT>0?1.3:1)*(team.stim>0?1.15:1)*(team.overclock>0?1.2:1);}
 function effSpeed(p){return missionSpeed(p)*p.speed*(1+(p.bfx.spd||0))*(team.tailwind>0?1.1:1)*(room&&room.def.rule==='rush'?1.25:1);}
 // every character has their own Ultimate meter: the active one fills at full rate, the bench at 40%
-function gainPn(v){const k=inParty('dess')?1.2:1;for(const m of team.members){if(m.down)continue;const a=v*k*(m===player?1:0.4)*(1+(m.bfx.pn||0));m.pn=Math.min(team.maxPn,(m.pn||0)+a);}}
+function gainPn(v){const k=(inParty('dess')?1.2:1)*(1+0.1*blv('jupiter')+(rul('jupiter')?0.05:0));for(const m of team.members){if(m.down)continue;const a=v*k*(m===player?1:0.4)*(1+(m.bfx.pn||0));m.pn=Math.min(team.maxPn,(m.pn||0)+a);}}
 function consumeSwift(){const s=player.swift;player.swift=0;return s;}
 function heal(m,amt,o={}){
   if(!m||m.down||amt<=0)return 0;
   if(o.sophia&&m.hp<m.maxHp*0.4)amt*=1.3;
   if(o.by)amt*=starFx(o.by).healMul;
-  amt*=1+(m.bfx.heal||0);
+  amt*=1+(m.bfx.heal||0)+0.15*blv('venus');
   const before=m.hp;m.hp=Math.min(m.maxHp,m.hp+amt);const got=m.hp-before,over=amt-got;
   if(over>0&&team.overheal>0&&m===player)addShield(over,6,true);
   if(o.show&&m===player&&got>=1)addText(m.x,m.y-30,'+'+Math.round(got),C.hp,11);
   return got;
 }
 function addShield(v,t,carry){
-  v*=1+((player&&player.bfx.shield)||0);
+  v*=1+((player&&player.bfx.shield)||0)+0.15*blv('saturn')+(rul('saturn')?0.1:0);
   const s=team.shield;
   if(s){s.hp+=v;s.max=Math.max(s.max,s.hp);s.t=Math.max(s.t,t);s.carry=s.carry||carry;}
   else team.shield={hp:v,max:v,t,carry};
@@ -1564,20 +1565,21 @@ function playerHit(t,dmg,o={}){
     if(t.drowsyT>0){if(src.id==='kairos')vuln+=0.15;if(src.id==='lucan'&&inParty('kairos'))vuln+=0.25;}
     if(src.id==='lucan'&&o.shard&&dist(src,t)>200)bonus+=0.15;}
   if((o.critMarked&&t.markT>0)||(src&&src.id==='lucan'&&((src.critT>0&&rand()<0.3)||t.pinCritT>0)))o=Object.assign({},o,{crit:true});
-  if(o.basic){const lv=blv('mars');if(lv>0){if(player.marsT===t)player.marsS=Math.min(5,player.marsS+1);else{player.marsT=t;player.marsS=1;}m*=1+(0.06*lv+(rul('mars')?0.03:0))*player.marsS;}}
-  if(o.crit){m*=2+(team.cdmgT>0?0.4:0)+(src&&src.cdmgT>0?0.5:0);addText(t.x,t.y-(t.r||20)-10,'CRIT',C.gold,11);}
+  {const lv=blv('mars');if(lv>0){if(o.basic&&!o.burn&&rand()<0.1*lv){o=Object.assign({},o,{burn:3,mburn:1});}if(t.burnT>0)bonus+=0.08*lv+(rul('mars')?0.05:0);}}
+  {const lv=blv('mercury');if(lv>0&&!o.crit&&rand()<0.05*lv+(rul('mercury')?0.03:0))o=Object.assign({},o,{crit:true});}
+  if(o.crit){m*=2+(team.cdmgT>0?0.4:0)+(src&&src.cdmgT>0?0.5:0);if(blv('mercury')>0&&src===player){player.cd.sun=Math.max(0,player.cd.sun-0.2);player.cd.moon=Math.max(0,player.cd.moon-0.2);}addText(t.x,t.y-(t.r||20)-10,'CRIT',C.gold,11);}
   m*=(1+bonus)*(1+vuln);
   dmg*=m;
   if(o.pn) gainPn(o.pn*clamp(dmg/Math.max(1,src.atk||10),1,3));
   if(o.basic&&sfx2.ignite&&rand()<sfx2.ignite) o=Object.assign({},o,{burn:Math.max(o.burn||0,2)});
-  if(o.dmark)t.dmarkUntil=T+8;
-  if(o.burn){t.burnT=Math.max(t.burnT||0,o.burn);t.burnDmg=Math.max(t.burnDmg||0,src&&src.id==='cass'?src.atk*0.5:3);t.burnMul=Math.max(t.burnMul||1,1+(sfx2.burnMult||0));}
-  if(o.mark) t.markT=6;
+  if(o.dmark)t.dmarkUntil=T+8*debuffK();
+  if(o.burn){t.burnT=Math.max(t.burnT||0,o.burn);t.burnDmg=Math.max(t.burnDmg||0,src&&src.id==='cass'?src.atk*0.5:o.mburn?(src.atk||10)*0.35:3);t.burnMul=Math.max(t.burnMul||1,1+(sfx2.burnMult||0));}
+  if(o.mark) t.markT=6*debuffK();
   if(o.ana) t.anaT=8;
   if(o.indict){t.ind=Math.min(3,(t.ind||0)+o.indict);t.indT=8;}
   {const big=dmg>=(player.atk||10)*2.2||o.crit;sfx(big?'impactBig':'impact');for(let i=0;i<(big?7:3);i++)part(t.x+rr(-4,4),t.y-6+rr(-4,4),rr(-160,160),rr(-160,90),0.18,'#FFFFFF',big?2.4:1.6);if(big&&slowReal<=0)slowReal=0.045;}
   if(t!==boss){
-    if(o.tide){t.tide=(t.tide||0)+o.tide;t.tideT=4;t.slowT=Math.max(t.slowT||0,1);if(t.tide>=3){t.tide=0;t.drowsyT=3;t.slowT=Math.max(t.slowT,3);addText(t.x,t.y-(t.r||20)-14,'DROWSY','#7FE3F0',10,{life:0.8});}}
+    if(o.tide){t.tide=(t.tide||0)+o.tide;t.tideT=4;t.slowT=Math.max(t.slowT||0,1);if(t.tide>=3){t.tide=0;t.drowsyT=3*debuffK();t.slowT=Math.max(t.slowT,3);addText(t.x,t.y-(t.r||20)-14,'DROWSY','#7FE3F0',10,{life:0.8});}}
     if(o.stag){t.stag=(t.stag||0)+o.stag;if(t.stag>=100){t.stag=0;if(t.type!=='champion'){t.stunT=Math.max(t.stunT||0,2);t.st='stun';}addText(t.x,t.y-(t.r||20)-14,'STUNNED',C.earth,10,{life:0.8});}}}
   if(t===boss){hitBoss(dmg,o.col);return;}
   if(o.knock){const k=o.knock.f*(13/t.r)*(t.armor?0.5:1)*(t.type==='champion'?0.4:1)*(1+(sfx2.knock||0));t.kx+=o.knock.x*k;t.ky+=o.knock.y*k;}
@@ -1599,7 +1601,6 @@ function killEnemy(e){
   if(player.bfx.killHeal)heal(player,player.maxHp*player.bfx.killHeal);
   if(e.type==='champion')gainFrag('champion',e.x,e.y);
   else if(rand()<(e.elite?0.35:0.04))gainFrag(e.elite?'elite':'normal',e.x,e.y);
-  if(blv('jupiter')>0){team.jupK++;if(team.jupK>=jupNeed()){team.jupK=0;player.cd.sun=Math.max(0,player.cd.sun-4);player.cd.moon=Math.max(0,player.cd.moon-4);addText(player.x,player.y-34,'FORTUNE · COOLDOWNS −4s',C.jupiter,11,{life:1.3});sfx('bless');}}
   if(player.marsT===e){player.marsT=null;player.marsS=0;}
   if(e.type==='gossip'&&e.gen===0){for(let i=0;i<2;i++)enemies.push(makeEnemy('gossip',e.x+rr(-10,10),e.y+rr(-10,10),{gen:1,instant:true}));}
   else if(room&&room.def.rule==='split'&&!e.split&&e.type!=='gossip'&&e.type!=='champion'){for(let i=0;i<2;i++)enemies.push(makeEnemy(e.type,e.x+rr(-12,12),e.y+rr(-12,12),{split:true,instant:true}));}
@@ -1822,7 +1823,7 @@ function aimPoint(p,R){const t=nearestTarget(p.x,p.y,R,null);return t?{x:t.x,y:t
 function shard(p,ang,o){shots.push(mkShot(p.x,p.y-8,ang,Object.assign({spd:780,r:4,kind:'dart',col:'#BFE6FF',src:p,pn:0.5,life:0.85,shard:true},o)));}
 function spiritsOf(){return allies.filter(a=>a.kind==='spirit'&&!a.dead);}
 function spawnSpirit(src,life){const a=rand()*TAU;allies.push({kind:'spirit',x:player.x+Math.cos(a)*30,y:player.y-10+Math.sin(a)*20,r:6,life:life||14,max:life||14,ang:a,zap:0.4+rand()*0.5,src,dead:false});}
-function spawnTurret(src,big,life,x,y){const own=allies.filter(a=>a.kind==='turret'&&!a.big);if(!big&&own.length>=2)own.sort((m,n)=>m.life-n.life)[0].life=0;
+function spawnTurret(src,big,life,x,y){life*=summonK();const own=allies.filter(a=>a.kind==='turret'&&!a.big);if(!big&&own.length>=2)own.sort((m,n)=>m.life-n.life)[0].life=0;
   allies.push({kind:'turret',big,x:clamp(x,AX0+16,AX1-16),y:clamp(y,AY0+16,AY1-16),r:big?11:7,life,max:life,zap:0.3,src,laser:false,dead:false});burstParts(x,y,C.mercury,10,90);sfx('thud');}
 function stunWave(x,y,R,stun,stag,knock,src,dmg){radial(x,y,R,dmg||0,{stun,stag,knock,col:C.earth,src});}
 
@@ -1847,11 +1848,11 @@ const KITS={
   ines:{chargeT:0.6,
     tap(p){const a=aimDir(560);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*1.6,mult:1+consumeSwift(),basic:true,spd:950,r:4,life:0.75,kind:'arrow',big:true,src:p,pn:0.9,col:'#FFD38A',knock:110}));p.atkCd=1/effAspd(p);sfx('heavy');shake(1.5,0.04);},
     hold(p){const a=aimDir(600);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*3.2,mult:1+consumeSwift(),basic:true,spd:1100,r:6,life:0.8,pierce:true,big:true,kind:'arrow',src:p,pn:2,col:'#FFE6A3',knock:200,critMarked:true}));p.atkCd=0.5;sfx('laser');shake(3,0.08);},
-    sun(p,combo){const at=aimPoint(p,420);let n=0;for(const t of allTargets())if(Math.hypot(t.x-at.x,t.y-at.y)<130){t.markT=8;n++;}
+    sun(p,combo){const at=aimPoint(p,420);let n=0;for(const t of allTargets())if(Math.hypot(t.x-at.x,t.y-at.y)<130){t.markT=8*debuffK();n++;}
       ring(at.x,at.y,130,C.gold,0.6);burstParts(at.x,at.y,C.gold,20,160);
       if(combo){radial(at.x,at.y,120,p.atk*2.5,{skill:'sun',col:C.gold,src:p});shake(4,0.12);}
       sfx('spark');},
-    moon(p,combo){const at=aimPoint(p,300);zones.push({kind:'soak',x:at.x,y:at.y,r:90,t:5,max:5,mark:combo,src:p});radial(at.x,at.y,90,p.atk*1.2,{skill:'moon',slow:2,col:C.water,src:p,mark:combo});
+    moon(p,combo){const at=aimPoint(p,300);zones.push({kind:'soak',x:at.x,y:at.y,r:90,t:5*debuffK(),max:5*debuffK(),mark:combo,src:p});radial(at.x,at.y,90,p.atk*1.2,{skill:'moon',slow:2,col:C.water,src:p,mark:combo});
       burstParts(at.x,at.y,C.water,22,170);
       const bx=-p.fx,by=-p.fy;p.dodgeT=0.18;p.dvx=bx*420;p.dvy=by*420;p.iframe=Math.max(p.iframe,0.3);sfx('splash');},
     ult(p){team.killzone=3+starFx(p).ultDur;for(const m of team.members)if(m.id==='ines')m.kzT=0;sfx('ult');},
@@ -1897,8 +1898,8 @@ const KITS={
       ring(p.x,p.y,50,'#CFEAFF',0.35);p.atkCd=0.5;sfx('dodge');},
     sun(p,combo){spawnTurret(p,true,12*starFx(p).sunMul*(combo?1.5:1),p.x+p.fx*50,p.y+p.fy*50);if(combo)for(const a of allies)if(a.kind==='turret'){a.life*=1.5;a.max*=1.5;}},
     moon(p,combo){team.overclock=8*larkMul();buffAtk(0.2,8);ring(p.x,p.y,60,'#CFEAFF',0.5);sfx('skill');if(combo)for(const a of allies)if(a.kind==='turret'){a.life*=1.5;a.max*=1.5;}},
-    ult(p){allies.push({kind:'mech',x:p.x-30,y:p.y,r:16,life:12+starFx(p).ultDur,max:12+starFx(p).ultDur,zap:0.6,src:p,dead:false});burstParts(p.x,p.y,'#CFEAFF',30,200);sfx('boom');},
-    entrance(p,pw){allies.push({kind:'zap',x:p.x,y:p.y-20,r:5,life:8*pw,max:8*pw,zap:0.5,src:p,dead:false});},
+    ult(p){const ml=(12+starFx(p).ultDur)*summonK();allies.push({kind:'mech',x:p.x-30,y:p.y,r:16,life:ml,max:ml,zap:0.6,src:p,dead:false});burstParts(p.x,p.y,'#CFEAFF',30,200);sfx('boom');},
+    entrance(p,pw){const zl=8*pw*summonK();allies.push({kind:'zap',x:p.x,y:p.y-20,r:5,life:zl,max:zl,zap:0.5,src:p,dead:false});},
     update(p,dt){},
     status(p){const l=[];const n=allies.filter(a=>a.kind==='turret').length;if(n)l.push(['#CFEAFF','TURRET · +20% DMG']);if(team.overclock>0)l.push(['#CFEAFF','OVERCLOCK '+team.overclock.toFixed(1)+'s']);return l;},
     sunUp:p=>{let m=0;for(const a of allies)if(a.kind==='turret')m=Math.max(m,a.life);return m;}, moonUp:p=>team.overclock},
@@ -1956,7 +1957,7 @@ function swapTo(i,o={}){
   if((old.id==='kairos'&&nm.id==='lucan')||(old.id==='lucan'&&nm.id==='kairos'))addShield(nm.maxHp*0.1,4,false);
   burstParts(nm.x,nm.y,nm.ch.col,16,140);ring(nm.x,nm.y,34,nm.ch.col,0.35);sfx('swap');
   if(nm.entCd<=0&&!o.noEntrance){
-    nm.entCd=nm.rec>=5?6:8;const epw=nm.rec>=5?1.3:1;
+    nm.entCd=(nm.rec>=5?6:8)-blv('uranus');const epw=nm.rec>=5?1.3:1;
     if(nm.id==='kairos'&&old.id!=='kairos'){KITS[old.id].entrance(nm,1.2*epw,true);addText(nm.x,nm.y-40,'BORROWED HOUR · '+old.ch.kit.entrance.name.toUpperCase(),C.gold,10,{life:1.1});}
     else KITS[nm.id].entrance(nm,epw,false);
   }
@@ -1990,8 +1991,6 @@ function doDodge(){
   p.dodgeT=0.17;p.dvx=dx*560;p.dvy=dy*560;p.dodgeCd=0.8*(1-Math.min(0.5,p.bfx.dodge||0));p.iframe=Math.max(p.iframe,0.32);
   if(perfect){gainPn(6);slowReal=0.32;addText(p.x,p.y-30,'PERFECT +6',C.gold,12,{life:1});sfx('perfect');}else sfx('dodge');
   if(p.id==='kairos'){if(perfect){for(const e of enemies)if(!e.dead&&dist(e,p)<140)e.slowT=Math.max(e.slowT,2);p.swift=Math.max(p.swift,1);ring(p.x,p.y,140,'#7FE3F0',0.5);}if(p.ultT>0)p.cd.sun=0;}
-  if(blv('neptune')>0){const l=blv('neptune');heal(p,2*l,{});for(const e of enemies)if(!e.dead&&dist(e,p)<85)e.slowT=Math.max(e.slowT,1.2*l);decals.push({x:p.x,y:p.y,r:70,life:0.6,max:0.6,ring:true,col:C.neptune});}
-  if(blv('mercury')>0)p.swift=0.35*blv('mercury')+(rul('mercury')?0.15:0);
   for(let i=0;i<7;i++)part(p.x,p.y,-dx*rr(40,130)+rr(-30,30),-dy*rr(40,130)+rr(-30,30),0.35,C.paper,2);
 }
 function castSkill(s){
@@ -2013,6 +2012,7 @@ function castUlt(){
   const p=player,info=p.ch.kit.ult;
   if(p.ultT>0) return;
   if(team.pn<team.maxPn){addText(p.x,p.y-30,'Pneuma '+Math.floor(team.pn)+'/100',C.ash,10);sfx('nope');return;}
+  if(blv('jupiter')>0){const c=2*blv('jupiter');p.cd.sun=Math.max(0,p.cd.sun-c);p.cd.moon=Math.max(0,p.cd.moon-c);addText(p.x,p.y-48,'FORTUNE · COOLDOWNS −'+c+'s',C.jupiter,10,{life:1.2});}
   if(tut)tut.ult++;team.pn=0;p.ultT=info.dur+starFx(p).ultDur;KITS[p.id].ult(p);
   setBanner(info.name,'Ultimate · '+nameOf(p.id),1.2);sfx('ult');shake(5,0.25);burstParts(p.x,p.y,C.gold,40,240);
 }
@@ -2021,7 +2021,7 @@ function hurtPlayer(d){
   if(state!=='play'||p.iframe>0||p.dodgeT>0||p.dash) return;
   if(room&&room.def.kind==='training'){p.iframe=0.4;return;}
   if(boss&&boss.forced&&boss.proc){p.iframe=0.4;shake(3,0.1);return;}
-  d*=((room&&room.atkScale)||1)*(1-0.06*blv('saturn'));
+  d*=((room&&room.atkScale)||1)*(team.shield&&team.shield.hp>0?1-0.08*blv('saturn'):1);
   if(p.unrecorded){p.unrecorded=false;p.iframe=0.45;addText(p.x,p.y-32,'UNRECORDED',C.moon,11,{life:1});sfx('block');burstParts(p.x,p.y,C.moon,10,100);return;}
   if(p.counterT>0){kairosCounter(p);return;}
   if(zoneAt('smoke',p.x,p.y)&&rand()<0.6){p.iframe=0.3;addText(p.x,p.y-30,'MISS',C.ash,10,{life:0.5});return;}
@@ -4722,7 +4722,7 @@ function guidePage(tab){
       gcard('book','Story','Chapter 1 · The Minute Meridian Held Its Breath. About 40 minutes, the cast grows to eight, saved at every scene. Missions give Memories and Stardust.'),
       gcard('atk','Battle','Pick any 3 characters and jump straight into any district, Trial or the boss. Good for practice and farming.'),
       gcard('door','Doors','After a fight, choose where to go next. A full climb is 6 stops, and the last one is the boss.'),
-      gcard('star','Planet Blessings','After each district, pick a Blessing: Mercury (speed), Venus (healing), Mars (stacking damage), Jupiter (cooldowns), Saturn (take less damage), Uranus (shockwave when you switch) or Neptune (dodges heal and slow). They only last for this run.'),
+      gcard('star','Planet Blessings','After each district, pick a Blessing. Each one boosts a kind of play: Mars (burning), Mercury (crits), Jupiter (Ultimates), Saturn (shields), Venus (healing), Uranus (switching) or Neptune (debuffs and summons). They last until the end of the climb.'),
       gcard('sun','Houses','Each district is a House with its own rule: faster enemies, splitting enemies, fog, a deadline… Read the rule when you enter.'),
       gcard('cd','Trials','Special challenges. Mercury: collect sparks. Mars: beat the Champion. Winning always drops a Star Fragment.'),
       gcard('bag','Chests','Some districts hide a chest. Walk into it to open it: 1 to 5 Star Fragments pop out. Fragments glow on the ground with a light beam; walk over them to pick them up.'),
@@ -5729,7 +5729,6 @@ function drawHUD(){
   if(p.ultT>0)lines.push([C.gold,p.ch.kit.ult.name.toUpperCase()+' '+p.ultT.toFixed(1)+'s']);
   if(p.lastSkill&&T-p.lastSkillT<=4){const other=p.lastSkill==='sun'?'moon':'sun';lines.push([C.gold,p.ch.aspect.toUpperCase()+' OPEN: cast '+p.ch.kit[other].name+' ('+(4-(T-p.lastSkillT)).toFixed(1)+'s)']);}
   if(p.swift>0)lines.push([C.mercury,'SWIFTNESS: next basic +'+Math.round(p.swift*100)+'%']);
-  if(p.marsS>1&&blv('mars'))lines.push([C.mars,'FURY x'+p.marsS]);
   if(room.spot&&dist(p,room.spot)<room.spot.r)lines.push([C.gold,'IN THE SPOTLIGHT · x2 DAMAGE']);
   const maxLines=Math.max(2,Math.floor((ports[0].y-ports[0].r-8-ly)/15)+1);
   for(const [col,txt] of lines.slice(0,maxLines)){ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(x-3,ly-7,ctx.measureText(txt).width+6,14);ctx.fillStyle=col;ctx.fillText(txt,x,ly);ly+=15;}
@@ -5749,7 +5748,6 @@ function drawHUD(){
   for(const k of ['jupiter','mars','venus','mercury','saturn','uranus','neptune']){const l=run.bl[k];if(!l)continue;const b=BL[k];
     ctx.font=`600 9px ${FONT_UI}`;ctx.fillStyle=C[b.col];ctx.fillText('●'.repeat(l)+'○'.repeat(3-l),bx2,safe.t+30);
     ctx.font=`700 16px "Segoe UI Symbol","Apple Symbols",${FONT_DISP}`;ctx.fillText(b.g,bx2-10,safe.t+14);
-    if(k==='jupiter'){ctx.font=`600 8px ${FONT_UI}`;ctx.fillText(team.jupK+'/'+jupNeed(),bx2,safe.t+42);}
     bx2-=38;}
   drawPortraits();
   if(room.banner>0){const k=clamp(room.banner/room.bannerMax,0,1),a=Math.min(1,k*3,(1-k)*8+0.001);
