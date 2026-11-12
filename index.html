@@ -923,13 +923,13 @@ const CHARS={
     mech:'Pure support: she barely fights, but makes everyone else hit harder, crit harder and charge their Ultimates faster.',
     kit:{
       entrance:{name:'Unlocked',el:'Air',desc:'Gives the active character a small shield (10% HP) as she arrives.'},
-      basic:{name:'Core Pulse',tap:'Weak pulses of light from a core.',hold:'Calm Pulse: a soft wave that nudges nearby enemies away. That’s it.'},
-      sun:{name:'Tidal Focus',short:'FOCUS',el:'Water',cd:14,dur:10,desc:'All allies deal 20% more damage for 10s.'},
-      moon:{name:'Clear Sky',short:'CLEAR',el:'Air',cd:14,dur:10,desc:'All allies deal 40% more crit damage for 10s.'},
+      basic:{name:'Core Pulse',tap:'Weak pulses of light from a core.',hold:'Tide Ring: a small burst of water around her that pushes enemies back and gives only Dess a small shield (12% HP).'},
+      sun:{name:'Undertow',short:'UNDERTOW',el:'Water',cd:14,dur:10,desc:'For 10s, when any ally attacks, a water pulse bursts around the target (100% of Dess’s ATK, slows). At most once every 2 seconds.'},
+      moon:{name:'Clear Sky',short:'CLEAR',el:'Air',cd:14,dur:10,desc:'All allies deal 30% more crit damage for 10s.'},
       combo:{name:'Square · Insight',desc:'Using both skills in a row: allies get +15% crit chance for 10s.'},
-      ult:{name:'Recollection',short:'RECALL',dur:8,desc:'A wave of memories that deals small damage and Marks every enemy it hits for 8s: they take 10% more damage.'},
+      ult:{name:'Recollection',short:'RECALL',dur:12,desc:'A wave of memories that deals small damage, and every ally deals 20% more damage for 12s.'},
       p1:{name:'Steady Hands',desc:'While she is in the party, all allies gain Pneuma 20% faster.'},
-      p2:{name:'Team Notes',desc:'While she is in the party, every ally deals 5% more damage.'}}},
+      p2:{name:'Team Notes',desc:'While she is in the party, every ally deals 10% more damage.'}}},
 };
 const CH_ORDER=['kairos','ines','bram','noemi','theo','lucan','cass','dess'];
 
@@ -1067,7 +1067,7 @@ const STARS={
     15:[['Grace','Absolution heals 30% more.',{moonMul:1.3}],['Confession','Absolution recharges 25% faster.',{moonCd:0.75}]],
     20:[['Inferno','Burn the Mercy hits 30% harder.',{ultMul:1.3}],['Sanctuary','Burn the Mercy heals 30% more.',{healMul:1.3}]]},
   dess:{5:[['Bright Core','Pulses hit 20% harder.',{basicMul:1.2}],['Gentle Hands','Her entrance shield is 30% stronger.',{shieldMul:1.3}]],
-    10:[['Deep Focus','Tidal Focus lasts 30% longer.',{sunMul:1.3}],['Quick Focus','Tidal Focus recharges 25% faster.',{sunCd:0.75}]],
+    10:[['Deep Water','Undertow lasts 30% longer.',{sunMul:1.3}],['Quick Tide','Undertow recharges 25% faster.',{sunCd:0.75}]],
     15:[['Wide Sky','Clear Sky lasts 30% longer.',{moonMul:1.3}],['Quiet Mind','Clear Sky recharges 25% faster.',{moonCd:0.75}]],
     20:[['Total Recall','Recollection hits 40% harder.',{ultMul:1.4}],['Remembered','Recollection hits 20% harder.',{ultMul:1.2}]]},
 };
@@ -1087,7 +1087,7 @@ const KIT_INFO={
   cass:{tldr:'Burn damage. Sets everything on fire; burning enemies take more damage and allies take less. Small heals.',
     entrance:['Fire slam 140%','Burns'],basic:['90% ATK, burns','Hold: spin 150%, long burn'],sun:['Fire area 6s'],moon:['Heal 12%','Burning foes take 200%'],ult:['Fire wave 300%','Team heal 15% once']},
   dess:{tldr:'Pure support. Weak attacks, but she makes the whole team hit harder, crit harder and charge Ultimates faster.',
-    entrance:['Shield 10%'],basic:['50% ATK pulse','Hold: small push'],sun:['Team +20% damage 10s'],moon:['Team +40% crit damage 10s'],ult:['Small damage','Marks: +10% taken, 8s']},
+    entrance:['Shield 10%'],basic:['50% ATK pulse','Hold: 80% water ring + self shield'],sun:['Water pulse on ally hits','every 2s · 10s'],moon:['Team +30% crit damage 10s'],ult:['Small damage','Team +20% damage 12s']},
 };
 const CHAR_FIT={
   kairos:{t:{tide:2,soak:2,quick:2,fury:2,mirror:1,swift:1,gust:1},why:'fast blade work, slows and dodges'},
@@ -1107,7 +1107,7 @@ const CHAR_HOW={
   theo:['Drop a turret, then switch out and let it work. Hold attack to hit 3 at once.',['Sun: turret','Moon: Overclock','Hold: Pressure Burst']],
   lucan:['Stay far back and charge the Lance. Pin enemies, then pierce the whole line.',['Pin a group','Composure','Lance the pinned ones']],
   cass:['Set everything on fire. Burning enemies take more damage and allies take less.',['Penance a group','swing inside it','Absolution to detonate']],
-  dess:['Buff, then switch out. Use both skills for extra crit chance.',['Sun: team damage','Moon: crit damage','Ult: Mark them']],
+  dess:['Buff, then switch out. Use both skills for extra crit chance.',['Sun: Undertow pulses','Moon: crit damage','Ult: team +20%']],
 };
 const CHART_DEG={kairos:{sun:18,moon:9,rising:null},ines:{sun:24,moon:6,rising:12},bram:{sun:3,moon:21,rising:27},noemi:{sun:14,moon:11,rising:2},
   theo:{sun:8,moon:16,rising:25},lucan:{sun:29,moon:4,rising:19},cass:{sun:11,moon:26,rising:7},dess:{sun:20,moon:13,rising:5}};
@@ -1448,7 +1448,8 @@ function playerHit(t,dmg,o={}){
   if(o.mult) m*=o.mult;
   if(team.atkBuffT>0)bonus+=team.atkBuffV;
   if(team.dessDmgT>0)bonus+=0.2;
-  if(inParty('dess'))bonus+=0.05;
+  if(inParty('dess'))bonus+=0.10;
+  if(team.dessPulseT>0&&!o.pulse&&T>=(team.dessPulseNext||0)){const d=memberOf('dess');if(d&&!d.down){team.dessPulseNext=T+2;radial(t.x,t.y,80,d.atk*1.0,{col:C.water,src:d,pulse:true,slow:1});ring(t.x,t.y,80,C.water,0.4);sfx('splash');}}
   if(src&&src.id==='theo'&&allies.some(a=>a.kind==='turret'&&!a.dead))bonus+=0.2;
   if(sfx2.dmgPct)bonus+=sfx2.dmgPct;
   if(sfx2.heat&&t.burnT>0)bonus+=sfx2.heat;
@@ -1465,7 +1466,7 @@ function playerHit(t,dmg,o={}){
   if((o.critMarked&&t.markT>0)||(src&&src.id==='lucan'&&((src.critT>0&&rand()<0.3)||t.pinCritT>0)))o=Object.assign({},o,{crit:true});
   {const lv=blv('mars');if(lv>0){if(o.basic&&!o.burn&&rand()<0.1*lv){o=Object.assign({},o,{burn:3,mburn:1});}if(t.burnT>0)bonus+=0.08*lv+(rul('mars')?0.05:0);}}
   {const lv=blv('mercury');if(lv>0&&!o.crit&&rand()<0.05*lv+(rul('mercury')?0.03:0))o=Object.assign({},o,{crit:true});}
-  if(o.crit){m*=2+(team.cdmgT>0?0.4:0)+(src&&src.cdmgT>0?0.5:0);if(blv('mercury')>0&&src===player){player.cd.sun=Math.max(0,player.cd.sun-0.2);player.cd.moon=Math.max(0,player.cd.moon-0.2);}addText(t.x,t.y-(t.r||20)-10,'CRIT',C.gold,11);}
+  if(o.crit){m*=2+(team.cdmgT>0?0.3:0)+(src&&src.cdmgT>0?0.5:0);if(blv('mercury')>0&&src===player){player.cd.sun=Math.max(0,player.cd.sun-0.2);player.cd.moon=Math.max(0,player.cd.moon-0.2);}addText(t.x,t.y-(t.r||20)-10,'CRIT',C.gold,11);}
   m*=(1+bonus)*(1+vuln);
   dmg*=m;
   if(o.pn) gainPn(o.pn*clamp(dmg/Math.max(1,src.atk||10),1,3));
@@ -1826,14 +1827,14 @@ const KITS={
   // ───────── Dess: memory spirits, shields
   dess:{chargeT:0.5,
     tap(p){const a=aimDir(380);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*0.5,mult:1+consumeSwift(),basic:true,spd:560,r:4,kind:'dart',src:p,pn:0.6,col:'#9BD4FF'}));p.atkCd=1/effAspd(p);sfx('dart');},
-    hold(p){radial(p.x,p.y,70,0,{knock:140,col:'#9BD4FF',src:p});ring(p.x,p.y,70,'#9BD4FF',0.3);p.atkCd=0.6;sfx('dodge');},
-    sun(p,combo){team.dessDmgT=10*starFx(p).sunMul;if(combo)team.crT=10;ring(player.x,player.y,60,'#7FD0FF',0.5);burstParts(player.x,player.y,'#7FD0FF',16,120);setBanner('Tidal Focus','Team +20% damage',1);sfx('bless');},
-    moon(p,combo){team.cdmgT=10*starFx(p).moonMul;if(combo)team.crT=10;ring(player.x,player.y,60,'#CFEAFF',0.5);burstParts(player.x,player.y,'#CFEAFF',16,120);setBanner('Clear Sky','Team +40% crit damage',1);sfx('bless');},
-    ult(p){radial(p.x,p.y,280,p.atk*1.2*starFx(p).ultMul,{skill:'ult',col:'#9BD4FF',src:p,dmark:1});burstParts(p.x,p.y,'#9BD4FF',50,280);ring(p.x,p.y,280,'#9BD4FF',0.6);shake(4,0.15);sfx('bless');},
+    hold(p){radial(p.x,p.y,75,p.atk*0.8,{knock:90,col:C.water,src:p,basic:true,pn:1});ring(p.x,p.y,75,C.water,0.35);if(p===player)addShield(p.maxHp*0.12,5,false);p.atkCd=0.6;sfx('splash');},
+    sun(p,combo){team.dessPulseT=10*starFx(p).sunMul;team.dessPulseNext=0;if(combo)team.crT=10;ring(player.x,player.y,60,C.water,0.5);burstParts(player.x,player.y,C.water,16,120);setBanner('Undertow','Ally attacks set off a water pulse every 2s',1);sfx('splash');},
+    moon(p,combo){team.cdmgT=10*starFx(p).moonMul;if(combo)team.crT=10;ring(player.x,player.y,60,'#CFEAFF',0.5);burstParts(player.x,player.y,'#CFEAFF',16,120);setBanner('Clear Sky','Team +30% crit damage',1);sfx('bless');},
+    ult(p){team.dessDmgT=12+starFx(p).ultDur;setBanner('Recollection','Team +20% damage for 12s',1.2);radial(p.x,p.y,280,p.atk*1.2*starFx(p).ultMul,{skill:'ult',col:'#9BD4FF',src:p});burstParts(p.x,p.y,'#9BD4FF',50,280);ring(p.x,p.y,280,'#9BD4FF',0.6);shake(4,0.15);sfx('bless');},
     entrance(p,pw){addShield(player.maxHp*0.10*pw,6,false);ring(player.x,player.y,40,'#9BD4FF',0.4);},
     update(p,dt){},
-    status(p){const l=[];if(team.dessDmgT>0)l.push(['#7FD0FF','FOCUS +20% '+team.dessDmgT.toFixed(1)+'s']);if(team.cdmgT>0)l.push(['#CFEAFF','CRIT DMG +40% '+team.cdmgT.toFixed(1)+'s']);if(team.crT>0)l.push([C.gold,'CRIT +15% '+team.crT.toFixed(1)+'s']);return l;},
-    sunUp:p=>team.dessDmgT||0, moonUp:p=>team.cdmgT||0},
+    status(p){const l=[];if(team.dessPulseT>0)l.push([C.water,'UNDERTOW '+team.dessPulseT.toFixed(1)+'s']);if(team.dessDmgT>0)l.push(['#7FD0FF','RECOLLECTION +20% '+team.dessDmgT.toFixed(1)+'s']);if(team.cdmgT>0)l.push(['#CFEAFF','CRIT DMG +30% '+team.cdmgT.toFixed(1)+'s']);if(team.crT>0)l.push([C.gold,'CRIT +15% '+team.crT.toFixed(1)+'s']);return l;},
+    sunUp:p=>team.dessPulseT||0, moonUp:p=>team.cdmgT||0},
 };
 
 // ═══════════════════════════════════════════ team actions
@@ -1986,7 +1987,7 @@ function updateTeam(dt){
   const cdm=team.cdFast>0?2:1;
   if(state==='play'&&(aliveCount()>0||(boss&&!boss.dead)))gainPn(2.0*dt);
   team.swapCd-=dt;
-  for(const k of ['tailwind','benedT','firstClay','cdFast','starBoost','reflect','overheal','cleanseT','interCd','atkBuffT','stim','killzone','overclock','stand','bramBlock','dessDmgT','cdmgT','crT'])if(team[k]>0)team[k]-=dt;
+  for(const k of ['tailwind','benedT','firstClay','cdFast','starBoost','reflect','overheal','cleanseT','interCd','atkBuffT','stim','killzone','overclock','stand','bramBlock','dessDmgT','dessPulseT','cdmgT','crT'])if(team[k]>0)team[k]-=dt;
   if(team.shield){team.shield.t-=dt;if(team.shield.t<=0||team.shield.hp<=0)team.shield=null;}
   for(const m of team.members){
     m.cd.sun=Math.max(0,m.cd.sun-dt*cdm);m.cd.moon=Math.max(0,m.cd.moon-dt*cdm);m.entCd-=dt;
@@ -2205,7 +2206,7 @@ function resetField(){
   if(player.down){const j=team.members.findIndex(m=>!m.down);if(j>=0){team.ai=j;player=team.members[j];}}
   for(const m of team.members){m.dash=null;m.dodgeT=0;m.counterT=0;m.scales2=0;m.marsT=null;m.marsS=0;m.swift=0;m.ultT=0;m.lastSkill=null;m.empower=0;}
   const p=player;p.x=W/2;p.y=H*0.62;p.iframe=0.8;
-  for(const k of ['killzone','overclock','atkBuffT','atkBuffV','stand','standT','stim','dessDmgT','cdmgT','crT','bramBlock'])team[k]=0;
+  for(const k of ['killzone','overclock','atkBuffT','atkBuffV','stand','standT','stim','dessDmgT','dessPulseT','cdmgT','crT','bramBlock'])team[k]=0;
   team.shield=null;team.timeStop=0;team.tailwind=0;team.benedT=0;team.firstClay=0;team.starBoost=0;team.reflect=0;team.overheal=0;team.cleanseT=0;team.cdFast=0;
   joy.id=null;actions.length=0;atk.down=false;atk.released=false;atk.t=0;
 }
@@ -2964,7 +2965,7 @@ addMission('garrison',{type:'fight',name:'Garrison',place:'Market Ring',theme:'m
 addMission('assault',{type:'fight',name:'Breakout · Outside',place:'Institute sub-levels',theme:'lab',lvl:3,kills:20,max:5,pool:['hothead','waxer','gossip','deadline'],brief:'Fight down through the Institute. Third sub-level.',
   tips:[[0,'Lucan','Lucan pins enemies from range. Switching Kairos ↔ Lucan gives a shield.']]});
 addMission('escape',{type:'fight',name:'Escape',place:'Institute sub-levels',theme:'lab',lvl:3,kills:16,max:5,pool:['hothead','gossip','waxer'],brief:'Get out. All of you.',
-  tips:[[0,'Dess','Dess is pure support: Sun = team damage, Moon = team crit damage. Use both for a crit chance bonus.'],[5,'The Vow','If Kairos would go down, Lucan takes the hit. Once per fight.']]});
+  tips:[[0,'Dess','Dess is support: Sun = water pulses on ally hits, Moon = team crit damage, Ult = team +20% damage.'],[5,'The Vow','If Kairos would go down, Lucan takes the hit. Once per fight.']]});
 addMission('cass',{type:'fight',name:'The Inquisitor',place:'Ash Lane rooftops',theme:'rooftop',lvl:4,cass:1,pool:['gossip'],brief:'Sister Cass punishes standing still. Keep moving.'});
 addMission('festival',{type:'defense',name:'Festival of the Mercy',place:'Festival Square',theme:'plaza',lvl:5,dur:100,crowd:1,fore:1,
   brief:'Five rifts at once. Keep the Vices off the crowd.',pool:['hothead','gossip','waxer','devourer','deadline','gossip']});
