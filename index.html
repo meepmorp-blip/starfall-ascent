@@ -197,6 +197,8 @@ canvas#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-ac
 .bv-detail.empty{border:1.5px dashed var(--ink-line);border-radius:6px;padding:14px}
 .bv-x{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ink);background:transparent;font:800 16px/1 var(--f-ui);cursor:pointer;color:inherit}
 .bv-equip{width:100%;margin:2px 0 4px}
+.bv-salv{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 6px;padding:6px 8px;border:1.5px dashed #B5523A;border-radius:8px;background:rgba(181,82,58,0.08)}
+.ftiles.salv .ftile{cursor:pointer}.ftile.pick{outline:3px solid #B5523A;outline-offset:-3px;background:rgba(181,82,58,0.15)!important}.ftile.pick::after{content:'✕';position:absolute;bottom:3px;right:5px;font:900 12px var(--f-ui);color:#B5523A}.ftile.locked{opacity:.45}
 .bv-cmp{margin:0;font:600 12px var(--f-form);color:var(--ink-soft)}
 @media (max-height:520px){
   .vault{gap:6px}.vault .select-head .eyebrow{display:none}.vault .select-head h2{font-size:17px;margin:0}
@@ -1989,7 +1991,7 @@ function doDodge(){
   if(m<0.2){dx=p.fx;dy=p.fy;}else{dx/=m;dy/=m;}
   const perfect=nearThreat();
   p.dodgeT=0.15;p.dvx=dx*440;p.dvy=dy*440;p.dodgeCd=0.8*(1-Math.min(0.5,p.bfx.dodge||0));p.iframe=Math.max(p.iframe,0.32);
-  if(perfect){gainPn(6);slowReal=0.32;addText(p.x,p.y-30,'PERFECT +6',C.gold,12,{life:1});sfx('perfect');}else sfx('dodge');
+  if(perfect){gainPn(7);slowReal=0.32;addText(p.x,p.y-30,'PERFECT +7',C.gold,12,{life:1});sfx('perfect');}else sfx('dodge');
   if(p.id==='kairos'){if(perfect){for(const e of enemies)if(!e.dead&&dist(e,p)<140)e.slowT=Math.max(e.slowT,2);p.swift=Math.max(p.swift,1);ring(p.x,p.y,140,'#7FE3F0',0.5);}}
   for(let i=0;i<7;i++)part(p.x,p.y,-dx*rr(40,130)+rr(-30,30),-dy*rr(40,130)+rr(-30,30),0.35,C.paper,2);
 }
@@ -4585,6 +4587,7 @@ function transitTarget(f,cid){
 function showBuilds(back){
   state='title';room=null;boss=null;paused=false;playMusic('title');
   const prefs=loadPrefs();
+  let salv=false;const picked=new Set();
   let cid=CH_ORDER.includes(prefs.buildChar)?prefs.buildChar:'kairos',filter=['sun','moon','rising'].includes(prefs.buildSlot)?prefs.buildSlot:'sun',view='frags',sel=null,msg='',elf='all',sortBy=prefs.fragSort||'fit',goodOnly=!!prefs.goodOnly,showAll=false;
   const root=h('div',{class:'vault'});
   const cost={attune:f=>25*f.lvl,retro:()=>40,transit:f=>30*(f.transits+1)};
@@ -4631,7 +4634,7 @@ function showBuilds(back){
     if(elf!=='all')list=list.filter(f=>SIGN_EL[f.sign]===elf);
     if(goodOnly)list=list.filter(f=>fitOf(f,cid).tier>0||equippedBy(f)===cid);
     const SORTS={fit:(a,b)=>fitOf(b,cid).sc-fitOf(a,cid).sc||b.rar-a.rar||b.id-a.id,rar:(a,b)=>b.rar-a.rar||b.lvl-a.lvl||b.id-a.id,lvl:(a,b)=>b.lvl-a.lvl||b.rar-a.rar||b.id-a.id,new:(a,b)=>b.id-a.id};
-    list.sort(SORTS[sortBy]||SORTS.fit);
+    {const srt=SORTS[sortBy]||SORTS.fit;list.sort((a,b)=>(fitOf(b,cid).tier-fitOf(a,cid).tier)||srt(a,b));}
     const total=list.length,LIMIT=60,shown=showAll?list:list.slice(0,LIMIT);
     const seg=h('div',{class:'seg'},...['all','sun','moon','rising'].map(k=>h('button',{type:'button','aria-pressed':String(filter===k),onclick:()=>{filter=k;showAll=false;render();}},k==='all'?ico('bag'):ico(SLOT_ICON[k]),' '+(k==='all'?'All':SLOT_INFO[k].name))));
     const elBar=h('div',{class:'fbar'},
@@ -4639,9 +4642,10 @@ function showBuilds(back){
       h('button',{type:'button',class:'elchip wide','aria-pressed':String(goodOnly),onclick:()=>{goodOnly=!goodOnly;savePrefs({goodOnly});showAll=false;render();}},ico('check'),' Good fits'),
       (()=>{const sel2=h('select',{class:'fsort','aria-label':'Sort fragments',onchange:e=>{sortBy=e.target.value;savePrefs({fragSort:sortBy});render();}},
         ...[['fit','Best fit'],['rar','Rarity'],['lvl','Level'],['new','Newest']].map(([v,t])=>{const o=h('option',{value:v},t);if(v===sortBy)o.selected=true;return o;}));return sel2;})());
-    const grid=h('div',{class:'ftiles'},...shown.map(f=>{const eq=equippedBy(f),ft=fitOf(f,cid);
-      return h('button',{class:'ftile rar'+f.rar+(f.id===sel?' sel':''),type:'button','aria-pressed':String(f.id===sel),title:f.sign+' '+f.deg+'° · '+SLOT_INFO[f.slot].name+' · '+RAR_NAME[f.rar],
-        onclick:()=>{sel=f.id;msg='';render();}},
+    const dustOf=f=>RAR_DUST[f.rar]+(f.lvl-1)*10;
+    const grid=h('div',{class:'ftiles'+(salv?' salv':'')},...shown.map(f=>{const eq=equippedBy(f),ft=fitOf(f,cid);
+      return h('button',{class:'ftile rar'+f.rar+(f.id===sel?' sel':'')+(salv&&picked.has(f.id)?' pick':'')+(salv&&eq?' locked':''),type:'button','aria-pressed':String(f.id===sel),title:f.sign+' '+f.deg+'° · '+SLOT_INFO[f.slot].name+' · '+RAR_NAME[f.rar],
+        onclick:()=>{if(salv){if(equippedBy(f)){msg='Unequip it first to salvage it.';sfx('nope');}else if(picked.has(f.id))picked.delete(f.id);else picked.add(f.id);render();return;}sel=f.id;msg='';render();}},
         gemEl(f),
         h('span',{class:'tl'},f.sign.slice(0,3)+' '+f.deg+'°'),
         h('span',{class:'ts'},ico(SLOT_ICON[f.slot])),
@@ -4691,6 +4695,12 @@ function showBuilds(back){
       h('div',{class:'row',style:'margin:0 0 6px;justify-content:space-between;align-items:center'},
         h('span',{class:'bv-for'},ico(SLOT_ICON[filter]),'Choosing for ',h('b',null,nameOf(cid)+'’s '+SLOT_INFO[filter].name+' slot')),h('span',{class:'dustpill'},ico('star'),save.dust+' Stardust')),
       msg?h('p',{class:'note',style:'color:var(--res-ink);margin:0 0 6px'},msg):null,
+      (()=>{if(!salv)return h('div',{class:'row',style:'margin:0 0 6px'},h('button',{class:'btn ghost small',type:'button',onclick:()=>{salv=true;picked.clear();sel=null;msg='';render();}},ico('salvage'),' Salvage fragments for Stardust'));
+        const sum=[...picked].map(fragById).filter(Boolean).reduce((t,f)=>t+dustOf(f),0);
+        return h('div',{class:'bv-salv'},h('b',null,picked.size+' selected · +'+sum+' Stardust'),
+          h('button',{class:'btn ghost small',type:'button',onclick:()=>{for(const f of list)if(!equippedBy(f)&&fitOf(f,cid).tier===0&&f.rar===0&&f.lvl===1)picked.add(f.id);render();}},'Select weak commons'),
+          h('button',{class:'btn small',type:'button',disabled:picked.size?null:'disabled',onclick:()=>{let n=0,d=0;for(const id of picked){const f=fragById(id);if(!f||equippedBy(f))continue;d+=dustOf(f);n++;save.frags=save.frags.filter(x=>x!==f);}save.dust+=d;persist();picked.clear();salv=false;msg='Salvaged '+n+' fragment'+(n===1?'':'s')+' into '+d+' Stardust.';sfx('break');render();}},'Salvage'),
+          h('button',{class:'btn ghost small',type:'button',onclick:()=>{salv=false;picked.clear();render();}},'Cancel'));})(),
       elBar,h('p',{class:'fcount'},total?('★ great fit · ✓ good fit · letter = who has it'):'Nothing matches these filters.'),
       h('div',{class:'bv-scroll'},list.length?grid:h('p',{class:'lede'},'No '+SLOT_INFO[filter].name+' fragments yet. Rifts drop Fragments of one element each; Trials and Horaios always drop one.'),more));
     const sheet=detail?h('div',{class:'bv-detail form',style:'max-width:none;padding:8px',onclick:e=>{if(e.target===e.currentTarget){sel=null;render();}}},detail):h('div',{class:'bv-detail empty form',style:'max-width:none'},h('p',{class:'lede'},'Tap a fragment to see it here.'));
@@ -4740,7 +4750,7 @@ function guidePage(tab){
       gcard('moon','☽ Moon skill = defense','Shields, heals, counters and zones. Use it before you get hit, not after.'),
       gcard('combo','Aspect combo','Cast Sun then Moon (or Moon then Sun) within 4 seconds for a bonus effect. For some characters the order matters. Each combo is listed under Characters.'),
       gcard('pn','Pneuma','Gold orbs from enemies and perfect dodges. Each character has their own Ultimate bar (under their portrait). The active one fills fastest, the bench fills slower. 100 = Ultimate.'),
-      gcard('dash','Perfect dodge','Dodge right before a hit lands: time slows down and you get +6 Pneuma.'),
+      gcard('dash','Perfect dodge','Dodge right before a hit lands: time slows down and you get +7 Pneuma (lucky number).'),
       gcard('!','Red means danger','Red lines, circles and flashes are attacks about to land. Walk out of them or dodge through.'),
       gcard('Fire','Elements','Each skill shows its element. Fire usually burns, Earth shields and knocks back, Water slows or weakens, Air supports. Some kits bend the rule.')),
     gtip('Big hits always come with a warning. If you see red, move first and attack second.')];
