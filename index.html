@@ -760,6 +760,10 @@ body.playing #nl-badge-frame,body.playing [id^='nl-badge']{display:none!importan
 .form .seg button,.vault .seg button{color:#F6EBD2!important;background:transparent!important;border-radius:999px}
 .form .seg button[aria-pressed="true"],.vault .seg button[aria-pressed="true"]{background:#F2D27A!important;color:#2A1B10!important}
 .gtab{border-radius:999px;background:rgba(13,11,20,.7)}.gtab[aria-pressed="true"]{background:#F2D27A;color:#2A1B10;border-color:#F2D27A}.gtab[aria-pressed="true"] .ic{color:#2A1B10}
+.gcard .gi{background:rgba(242,210,122,.14)!important;color:#F2D27A!important;box-shadow:inset 0 0 0 1.5px rgba(242,210,122,.35)}
+.gcard .gi.gv{background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--vc) 35%,transparent),rgba(255,255,255,.04))!important;box-shadow:inset 0 0 0 2px var(--vc)!important;overflow:hidden}
+.gcard .gi.gv canvas{width:44px;height:44px;image-rendering:pixelated;margin-top:2px}
+.gcard{border-radius:10px!important}
 </style>
 </head>
 <body>
@@ -5086,7 +5090,7 @@ function guidePage(tab){
     gtip('Starter team: Kairos (damage) + Agnes (marks and sniping from the bench) + Bram (shields and stuns). Swap Bram for Naomi if you keep dying. Kairos + Lucas fight best together; add Dess for bosses.')];
   if(tab==='enemies')return [h('h2',null,'The Seven Vices'),
     h('p',{class:'lede'},'Each Vice fights differently. Learn how to beat each one.'),
-    h('div',{class:'gcards'},...Object.entries(VICE_INFO).map(([k,v])=>{const card=gcard('•',v[0],v[2]);const gi=card.querySelector('.gi');gi.textContent='';gi.style.background=colorOf({type:k});gi.style.boxShadow='inset 0 0 0 3px rgba(0,0,0,.3)';
+    h('div',{class:'gcards'},...Object.entries(VICE_INFO).map(([k,v])=>{const card=gcard('•',v[0],v[2]);const gi=card.querySelector('.gi');gi.textContent='';gi.classList.add('gv');gi.style.setProperty('--vc',colorOf({type:k}));const vc=viceIcon(k);if(vc)gi.append(vc);
       card.querySelector('b').append(h('span',{class:'seglabel',style:'display:block;margin-top:2px'},v[1]));return card;})),
     h('div',{class:'sect'},ico('ult'),'Elites (glowing outline)'),
     h('div',{class:'gcards'},...Object.values(ELITE_INFO).map(v=>gcard('!',v[0],v[1]))),
@@ -5490,6 +5494,9 @@ function drawAlly(a){
 }
 
 // ═══════════════════════════════════════════ art: enemies + boss
+function viceIcon(type){const cv=document.createElement('canvas');cv.width=96;cv.height=96;const g=cv.getContext('2d'),keep=ctx,kp=player;
+  try{g.scale(2,2);ctx=g;if(!player)player={x:60,y:24};drawEnemyBody({type,x:24,y:25,r:16,dx:1,dy:0,seed:1,flash:0,hitT:0,spawnT:0,slowT:0,hp:1,maxHp:1,vx:0,vy:0,face:1,t:0,st:'idle',stT:0,aim:0,dead:false});return cv;}
+  catch(e){return null;}finally{ctx=keep;player=kp;}}
 function drawEnemy(e){
   if(e.core&&!e.dead&&e.spawnT<=0){const c=ctx,k=clamp(e.coreT/6,0,1);lightPool(c,e.x,e.y,34,'#9A7BFF',0.4);c.fillStyle='#24160C';c.beginPath();c.moveTo(e.x,e.y-14);c.lineTo(e.x+10,e.y);c.lineTo(e.x,e.y+12);c.lineTo(e.x-10,e.y);c.closePath();c.fill();
     c.fillStyle=e.flash>0?'#fff':'#B49CFF';c.beginPath();c.moveTo(e.x,e.y-12);c.lineTo(e.x+8,e.y);c.lineTo(e.x,e.y+10);c.lineTo(e.x-8,e.y);c.closePath();c.fill();
