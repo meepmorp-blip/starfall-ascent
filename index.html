@@ -817,7 +817,7 @@ const CHARS={
     mech:'Undertow: his hits add Tide. At 3 Tide an enemy turns Drowsy: heavily slowed, and takes +15% damage from him.',
     kit:{
       entrance:{name:'Borrowed Hour',el:null,desc:'He has no Rising, so he copies the Entrance of whoever he switched from, at 120% power. If he enters first, he dashes in with a slash.'},
-      basic:{name:'Twin Fish',tap:'A fast 5-hit combo with both blades. The 5th hit is a spinning double slash.',hold:'Current: a dash-slash through the nearest enemy that adds 2 Tide.'},
+      basic:{name:'Clock Hands',tap:'A fast 5-hit combo with both blades. The 5th hit is a spinning double slash.',hold:'Current: a dash-slash through the nearest enemy that adds 2 Tide.'},
       sun:{name:'Riptide',short:'RIPTIDE',el:'Water',cd:5,dur:0,desc:'Dashes through a line of enemies for heavy damage (300%), adds 2 Tide to each, and leaves a slowing water trail.'},
       moon:{name:'Shell',short:'SHELL',el:'Water',cd:6,dur:1.2,desc:'A water pulse (120%) and a short counter stance. If something hits him in the next 1.2s, he blocks it and releases a big pulse (320%) that makes everyone nearby Drowsy.'},
       combo:{name:'Trine · Flow',desc:'Riptide then Shell: half of Riptide’s cooldown comes back. Shell then Riptide: the dash hits twice.'},
@@ -2465,14 +2465,17 @@ function drawNPC(g,x,y,o={}){
   if(o.hat){g.fillStyle=ink;g.fillRect(-7,-18,14,4);g.fillRect(-5,-22,10,5);g.fillStyle=fz?'#6A7590':o.hat;g.fillRect(-6,-17,12,2);g.fillRect(-4,-21,8,4);}
   g.restore();
 }
-// the Voice: two fish of light circling a clock with no hands
-function drawVoice(g,x,y,t,s=1){
+// the Voice: a clock made of light. Its two hands are the blades it gives Kairos (nohands = after it gave them)
+function drawVoice(g,x,y,t,s=1,nohands=false){
   g.save();g.translate(x,y);g.scale(s,s);
-  const gl=g.createRadialGradient(0,0,2,0,0,34);gl.addColorStop(0,'rgba(255,240,190,0.55)');gl.addColorStop(1,'rgba(255,240,190,0)');g.fillStyle=gl;g.fillRect(-36,-36,72,72);
-  g.strokeStyle='rgba(255,236,170,0.8)';g.lineWidth=1.5;circ(g,0,0,11);g.stroke();
-  for(let i=0;i<12;i++){const a=i/12*TAU;g.fillStyle='rgba(255,236,170,0.8)';g.fillRect(Math.cos(a)*9-0.5,Math.sin(a)*9-0.5,1,1);}
-  for(let k=0;k<2;k++){const a=t*2.4+k*Math.PI,fx=Math.cos(a)*18,fy=Math.sin(a)*10;g.save();g.translate(fx,fy);g.rotate(a+Math.PI/2);
-    g.fillStyle=k?'#BFF3FF':'#FFF3C4';ell(g,0,0,5,2.4);g.fill();g.beginPath();g.moveTo(-5,0);g.lineTo(-9,-3);g.lineTo(-9,3);g.closePath();g.fill();g.restore();}
+  const gl=g.createRadialGradient(0,0,2,0,0,38);gl.addColorStop(0,'rgba(255,240,190,0.6)');gl.addColorStop(1,'rgba(255,240,190,0)');g.fillStyle=gl;g.fillRect(-40,-40,80,80);
+  g.strokeStyle='rgba(255,236,170,0.9)';g.lineWidth=1.6;circ(g,0,0,15);g.stroke();
+  g.strokeStyle='rgba(191,243,255,'+(0.35+0.25*Math.sin(t*3))+')';g.lineWidth=1;circ(g,0,0,18+Math.sin(t*2)*1.5);g.stroke();
+  for(let i=0;i<12;i++){const a=i/12*TAU,r=i%3?12:11;g.fillStyle='rgba(255,236,170,0.9)';g.fillRect(Math.cos(a)*r-0.6,Math.sin(a)*r-0.6,i%3?1.2:2,i%3?1.2:2);}
+  if(!nohands){
+    const blade=(a,len,col)=>{g.save();g.rotate(a);g.fillStyle=col;g.beginPath();g.moveTo(-1.6,0);g.quadraticCurveTo(-2.4,-len*0.55,0,-len);g.quadraticCurveTo(1.6,-len*0.5,1.6,0);g.closePath();g.fill();g.restore();};
+    blade(t*0.6,10,'#FFF3C4');blade(-t*1.1+1.4,13,'#BFF3FF');}
+  g.fillStyle='#FFF3C4';circ(g,0,0,1.6);g.fill();
   g.restore();
 }
 function drawClockProp(g,x,y,s,fz,glow){
@@ -2581,7 +2584,7 @@ function drawCutPanel(){
   const ct=fz?0:t;
   for(const c of (P.cast||[])){const [id,x,y,face,o]=c,X=x*W,Y=y*H,oo=o||{};
     if(id==='horaios'||id==='hand'||id==='gate')drawCutExtra(g,id,X,Y,t,oo);
-    else if(id==='voice')drawVoice(g,X,Y,t,oo.scale||1.4);
+    else if(id==='voice')drawVoice(g,X,Y,t,oo.scale||1.4,!!oo.nohands);
     else if(id==='clock')drawClockProp(g,X,Y,oo.scale||1,fz,oo.glow);
     else if(id==='cloak')drawCloak(g,X,Y,face,t,oo);
     else if(id==='baby'){g.fillStyle='rgba(0,0,0,0.3)';ell(g,X,Y+4,9,3);g.fill();g.fillStyle='#24160C';ell(g,X,Y,9,5.5);g.fill();g.fillStyle=fz?'#B8C2D6':'#EFE6D2';ell(g,X,Y,8,4.5);g.fill();g.fillStyle=fz?'#AEB8CC':'#E8C39E';circ(g,X+5,Y-1,3);g.fill();}
@@ -2761,8 +2764,8 @@ function drawMission(c){
   if(m.beam){const b=m.beam;c.fillStyle='rgba(0,0,0,0.25)';ell(c,b.x,b.y+30,30,5);c.fill();c.save();c.translate(b.x,b.y);c.rotate(0.3);c.fillStyle='#7E8BA6';c.fillRect(-34,-6,68,12);c.fillStyle='#5E6A82';c.fillRect(-34,-6,68,3);c.fillRect(-34,3,68,3);c.restore();}
   for(const q of m.people)if(!q.safe&&q!==m.carry)drawNPC(c,q.x,q.y,{frozen:true,col:'#C96F4A'});
   const g=m.goals[m.gi];
-  if(g&&g.go){drawVoice(c,g.go.x,g.go.y,T,1);}
-  else if(g&&g.push&&m.beam){drawVoice(c,m.beam.x+50,m.beam.y-30,T,0.7);c.strokeStyle=alpha(C.gold,0.5+0.4*Math.sin(T*6));c.lineWidth=2;circ(c,m.beam.x,m.beam.y,m.beam.r+8);c.stroke();}
+  if(g&&g.go){drawVoice(c,g.go.x,g.go.y,T,1,true);}
+  else if(g&&g.push&&m.beam){drawVoice(c,m.beam.x+50,m.beam.y-30,T,0.7,true);c.strokeStyle=alpha(C.gold,0.5+0.4*Math.sin(T*6));c.lineWidth=2;circ(c,m.beam.x,m.beam.y,m.beam.r+8);c.stroke();}
   if(m.obj){const o=m.obj;
     if(o.ward&&m.M.crowd)drawCrowd(c,o,m);
     else if(o.ward){c.fillStyle='#E7DCC6';c.fillRect(o.x-56,o.y-34,112,50);c.fillStyle='#B98C6A';c.fillRect(o.x-60,o.y-40,120,8);c.fillStyle='#5A4030';c.fillRect(o.x-12,o.y-4,24,20);
@@ -3165,7 +3168,7 @@ Object.assign(SPK,{man:{name:'The man in the coat',col:'ash'},nun:{name:'Nun',co
 function addMission(id,M){MISSIONS[id]=M;ROOMS['m_'+id]={id:'m_'+id,kind:'mission',mission:id,num:M.name,name:M.name,place:M.place,theme:M.theme,rule:'none',ruleText:M.brief,pool:M.pool||['gossip','hothead']};}
 addMission('market',{type:'walk',name:'Tuesday Errands',place:'Market Ring',theme:'market',party:['kairos'],lvl:1,brief:'A normal morning. Talk to the people who need you.'});
 addMission('first',{type:'fight',name:'First Fight',place:'Market Ring',theme:'market',party:['kairos'],lvl:1,kills:30,max:3,tut:1,pool:['gossip','hothead','gossip'],brief:'Vices pour out of the rift. Your body knows the stance.',
-  tips:[[0,'Attack','Tap attack for the Twin Fish combo. The 5th hit is a finisher.'],[3,'Dodge','Dodge right before a hit. A perfect dodge triggers Slipstream.'],[6,'Tide','Your hits add Tide. At 3 stacks a Vice goes Drowsy.'],[8,'Foresight','Enemies flicker just before they attack. That’s you, seeing it early.']]});
+  tips:[[0,'Attack','Tap attack for the Clock Hands combo. The 5th hit is a finisher.'],[3,'Dodge','Dodge right before a hit. A perfect dodge triggers Slipstream.'],[6,'Tide','Your hits add Tide. At 3 stacks a Vice goes Drowsy.'],[8,'Foresight','Enemies flicker just before they attack. That’s you, seeing it early.']]});
 addMission('garrison',{type:'fight',name:'Garrison',place:'Market Ring',theme:'market',party:['kairos','ines','bram'],lvl:1,kills:24,max:5,pool:['gossip','hothead','waxer','gossip'],brief:'Hold the square with the Garrison until the rift seals.',
   tips:[[0,'Switch',(isTouch?'Tap a portrait':'Press 1, 2 or 3')+' to switch. Everyone has an Entrance move.'],[4,'Ines','Ines Spots enemies (+15% damage taken) and keeps sniping from the bench.'],[8,'Bram','Bram hits light. His bashes stagger, then stun.'],[12,'Aspect combo','Use one skill, then the other, for an Aspect combo.']]});
 addMission('assault',{type:'fight',name:'Breakout · Outside',place:'Institute sub-levels',theme:'lab',lvl:3,kills:20,max:5,pool:['hothead','waxer','gossip','deadline'],brief:'Fight down through the Institute. Third sub-level.',
@@ -3186,6 +3189,7 @@ function initExtra(m){
         ['kairos','“Fence nails, two dozen. Rosa’s medicine, Thursday.”'],
         ['matteo','Thursday. I knew that. I just wanted to hear somebody else say it.'],
         ['kairos','I’ll bring the nails this afternoon.'],
+        ['matteo','Twenty years I haven’t missed a Sunday cup, and still the Lord lets me lose my glasses.'],
         ['matteo','And I’ll pay you this afternoon. Not before. I know you.'],
         ['kairos','Fair.']]},
       {x:W*0.52,y:H*0.78,col:'#4A7FA0',hat:'#2E4A6A',apron:1,name:'vendor',need:1,face:-1,lines:[
@@ -3194,6 +3198,7 @@ function initExtra(m){
         ['vendor','Prices change, boy. Wind, tide, my mood.'],
         ['kairos','Your mood was fine yesterday. You sold Mrs. Pell two for five and told her it was a special.'],
         ['vendor','…Three coins. Get out of here before you ruin me.'],
+        ['vendor','And don’t tell Father Vane I sell on Sundays. Sundays are for selling, not sipping.'],
         ['th','He knows his prices perfectly well. He just hopes I’ve stopped paying attention. I never do.']]},
       {x:W*0.86,y:H*0.5,col:'#C96F4A',hair:'#6A3A1A',long:1,name:'tessa',need:1,last:1,small:1,face:-1,lines:[
         ['tessa','Kairos! Mama says you remember everything. Is that true?'],
@@ -3220,7 +3225,9 @@ function initExtra(m){
         ['rosa','He’ll read it a third time on Wednesday night, the worrier.'],
         ['rosa','You look tired, dear. Are you eating? Proper meals, not just the baker’s rolls?'],
         ['kairos','Mostly the baker’s rolls.'],
-        ['rosa','Come by Sunday. I’ll feed you, and you can fix my shutter. Fair trade.']]},
+        ['rosa','Come by Sunday. I’ll feed you, and you can fix my shutter. Fair trade.'],
+        ['kairos','Not going to the chapel?'],
+        ['rosa','Not since my husband’s funeral. The holy water tastes like pennies, and the priests talk too much.']]},
     ];
     m.goals=[{talk:1,t:'Errands: Matteo, the fish vendor, then Tessa'}];
   } else if(M.type==='fight'){
@@ -3381,6 +3388,8 @@ const CH1_SEQ=[
       ['th','There’s one more thing I don’t tell people.'],
       ['th','Some mornings I wake up with my hand already reaching for something. Like I put it down yesterday and I need to pick it back up.'],
       ['th','I don’t know what it is. I just know I’m not finished with it.'],
+      ['th','Sister Agathe gave every orphan a spoon of the Mercy on Sundays. Holy water from the Festival fountain. The others always looked so peaceful after.'],
+      ['th','I never felt anything. I figured God skipped me. He skips me a lot.'],
       ['th','Anyway. Fish.']],{mus:'market'})]},
   {mission:'market'},
   {cut:[
@@ -3416,14 +3425,15 @@ const CH1_SEQ=[
       ['th','The beam is hanging in the air. A pigeon is stuck mid-flap. Nobody is moving. Nobody is breathing.'],
       ['kairos','…Hello? Can anybody hear me?']],{...FROZEN,fx:'flash',focus:[0.6,0.55]}),
     pn('market',[['kairos',0.5,0.68,1],['voice',0.75,0.45]],[
-      ['th','A light at the end of the street. Two fish of light, circling a clock with no hands.'],
+      ['th','A light at the end of the street. A clock, made of light, floating at head height. Its two hands are spinning the wrong way.'],
       ['voice','Breathe. You’re the only one who can, right now.'],
       ['kairos','Did I do this? Who are you?'],
       ['voice','Someone you’ll recognize. Not today.'],
       ['kairos','That’s not an answer.'],
-      ['voice','It’s the only honest one I have. One minute, held still. It won’t last.']],{...FROZEN,focus:[0.7,0.5],zoom:0.12}),
-    pn('market',[['kairos',0.5,0.68,1,{glow:1}],['voice',0.68,0.48,1,{scale:1}]],[
-      ['th','The fish split apart and fly into my hands. They turn into blades. Curved, silver-blue, light as paper.'],
+      ['voice','It’s the only honest one I have. I’m holding this minute still for you. I can’t hold it long.']],{...FROZEN,focus:[0.7,0.5],zoom:0.12}),
+    pn('market',[['kairos',0.5,0.68,1,{glow:1}],['voice',0.68,0.48,1,{scale:1,nohands:1}]],[
+      ['th','The clock’s two hands pull loose and fly into mine. They grow into blades. Curved, silver-blue, light as paper.'],
+      ['th','The clock face goes on floating. Blank now. No hands.'],
       ['voice','You hate clocks because you remember what they’re for.'],
       ['kairos','I don’t remember anything like that.'],
       ['voice','Not yet. The girl is still under the beam. Go.']],{...FROZEN,fx:'flash',focus:[0.55,0.55]})]},
@@ -3431,7 +3441,7 @@ const CH1_SEQ=[
 
   // ───────── SCENE 3: the first fight
   {sc:'Scene 3 · First Blood',cut:[
-    pn('market',[['kairos',0.5,0.7,1,{glow:1}],['voice',0.66,0.5,1,{scale:0.8}]],[
+    pn('market',[['kairos',0.5,0.7,1,{glow:1}],['voice',0.66,0.5,1,{scale:0.8,nohands:1}]],[
       ['voice','You were there.'],
       ['kairos','Where? Wait—'],
       ['th','It fades. Of course it does.']],{...FROZEN}),
@@ -3490,7 +3500,7 @@ const CH1_SEQ=[
     pn('market',[['kairos',0.45,0.7,1,{glow:1}],['ines',0.6,0.7,-1],['bram',0.7,0.7,-1]],[
       ['bram','Uh. Sarge. His shirt is glowing.'],
       ['ines','I can see that, Bram.'],
-      ['th','A mark on my chest. Two fish, circling a clock with no hands. That wasn’t there this morning.'],
+      ['th','A mark on my chest. A clock face with no hands. Like the one in the street. That wasn’t there this morning.'],
       ['th','My knees go first. Then the ground comes up very fast.'],
       ['bram','Got him! …Nope. I didn’t. Sorry. Sarge, is he okay?'],
       ['ines','He’s breathing. St. Lucia’s is closest. Pick him up, Corporal. We’re going.']],{fx:'flash',mus:'tense'})]},
@@ -3501,6 +3511,8 @@ const CH1_SEQ=[
       ['bram','He’s light. Is he supposed to be this light?'],
       ['ines','He’s an errand boy from the Market Ring. They live on bread and favors.'],
       ['bram','I’d live on bread. Just bread. Forever.'],
+      ['bram','Sarge, are you coming to the Festival this year? My mom saves me a spot in the line.'],
+      ['ines','I work every Sunday, Bram. On purpose.'],
       ['ines','Stay behind me. If Vices get close, stop and let me deal with them. Switch to Bram if you want to carry him yourself.']],{mus:'tense'})]},
   {mission:'carry'},
 
@@ -3537,9 +3549,11 @@ const CH1_SEQ=[
       ['theo','Meridian is the last free city on the whole continent of Aster. Everything past the Wall fell before any of us were born.'],
       ['kairos','I know. I’ve read every map in the orphanage library. Twice.'],
       ['theo','Then you know the maps stop at the Wall. Nobody’s drawn past it in eighty years.'],
-      ['noemi','And the people inside it are tired. Most folks forget a little. The ones who drink the Mercy every year forget a lot.'],
-      ['kairos','The Church water?'],
-      ['noemi','“Drink and be forgiven.” I’ve seen what it does in this ward. I don’t drink it. Theo doesn’t either.']],{...NIGHT,mus:'tense'}),
+      ['noemi','And the people inside it are tired. Some days half my patients can’t tell me their own birthday.'],
+      ['kairos','Stress?'],
+      ['noemi','That’s the official answer. I write the real answers on my arm, when I have one.'],
+      ['theo','She skips the Festival every year. I go for the fried dough.'],
+      ['noemi','He doesn’t drink anything there. I check.']],{...NIGHT,mus:'tense'}),
     pn('hospital',[['noemi',0.42,0.66,1],['theo',0.56,0.66,-1],['kairos',0.7,0.7,-1]],[
       ['n','Every light in the ward flickers at once.'],
       ['theo','That’s not the power. My reader’s spiking. Something is tearing open inside the building.'],
@@ -3682,7 +3696,8 @@ const CH1_SEQ=[
     pn('orphanage',[['lucan',0.5,0.7,1,{hurt:1}]],[
       ['lucan','He chose Kairos. My life was supposed to be his.'],
       ['lucan','He burned his hands for me. And today I asked him if I knew him.'],
-      ['lucan','They gave me the Mercy that night. A silver cup. “So the new life can begin clean.” It took him. All of him.'],
+      ['lucan','That night the Church gave me a silver cup. “So the new life can begin clean.” I slept for two days.'],
+      ['lucan','When I woke up, he was just… gone from my head. I thought that’s what growing up felt like.'],
       ['lucan','…Not anymore.']],{...NIGHT,fx:'flash',mus:'sorrow'})]},
   {cut:[
     pn('yard',[['ines',0.35,0.7,1],['bram',0.47,0.7,1],['noemi',0.6,0.7,-1],['theo',0.7,0.7,-1]],[
@@ -3695,8 +3710,10 @@ const CH1_SEQ=[
       ['lucan','Third sub-level. The guards change shifts at eleven. That’s your gap.'],
       ['ines','You’re the Chancellor’s son. This afternoon you said “next.”'],
       ['lucan','This afternoon I didn’t remember that he burned his hands pulling me out of a fire.'],
-      ['lucan','My father came to adopt him. Not me. Kairos was sick, so he took me instead, and the Church made me forget him.'],
-      ['noemi','The Mercy.'],
+      ['lucan','My father came to adopt him. Not me. Kairos was sick, so he took me instead. And somehow I forgot him.'],
+      ['noemi','Kids forget things.'],
+      ['lucan','Not like that. Not a whole person.'],
+      ['noemi','…No. Not like that.'],
       ['lucan','I’ve been living his life for eleven years. I’m going to start paying it back tonight.'],
       ['bram','…I’m going to hug you.'],
       ['lucan','Please don’t.'],
@@ -3711,8 +3728,11 @@ const CH1_SEQ=[
   {cut:[pn('lab',[['kairos',0.5,0.7,1,{glow:1}]],[
       ['th','Alarms. Upstairs. Someone’s coming.'],
       ['th','Okay. The minute. How did it feel? Like holding your breath. Like grabbing the second hand.'],
+      ['th','I reach for it. Nothing. I reach again.'],
+      ['th','Then, behind the clock on the wall, something I can’t see pulls the second hand back. Gently. Like it’s helping me with a heavy door.'],
       ['th','…Three seconds. Only three. But it’s enough to slip a strap.'],
-      ['kairos','I can do it on purpose. Barely. But I can.'],
+      ['kairos','That wasn’t only me. Someone’s holding it with me.'],
+      ['th','I don’t know who. I’ll say thank you later.'],
       ['th','Guards and cameras in every hall. Stop time, walk through their sight lines. Don’t get greedy.']],{...NIGHT,fx:'flash',mus:'tense'})]},
   {mission:'sneak'},
   {cut:[
@@ -3763,7 +3783,9 @@ const CH1_SEQ=[
       ['vane','Faithful people. They will be forgiven.'],
       ['n','Cass hesitates. Too long. Vane sighs, and throws the flask himself.'],
       ['kairos','No— no, no, no!'],
-      ['th','The minute. Grab it. It hurts like holding a hot pan. Twenty seconds. Maybe.']],{...NIGHT,fire:1,fx:'shake',mus:'disaster'})]},
+      ['th','The minute. I can’t do this one alone.'],
+      ['kairos','Please. Whoever you are. Hold it for me.'],
+      ['th','Something answers. The fire stops mid-lick. Twenty seconds. Maybe.']],{...NIGHT,fire:1,fx:'shake',mus:'disaster'})]},
   {mission:'rescue'},
   {fn:nx=>playCutscene([pn('street',[['kairos',0.4,0.7,1],['cass',0.6,0.66,-1],['npc',0.25,0.78,1,{col:TESSA}]],[
       ['n','Time snaps back.'],
@@ -3781,7 +3803,7 @@ const CH1_SEQ=[
       ['th','Same dead clock. Still 11:59. I used to think it was waiting for me.'],
       ['n','Bram makes toast over a lantern. Theo fixes a drone. Noemi checks everyone’s cuts, one by one.'],
       ['theo','Okay. Recap. Because I need to hear it out loud.'],
-      ['theo','Time stopped. You got fish swords from a talking light. Rifts in the city. A Vice core sang. The Church wants you. The Chancellor wants you.'],
+      ['theo','Time stopped. A clock made of light gave you its hands as swords. Rifts in the city. A Vice core sang. The Church wants you. The Chancellor wants you.'],
       ['?',[
         {t:'When you say it like that it sounds bad.',r:[['theo','It sounds AMAZING.'],['noemi','Theo.'],['theo','Amazing and bad.']]},
         {t:'Honestly I just want breakfast.',f:'c_breakfast',r:[['bram','I have toast!'],['kairos','Bram. You’re my favorite person.'],['theo','Hey!']]},
@@ -3808,6 +3830,9 @@ const CH1_SEQ=[
       ['bram','And then you saved my life.'],
       ['ines','Fourteen Vices. He had a shield and no plan.'],
       ['bram','I had a plan. The plan was you.'],
+      ['bram','My mom never misses a Sunday. Last week she called me Tomas. That’s my brother.'],
+      ['ines','You told me, Bram.'],
+      ['bram','I know. She’s just tired. Everybody’s tired.'],
       ['ines','You stayed today too, Kairos. When you could’ve run. That’s worth something to me.',{not:'c_ines_joke'}],
       ['ines','You said you’d run away screaming. You didn’t. I noticed.',{if:'c_ines_joke'}],
       ['kairos','Is that a compliment?'],
@@ -3850,16 +3875,20 @@ const CH1_SEQ=[
     pn('plaza',[['npc',0.5,0.66,1,{col:VANEC}],['npc',0.62,0.7,-1,{col:'#A0607A'}],['npc',0.67,0.74,-1,{col:TESSA,small:1}],['kairos',0.3,0.72,1]],[
       ['th','Banners. Music. Fried dough. The whole city in one square.'],
       ['priest','Drink, and be forgiven. Drink, and let it go.'],
-      ['n','A mother drinks. She smiles peacefully. Then she looks down at the toddler holding her skirt.'],
-      ['mother','…Whose child is this?'],
-      ['th','Oh.'],
-      ['th','That’s what the Mercy does. Not just the pain. Everything attached to it.'],
-      ['th','That’s what they did to Lucan.']],{cap:'The next day. Festival Square.',mus:'plaza'}),
+      ['priest','Twenty years ago Heaven wept on this city, and this fountain rose out of the stones. The Church keeps it. The Church shares it.'],
+      ['n','A mother in black steps up, eyes red. She drinks. A moment later she is smiling, calm, like someone set down a heavy bag.'],
+      ['mother','…I feel lighter. Why did I come here crying?'],
+      ['th','She looks happy. She also looks empty.'],
+      ['th','Lucan said they gave him a silver cup the night he was adopted. This is the same cup.'],
+      ['th','I don’t like that I noticed that.']],{cap:'The next day. Festival Square.',mus:'plaza'}),
     pn('plaza',[['cass',0.45,0.68,1],['npc',0.6,0.66,-1,{col:VANEC}]],[
       ['vane','Sister. The line is waiting.'],
-      ['cass','She forgot her son, Father.'],
-      ['vane','She forgot her pain. Her son came with it. That is mercy.'],
-      ['cass','That’s theft with a hymn sung over it.'],
+      ['cass','She came here crying for her son, Father. Now she can’t remember why she came.'],
+      ['vane','She let go of her pain. That is mercy.'],
+      ['cass','Then why does she look so empty?'],
+      ['cass','I’ve drunk from that bowl every Sunday since I was six. I can’t remember my mother’s face. The Office calls that grace.'],
+      ['vane','It is grace.'],
+      ['cass','Then I don’t want any more of it.'],
       ['vane','Cass.'],
       ['cass','I’ve kept my vows my whole life, Father. That’s exactly why I can’t stay.']],{mus:'tense'}),
     pn('plaza',[['cass',0.6,0.7,-1],['kairos',0.42,0.7,1],['theo',0.3,0.7,1],['noemi',0.22,0.7,1]],[
@@ -3951,13 +3980,17 @@ const CH1_SEQ=[
       ['th','Something is calling me. It has been for twenty years. Now it has Lucan.'],
       ['th','Fine. I’ll answer.']],{fx:'flash',mus:'warm'}),
     pn('rooftop',[['npc',0.42,0.68,1,{col:LYRAC}],['cloak',0.6,0.7,-1,{mark:1}]],[
-      ['lyra','He used it twice. The minute. And Horaios moved inside it.'],
-      ['cloak','So he’s awake.'],
+      ['lyra','You held the minute for him again. Twice this week.'],
+      ['cloak','Three times. He thinks it’s his.'],
+      ['lyra','And Horaios moved inside it.'],
+      ['cloak','Then the Moon remembers me. Good. That means he’s awake.'],
       ['lyra','He asked me who I was.'],
       ['cloak','Did you tell him?'],
       ['lyra','No.'],
-      ['th','(On the man’s chest, under the black cloak: two fish, circling a clock with no hands.)'],
-      ['cloak','Good. It’s too early. He has to get there on his own this time.']],{...NIGHT,fx:'flash',focus:[0.55,0.55],mus:'tense'}),
+      ['th','(On the man’s chest, under the black cloak: a clock face with no hands.)'],
+      ['cloak','Good. It’s too early. He has to come to me on his own this time.'],
+      ['lyra','And when he does?'],
+      ['cloak','Then I go home.']],{...NIGHT,fx:'flash',focus:[0.55,0.55],mus:'tense'}),
     pn('white',[['lucan',0.5,0.7,1,{grey:1}]],[
       ['n','A white room. Rows of desks. Lucan, in a clerk’s uniform, filling in a form at Window 1.'],
       ['n','He reaches the line that says NAME. And stops. Pen hovering.'],
