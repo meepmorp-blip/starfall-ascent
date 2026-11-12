@@ -1197,7 +1197,7 @@ const CHAR_HOW={
 const CHART_DEG={kairos:{sun:18,moon:9,rising:null},ines:{sun:24,moon:6,rising:12},bram:{sun:3,moon:21,rising:27},noemi:{sun:14,moon:11,rising:2},
   theo:{sun:8,moon:16,rising:25},lucan:{sun:29,moon:4,rising:19},cass:{sun:11,moon:26,rising:7},dess:{sun:20,moon:13,rising:5}};
 
-function cst(id,L){const s=save.chars[id];return s&&s.lvl>=L&&s.stars&&s.stars[L]!=null?s.stars[L]:-1;}
+function cst(id,L){return -1;} // Turning Points removed: no per-level skill picks
 const isA=(p,L)=>cst(p.id,L)===0, isB=(p,L)=>cst(p.id,L)===1;
 function memberFx(id){const fx={},sl=save.chars[id].slots;for(const s of ['sun','moon','rising']){const f=fragById(sl[s]);if(!f)continue;const r=fragFx(f,id).fx;for(const k in r)fx[k]=(fx[k]||0)+r[k];}
   const c=setCount(id);for(const el in c){const n=c[el];if(n>=2)for(let t=0;t<(n>=3?2:1);t++){const b=SETS[el][t];for(const k in b)fx[k]=(fx[k]||0)+b[k];}}return fx;}
@@ -4672,14 +4672,7 @@ function showBuilds(back){
           on?null:h('button',{class:'btn small'+(can?'':' ghost'),type:'button',style:'margin-left:auto',disabled:can?null:'disabled',
             onclick:()=>{if(!can)return;cs.mp=(cs.mp|0)-cost.mp;save.dust-=cost.dust;cs.ms=cs.ms||{};cs.ms[lv]=1;persist();msg='Lv '+lv+' milestone awakened.';sfx('bless');render();}},
             reach?'Awaken · '+cost.mp+' Mastery · '+cost.dust+' ✦':'Needs Lv '+lv));})),
-      h('div',{class:'sect'},ico('star'),'Turning Points'),
-      h('p',{class:'bv-tip'},'At Lv 5, 10, 15 and 20, choose how one skill works. Swap any time.'),
-      h('div',{class:'cons'},...[5,10,15,20].map(L=>{const lock=cs.lvl<L,ch=cs.stars&&cs.stars[L]!=null?cs.stars[L]:-1,kind={5:'Basic',10:'Sun skill',15:'Moon skill',20:'Ultimate'}[L];
-        return h('div',{class:'cons-row'+(lock?' locked':'')},h('div',{class:'cons-lv'},h('b',null,'Lv '+L),h('span',null,kind)),
-          ...STARS[cid][L].map(([nm,ds],i)=>h('button',{class:'cons-opt',type:'button',disabled:lock?'disabled':null,'aria-pressed':String(ch===i),
-            onclick:()=>{cs.stars=cs.stars||{};cs.stars[L]=i;persist();msg=nm+' chosen for '+nameOf(cid)+'.';sfx('bless');render();}},
-            h('b',null,(ch===i?'★ ':'')+nm),h('span',null,ds))),
-          (!lock&&ch<0)?h('span',{class:'cons-new'},'Choose!'):null);})),
+
       bonusBox);
     // inventory
     let list=save.frags.filter(f=>f.slot===filter);
@@ -4875,7 +4868,6 @@ function guidePage(tab){
       gcard('Fire','Traits','Each fragment has 1 to 3 traits from its element. Pick ones that fit the character, like Fire for burn damage or Water for healing.'),
       gcard('star','Rarity','Common, Rare and ★ Star-born. Elites, Trials and the boss drop the better ones.'),
       gcard('transit','Aspects (the deep grind)','Each fragment has a degree (0–29°). If it lines up with the character’s chart (shown on the slot), you get a bonus. Exact is best.'),
-      gcard('star','Turning Points','At Lv 5, 10, 15 and 20 each character picks 1 of 2 ways a skill works. Swap any time in Builds, for free.'),
       gcard('up','Skill Mastery','Every match gives each party member Mastery points. Spend them (plus a little Stardust) in Builds → Skills to level Entrance, Basic, Sun, Moon and Ultimate up to Lv 10. A skill can’t go above the character’s level.'),
       gcard('memory','Memories (XP)','Vices drop Memories when they die. At the end of the stage the total is split between the party.'),
       gcard('team','Element sets','Equip 2 or 3 fragments of the same element for an extra set bonus.'),
