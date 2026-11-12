@@ -968,26 +968,6 @@ function loadSave(){
 }
 let save=loadSave();
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(_){if(!saveWarn){saveWarn='Saving failed (storage full or blocked). Use Builds → Backup to keep a code of your progress.';}}}
-// Story checkpoint: written every time you reach the door choice between districts
-function storyCheckpoint(){
-  if(!run||run.mode!=='story')return;
-  save.story=save.story||{};
-  save.story.cp={v:1,at:Date.now(),roomNo:run.roomNo,scene:run.scene,seen:[...run.seen],bl:{...run.bl},trials:{...run.trials},lethe:run.lethe,last:run.last,kills:run.kills,t:run.t,
-    pn:team.pn,members:team.members.map(m=>({id:m.id,hp:m.hp/m.maxHp,down:!!m.down,pn:m.pn||0})),ai:team.ai};
-  persist();
-}
-function clearCheckpoint(){if(save.story&&save.story.cp){delete save.story.cp;persist();}}
-function hasCheckpoint(){return false&&!!(save.story&&save.story.cp&&save.story.cp.v===1);}
-function continueStory(){
-  const cp=save.story.cp;
-  newRun('story',STORY_PARTY,0);
-  Object.assign(run,{roomNo:cp.roomNo,scene:cp.scene,seen:new Set(cp.seen||[]),bl:{...run.bl,...cp.bl},trials:{...run.trials,...cp.trials},lethe:!!cp.lethe,last:cp.last,kills:cp.kills|0,t:cp.t||0,first:false});
-  team.pn=cp.pn||0;
-  for(const c of cp.members||[]){const m=team.members.find(x=>x.id===c.id);if(m){m.pn=c.pn||0;m.down=!!c.down;m.hp=Math.max(1,Math.round(m.maxHp*(c.down?0.25:c.hp)));if(c.down){m.down=false;}}}
-  team.ai=Math.min(cp.ai|0,team.members.length-1);player=team.members[team.ai];
-  proceed();
-}
-function cpLabel(){const cp=save.story.cp;return Math.min(cp.roomNo,6)+' of 6 districts cleared';}
 // Backup codes: the whole save as one text code
 function exportCode(){const json=JSON.stringify({k:'sfa',v:1,save,at:Date.now()});return 'SFA1-'+btoa(unescape(encodeURIComponent(json)));}
 function importCode(code){
@@ -1011,7 +991,7 @@ function showBackup(back){
       h('div',{class:'sect'},ico('equip'),'Your code'),
       h('div',{class:'chips',style:'margin-bottom:6px'},
         h('span',{class:'chip'},ico('memory'),'Levels'),h('span',{class:'chip'},ico('gem'),save.frags.length+' fragments'),
-        h('span',{class:'chip'},ico('star'),save.dust+' Stardust'),hasCheckpoint()?h('span',{class:'chip'},ico('book'),'Story checkpoint'):null),
+        h('span',{class:'chip'},ico('star'),save.dust+' Stardust')),
       out,
       h('div',{class:'row',style:'margin-top:6px'},h('button',{class:'btn',type:'button',onclick:async()=>{
         let done=false;try{await navigator.clipboard.writeText(code);done=true;}catch(_){}
@@ -1301,83 +1281,8 @@ function updateTutorial(dt){
 const HOUSES=['house1','house3','house5','house7','house10','house12'];
 const SPK={
   n:{name:'',col:'ash'},
-  kairos:{name:'Kairos',col:'fire',ch:'kairos'},seren:{name:'Seren',col:'air',ch:'seren'},elias:{name:'Elias',col:'earth',ch:'elias'},
-  sophia:{name:'Dr. Sophia Arden',col:'hp',ch:'sophia'},cyrus:{name:'Cyrus Crane',col:'jupiter',ch:'cyrus'},
-  barnabas:{name:'Barnabas Hale',col:'sodium'},noa:{name:'Mother Noa',col:'venus'},crane:{name:'Chancellor Crane',col:'ash'},
-  horaios:{name:'Horaios',col:'moon'},serpent:{name:'The Serpent',col:'serpent'},radio:{name:'Concord broadcast',col:'ash'}};
+  crane:{name:'Chancellor Crane',col:'ash'},horaios:{name:'Horaios',col:'moon'},serpent:{name:'The Serpent',col:'serpent'}};
 // ── Chapter 1 · Vigil ─────────────────────────────────────────────
-// scenes[0] plays before the first district, scenes[1..5] before each district after that.
-const STORY={
-  scenes:[
-    [['n',"A clock with no hands. A name being written, then rubbed out."],
-     ['serpent',"You were there."],
-     ['n',"Meridian, 3:00 a.m. Kairos wakes up like always and adds one more line to the wall of notes beside his bed."],
-     ['seren',"You're doing the wall thing again."],
-     ['kairos',"I dreamed about the clock."],
-     ['seren',"You always dream about the clock. Come on. Barnabas wants the night shift in the Market Ring."],
-     ['barnabas',"Starfall tonight, kids. Third one this week. Elias, the civilians. Seren, the rooftops. Kairos…"],
-     ['kairos',"The front."],
-     ['barnabas',"The front. And try not to wander off where I can't find you."],
-     ['elias',"I'll pray for us on the way. Short one, I promise."]],
-    [['n',"When a Vice dies it leaves ash. This one left something else."],
-     ['kairos',"Look. There's handwriting on it."],
-     ['seren',"That's soot."],
-     ['kairos',"It says 'don't forget the bread.' Somebody wrote that."],
-     ['elias',"…A grocery list. On a monster."],
-     ['barnabas',"Bag it and send it to the Institute. And Kairos, stop looking at me like I know. I don't have answers. I have a schedule."],
-     ['n',"On Barnabas's desk a photograph lies face down. Nobody has ever turned it over."]],
-    [['sophia',"You're the crew that sent me the grocery-list Vice? Sit. Don't touch anything. Actually, touch this."],
-     ['n',"She hands Kairos a cracked Vice core. It hums against his palm. Then it plays a lullaby."],
-     ['sophia',"Every core I open has something in it. A voice. A smell. A list. These things aren't just made of something. They're made of someone."],
-     ['elias',"Made of who?"],
-     ['sophia',"Of whatever we forget. I need more cores. Lots more. Bring me cores."],
-     ['seren',"She's fun. I like her."]],
-    [['cyrus',"Don't wave. Officially I don't know any of you."],
-     ['cyrus',"The Council archive keeps a sealed Registry file from twenty years ago. They call it the Hour."],
-     ['n',"One page. One line. 'Unrecorded births: 1.' Under it, a name."],
-     ['seren',"…Kairos."],
-     ['cyrus',"No birth hour. No Rising. No Houses. The Registry couldn't place you. You're the only person in Meridian the planets can't find on a chart."],
-     ['kairos',"Then why does it feel like they're looking for me?"],
-     ['cyrus',"I'll get you more. Legally. Mostly legally. Don't ask about the 'mostly.'"]],
-    [['n',"In Festival Square, people in white kneel around a dry fountain someone has filled with water."],
-     ['noa',"Forget, and be forgiven. The planets are angry because we hold on to what was never ours to keep."],
-     ['n',"A man drinks. He smiles. He no longer knows his daughter's name. She is standing right next to him."],
-     ['elias',"They look… peaceful."],
-     ['seren',"They look empty. Let's go."],
-     ['cyrus',"One more thing. Three Vigil slayers stopped reporting in. Their Ledgers say they retired. The Institute signed the papers."]],
-    [['n',"The Concord announces a lunar eclipse. For one second, every clock in Meridian stops at the same time."],
-     ['sophia',"The Vices just changed course. All of them. They're heading for the Registry."],
-     ['barnabas',"Then that's where we'll be. All of us. Together."],
-     ['kairos',"Barnabas. The photo on your desk. Who is it?"],
-     ['barnabas',"…People I'm trying very hard not to forget. Move."]]],
-  boss:[
-    ['n',"The Registry vault stands open. Nobody broke the lock. Someone used a key."],
-    ['barnabas',"I'm sorry, kids."],
-    ['seren',"Barnabas?"],
-    ['barnabas',"My wife. My little girl. A Starfall, eleven years ago. Every night I remember it like it's happening again. Mother Noa promised it would stop."],
-    ['barnabas',"You remember too much. It hurts. I'm doing you a kindness."],
-    ['n',"The Moon comes down through the ceiling and settles behind a desk the size of a building."],
-    ['horaios',"Intake Window 1. Meridian, all of it. Name. Hour of birth. Sign here. Then drink."],
-    ['horaios',"Next. …Next. There is no number for this one. That is not allowed."],
-    ['kairos',"Then let me in anyway."]],
-  after:[
-    ['horaios',"Irregular. Highly… irregular."],
-    ['n',"The desk splits. For a moment the Moon looks at them clearly, like someone waking up."],
-    ['horaios',"I was not always this. Something wrote over me. What you forget does not vanish. It is carried."],
-    ['horaios',"Ask the one who carries messages."],
-    ['horaios',"And you. You are the minute that was never written."],
-    ['n',"The Moon goes quiet. Its light rests on the three of them like a hand on a shoulder."],
-    ['radio',"Citizens of Meridian. Tonight a rogue Vigil crew breached the Registry vault."],
-    ['crane',"Effective immediately, Meridian is under martial law. The Vigil is suspended. Stay indoors. Keep your Ledgers current."],
-    ['n',"Cyrus stands behind his father during the broadcast. He doesn't say a word."],
-    ['seren',"I knew it. I knew it."],
-    ['n',"Past midnight, a package arrives for Kairos. Travel papers to Hermopolis, and a note in Cyrus's handwriting."],
-    ['cyrus',"\"I'm sorry it had to look like that. Mercury's city. Go.\""],
-    ['barnabas',"(through the bars of a holding cell) I hope it works out for you. Remembering. I really do."],
-    ['serpent',"One window closed. Six to go. Don't drink anything."]],
-  retry:[['seren',"Get up. We're not done."],['elias',"Again. Slower this time."]],
-};
-const STORY_PARTY=['kairos','ines','bram'];
 const QUIPS=['The Kosmokrators count seven planets. Funny. I count more.','Every door here was installed by someone who wanted you to go through it. Choose anyway.',
   'Mercy tastes like nothing. That’s the trick.','Horaios has stamped four billion files. He has never read one.','The Vices aren’t monsters. They’re what people left behind.'];
 const VICE_INFO={
@@ -1529,13 +1434,6 @@ function hitEnemy(e,dmg,col){
   if(e.type==='champion') e.lastHit=room.t;
   dmgText(e.x,e.y-e.r-4,dmg,col);
   if(e.hp<=0) killEnemy(e);
-}
-function sentence(t,k,src){
-  if(t.dead)return;
-  const bonus=(t===boss?Math.min(90,t.maxHp*0.045)*k:t.maxHp*0.22*k);
-  addText(t.x,t.y-(t.r||20)-16,'SENTENCED',C.jupiter,11,{life:0.9});
-  burstParts(t.x,t.y,C.jupiter,10,120);sfx('sentence');
-  if(t===boss)hitBoss(bonus,C.jupiter);else hitEnemy(t,bonus,C.jupiter);
 }
 function playerHit(t,dmg,o={}){
   if(!t||t.dead) return;
@@ -1821,8 +1719,6 @@ function larkMul(){return inParty('noemi')&&inParty('theo')?1.5:1;}
 function buffAtk(v,t){t*=larkMul();team.atkBuffV=team.atkBuffT>0?Math.max(team.atkBuffV,v):v;team.atkBuffT=Math.max(team.atkBuffT,t);}
 function aimPoint(p,R){const t=nearestTarget(p.x,p.y,R,null);return t?{x:t.x,y:t.y,t}:{x:clamp(p.x+p.fx*150,AX0+40,AX1-40),y:clamp(p.y+p.fy*150,AY0+40,AY1-40),t:null};}
 function shard(p,ang,o){shots.push(mkShot(p.x,p.y-8,ang,Object.assign({spd:780,r:4,kind:'dart',col:'#BFE6FF',src:p,pn:0.5,life:0.85,shard:true},o)));}
-function spiritsOf(){return allies.filter(a=>a.kind==='spirit'&&!a.dead);}
-function spawnSpirit(src,life){const a=rand()*TAU;allies.push({kind:'spirit',x:player.x+Math.cos(a)*30,y:player.y-10+Math.sin(a)*20,r:6,life:life||14,max:life||14,ang:a,zap:0.4+rand()*0.5,src,dead:false});}
 function spawnTurret(src,big,life,x,y){life*=summonK();const own=allies.filter(a=>a.kind==='turret'&&!a.big);if(!big&&own.length>=2)own.sort((m,n)=>m.life-n.life)[0].life=0;
   allies.push({kind:'turret',big,x:clamp(x,AX0+16,AX1-16),y:clamp(y,AY0+16,AY1-16),r:big?11:7,life,max:life,zap:0.3,src,laser:false,dead:false});burstParts(x,y,C.mercury,10,90);sfx('thud');}
 function stunWave(x,y,R,stun,stag,knock,src,dmg){radial(x,y,R,dmg||0,{stun,stag,knock,col:C.earth,src});}
@@ -2051,11 +1947,6 @@ function kairosCounter(p){
   p.counterT=0;p.countered=true;p.iframe=0.5;slowReal=0.25;
   radial(p.x,p.y,115,p.atk*3.2,{tide:3,knock:200,skill:'moon',col:C.water,src:p,pn:3});
   addText(p.x,p.y-34,'SHELL',C.water,12,{life:1});burstParts(p.x,p.y,C.water,30,220);shake(5,0.15);sfx('counter');
-}
-function detonateSeconds(m){
-  let any=false;
-  for(const t of allTargets()){if(t.secs>0){any=true;const s=t.secs;t.secs=0;burstParts(t.x,t.y,C.gold,12,140);playerHit(t,m.atk*0.55*s*(isB(m,20)?1.6:1),{src:m,col:C.gold,noSecs:true,noSentence:true});}}
-  if(any){sfx('boom');shake(6,0.2);addText(m.x,m.y-40,'THE SECONDS DETONATE',C.gold,11,{life:1.2});}
 }
 function updatePlayer(dt){
   const p=player,kit=KITS[p.id],v=inputVec(),vm=Math.hypot(v.x,v.y);
@@ -2302,7 +2193,6 @@ function bossDie(){
   state='between';betweenT=1.8;bigStamp={text:'OVERRULED',col:C.gold,t:0};
   betweenCb=()=>{boss=null;
     if(run.mode==='battle')showBattleResult(true);
-    else if(run.mode==='story')showDialog(STORY.after,showChapterEnd);
     else showWin();};
 }
 
@@ -2321,12 +2211,6 @@ function resetField(){
 }
 function enterRoom(id,opt={}){
   const def=ROOMS[id];
-  if(run.mode==='story'&&!opt.scened&&def.kind!=='lethe'){
-    // before the boss, play any scenes the run skipped (a Lethe stop uses up a district) so the chapter never loses a beat
-    const lines=def.kind==='boss'?[].concat(...STORY.scenes.slice(run.scene),STORY.boss):STORY.scenes[run.scene];
-    if(def.kind==='boss')run.scene=STORY.scenes.length;
-    if(lines){if(def.kind!=='boss')run.scene++;showDialog(lines,()=>enterRoom(id,{scened:true}));return;}
-  }
   closeOverlay();
   if(def.kind==='lethe'){run.roomNo++;run.lethe=true;run.last=id;showLethe();return;}
   if(def.kind!=='boss')run.roomNo++;
@@ -2404,20 +2288,13 @@ function afterRoom(def,ok){
   else if(def.kind==='trial'){run.trials[def.planet]=true;if(ok){grant(def.planet);gainFrag('trial',player.x,player.y);}showTrialResult(def,ok);}
 }
 function grant(k){run.bl[k]=Math.min(3,run.bl[k]+1);sfx('bless');}
-function proceed(){storyCheckpoint();showDoors(run.roomNo>=6);}
+function proceed(){showDoors(run.roomNo>=6);}
 function die(){
   if(state!=='play')return;
   state='dying';deathT=1.3;
   burstParts(player.x,player.y,C.water,40,220);burstParts(player.x,player.y,C.paper,20,160);shake(8,0.4);
 }
 function firstRoom(id){return {kairos:'house12',ines:'house10',bram:'house1',noemi:'house3',theo:'house3',lucan:'house10',cass:'house1',dess:'house7'}[id]||'house3';}
-// Story always opens on the night shift in the Market Ring
-function startStory(retry){
-  clearCheckpoint();
-  newRun('story',STORY_PARTY,0);run.scene=0;
-  if(retry){run.scene=1;showDialog(STORY.retry,()=>enterRoom('house3',{scened:true}));}
-  else enterRoom('house3');
-}
 
 // ═══════════════════════════════════════════ Story tools (Phase 2)
 // cutscene player · missions (frozen time, escort, defense, stealth) · party growth · choose your 3 · sequencer
@@ -2870,42 +2747,6 @@ function seqStep(){
   else nx();
 }
 
-// ── playable preview of the new tools (uses real Chapter 1 script beats)
-const PREVIEW_SEQ=[
-  {cut:[
-    {bg:'market',cast:[['npc',0.78,0.66,-1,{up:1,col:'#C96F4A'}],['beam',0.78,0.4,1,{rot:0.5}],['kairos',0.45,0.7,1,{moving:1}]],fx:'shake',cap:'A cable snaps. The crane tilts. Kairos runs toward Tessa—',lines:[]},
-    {bg:'market',tint:'frozen',focus:[0.6,0.55],cast:[['npc',0.78,0.66,-1,{up:1,col:'#C96F4A'}],['beam',0.78,0.45,1,{rot:0.5}],['npc',0.3,0.5,1],['npc',0.62,0.75,-1],['kairos',0.5,0.68,1]],fx:'flash',cap:'—and everything stops.',
-      lines:[['n','Sound gone. Falling steel frozen mid-air. Nobody is breathing.'],['kairos','…Hello?']]},
-    {bg:'market',tint:'frozen',focus:[0.7,0.5],zoom:0.12,cast:[['kairos',0.5,0.68,1],['voice',0.75,0.45]],
-      lines:[['voice','You can breathe. You’re the only one who can, right now.'],['kairos','What is this? Who are you?'],['voice','Someone you’ll recognize. Not today.'],['voice','This minute is yours. Use it.']]}]},
-  {mission:'chase'},
-  {cut:[{bg:'market',fx:'snap',cast:[['kairos',0.5,0.7,1,{glow:1}],['npc',0.72,0.68,-1,{col:'#C96F4A'}],['beam',0.86,0.82,1,{rot:0.1}]],cap:'Snap. Color and noise slam back.',lines:[['voice','You were there.']]}]},
-  {join:'ines'},{join:'bram'},
-  {cut:[{bg:'yard',cast:[['bram',0.45,0.68,1,{moving:1}],['kairos',0.452,0.6,1,{fall:1,scale:1.3}],['ines',0.62,0.66,1,{moving:1}]],
-    lines:[['bram','He’s light. Is he supposed to be this light?'],['ines','Eat less bread and you’ll stop noticing.'],['bram','I’ll never eat less bread, Sarge.']]}]},
-  {mission:'carry'},
-  {cut:[{bg:'chapel',tint:'night',cast:[['noemi',0.42,0.66,1],['kairos',0.58,0.7,-1,{fall:1}],['ines',0.72,0.66,-1]],
-      lines:[['noemi','Pulse normal. Oxygen normal. Patient was glowing. I wrote that down because I knew I’d talk myself out of it.'],['ines','He was. Bright as a lamp.'],['noemi','People don’t glow, Sergeant.'],['ines','Agreed. Write that down too.']]},
-    {bg:'chapel',tint:'night',cast:[['theo',0.3,0.66,1,{moving:1}],['noemi',0.45,0.66,-1],['kairos',0.6,0.7,-1]],
-      lines:[['theo','He doesn’t have a concussion.'],['noemi','Theo. You’re not allowed in the ward.'],['theo','I’m your husband, I’m allowed everywhere.'],['n','The lights flicker. A rift tears open in the hospital courtyard.']]}]},
-  {join:'noemi'},{join:'theo'},
-  {mission:'lucia',pick:3,prefer:['kairos','noemi','theo'],title:'Defend St. Lucia’s',sub:'Five of you now. Only three fit in the courtyard. The others guard the doors.'},
-  {cut:[{bg:'chapel',tint:'night',cast:[['noemi',0.45,0.7,1],['theo',0.55,0.7,-1]],lines:[['noemi','You enjoyed that.'],['theo','Parts of it.'],['noemi','Me too. Don’t tell anyone.']]},
-    {bg:'office',tint:'night',cast:[['kairos',0.2,0.75,1]],cap:'Preview: later in the chapter, Kairos escapes the Institute lab.',lines:[['n','Freeze time, walk through the guards’ sight lines, reach the sealed door.']]}]},
-  {mission:'sneak'},
-  {cut:[{bg:'plaza',tint:'frozen',cast:[['kairos',0.3,0.7,1],['npc',0.6,0.6,-1,{col:'#C96F4A'}],['npc',0.75,0.75,1,{col:'#C96F4A'}]],cap:'Preview: the Festival is on fire. Kairos stops time, but only for twenty seconds.',lines:[]}]},
-  {mission:'rescue'},
-];
-function startPreview(){ensureAudio();runSeq(PREVIEW_SEQ,{roster:['kairos'],end:showPreviewEnd});}
-function showPreviewEnd(){
-  state='panel';const partial=sq&&sq.flags.rescue_partial;
-  openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story preview','Scenes 2 to 6, plus samples'),h('div',{class:'stamp ok'},'Preview done'),
-    h('h2',null,'The story tools work'),
-    h('p',{class:'lede'},'Cutscenes, the stopped minute, carrying Kairos, holding the hospital, the Institute breakout and the frozen fire. '+(partial?'You ran out of time in the fire. In the real chapter that changes a line of dialogue, not the ending.':'You saved everyone in the fire.')),
-    h('p',{class:'serpent'},'Next: split teams, Bond scenes, and the full Chapter 1 wired in.'),
-    h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>goHome()},'Home'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>startPreview()},'Play again'))));
-}
 
 // ═══════════════════════════════════════════ story tools · Phase 3: split teams, Bonds, the forced loss
 Object.assign(SPK,{horaios:{name:'Horaios',col:'moon'}});
@@ -3109,68 +2950,6 @@ function drawCutExtra(g,id,X,Y,t,o){
   }
 }
 
-// ── preview of Phase 3, built from Chapter 1 Scenes 10 to 14
-const CAMP_BG={bg:'lobby',tint:'night'};
-const PREVIEW3_SEQ=[
-  {cut:[{...CAMP_BG,cap:'The old clock tower. The giant clock has been dead for years. Tonight it is home.',
-    cast:[['kairos',0.3,0.7,1],['lucan',0.42,0.68,-1],['ines',0.56,0.7,1],['bram',0.64,0.7,-1],['noemi',0.76,0.68,1],['theo',0.84,0.7,-1],['dess',0.18,0.66,1]],
-    lines:[['n','Six of them, one dead clock, and a stolen bag of bread. For one night, nobody is chasing them.']]}]},
-  {bond:{n:2,title:'Who do you sit with tonight?',sub:'Pick two. Each talk raises that character’s Bond, and Bond makes them stronger in story fights.',choices:[
-    {who:['lucan'],title:'Lucan, at the clock face',cut:[{...CAMP_BG,focus:[0.5,0.55],cast:[['kairos',0.44,0.68,1],['lucan',0.56,0.68,-1]],cap:'They sit on the narrow ledge behind the dead clock, like when they were kids.',
-      lines:[['lucan','We used to hide here when the matron did inspections.'],['kairos','You’d make me count the seconds so we knew when to come out.'],['lucan','…You hated it.'],['kairos','I hated it. I did it anyway.'],
-        ['lucan','I’m not good at this. Saying things.'],['kairos','I know.'],['lucan','So I’ll say it once. Whatever this is, the Church, my father, whatever comes out of those rifts. I’m not losing you twice.'],
-        ['kairos','That sounds like a vow.'],['lucan','It is one. Don’t make it weird.']]}]},
-    {who:['ines','bram'],title:'Ines and Bram, by the lantern',cut:[{...CAMP_BG,focus:[0.5,0.55],cast:[['ines',0.4,0.68,1],['bram',0.56,0.68,-1],['kairos',0.7,0.7,-1]],
-      lines:[['bram','Sarge saved my life in the Eastern Rift.'],['ines','You fell into the Eastern Rift.'],['bram','And you saved my life.'],
-        ['ines','He followed me in. I told him to stay, he didn’t. Fourteen Vices. He had a shield and no plan.'],['bram','I had a plan. The plan was you.'],['ines','Eat your toast, Corporal.']]}]},
-    {who:['noemi','theo'],title:'Noemi and Theo, at the window',cut:[{...CAMP_BG,focus:[0.5,0.55],cast:[['noemi',0.42,0.68,1],['theo',0.56,0.68,-1],['kairos',0.28,0.7,1]],
-      lines:[['noemi','I wrote “he glowed” on my arm because I was scared I’d decide it didn’t happen.'],['theo','You always say the scary thing first.'],['noemi','And you always say the exciting thing first.'],
-        ['theo','Between us we say everything.'],['noemi','If this gets dangerous, and it will, I’m not leaving him behind. And I’m not leaving you behind either. That’s not kindness. I’m just stubborn.']]}]},
-    {who:['dess'],title:'Dess, alone with the cores',cut:[{...CAMP_BG,focus:[0.5,0.55],cast:[['dess',0.48,0.68,1],['kairos',0.6,0.7,-1]],
-      lines:[['dess','I can hear them a little. The memories. Mostly ordinary stuff. Someone’s bad day. A song.'],['dess','My dad used to sing to me. I don’t remember the song anymore. Isn’t that funny?'],
-        ['kairos','What did it sound like?'],['dess','I don’t… If I find it in one of these, I’ll let you know.']]}]},
-    {who:[],title:'Kairos, alone, at the dead clock',note:'No Bond. A vision.',flag:'vision',cut:[{...CAMP_BG,tint:'frozen',fx:'flash',focus:[0.5,0.55],cast:[['kairos',0.5,0.7,1,{glow:1}]],
-      cap:'A man’s hand, writing by candlelight. The same handwriting as the folded page.',lines:[['n','A voice, his own but older: “Find me before they do.”'],['n','He snaps out of it. His hand is still on the clock.']]}]},
-  ]}},
-  {cut:[{bg:'lobby',tint:'night',focus:[0.5,0.45],cast:[['kairos',0.4,0.74,1],['npc',0.62,0.34,-1,{col:'#2A2A3A'}]],cap:'Late. Everyone asleep. Someone sits on a beam above them.',
-    lines:[['lyra','Go back to sleep.'],['kairos','Who are you?'],['lyra','Someone who’s supposed to be watching. Not talking.'],['kairos','You’re bad at it.'],['lyra','The festival tomorrow. Don’t drink anything they give you.'],['n','She drops from the beam and is gone. Only Kairos saw her.']]}]},
-  {cut:[{bg:'office',tint:'night',cap:'Night. The Registry of Births. Black stone, endless windows.',cast:[['lucan',0.42,0.7,1],['kairos',0.56,0.7,-1],['dess',0.7,0.7,-1]],
-    lines:[['lucan','My father’s keys. He doesn’t know I took them.'],['kairos','He will.'],['lucan','Then I’d better make it worth it.']]}]},
-  {split:'stacks',preferA:['kairos','lucan','ines'],preferB:['bram','noemi','theo']},
-  {cut:[{bg:'office',tint:'night',fx:'flash',cast:[['kairos',0.5,0.7,1,{glow:1}],['dess',0.66,0.7,-1]],cap:'Kairos touches the vault. Himself, older, at a window, a long queue behind him.',
-    lines:[['kairos','I’ve been here.'],['dess','You’ve never been here. Nobody’s allowed down here.'],['kairos','I know. I’ve still been here.']]}]},
-  {cut:[{bg:'lobby',z:1.1,focus:[0.5,0.42],cast:[['horaios',0.5,0.32,1],['kairos',0.42,0.78,1],['ines',0.3,0.8,1],['theo',0.6,0.8,-1],['lucan',0.7,0.78,-1]],
-    cap:'A vast hall. Rows of empty chairs. Behind a desk as big as a house: Horaios, Kosmokrator of the Moon.',
-    lines:[['horaios','Intake Window 1. Take a number.'],['n','No one moves.'],['horaios','Name. Hour of birth. Sign here. Next.'],['ines','Is that… the Moon?'],['theo','Write this down. Somebody write this down.'],
-      ['horaios','…No number. That isn’t allowed.']]}]},
-  {loss:1,must:['kairos'],prefer:['kairos','lucan','noemi'],title:'Intake Window 1',sub:'Three of you face Horaios. Kairos has to be one of them.'},
-  {cut:[
-    {bg:'lobby',tint:'frozen',fx:'flash',z:1.1,focus:[0.5,0.42],cast:[['horaios',0.5,0.3,1,{phase:3}],['kairos',0.44,0.72,1,{moving:1}],['lucan',0.3,0.74,1,{grey:1}],['noemi',0.66,0.74,-1,{grey:1}]],
-      cap:'Kairos triggers the full time stop. Everything freezes. He runs at Horaios—',lines:[]},
-    {bg:'lobby',tint:'frozen',z:1.1,focus:[0.5,0.4],zoom:0.15,cast:[['horaios',0.5,0.3,1,{phase:3,pat:2}],['kairos',0.48,0.62,1]],cap:'—and Horaios turns its head.',
-      lines:[['horaios','You’re not the only one who’s done this before.']]},
-    {bg:'lobby',tint:'frozen',fx:'shake',z:1.1,focus:[0.5,0.42],cast:[['horaios',0.5,0.3,1,{phase:3}],['kairos',0.44,0.7,1,{hurt:1}],['hand',0.56,0.56,-1,{scale:0.75}]],cap:'Horaios moves inside the stopped minute. A huge hand closes.',
-      lines:[['horaios','Processing.']]},
-    {bg:'lobby',tint:'frozen',fx:'flash',z:1.1,focus:[0.5,0.42],cast:[['horaios',0.52,0.3,1,{phase:3}],['kairos',0.36,0.74,1,{fall:1}],['lucan',0.5,0.66,-1],['hand',0.58,0.56,-1,{closed:1,scale:0.75}]],
-      cap:'Lucan breaks free of the frozen grey. Nobody knows how. He throws himself between the hand and Kairos.',lines:[['lucan','Not him.']]},
-    {bg:'black',focus:[0.5,0.5],cast:[['gate',0.62,0.62,1,{scale:1.2}],['lucan',0.6,0.62,-1,{scale:1.4}],['kairos',0.4,0.66,1]],cap:'The hand takes Lucan instead. Behind Horaios, a gate of white light: the Moon Gate.',
-      lines:[['kairos','LUCAN—'],['horaios','Irregular. But acceptable.'],['lucan','Don’t you dare forget me.'],['kairos','I can’t. I never forget anything.'],['lucan','Good. Then come get me.']]},
-    {bg:'lobby',tint:'night',fx:'shake',cast:[['ines',0.4,0.7,1,{moving:1}],['kairos',0.52,0.72,-1],['bram',0.62,0.7,-1],['theo',0.74,0.7,-1]],cap:'The Gate closes. The hall is just a dark empty room. The ceiling starts to come down.',
-      lines:[['ines','Out! Everybody out, now!']]},
-    {bg:'plaza',cast:[['kairos',0.4,0.7,1],['ines',0.52,0.7,-1],['bram',0.62,0.7,-1],['noemi',0.3,0.7,1]],cap:'Dawn. A rooftop. Every screen in the city shows Chancellor Augustin Crane.',
-      lines:[['crane','Last night a group of heretics attacked the Registry of Births and destroyed it. My son Lucan was taken by them. If you see these people, do not approach them.'],
-        ['n','Their faces appear on the screens.'],['bram','He knows we didn’t take him.']]}]},
-];
-function startPreview3(){ensureAudio();runSeq(PREVIEW3_SEQ,{roster:['kairos','ines','bram','noemi','theo','lucan','dess','cass'],end:showPreview3End});}
-function showPreview3End(){
-  state='panel';const v=sq&&sq.flags.vision;
-  openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story preview','Scenes 10 to 14'),h('div',{class:'stamp'},'To be continued'),
-    h('h2',null,'Then come get me'),
-    h('p',{class:'lede'},'Camp and Bonds, two teams in the Stacks, and the fight you can’t win. '+(v?'You saw the vision at the clock. In the real chapter that changes a line later on.':'You skipped the vision at the clock this time.')),
-    h('p',{class:'serpent'},'Bond levels: '+(CH_ORDER.filter(id=>bondOf(id)).map(id=>nameOf(id)+' '+bondOf(id)).join(' · ')||'none yet')),
-    h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>goHome()},'Home'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>startPreview3()},'Play again'))));
-}
 
 // ═══════════════════════════════════════════ story · Phase 4: Chapter 1, wired end to end
 Object.assign(SPK,{man:{name:'The man in the coat',col:'ash'},nun:{name:'Nun',col:'paper'},matteo:{name:'Old Matteo',col:'paper'},vendor:{name:'Fish vendor',col:'paper'},
@@ -4165,7 +3944,7 @@ function showPause(){
   const restart=mode==='battle'
     ?h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();startBattle(party,stg,lvl);}},'Restart stage')
     :mode==='story2'&&run.retry?h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();const r=run.retry;r();}},'Restart fight')
-    :h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();if(mode==='story')startStory(true);else{newRun(mode,party,lvl);enterRoom(firstRoom(party[0]));}}},mode==='story'?'Restart chapter':'Restart run');
+    :h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();newRun(mode,party,lvl);enterRoom(firstRoom(party[0]));}},'Restart run');
   openOverlay(h('div',{class:'form',style:'max-width:740px'},
     formHead('Paused',d.kind==='boss'?'Archon Gate · Horaios':d.num+' · '+(d.place||d.name)),
     h('h2',{style:'padding-right:0'},'The party waits'),
@@ -4188,8 +3967,7 @@ function goHome(){
     h('p',{class:'sub'},'The Ascent'),
     h('p',{class:'blurb'},'Every night the sky drops monsters on Meridian, the last free city of Aster. Your birth chart is how you fight back.'),
     h('div',{class:'home-row'},
-      hasCheckpoint()?h('button',{class:'btn light',type:'button','data-primary':'1',onclick:()=>{ensureAudio();continueStory();}},'Continue',h('span',{class:'cont-sub'},'Story · '+cpLabel())):null,
-      h('button',{class:hasCheckpoint()?'btn outline':'btn light',type:'button','data-primary':hasCheckpoint()?null:'1',onclick:()=>{ensureAudio();showStoryStart();}},'Story'),
+      h('button',{class:'btn light',type:'button','data-primary':'1',onclick:()=>{ensureAudio();showStoryStart();}},'Story'),
       h('button',{class:'btn outline',type:'button','data-sound':'confirm',onclick:()=>{ensureAudio();showPartySelect('battle');}},'Battle'),
       h('button',{class:'btn outline',type:'button',onclick:()=>{ensureAudio();showBuilds(goHome);}},'Builds'),
       h('button',{class:'btn outline'+(loadPrefs().tutDone?'':' guide-new'),type:'button',onclick:()=>{ensureAudio();startTutorial();}},'Training'),
@@ -4211,7 +3989,6 @@ function portrait(id,size,dim){
 }
 function pips5(n){return h('div',{class:'pips5'},...[1,2,3,4,5].map(i=>h('i',{class:i<=n?'on':null})));}
 function elChip(el){return el?h('span',{class:'chip el-'+el.toLowerCase()},el):null;}
-const SIGN_EL_COLOR={Fire:'Fire',Earth:'Earth',Air:'Air',Water:'Water'};
 function signSpan(sg){if(!sg)return h('b',null,'none (unrecorded)');const el=SIGN_EL[sg];return h('span',{class:'sign '+el},h('span',{class:'glyph-s'},SIGN_GLYPH[sg]),sg);}
 function dmgChips(v){if(!v)return null;const a=Array.isArray(v)?v:[v];return h('div',{class:'dmgline'},...a.map(x=>h('span',{class:'dmg'+(/heal|Heal|HP\/s|revive/.test(x)?' heal':/Shield|DEF|guardian|1 HP/.test(x)?' def':'')},x)));}
 function dossier(id,action){
@@ -4248,7 +4025,7 @@ function showPartySelect(mode){
   let view=party[0];
   const slots=h('div',{class:'slots'}),roster=h('div',{class:'roster'}),detail=h('div',null),note=h('p',{class:'note'});
   const startBtn=h('button',{class:'btn light',type:'button','data-primary':'1',onclick:()=>{if(party.length<3)return;savePrefs({party});
-    if(mode==='story')startStory(false);else showBattleMenu(party);}},mode==='story'?'Begin the chapter':'Choose a stage');
+    showBattleMenu(party);}},mode==='story'?'Begin the chapter':'Choose a stage');
   const toggle=id=>{
     if(party.includes(id)){party=party.filter(x=>x!==id);note.textContent='';}
     else if(party.length<3){party.push(id);note.textContent='';}
@@ -4425,7 +4202,6 @@ function afterLethe(msg){
 function showDeath(){
   if(run.mode==='story2'){const cb=run.onDone;run.onDone=null;state='panel';if(cb)cb(false);else goHome();return;}
   if(run.mode==='battle'){showBattleResult('died');return;}
-  if(run.mode==='story')clearCheckpoint();
   state='panel';const party=run.party.slice(),mode=run.mode,lvl=run.bless;
   openOverlay(h('div',{class:'form'},
     formHead('Form 0-R · Recycling notice','Party · '+partyNames()),
@@ -4434,7 +4210,7 @@ function showDeath(){
     h('p',{class:'lede'},'The Vices caught them in '+(room?(room.def.place||room.def.name):'the street')+'. What you learned and found on the way stays with you.'),
     stats(),rewardBlock(false),
     h('div',{class:'row'},
-      h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>{if(mode==='story')startStory(true);else{newRun(mode,party,lvl);enterRoom(firstRoom(party[0]));}}},'Try again'),
+      h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>{newRun(mode,party,lvl);enterRoom(firstRoom(party[0]));}},'Try again'),
       mode==='story'?null:h('button',{class:'btn ghost',type:'button',onclick:()=>{showPartySelect('battle');}},'Party'),
       buildsBtn(goHome),h('button',{class:'btn ghost',type:'button',onclick:()=>{goHome();}},'Home'))));
 }
@@ -4767,36 +4543,7 @@ function showGuide(back,tab){
   }
   render();openOverlay(root,wasPaused?'mode-pause':'mode-select');
 }
-function storySlot(id){const c=CHARS[id];return h('div',{class:'slot',style:'cursor:default'},portrait(id,44),h('span',{class:'nm'},nameOf(id)),h('span',{class:'rl '+ROLE_COL[c.roleKey]},c.role));}
-function showStoryStart(){
-  state='title';room=null;boss=null;paused=false;playMusic('title');
-  if(!window.__oldStory){showCh1Menu();return;}
-  openOverlay(h('div',{class:'form',style:'max-width:640px'},
-    formHead('Story','Chapter 1 of 7'),
-    h('h2',{style:'padding-right:0'},'Chapter 1 · Vigil'),
-    h('p',{class:'lede'},'Meridian, one hundred years after the first Starfall. Nobody remembers why the planets turned on them. A Vigil crew on the night shift starts finding things that should not exist, and the strangest one is their own vanguard.'),
-    h('div',{class:'slots',style:'margin:4px 0 8px'},...STORY_PARTY.map(storySlot)),
-    h('p',{class:'serpent'},'Sophia and Cyrus appear in this chapter. You can play them now in Battle mode.'),
-    h('div',{class:'row'},
-      h('button',{class:'btn ghost',type:'button','data-back':'1',onclick:()=>{goHome();}},'Back'),
-      hasCheckpoint()?h('button',{class:'btn outline',type:'button',onclick:()=>{if(confirm('Start over? Your saved checkpoint will be lost.'))startStory(false);}},'Start over'):null,
-      hasCheckpoint()?h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>{continueStory();}},'Continue',h('span',{class:'cont-sub'},cpLabel()))
-        :h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>{startStory(false);}},'Begin the chapter'))));
-}
-function showChapterEnd(){
-  state='panel';save.story=save.story||{};save.story.ch1=true;clearCheckpoint();
-  openOverlay(h('div',{class:'form'},
-    formHead('End of Chapter 1','Vigil'),
-    h('div',{class:'stamp ok'},'Overruled'),
-    h('h2',null,'The Moon remembers'),
-    h('p',{class:'lede'},'Horaios is free, Barnabas is in a cell, the Vigil is suspended, and Kairos has travel papers to a city he has never seen.'),
-    stats(),rewardBlock(true),
-    h('p',{class:'mech'},h('b',null,'Next · Chapter 2: The Archive. '),'Hermopolis, the city that writes everything down. Mercury carries what the world forgets.'),
-    h('div',{class:'row'},
-      h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>{startStory(false);}},'Play Chapter 1 again'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>{showPartySelect('battle');}},'Battle mode'),
-      buildsBtn(goHome),h('button',{class:'btn ghost',type:'button',onclick:()=>{goHome();}},'Home'))));
-}
+function showStoryStart(){state='title';room=null;boss=null;paused=false;playMusic('title');showCh1Menu();}
 function showWin(){
   state='panel';const party=run.party.slice(),mode=run.mode,lvl=run.bless;
   openOverlay(h('div',{class:'form'},
@@ -4821,7 +4568,6 @@ function tip(id,icon,title,text,force){
   const pr=/^(vice_|elite_|rule_|orb)/.test(id)?2:1;
   tipQ.push({id,icon,title,text,pr,dur:Math.max(4.5,text.length/16)});tipQ.sort((x,y)=>x.pr-y.pr);
 }
-function tipReset(){tipSeen=new Set();savePrefs({tipsSeen:[]});}
 function showTipNow(t){
   tipCur=t;t.left=t.dur;tipSeen.add(t.id);savePrefs({tipsSeen:[...tipSeen]});
   tipEl.replaceChildren(ico(t.icon),h('div',null,h('b',null,t.title),h('span',{class:'tx'},t.text)),h('i'));
@@ -5308,7 +5054,6 @@ function ensureBG(k){
 function pick2(R,a){return a[Math.floor(R()*a.length)];}
 function noise(g,R,n,cols,a){for(let i=0;i<n;i++){g.fillStyle=alpha(pick2(R,cols),a*R());g.fillRect(R()*W,R()*H,R()*2+0.6,R()*2+0.6);}}
 function lightPool(g,x,y,r,col,a){const gr=g.createRadialGradient(x,y,2,x,y,r);gr.addColorStop(0,alpha(col,a));gr.addColorStop(1,alpha(col,0));g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2);}
-function tileGrid(g,size,c1,c2,mortar){for(let y=0;y<H;y+=size)for(let x=0;x<W;x+=size){g.fillStyle=((x/size+y/size)%2)?c1:c2;g.fillRect(x,y,size,size);}if(mortar){g.strokeStyle=mortar;g.lineWidth=1;for(let x=0;x<=W;x+=size){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke();}for(let y=0;y<=H;y+=size){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke();}}}
 function crate(g,x,y,w,h2,col){g.fillStyle=col;g.fillRect(x,y,w,h2);g.strokeStyle='rgba(0,0,0,0.35)';g.lineWidth=1;g.strokeRect(x+0.5,y+0.5,w-1,h2-1);g.beginPath();g.moveTo(x,y+h2/2);g.lineTo(x+w,y+h2/2);g.stroke();}
 function lantern(g,x,y,col){lightPool(g,x,y,26,col,0.45);g.fillStyle=col;ell(g,x,y,5,6.5);g.fill();g.fillStyle='rgba(0,0,0,0.3)';g.fillRect(x-5,y-1,10,1);g.fillStyle='#1A1A1A';g.fillRect(x-2,y-8,4,2);}
 // ═══ environment art: layered, organic top-down pixel tiles (light from top-left, shadows fall bottom-right)
@@ -5362,7 +5107,6 @@ function pine(g,x,y,s,pal){s=s||1;pal=pal||['#1F4F2E','#2E6B3E','#3E8A4A'];shado
   for(let k=0;k<4;k++){const w=(14-k*3)*s,yy=y-k*7*s;g.fillStyle=OL;g.beginPath();g.moveTo(x-w-1,yy+1);g.lineTo(x,yy-11*s-1);g.lineTo(x+w+1,yy+1);g.closePath();g.fill();
     g.fillStyle=pal[k%2?1:0];g.beginPath();g.moveTo(x-w,yy);g.lineTo(x,yy-11*s);g.lineTo(x+w,yy);g.closePath();g.fill();g.fillStyle=pal[2];g.fillRect(x-w*0.5,yy-3*s,w*0.4,2);}}
 function autumnTree(g,x,y,s,R){tree(g,x,y,s,R,['#A86A16','#C98A1E','#E0A82E','#F2C14E']);}
-function silverTree(g,x,y,s,R){tree(g,x,y,s,R,['#4E5E8A','#6E7FAE','#9AA8D2','#C7C9D8']);}
 function bush(g,x,y,col,R){shadow(g,x+2,y+4,10,3);g.fillStyle=OL;circ(g,x,y,9);g.fill();g.fillStyle=col||'#3E8A3A';circ(g,x,y,8);g.fill();g.fillStyle='#5DAE4B';circ(g,x-2,y-2,4);g.fill();
   if(R&&R()<0.4){g.fillStyle=pick2(R,['#FF79B0','#FFD166','#F6EBD2']);g.fillRect(x+2,y-3,2,2);g.fillRect(x-4,y+1,2,2);}}
 function rock(g,x,y,s,R){s=s||1;shadow(g,x+2,y+3,8*s,3*s);g.fillStyle=OL;ell(g,x,y,8*s+1,6*s+1);g.fill();g.fillStyle='#8E8A80';ell(g,x,y,8*s,6*s);g.fill();g.fillStyle='#B4AFA4';ell(g,x-2*s,y-2*s,4*s,3*s);g.fill();
@@ -5378,7 +5122,6 @@ function house(g,R,x,y,w,h,roofCol,roofDk,wall){wall=wall||'#E9DDC0';shadow(g,x+
 function roof(g,R,x,y,w,h,col,dk){g.fillStyle=OL;g.fillRect(x-1,y-1,w+2,h+2);g.fillStyle=col;g.fillRect(x,y,w,h);for(let yy=y+4;yy<y+h;yy+=5){g.fillStyle=dk;g.fillRect(x,yy,w,1);for(let xx=x+((yy/5)%2?3:0);xx<x+w;xx+=7)g.fillRect(xx,yy-4,1,4);}
   g.fillStyle='rgba(255,255,255,0.18)';g.fillRect(x,y,w,2);g.fillStyle='rgba(0,0,0,0.18)';g.fillRect(x,y+h-2,w,2);}
 function fence(g,x1,y,x2){g.fillStyle=OL;g.fillRect(x1,y+2,x2-x1,5);g.fillStyle='#B07F4A';g.fillRect(x1,y+3,x2-x1,2);for(let x=x1;x<=x2;x+=16){g.fillStyle=OL;g.fillRect(x-2,y-3,5,13);g.fillStyle='#C99A63';g.fillRect(x-1,y-2,3,11);g.fillStyle='#E0C08A';g.fillRect(x-1,y-2,3,1);}}
-function crops(g,R,x0,y0,w,h){dirt(g,R,x0,y0,w,h);for(let y=y0+4;y<y0+h-3;y+=8)for(let x=x0+4;x<x0+w-3;x+=6){g.fillStyle='#2F6B2E';g.fillRect(x,y,3,3);g.fillStyle='#67BB55';g.fillRect(x+1,y-1,1,2);}}
 function lamp(g,x,y){lightPool(g,x,y-10,30,'#FFD38A',0.35);shadow(g,x+2,y+1,4,2);g.fillStyle=OL;g.fillRect(x-1,y-14,3,16);g.fillRect(x-4,y-21,9,8);g.fillStyle='#FFE6A3';g.fillRect(x-3,y-20,7,6);g.fillStyle='#FFF7DA';g.fillRect(x-1,y-19,2,2);}
 function flowerbed(g,R,x,y,w,h){g.fillStyle=OL;g.fillRect(x-1,y-1,w+2,h+2);g.fillStyle='#5A3E2B';g.fillRect(x,y,w,h);for(let i=0;i<w*h/12;i++){g.fillStyle=pick2(R,['#FF79B0','#FFD166','#F6EBD2','#B9A6FF','#3E8A3A','#3E8A3A','#4FA247']);g.fillRect(x+1+R()*(w-3),y+1+R()*(h-3),2,2);}}
 function crate2(g,x,y){shadow(g,x+8,y+12,8,3);g.fillStyle=OL;g.fillRect(x-1,y-1,16,14);g.fillStyle='#B07F4A';g.fillRect(x,y,14,12);g.fillStyle='#C99A63';g.fillRect(x,y,14,2);g.fillStyle='#8B5A2B';g.fillRect(x,y+5,14,2);g.fillRect(x+6,y,2,12);}
@@ -5860,7 +5603,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf={bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),preview3:()=>startPreview3(),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,preview:()=>startPreview(),mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf={bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
