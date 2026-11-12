@@ -171,6 +171,60 @@ canvas#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-ac
 .vault-body{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:10px;align-items:start}
 @media (max-width:720px){.vault-body{grid-template-columns:1fr}}
 .vault-body>*{min-width:0}
+.bv-body{display:grid;grid-template-columns:minmax(230px,280px) minmax(0,1fr) minmax(250px,320px);gap:10px;align-items:start}
+.bv-body>*{min-width:0;box-sizing:border-box}
+.bv-view{align-self:flex-start;background:#F6EBD2;border-radius:8px;padding:3px}
+.bv-view button{color:#3B2617}.bv-view button[aria-pressed="true"]{background:#3B2617;color:#F6EBD2}
+.bv-tabs{display:flex!important;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-bottom:2px}
+.bv-tabs .tab{flex:0 0 auto;min-width:118px}
+.bv-tabs .tab .xpbar{display:none}
+.bv-tip{margin:0 0 4px;font:700 11px var(--f-ui);letter-spacing:.06em;color:var(--ink-soft)}
+.bv-slot{display:flex;gap:9px;align-items:center;width:100%;text-align:left;font:inherit;color:inherit;background:transparent;border:1.5px solid var(--ink-line);border-left:4px solid var(--el,var(--ink-line));border-radius:6px;padding:7px 8px;margin-top:6px;cursor:pointer}
+.bv-slot.on{border-color:var(--ink);background:rgba(201,162,90,0.18);box-shadow:0 0 0 2px #C9A25A}
+.bv-slot .bd{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bv-sk{display:flex;gap:5px;align-items:center;font:800 10px var(--f-ui);letter-spacing:.1em;text-transform:uppercase}
+.bv-on{margin-left:auto;background:#3B2617;color:#F6EBD2;border-radius:10px;padding:1px 7px;font-size:9px}
+.bv-sp{font:600 10px var(--f-ui);color:var(--ink-soft)}
+.bv-nm{font:700 14px var(--f-display)}
+.bv-gem{width:34px;height:34px;border:2px dashed var(--ink-line);border-radius:8px;display:grid;place-items:center;font:800 18px var(--f-ui);color:var(--ink-soft);flex:0 0 auto}
+.bv-bonus{margin-top:8px}.bv-bonus summary{cursor:pointer;font:800 11px var(--f-ui);letter-spacing:.1em;text-transform:uppercase;display:flex;gap:6px;align-items:center}
+.bv-for{display:flex;gap:6px;align-items:center;font:600 12px var(--f-form)}
+.bv-scroll{max-height:min(56vh,520px);overflow:auto;padding:2px;overscroll-behavior:contain}
+.bv-detail{position:sticky;top:8px;max-height:calc(100dvh - 30px);overflow:auto}
+.bv-detail .detail{position:relative;margin:0;background:var(--paper,#F6EBD2)}
+.bv-detail.empty{border:1.5px dashed var(--ink-line);border-radius:6px;padding:14px}
+.bv-x{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ink);background:transparent;font:800 16px/1 var(--f-ui);cursor:pointer;color:inherit}
+.bv-equip{width:100%;margin:2px 0 4px}
+.bv-cmp{margin:0;font:600 12px var(--f-form);color:var(--ink-soft)}
+@media (max-height:520px){
+  .vault{gap:6px}.vault .select-head .eyebrow{display:none}.vault .select-head h2{font-size:17px;margin:0}
+  .bv-tabs .tab .lv{display:none}.bv-tabs .tab{min-width:auto;padding:3px 8px}.bv-tabs .tab canvas{width:26px!important;height:26px!important}
+  .bv-view button{padding:3px 10px}
+  .bv-body{grid-template-columns:150px minmax(0,1fr)!important}
+  .bv-left .form-head,.bv-left .bv-tip,.bv-left .setbox,.bv-left .bv-bonus,.bv-sp,.bv-left .chips{display:none!important}
+  .bv-left{display:block!important;padding:6px!important}
+  .bv-left .bv-slot{flex-direction:row!important;padding:5px 6px;margin-top:4px}
+  .bv-right .fcount,.bv-right .form-head{display:none}
+  .bv-sk .bv-on{display:none}.bv-sk{font-size:9px;letter-spacing:.06em;flex-wrap:wrap}.bv-nm{font-size:12px}
+  .bv-right .ftiles{grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:4px}.bv-right .ftile{padding:3px 2px}
+  .bv-right .row{margin-bottom:4px!important}
+  .bv-scroll{max-height:calc(100dvh - 175px)}
+  .bv-detail{position:fixed!important;top:0;right:0;bottom:0;left:auto!important;width:min(48vw,380px);z-index:30;max-height:none!important;overflow:auto;padding:6px!important;box-shadow:-6px 0 24px rgba(0,0,0,.5)}
+  .bv-detail .detail{border-radius:8px;box-shadow:none}
+  .bv-detail.empty{display:none!important}
+}
+@media (max-width:1000px){.bv-body{grid-template-columns:minmax(220px,260px) minmax(0,1fr)}.bv-detail{grid-column:1 / -1;position:static;max-height:none}.bv-detail.empty{display:none}}
+@media (max-width:720px){
+  .bv-body{grid-template-columns:1fr}
+  .bv-left .bv-slot{margin-top:4px}
+  .bv-left{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .bv-left>.form-head,.bv-left>.bv-tip,.bv-left>.setbox,.bv-left>.bv-bonus{grid-column:1 / -1}
+  .bv-left .bv-slot{flex-direction:column;align-items:flex-start;padding:6px}
+  .bv-left .bv-slot .chips{display:none}
+  .bv-scroll{max-height:46vh}
+  .bv-detail{position:fixed;left:0;right:0;bottom:0;z-index:30;max-height:72dvh;padding:0 8px max(8px,env(safe-area-inset-bottom));background:transparent}
+  .bv-detail .detail{box-shadow:0 -6px 24px rgba(0,0,0,0.45);border-radius:12px 12px 0 0}
+}
 .slotcard{border:1.5px solid var(--ink);padding:7px 9px;display:flex;flex-direction:column;gap:2px;border-radius:2px;margin-top:6px;background:transparent;text-align:left;font:inherit;color:var(--ink);cursor:pointer;width:100%}
 .slotcard.empty{border-style:dashed;color:var(--ink-soft);font:12px var(--f-form)}
 .slotcard:focus-visible,.fcard:focus-visible{outline:2px solid var(--water);outline-offset:2px}
@@ -4493,27 +4547,34 @@ function transitTarget(f,cid){
 function showBuilds(back){
   state='title';room=null;boss=null;paused=false;playMusic('title');
   const prefs=loadPrefs();
-  let cid=CH_ORDER.includes(prefs.buildChar)?prefs.buildChar:'kairos',filter='all',sel=null,msg='',elf='all',sortBy=prefs.fragSort||'fit',goodOnly=!!prefs.goodOnly,showAll=false;
+  let cid=CH_ORDER.includes(prefs.buildChar)?prefs.buildChar:'kairos',filter=['sun','moon','rising'].includes(prefs.buildSlot)?prefs.buildSlot:'sun',view='frags',sel=null,msg='',elf='all',sortBy=prefs.fragSort||'fit',goodOnly=!!prefs.goodOnly,showAll=false;
   const root=h('div',{class:'vault'});
   const cost={attune:f=>25*f.lvl,retro:()=>40,transit:f=>30*(f.transits+1)};
   function spend(n){if(save.dust<n){msg='Not enough Stardust.';sfx('nope');return false;}save.dust-=n;return true;}
   function render(){
     const cs=save.chars[cid],c=CHARS[cid],fx=memberFx(cid);
-    const tabs=h('div',{class:'tabs'},...CH_ORDER.map(id=>{const s=save.chars[id],need=xpNeed(s.lvl);
+    const tabs=h('div',{class:'tabs bv-tabs'},...CH_ORDER.map(id=>{const s=save.chars[id],need=xpNeed(s.lvl);
       return h('button',{class:'tab',type:'button','aria-pressed':String(id===cid),onclick:()=>{cid=id;sel=null;msg='';savePrefs({buildChar:id});render();}},
         portrait(id,36),h('span',{class:'nm'},nameOf(id)),h('span',{class:'lv'},'Recollection '+s.lvl+(s.lvl<MAX_LVL?' · '+s.xp+'/'+need:' · max'),h('div',{class:'xpbar'},h('i',{style:'width:'+(s.lvl<MAX_LVL?Math.round(s.xp/need*100):100)+'%'}))));}));
-    const slotCard=s=>{const f=fragById(cs.slots[s]),inf=SLOT_INFO[s],p=placement(cid,s);
-      const k=h('span',{class:'k'},h('span',null,inf.name+' slot'),h('span',null,p?SIGN_GLYPH[p.sign]+' '+p.sign+' '+p.deg+'°':'unrecorded'));
-      const sic=h('span',{class:'slot-ic'},ico(SLOT_ICON[s]));
-      if(!f)return h('button',{class:'slotcard empty',type:'button',onclick:()=>{filter=s;render();}},sic,
-        h('span',{class:'bd'},k,h('span',{class:'sstat'},ico(STAT_ICON[s]),' Boosts '+inf.stat),h('span',{class:'hint'},'Empty — tap to see '+inf.name+' fragments')));
+    const slotCard=s=>{const f=fragById(cs.slots[s]),inf=SLOT_INFO[s],p=placement(cid,s),on=filter===s;
+      const pick2=()=>{filter=s;sel=f?f.id:null;msg='';showAll=false;savePrefs({buildSlot:s});render();};
+      const head=h('span',{class:'bv-sk'},ico(SLOT_ICON[s]),h('b',null,inf.name),h('span',null,'· '+{sun:'ATK',moon:'DEF',rising:'HP'}[s]),on?h('span',{class:'bv-on'},'Selected'):null);
+      const sub=h('span',{class:'bv-sp'},p?'Chart: '+SIGN_GLYPH[p.sign]+' '+p.sign+' '+p.deg+'°':'Chart: unrecorded');
+      if(!f)return h('button',{class:'bv-slot empty'+(on?' on':''),type:'button',onclick:pick2},h('span',{class:'bv-gem'},'+'),h('span',{class:'bd'},head,h('span',{class:'bv-nm'},'Empty'),sub));
       const r=fragFx(f,cid),a=aspectOf(f,cid);
-      return h('button',{class:'slotcard el-'+SIGN_EL[f.sign],type:'button',onclick:()=>{sel=f.id;render();}},gemEl(f),
-        h('span',{class:'bd'},k,h('span',{class:'nm2'},f.sign+' '+f.deg+'°',pips(f.lvl)),
-          h('span',{class:'chips'},h('span',{class:'chip'},ico(STAT_ICON[s]),inf.stat.split(' ')[0]+' +'+Math.round(r.slotV*100)+'%'),
-            a?h('span',{class:'chip '+(a.exact?'asp-ex':'asp-on')},ASP_GLYPH[a.name]+' '+(a.exact?'Exact ':'')+a.name):h('span',{class:'chip'},'No aspect'),fitChip(fitOf(f,cid)))));};
+      return h('button',{class:'bv-slot el-'+SIGN_EL[f.sign]+(on?' on':''),type:'button',onclick:pick2},gemEl(f),
+        h('span',{class:'bd'},head,h('span',{class:'bv-nm'},f.sign+' '+f.deg+'° ',pips(f.lvl)),
+          h('span',{class:'chips'},h('span',{class:'chip'},'+'+Math.round(r.slotV*100)+'%'),a?h('span',{class:'chip '+(a.exact?'asp-ex':'asp-on')},ASP_GLYPH[a.name]+' '+a.name):null,fitChip(fitOf(f,cid)))));};
     const fxl=fxLines(fx),need=xpNeed(cs.lvl);
-    const left=h('div',{class:'form',style:'max-width:none'},
+    const setBox=(()=>{const c2=setCount(cid),act=Object.entries(c2).filter(([el,n])=>n>=2);return h('div',{class:'setbox'},h('b',null,'Element set'),
+        act.length?h('span',null,...act.map(([el,n])=>h('span',{class:'chip el-'+el},ico(el),el+' ×'+n+': '+SET_TXT[el][0]+(n>=3?' + '+SET_TXT[el][1]:'')))):h('span',null,'Equip 2 or 3 fragments of the same element for a bonus.'));})();
+    const bonusBox=h('details',{class:'bv-bonus'},h('summary',null,ico('up'),'Total bonuses ('+fxl.length+')'),
+      fxl.length?h('div',{class:'bonus'},...fxl.map(t=>h('span',null,ico(fxIcon(t)),t))):h('p',{class:'lede',style:'margin:0'},'None yet — equip a fragment.'));
+    const left=view==='frags'
+      ?h('div',{class:'form bv-left',style:'max-width:none'},formHead(nameOf(cid)+' · Lv '+cs.lvl,c.role),
+        h('p',{class:'bv-tip'},'1. Pick a slot   2. Pick a fragment   3. Equip'),
+        slotCard('sun'),slotCard('moon'),slotCard('rising'),setBox,bonusBox)
+      :h('div',{class:'form',style:'max-width:none'},
       formHead('Recollection · '+c.name,c.role),
       h('div',{class:'bigstat'},h('b',null,'Lv '+cs.lvl),h('span',null,cs.lvl>=MAX_LVL?'max level':cs.xp+' / '+need+' Memories')),
       h('div',{class:'xpbar',style:'height:6px;background:var(--ink-line)'},h('i',{style:'background:var(--star-ink);width:'+(cs.lvl<MAX_LVL?Math.round(cs.xp/need*100):100)+'%'})),
@@ -4526,19 +4587,14 @@ function showBuilds(back){
             onclick:()=>{cs.stars=cs.stars||{};cs.stars[L]=i;persist();msg=nm+' chosen for '+nameOf(cid)+'.';sfx('bless');render();}},
             h('b',null,(ch===i?'★ ':'')+nm),h('span',null,ds))),
           (!lock&&ch<0)?h('span',{class:'cons-new'},'Choose!'):null);})),
-      h('div',{class:'sect'},ico('gem'),'Equipped fragments'),
-      slotCard('sun'),slotCard('moon'),slotCard('rising'),
-      (()=>{const c=setCount(cid),act=Object.entries(c).filter(([el,n])=>n>=2);return h('div',{class:'setbox'},h('b',null,'Element set'),
-        act.length?h('span',null,...act.map(([el,n])=>h('span',{class:'chip el-'+el},ico(el),el+' ×'+n+': '+SET_TXT[el][0]+(n>=3?' + '+SET_TXT[el][1]:'')))):h('span',null,'Equip 2 or 3 fragments of the same element (Fire, Earth, Air, Water) for a bonus.'));})(),
-      h('div',{class:'sect'},ico('up'),'Total bonuses'),
-      fxl.length?h('div',{class:'bonus'},...fxl.map(t=>h('span',null,ico(fxIcon(t)),t))):h('p',{class:'lede',style:'margin:0'},'None yet — equip a fragment.'));
+      bonusBox);
     // inventory
-    let list=save.frags.slice();if(filter!=='all')list=list.filter(f=>f.slot===filter);
+    let list=save.frags.filter(f=>f.slot===filter);
     if(elf!=='all')list=list.filter(f=>SIGN_EL[f.sign]===elf);
     if(goodOnly)list=list.filter(f=>fitOf(f,cid).tier>0||equippedBy(f)===cid);
     const SORTS={fit:(a,b)=>fitOf(b,cid).sc-fitOf(a,cid).sc||b.rar-a.rar||b.id-a.id,rar:(a,b)=>b.rar-a.rar||b.lvl-a.lvl||b.id-a.id,lvl:(a,b)=>b.lvl-a.lvl||b.rar-a.rar||b.id-a.id,new:(a,b)=>b.id-a.id};
     list.sort(SORTS[sortBy]||SORTS.fit);
-    const total=list.length,LIMIT=24,shown=showAll?list:list.slice(0,LIMIT);
+    const total=list.length,LIMIT=60,shown=showAll?list:list.slice(0,LIMIT);
     const seg=h('div',{class:'seg'},...['all','sun','moon','rising'].map(k=>h('button',{type:'button','aria-pressed':String(filter===k),onclick:()=>{filter=k;showAll=false;render();}},k==='all'?ico('bag'):ico(SLOT_ICON[k]),' '+(k==='all'?'All':SLOT_INFO[k].name))));
     const elBar=h('div',{class:'fbar'},
       h('div',{class:'elchips'},...['all','Fire','Earth','Air','Water'].map(k=>h('button',{type:'button',class:'elchip'+(k!=='all'?' el-'+k:''),'aria-pressed':String(elf===k),title:k==='all'?'All elements':k,onclick:()=>{elf=k;showAll=false;render();}},k==='all'?'All':ico(k)))),
@@ -4547,7 +4603,7 @@ function showBuilds(back){
         ...[['fit','Best fit'],['rar','Rarity'],['lvl','Level'],['new','Newest']].map(([v,t])=>{const o=h('option',{value:v},t);if(v===sortBy)o.selected=true;return o;}));return sel2;})());
     const grid=h('div',{class:'ftiles'},...shown.map(f=>{const eq=equippedBy(f),ft=fitOf(f,cid);
       return h('button',{class:'ftile rar'+f.rar+(f.id===sel?' sel':''),type:'button','aria-pressed':String(f.id===sel),title:f.sign+' '+f.deg+'° · '+SLOT_INFO[f.slot].name+' · '+RAR_NAME[f.rar],
-        onclick:()=>{sel=f.id;msg='';render();const d=document.querySelector('.detail');if(d)d.scrollIntoView({block:'nearest',behavior:'smooth'});}},
+        onclick:()=>{sel=f.id;msg='';render();}},
         gemEl(f),
         h('span',{class:'tl'},f.sign.slice(0,3)+' '+f.deg+'°'),
         h('span',{class:'ts'},ico(SLOT_ICON[f.slot])),
@@ -4561,7 +4617,9 @@ function showBuilds(back){
       const act=(label,icon,desc,price,fn,dis,primary)=>h('button',{class:'tool'+(primary?' primary':''),type:'button',disabled:dis||null,onclick:()=>{fn();persist();render();}},
         h('span',{class:'tn'},ico(icon),label),h('span',{class:'td'},desc),price!=null?h('span',{class:'tc'},ico('star'),price):null);
       const el=SIGN_EL[f.sign],boosted=f.lvl>1||(r.asp&&r.asp.name==='Opposition');
+      const cur=fragById(cs.slots[f.slot]),curV=cur&&cur!==f?Math.round(fragFx(cur,cid).slotV*100):null,newV=Math.round(r.slotV*100);
       detail=h('div',{class:'detail el-'+el},
+        h('button',{class:'bv-x',type:'button','aria-label':'Close',onclick:()=>{sel=null;render();}},'×'),
         h('div',{class:'top'},gemEl(f,true),h('div',null,
           h('h3',null,f.sign+' '+f.deg+'°'),
           h('div',{class:'chips',style:'margin-top:4px'},
@@ -4569,7 +4627,9 @@ function showBuilds(back){
             h('span',{class:'chip'},ico(el),el),
             h('span',{class:'chip'},ico(SLOT_ICON[f.slot]),SLOT_INFO[f.slot].name),
             pips(f.lvl),eq?h('span',{class:'chip on'},'On '+nameOf(eq)):null))),
-        h('div',{class:'main-stat'},ico(STAT_ICON[f.slot]),SLOT_INFO[f.slot].stat+' +'+Math.round(r.slotV*100)+'%',h('small',null,'for '+nameOf(cid))),
+        h('div',{class:'main-stat'},ico(STAT_ICON[f.slot]),SLOT_INFO[f.slot].stat+' +'+newV+'%',h('small',null,'for '+nameOf(cid))),
+        mine?h('p',{class:'bv-cmp'},'Equipped in '+nameOf(cid)+'’s '+SLOT_INFO[f.slot].name+' slot.'):h('p',{class:'bv-cmp'},cur?'Now in '+SLOT_INFO[f.slot].name+' slot: '+cur.sign+' '+cur.deg+'° (+'+curV+'%) → this: +'+newV+'% ('+(newV-curV>=0?'+':'')+(newV-curV)+'%)':SLOT_INFO[f.slot].name+' slot is empty.'),
+        h('button',{class:'btn bv-equip',type:'button',onclick:()=>{if(mine){save.chars[cid].slots[f.slot]=null;msg='Unequipped.';sfx('back');}else{for(const id of CH_ORDER)if(save.chars[id].slots[f.slot]===f.id)save.chars[id].slots[f.slot]=null;save.chars[cid].slots[f.slot]=f.id;msg='Equipped to '+nameOf(cid)+'’s '+SLOT_INFO[f.slot].name+' slot.';sfx('confirm');}persist();render();}},mine?'Unequip':'Equip to '+nameOf(cid)+'’s '+SLOT_INFO[f.slot].name+' slot'),
         (()=>{const w=fitWhy(f,cid),b=bestFor(f),ft=w.fit;
           return h('div',{class:'fitbox t'+ft.tier},ico(ft.tier===2?'star':ft.tier?'check':'team'),h('div',null,
             h('b',null,FIT_NAME[ft.tier]+' for '+nameOf(cid)),w.text,
@@ -4582,23 +4642,26 @@ function showBuilds(back){
         h('div',{class:'sect'},ico('up'),'Actions'),
         h('div',{class:'tools'},
           mine?act('Unequip','equip','Take it off '+nameOf(cid),null,()=>{save.chars[cid].slots[f.slot]=null;sfx('back');},false,true)
-              :act('Equip','equip','Put on '+nameOf(cid),null,()=>{for(const id of CH_ORDER)if(save.chars[id].slots[f.slot]===f.id)save.chars[id].slots[f.slot]=null;save.chars[cid].slots[f.slot]=f.id;msg='Equipped on '+nameOf(cid)+'.';sfx('confirm');},false,true),
+              :act('Equip to '+SLOT_INFO[f.slot].name,'equip','Put on '+nameOf(cid)+(eq&&eq!==cid?' (takes it from '+nameOf(eq)+')':''),null,()=>{for(const id of CH_ORDER)if(save.chars[id].slots[f.slot]===f.id)save.chars[id].slots[f.slot]=null;save.chars[cid].slots[f.slot]=f.id;msg='Equipped on '+nameOf(cid)+'.';sfx('confirm');},false,true),
           act('Attune','up',f.lvl<5?'Level up · stronger at Lv 3 & 5':'Max level',f.lvl<5?cost.attune(f):null,()=>{if(f.lvl<5&&spend(cost.attune(f))){f.lvl++;msg='Attuned to level '+f.lvl+'.';sfx('bless');}},f.lvl>=5),
           act('Retrograde','retro','Reroll one trait',cost.retro(),()=>{if(spend(cost.retro())){const others=Object.keys(pool).filter(k=>!f.traits.includes(k));const i=Math.floor(rand()*f.traits.length);if(others.length){const old=pool[f.traits[i]][0];f.traits[i]=pick(others);msg=old+' became '+pool[f.traits[i]][0]+'.';sfx('spark');}}},false),
           act('Transit','transit',tt==null?'Already exact — or no placement':'Nudge 1° toward exact ('+(5-f.transits)+' left)',tt==null||f.transits>=5?null:cost.transit(f),()=>{if(tt!=null&&f.transits<5&&spend(cost.transit(f))){f.deg=tt;f.transits++;msg='Moved to '+f.sign+' '+f.deg+'°. '+aspText(f,cid)+'.';sfx('skill');}},tt==null||f.transits>=5),
           act('Salvage','salvage','Break into +'+(RAR_DUST[f.rar]+(f.lvl-1)*10)+' Stardust',null,()=>{for(const id of CH_ORDER)if(save.chars[id].slots[f.slot]===f.id)save.chars[id].slots[f.slot]=null;save.dust+=RAR_DUST[f.rar]+(f.lvl-1)*10;save.frags=save.frags.filter(x=>x!==f);sel=null;msg='Salvaged into Stardust.';sfx('break');},false)));
     }
-    const right=h('div',{class:'form',style:'max-width:none'},
-      formHead('Star Fragments',save.frags.length+' / 150 held'),
-      h('div',{class:'row',style:'margin:0 0 8px;justify-content:space-between'},seg,h('span',{class:'dustpill'},ico('star'),save.dust+' Stardust')),
+    const right=h('div',{class:'form bv-right',style:'max-width:none'},
+      formHead(SLOT_INFO[filter].name+' fragments',total+' for this slot · '+save.frags.length+' / 150 held'),
+      h('div',{class:'row',style:'margin:0 0 6px;justify-content:space-between;align-items:center'},
+        h('span',{class:'bv-for'},ico(SLOT_ICON[filter]),'Choosing for ',h('b',null,nameOf(cid)+'’s '+SLOT_INFO[filter].name+' slot')),h('span',{class:'dustpill'},ico('star'),save.dust+' Stardust')),
       msg?h('p',{class:'note',style:'color:var(--res-ink);margin:0 0 6px'},msg):null,
-      detail,
-      elBar,h('p',{class:'fcount'},total?('Showing '+shown.length+' of '+total+' · ★ great fit · ✓ good fit · letter = who has it equipped'):'Nothing matches these filters.'),
-      list.length?grid:h('p',{class:'lede'},'No fragments here yet. Vices drop them sometimes, elites often, and Trials and Horaios always. Each House drops more of its own sign, and today '+dayElement()+' signs fall more often.'),more);
+      elBar,h('p',{class:'fcount'},total?('★ great fit · ✓ good fit · letter = who has it'):'Nothing matches these filters.'),
+      h('div',{class:'bv-scroll'},list.length?grid:h('p',{class:'lede'},'No '+SLOT_INFO[filter].name+' fragments yet. Rifts drop Fragments of one element each; Trials and Horaios always drop one.'),more));
+    const sheet=detail?h('div',{class:'bv-detail form',style:'max-width:none;padding:8px'},detail):h('div',{class:'bv-detail empty form',style:'max-width:none'},h('p',{class:'lede'},'Tap a fragment to see it here.'));
+    const vtabs=h('div',{class:'seg bv-view'},h('button',{type:'button','aria-pressed':String(view==='frags'),onclick:()=>{view='frags';render();}},ico('gem'),' Fragments'),
+      h('button',{type:'button','aria-pressed':String(view==='recoll'),onclick:()=>{view='recoll';render();}},ico('star'),' Recollection'));
     root.replaceChildren(
       h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},'Builds · Recollection and Star Fragments'),h('h2',null,'Who are you building?')),
         h('div',{class:'row'},h('button',{class:'btn outline',type:'button',onclick:()=>showBackup(()=>showBuilds(back))},'Backup'),h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>{(back||goHome)();}},'Back'))),
-      tabs,h('div',{class:'vault-body'},left,right));
+      tabs,vtabs,view==='frags'?h('div',{class:'bv-body'},left,right,sheet):h('div',{class:'vault-body'},left));
   }
   render();openOverlay(root,'mode-select');
 }
