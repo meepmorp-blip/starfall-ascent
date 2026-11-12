@@ -216,7 +216,11 @@ canvas#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-ac
   .bv-detail .detail{border-radius:8px;box-shadow:none}
   .bv-detail.empty{display:none!important}
 }
-@media (max-width:1000px){.bv-body{grid-template-columns:minmax(220px,260px) minmax(0,1fr)}.bv-detail{grid-column:1 / -1;position:static;max-height:none}.bv-detail.empty{display:none}}
+@media (max-width:1000px),(max-height:520px){.bv-body{grid-template-columns:minmax(150px,260px) minmax(0,1fr)!important}
+  .bv-detail{position:fixed!important;inset:0!important;width:auto!important;z-index:40;background:rgba(10,8,6,0.6)!important;border:0!important;box-shadow:none!important;display:flex;align-items:center;justify-content:center;padding:12px!important;max-height:none!important;overflow:auto}
+  .bv-detail .detail{width:min(480px,100%);max-height:calc(100dvh - 24px);overflow:auto;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.6);scrollbar-width:none}
+  .bv-detail .detail::-webkit-scrollbar{display:none}
+  .bv-detail.empty{display:none!important}}
 @media (max-width:720px){
   .bv-body{grid-template-columns:1fr}
   .bv-left .bv-slot{margin-top:4px}
@@ -4658,7 +4662,7 @@ function showBuilds(back){
       msg?h('p',{class:'note',style:'color:var(--res-ink);margin:0 0 6px'},msg):null,
       elBar,h('p',{class:'fcount'},total?('★ great fit · ✓ good fit · letter = who has it'):'Nothing matches these filters.'),
       h('div',{class:'bv-scroll'},list.length?grid:h('p',{class:'lede'},'No '+SLOT_INFO[filter].name+' fragments yet. Rifts drop Fragments of one element each; Trials and Horaios always drop one.'),more));
-    const sheet=detail?h('div',{class:'bv-detail form',style:'max-width:none;padding:8px'},detail):h('div',{class:'bv-detail empty form',style:'max-width:none'},h('p',{class:'lede'},'Tap a fragment to see it here.'));
+    const sheet=detail?h('div',{class:'bv-detail form',style:'max-width:none;padding:8px',onclick:e=>{if(e.target===e.currentTarget){sel=null;render();}}},detail):h('div',{class:'bv-detail empty form',style:'max-width:none'},h('p',{class:'lede'},'Tap a fragment to see it here.'));
     const vtabs=h('div',{class:'seg bv-view'},h('button',{type:'button','aria-pressed':String(view==='frags'),onclick:()=>{view='frags';render();}},ico('gem'),' Fragments'),
       h('button',{type:'button','aria-pressed':String(view==='recoll'),onclick:()=>{view='recoll';render();}},ico('star'),' Recollection'));
     root.replaceChildren(
