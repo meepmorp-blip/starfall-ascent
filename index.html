@@ -1958,7 +1958,7 @@ function doDodge(){
   const v=inputVec();let dx=v.x,dy=v.y;const m=Math.hypot(dx,dy);
   if(m<0.2){dx=p.fx;dy=p.fy;}else{dx/=m;dy/=m;}
   const perfect=nearThreat();
-  p.dodgeT=0.17;p.dvx=dx*560;p.dvy=dy*560;p.dodgeCd=0.8*(1-Math.min(0.5,p.bfx.dodge||0));p.iframe=Math.max(p.iframe,0.32);
+  p.dodgeT=0.15;p.dvx=dx*440;p.dvy=dy*440;p.dodgeCd=0.8*(1-Math.min(0.5,p.bfx.dodge||0));p.iframe=Math.max(p.iframe,0.32);
   if(perfect){gainPn(6);slowReal=0.32;addText(p.x,p.y-30,'PERFECT +6',C.gold,12,{life:1});sfx('perfect');}else sfx('dodge');
   if(p.id==='kairos'){if(perfect){for(const e of enemies)if(!e.dead&&dist(e,p)<140)e.slowT=Math.max(e.slowT,2);p.swift=Math.max(p.swift,1);ring(p.x,p.y,140,'#7FE3F0',0.5);}if(p.ultT>0)p.cd.sun=0;}
   for(let i=0;i<7;i++)part(p.x,p.y,-dx*rr(40,130)+rr(-30,30),-dy*rr(40,130)+rr(-30,30),0.35,C.paper,2);
