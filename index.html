@@ -1464,7 +1464,7 @@ function rollElite(){
 function makeEnemy(type,x,y,o={}){
   const e={type,x,y,kx:0,ky:0,spawnT:o.instant?0.25:0.8,slowT:0,stunT:0,burnT:0,burnAcc:0,markT:0,anaT:0,ind:0,indT:0,secs:0,noHeal:0,reflCd:0,flash:0,seed:rand()*100,dead:false,
     cd:rr(0.6,1.6),gen:o.gen||0,split:!!o.split,rage:false,st:'walk',partner:null,face:1};
-  const s=(room?room.hpScale:1)*1.15;
+  const s=(room?room.hpScale:1)*1.15*lvlScale();
   switch(type){
     case 'hothead':Object.assign(e,{r:13,hp:34*s,spd:66,dmg:8,cdmg:14});break;
     case 'gossip':Object.assign(e,e.gen?{r:7,hp:8*s,spd:130,dmg:4}:{r:10,hp:18*s,spd:108,dmg:5});e.talk=rr(1.5,6);e.lunge=0;e.lungeCd=rr(0.5,1.5);break;
@@ -1568,10 +1568,10 @@ function playerHit(t,dmg,o={}){
   if(o.crit){m*=2+(team.cdmgT>0?0.4:0)+(src&&src.cdmgT>0?0.5:0);addText(t.x,t.y-(t.r||20)-10,'CRIT',C.gold,11);}
   m*=(1+bonus)*(1+vuln);
   dmg*=m;
-  if(o.pn) gainPn(o.pn);
+  if(o.pn) gainPn(o.pn*clamp(dmg/Math.max(1,src.atk||10),1,3));
   if(o.basic&&sfx2.ignite&&rand()<sfx2.ignite) o=Object.assign({},o,{burn:Math.max(o.burn||0,2)});
   if(o.dmark)t.dmarkUntil=T+8;
-  if(o.burn){t.burnT=Math.max(t.burnT||0,o.burn);t.burnDmg=Math.max(t.burnDmg||0,src&&src.id==='cass'?src.atk*0.7:3);t.burnMul=Math.max(t.burnMul||1,1+(sfx2.burnMult||0));}
+  if(o.burn){t.burnT=Math.max(t.burnT||0,o.burn);t.burnDmg=Math.max(t.burnDmg||0,src&&src.id==='cass'?src.atk*0.5:3);t.burnMul=Math.max(t.burnMul||1,1+(sfx2.burnMult||0));}
   if(o.mark) t.markT=6;
   if(o.ana) t.anaT=8;
   if(o.indict){t.ind=Math.min(3,(t.ind||0)+o.indict);t.indT=8;}
@@ -1642,6 +1642,7 @@ function updateEnemies(dt){
     if(e.indT>0){e.indT-=dt;if(e.indT<=0)e.ind=0;}
     if(e.shMax){if(e.shRegen>0)e.shRegen-=dt;else e.sh=Math.min(e.shMax,e.sh+e.shMax*0.25*dt);}
     if(e.spawnT>0){e.spawnT-=dt;continue;}
+    if(e.burnT<=0&&e.burnDmg)e.burnDmg=0;
     if(e.burnT>0){e.burnT-=dt;e.burnAcc+=dt;if(rand()<0.3)part(e.x+rr(-e.r,e.r),e.y-rr(0,e.r),rr(-10,10),-rr(30,60),0.4,C.fire,2);if(e.burnAcc>=0.5){e.burnAcc=0;hitEnemy(e,(e.burnDmg||3)*(e.burnMul||1),C.fire);if(e.dead)continue;}}
     const slow=e.drowsyT>0?0.25:(e.slowT>0?0.5:1); if(e.slowT>0) e.slowT-=dt;
     e.x+=e.kx*dt; e.y+=e.ky*dt; const kd=Math.max(0,1-9*dt); e.kx*=kd; e.ky*=kd;
@@ -1922,7 +1923,7 @@ const KITS={
     entrance(p,pw){radial(p.x,p.y,85,p.atk*1.4*pw,{burn:4,knock:160,col:C.fire,src:p});burstParts(p.x,p.y,C.fire,22,170);sfx('boom');},
     update(p,dt){},
     bench(m,dt){m.flT=(m.flT??0.5)-dt;if(m.flT>0)return;m.flT=0.5;
-      for(const e of enemies){if(e.dead||e.spawnT>0)continue;if(dist(e,player)<e.r+player.r+30){e.burnT=Math.max(e.burnT,2);e.burnDmg=Math.max(e.burnDmg||0,m.atk*0.7);}}},
+      for(const e of enemies){if(e.dead||e.spawnT>0)continue;if(dist(e,player)<e.r+player.r+30){e.burnT=Math.max(e.burnT,2);e.burnDmg=Math.max(e.burnDmg||0,m.atk*0.5);}}},
     status(p){const l=[];for(const z of zones)if(z.kind==='fire'){l.push([C.fire,'PENANCE '+z.t.toFixed(1)+'s']);break;}return l;},
     sunUp:p=>{let m=0;for(const z of zones)if(z.kind==='fire')m=Math.max(m,z.t);return m;}, moonUp:p=>0},
   // ───────── Dess: memory spirits, shields
@@ -1986,7 +1987,7 @@ function doDodge(){
   const v=inputVec();let dx=v.x,dy=v.y;const m=Math.hypot(dx,dy);
   if(m<0.2){dx=p.fx;dy=p.fy;}else{dx/=m;dy/=m;}
   const perfect=nearThreat();
-  p.dodgeT=0.17;p.dvx=dx*560;p.dvy=dy*560;p.dodgeCd=0.55*(1-Math.min(0.5,p.bfx.dodge||0));p.iframe=Math.max(p.iframe,0.32);
+  p.dodgeT=0.17;p.dvx=dx*560;p.dvy=dy*560;p.dodgeCd=0.8*(1-Math.min(0.5,p.bfx.dodge||0));p.iframe=Math.max(p.iframe,0.32);
   if(perfect){gainPn(6);slowReal=0.32;addText(p.x,p.y-30,'PERFECT +6',C.gold,12,{life:1});sfx('perfect');}else sfx('dodge');
   if(p.id==='kairos'){if(perfect){for(const e of enemies)if(!e.dead&&dist(e,p)<140)e.slowT=Math.max(e.slowT,2);p.swift=Math.max(p.swift,1);ring(p.x,p.y,140,'#7FE3F0',0.5);}if(p.ultT>0)p.cd.sun=0;}
   if(blv('neptune')>0){const l=blv('neptune');heal(p,2*l,{});for(const e of enemies)if(!e.dead&&dist(e,p)<85)e.slowT=Math.max(e.slowT,1.2*l);decals.push({x:p.x,y:p.y,r:70,life:0.6,max:0.6,ring:true,col:C.neptune});}
@@ -2092,6 +2093,7 @@ function updatePlayer(dt){
 }
 function updateTeam(dt){
   const cdm=team.cdFast>0?2:1;
+  if(state==='play'&&(aliveCount()>0||(boss&&!boss.dead)))gainPn(2.0*dt);
   team.swapCd-=dt;
   for(const k of ['tailwind','benedT','firstClay','cdFast','starBoost','reflect','overheal','cleanseT','interCd','atkBuffT','stim','killzone','overclock','stand','bramBlock','dessDmgT','cdmgT','crT'])if(team[k]>0)team[k]-=dt;
   if(team.shield){team.shield.t-=dt;if(team.shield.t<=0||team.shield.hp<=0)team.shield=null;}
@@ -2217,7 +2219,8 @@ function updateTels(dt){
 }
 
 // ═══════════════════════════════════════════ boss: Horaios
-function makeBoss(){return {x:W/2,y:-60,ty:100,r:34,hp:2600,maxHp:2600,flash:0,pat:-1,patT:0,act:0,actCd:0,idle:1.8,entering:1.8,enraged:false,dead:false,phase:1,cyc:0,spin:0,shieldT:0,papers:0,
+function lvlScale(){if(!team||!team.members||!team.members.length)return 1;const a=team.members.reduce((t,m)=>t+(m.rec||1),0)/team.members.length;return 1+0.045*(a-1);}
+function makeBoss(){const bh=Math.round(2600*lvlScale());return {x:W/2,y:-60,ty:100,r:34,hp:bh,maxHp:bh,flash:0,pat:-1,patT:0,act:0,actCd:0,idle:1.8,entering:1.8,enraged:false,dead:false,phase:1,cyc:0,spin:0,shieldT:0,papers:0,
   burnT:0,burnAcc:0,markT:0,anaT:0,ind:0,indT:0,secs:0,noHeal:0,skip:false,kx:0,ky:0};}
 function hitBoss(d,col){
   const b=boss;if(!b||b.dead||b.entering>0)return;
@@ -2269,6 +2272,7 @@ function updateBoss(dt){
   if(b.forced&&lossUpdate(b,dt))return;
   b.flash-=dt;if(b.markT>0)b.markT-=dt;if(b.anaT>0)b.anaT-=dt;if(b.noHeal>0)b.noHeal-=dt;if(b.indT>0){b.indT-=dt;if(b.indT<=0)b.ind=0;}
   if(b.entering>0){b.entering-=dt;b.y+=(b.ty-b.y)*Math.min(1,dt*3);return;}
+  if(b.burnT<=0&&b.burnDmg)b.burnDmg=0;
   if(b.burnT>0){b.burnT-=dt;b.burnAcc+=dt;if(b.burnAcc>=0.5){b.burnAcc=0;hitBoss((b.burnDmg||3)*(b.burnMul||1),C.fire);if(b.dead)return;}}
   b.x+=clamp(player.x-b.x,-60*dt,60*dt);b.x=clamp(b.x,AX0+b.r+50,AX1-b.r-50);
   b.y=b.ty+Math.sin(T*1.3)*8;
@@ -3561,10 +3565,7 @@ const CH1_SEQ=[
       ['theo','I’ve been waiting six years for something weird enough to prove I’m not crazy.']],{...NIGHT,mus:'warm'}),
     pn('hospital',[['noemi',0.36,0.66,1],['theo',0.5,0.66,-1],['kairos',0.64,0.7,-1],['ines',0.78,0.7,-1]],[
       ['kairos','Three rifts in one day. That’s never happened, right?'],
-      ['ines','Not inside the walls. Out past the Wall, sure. That’s why there’s nothing out there anymore.'],
-      ['theo','Meridian is the last free city on the whole continent of Aster. Everything past the Wall fell before any of us were born.'],
-      ['kairos','I know. I’ve read every map in the orphanage library. Twice.'],
-      ['theo','Then you know the maps stop at the Wall. Nobody’s drawn past it in eighty years.'],
+      ['ines','Not inside the walls. Not in my lifetime.'],
       ['noemi','And the people inside it are tired. Some days half my patients can’t tell me their own birthday.'],
       ['kairos','Stress?'],
       ['noemi','That’s the official answer. I write the real answers on my arm, when I have one.'],
@@ -3833,7 +3834,12 @@ const CH1_SEQ=[
         {t:'When you say it like that it sounds bad.',r:[['theo','It sounds AMAZING.'],['noemi','Theo.'],['theo','Amazing and bad.']]},
         {t:'Honestly I just want breakfast.',f:'c_breakfast',r:[['bram','I have toast!'],['kairos','Bram. You’re my favorite person.'],['theo','Hey!']]},
         {t:'You forgot “and he has a job now.”',f:'c_job',r:[['theo','Mostly-real-money job. Yes. Welcome aboard, assistant.'],['noemi','Oh no. There are two of them now.']]}],'That’s… a lot, said out loud.'],
-      ['ines','Tomorrow we figure out what’s next. Tonight everyone sleeps.'],
+      ['kairos','Ines. At the hospital you said “not inside the walls.” What about outside?'],
+      ['ines','Outside, it happened all the time. That’s why there’s nothing out there anymore.'],
+      ['theo','Meridian is the last free city on the whole continent of Aster. Everything past the Wall fell before any of us were born.'],
+      ['kairos','I’ve read every map in the orphanage library. Twice. They all stop at the same line.'],
+      ['theo','The Wall. Nobody’s drawn past it in eighty years.'],
+      ['ines','Then you know as much as the Council does. Tomorrow we figure out what’s next. Tonight everyone sleeps.'],
       ['ines','Kairos. Go talk to people. You look like you need it.']],{...NIGHT,fx:'rain',cap:'The clock tower of St. Hesper’s.',mus:'warm'})]},
   {bond:{n:2,title:'Who do you sit with tonight?',sub:'Pick two. Each talk raises that character’s Bond, and Bond makes them stronger in story fights.',choices:[
     {who:['lucan'],title:'Lucan, at the clock face',cut:[pn(CAMPB,[['kairos',0.44,0.68,1],['lucan',0.56,0.68,-1]],[
@@ -5856,7 +5862,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-window.__sf={bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),preview3:()=>startPreview3(),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,preview:()=>startPreview(),mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf={bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),preview3:()=>startPreview3(),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,preview:()=>startPreview(),mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
