@@ -88,6 +88,35 @@ canvas#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-ac
 .slot .nm{font:700 16px/1 var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .slot .rl{font:600 9px/1.3 var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--ash)}
 .slot:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+.ps{max-width:1100px}
+.ps-team{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 10px}
+.ps-slot{position:relative;height:min(52vh,420px);border:0;padding:0;cursor:pointer;overflow:hidden;color:#F6EBD2;transform:skewX(-6deg);border-radius:6px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--cc,#555) 35%,#120f18) 0%,#0d0b14 85%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.08),0 10px 28px rgba(0,0,0,.5);transition:transform .15s,box-shadow .15s}
+.ps-slot>*{transform:skewX(6deg)}
+.ps-slot::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-60deg,rgba(255,255,255,.035) 0 12px,transparent 12px 24px);pointer-events:none}
+.ps-slot.on{box-shadow:inset 0 0 0 3px #F2D27A,0 0 24px rgba(242,210,122,.35);transform:skewX(-6deg) translateY(-4px)}
+.ps-slot:hover{transform:skewX(-6deg) translateY(-4px)}
+.ps-no{position:absolute;top:8px;left:14px;font:900 22px var(--f-display);opacity:.55}
+.ps-lead{position:absolute;top:12px;right:14px;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;background:#F2D27A;color:#3B2617;padding:2px 8px;border-radius:10px}
+.ps-big{position:absolute;top:30%;left:-10px;right:-10px;text-align:center;font:900 54px/1 var(--f-display);text-transform:uppercase;color:rgba(255,255,255,.06);white-space:nowrap;overflow:hidden;pointer-events:none}
+.ps-cv{position:absolute;left:0;right:0;bottom:56px;margin:auto;width:min(100%,240px);height:auto;image-rendering:pixelated}
+.ps-meta{position:absolute;left:0;right:0;bottom:0;padding:22px 14px 10px;display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:linear-gradient(0deg,rgba(0,0,0,.75),transparent);text-align:left}
+.ps-meta b{font:900 20px var(--f-display)}.ps-meta i{font:700 10px var(--f-ui);letter-spacing:.1em;text-transform:uppercase;color:#F6EBD2;opacity:.75;font-style:normal}.ps-meta em{position:absolute;right:14px;bottom:12px;font:800 13px var(--f-ui);font-style:normal}
+.ps-mk,.ps-x{position:absolute;top:38px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);font:800 13px var(--f-ui)}
+.ps-mk{right:44px;color:#F2D27A}.ps-x{right:12px}
+.ps-slot.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 2px rgba(255,255,255,.12)}
+.ps-slot.empty.on{box-shadow:inset 0 0 0 3px #F2D27A}
+.ps-plus{font:300 54px/1 var(--f-ui);opacity:.6}.ps-hint{font:700 11px var(--f-ui);opacity:.6}
+.ps-roster{display:flex;gap:8px;overflow-x:auto;padding:6px 10px 4px;scrollbar-width:none;justify-content:center;flex-wrap:wrap}
+.ps-chip{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:86px;padding:6px 4px;border-radius:10px;border:1.5px solid rgba(255,255,255,.12);background:rgba(20,16,26,.85);color:#F6EBD2;cursor:pointer}
+.ps-chip canvas{border-radius:50%;box-shadow:0 0 0 2px var(--cc)}
+.ps-chip.in{border-color:#F2D27A;background:rgba(60,48,20,.85)}
+.ps-tag{position:absolute;top:4px;right:6px;font:900 11px var(--f-display);color:#F2D27A}
+.ps-cn{font:800 12px var(--f-ui)}.ps-cr{font:700 9px var(--f-ui);opacity:.65;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.ps-note:empty{display:none}
+@media (max-height:520px){.ps .select-head h2{font-size:18px}.ps .eyebrow{display:none}.ps-team{gap:10px}.ps-slot{height:52vh}.ps-big{font-size:34px}.ps-meta b{font-size:15px}.ps-meta{padding:14px 10px 6px}.ps-cv{bottom:10px;width:auto;height:96%}
+  .ps-roster{flex-wrap:nowrap;justify-content:flex-start}.ps-chip{width:70px;padding:4px 2px;flex:0 0 auto}.ps-chip canvas{width:34px;height:34px}.ps-cr{display:none}}
+@media (max-width:640px){.ps-team{gap:8px;padding:0 4px}.ps-big{font-size:28px}.ps-meta b{font-size:14px}}
 .select-body{display:grid;grid-template-columns:minmax(210px,250px) 1fr;gap:12px;align-items:start}
 @media (max-width:640px){.select-body{grid-template-columns:1fr}.slots{grid-template-columns:1fr}}
 .select-body>*{min-width:0}
@@ -4371,42 +4400,45 @@ function showPartySelect(mode){
   const prefs=loadPrefs();
   let party=mode==='story'?['kairos','ines','bram']:(Array.isArray(prefs.party)&&prefs.party.length===3&&prefs.party.every(id=>CHARS[id])?prefs.party.slice():['kairos','ines','bram']);
   let view=party[0];
-  const slots=h('div',{class:'slots'}),roster=h('div',{class:'roster'}),detail=h('div',null),note=h('p',{class:'note'});
+  let act=0;
+  const team3=h('div',{class:'ps-team'}),roster=h('div',{class:'ps-roster'}),note=h('p',{class:'note ps-note'});
   const startBtn=h('button',{class:'btn light',type:'button','data-primary':'1',onclick:()=>{if(party.length<3)return;savePrefs({party});
     showBattleMenu(party);}},mode==='story'?'Begin the chapter':'Choose a stage');
-  const toggle=id=>{
-    if(party.includes(id)){party=party.filter(x=>x!==id);note.textContent='';}
-    else if(party.length<3){party.push(id);note.textContent='';}
-    else{note.textContent='The party is full. Remove someone first.';sfx('nope');return;}
-    render();
-  };
-  const lead=id=>{party=[id,...party.filter(x=>x!==id)];render();};
+  const cvs=[];let looping=false;
+  const loop=()=>{if(!team3.isConnected){looping=false;return;}const t=performance.now()/1000;
+    for(const [cv,id,i] of cvs){const g=cv.getContext('2d');g.imageSmoothingEnabled=false;const W=cv.width,H=cv.height;g.clearRect(0,0,W,H);
+      const gl=g.createRadialGradient(W/2,H*0.72,6,W/2,H*0.72,W*0.75);gl.addColorStop(0,alpha(CHARS[id].col,0.45));gl.addColorStop(1,alpha(CHARS[id].col,0));g.fillStyle=gl;g.fillRect(0,0,W,H);
+      g.strokeStyle='rgba(255,255,255,0.14)';g.lineWidth=2;g.beginPath();g.ellipse(W/2,H*0.86,W*0.32,10,0,0,Math.PI*2);g.stroke();
+      drawChar(g,id,W/2,H*0.84+Math.sin(t*1.6+i)*3,{face:1,scale:W/36,t:t+i*0.4});}
+    requestAnimationFrame(loop);};
+  const place=id=>{const at=party.indexOf(id);
+    if(at===act){if(party.length<=1)return;party.splice(at,1);act=Math.min(act,party.length);render();return;}
+    if(at>=0){if(act<party.length){const o=party[act];party[act]=id;party[at]=o;}else{party.splice(at,1);party.push(id);}}
+    else if(act<party.length)party[act]=id;else party.push(id);
+    note.textContent='';act=party.length<3?party.length:Math.min(act+1,2);render();};
   function render(){
-    slots.replaceChildren(...[0,1,2].map(i=>{const id=party[i];
-      if(!id)return h('div',{class:'slot empty'},'Slot '+(i+1)+' · empty');
-      const c=CHARS[id];
-      return h('button',{class:'slot',type:'button',title:'Remove from party',onclick:()=>toggle(id)},portrait(id,44),
-        h('span',{class:'nm'},(i===0?'★ ':'')+nameOf(id)),h('span',{class:'rl '+ROLE_COL[c.roleKey]},(i===0?'Lead · ':'')+c.role));}));
-    roster.replaceChildren(...CH_ORDER.map(id=>{const c=CHARS[id],idx=party.indexOf(id),inP=idx>=0,full=!inP&&party.length>=3;
-      return h('div',{class:'cardwrap'+(inP?' inparty':'')},
-        h('button',{class:'card',type:'button','aria-pressed':String(id===view),onclick:()=>{view=id;render();}},
-          portrait(id,48),h('span',{class:'nm'},nameOf(id)),h('span',{class:'rl '+ROLE_COL[c.roleKey]},inP?(idx===0?'★ Lead · ':'Slot '+(idx+1)+' · ')+c.role:c.role)),
-        h('div',{class:'cardacts'},
-          h('button',{class:'pbtn '+(inP?'rm':'add'),type:'button','data-sound':inP?'back':'select',disabled:full?'disabled':null,
-            title:inP?'Remove from party':full?'Party is full':'Add to party','aria-label':(inP?'Remove ':'Add ')+nameOf(id)+(inP?' from party':' to party'),
-            onclick:()=>{view=id;toggle(id);}},inP?'−':'+'),
-          inP&&idx!==0?h('button',{class:'pbtn lead',type:'button',title:'Make lead','aria-label':'Make '+nameOf(id)+' lead',onclick:()=>{view=id;lead(id);}},'★'):null));}));
-    const act=null;
-    detail.replaceChildren(dossier(view,act));
+    cvs.length=0;
+    team3.replaceChildren(...[0,1,2].map(i=>{const id=party[i],on=i===act;
+      if(!id)return h('button',{class:'ps-slot empty'+(on?' on':''),type:'button',onclick:()=>{act=Math.min(i,party.length);render();}},h('span',{class:'ps-no'},'0'+(i+1)),h('span',{class:'ps-plus'},'+'),h('span',{class:'ps-hint'},'Pick from the roster'));
+      const c=CHARS[id],cv=h('canvas',{class:'ps-cv',width:'240',height:'300'});cvs.push([cv,id,i]);
+      return h('button',{class:'ps-slot'+(on?' on':''),type:'button',style:'--cc:'+c.col,onclick:()=>{act=i;render();},'aria-label':'Slot '+(i+1)+': '+nameOf(id)},
+        h('span',{class:'ps-no'},'0'+(i+1)),i===0?h('span',{class:'ps-lead'},'★ Lead'):null,
+        h('span',{class:'ps-big'},nameOf(id)),cv,
+        h('span',{class:'ps-meta'},h('b',null,nameOf(id)),h('i',null,c.role),h('em',null,'Lv '+save.chars[id].lvl)),
+        i!==0?h('span',{class:'ps-mk',role:'button',title:'Make lead',onclick:e=>{e.stopPropagation();party=[id,...party.filter(x=>x!==id)];act=0;render();}},'★'):null,
+        party.length>1?h('span',{class:'ps-x',role:'button',title:'Remove',onclick:e=>{e.stopPropagation();party.splice(i,1);act=party.length;render();}},'×'):null);}));
+    roster.replaceChildren(...CH_ORDER.map(id=>{const c=CHARS[id],idx=party.indexOf(id);
+      return h('button',{class:'ps-chip'+(idx>=0?' in':''),type:'button',style:'--cc:'+c.col,title:c.role,onclick:()=>place(id)},
+        portrait(id,46),idx>=0?h('span',{class:'ps-tag'},'0'+(idx+1)):null,h('span',{class:'ps-cn'},nameOf(id)),h('span',{class:'ps-cr'},c.role.split(' · ')[0]));}));
     startBtn.disabled=party.length<3;
+    if(!looping){looping=true;requestAnimationFrame(loop);}
   }
-  render();
-  const wrap=h('div',{class:'select'},
-    h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},(mode==='story'?'Story':'Battle')+' · party of 3, the lead starts on the field'),h('h2',null,'Choose your party')),
+  const wrap=h('div',{class:'select ps'},
+    h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},(mode==='story'?'Story':'Battle')+' · tap a slot, then a character'),h('h2',null,'Choose your party')),
       h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>{goHome();}},'Back'),
         h('button',{class:'btn outline',type:'button',onclick:()=>{showBuilds(()=>showPartySelect(mode));}},'Builds'),startBtn)),
-    slots,note,
-    h('div',{class:'select-body'},roster,detail));
+    team3,roster,note);
+  render();
   openOverlay(wrap,'mode-select');
 }
 function showBattleMenu(party,tab){
