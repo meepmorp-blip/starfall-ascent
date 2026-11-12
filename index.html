@@ -177,8 +177,8 @@ canvas#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-ac
 .bv-scroll::-webkit-scrollbar,.bv-tabs::-webkit-scrollbar,.bv-detail::-webkit-scrollbar,.vault::-webkit-scrollbar,#overlay::-webkit-scrollbar{display:none;width:0;height:0}
 .bv-view{align-self:flex-start;background:#F6EBD2;border-radius:8px;padding:3px}
 .bv-view button{color:#3B2617}.bv-view button[aria-pressed="true"]{background:#3B2617;color:#F6EBD2}
-.bv-tabs{display:flex!important;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-bottom:2px}
-.bv-tabs .tab{flex:0 0 auto;min-width:118px}
+.bv-tabs{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.bv-tabs .tab{min-width:0}
 .bv-tabs .tab .xpbar{display:none}
 .bv-tip{margin:0 0 4px;font:700 11px var(--f-ui);letter-spacing:.06em;color:var(--ink-soft)}
 .bv-slot{display:flex;gap:9px;align-items:center;width:100%;text-align:left;font:inherit;color:inherit;background:transparent;border:1.5px solid var(--ink-line);border-left:4px solid var(--el,var(--ink-line));border-radius:6px;padding:7px 8px;margin-top:6px;cursor:pointer}
@@ -200,6 +200,7 @@ canvas#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-ac
 .bv-cmp{margin:0;font:600 12px var(--f-form);color:var(--ink-soft)}
 @media (max-height:520px){
   .vault{gap:6px}.vault .select-head .eyebrow{display:none}.vault .select-head h2{font-size:17px;margin:0}
+  .bv-tabs{display:flex!important;flex-wrap:nowrap;overflow-x:auto}.bv-tabs .tab{flex:0 0 auto}
   .bv-tabs .tab .lv{display:none}.bv-tabs .tab{min-width:auto;padding:3px 8px}.bv-tabs .tab canvas{width:26px!important;height:26px!important}
   .bv-view button{padding:3px 10px}
   .bv-body{grid-template-columns:150px minmax(0,1fr)!important}
@@ -4555,7 +4556,7 @@ function showBuilds(back){
   function spend(n){if(save.dust<n){msg='Not enough Stardust.';sfx('nope');return false;}save.dust-=n;return true;}
   function render(){
     const cs=save.chars[cid],c=CHARS[cid],fx=memberFx(cid);
-    const tabs=h('div',{class:'tabs bv-tabs'},...CH_ORDER.map(id=>{const s=save.chars[id],need=xpNeed(s.lvl);
+    const tabs=h('div',{class:'tabs bv-tabs',onwheel:e=>{const el=e.currentTarget;if(el.scrollWidth>el.clientWidth&&Math.abs(e.deltaY)>Math.abs(e.deltaX)){el.scrollLeft+=e.deltaY;e.preventDefault();}}},...CH_ORDER.map(id=>{const s=save.chars[id],need=xpNeed(s.lvl);
       return h('button',{class:'tab',type:'button','aria-pressed':String(id===cid),onclick:()=>{cid=id;sel=null;msg='';savePrefs({buildChar:id});render();}},
         portrait(id,36),h('span',{class:'nm'},nameOf(id)),h('span',{class:'lv'},'Recollection '+s.lvl+(s.lvl<MAX_LVL?' · '+s.xp+'/'+need:' · max'),h('div',{class:'xpbar'},h('i',{style:'width:'+(s.lvl<MAX_LVL?Math.round(s.xp/need*100):100)+'%'}))));}));
     const slotCard=s=>{const f=fragById(cs.slots[s]),inf=SLOT_INFO[s],p=placement(cid,s),on=filter===s;
