@@ -864,7 +864,7 @@ const CHARS={
     kit:{
       entrance:{name:'House Call',el:'Water',desc:'Heals the active character for 12% of their HP as she arrives.'},
       basic:{name:'Dart Syringes',tap:'Light darts that deal small damage.',hold:'Spot Treatment: heals the one ally with the lowest HP (bench included) for 10%.'},
-      sun:{name:'Triage',short:'TRIAGE',el:'Earth',cd:12,dur:8,desc:'One quick heal for the whole team (8%), and +20% damage for 8s.'},
+      sun:{name:'Triage',short:'TRIAGE',el:'Earth',cd:12,dur:8,desc:'One quick heal for the whole team (12%), and +20% damage for 8s.'},
       moon:{name:'Recovery Field',short:'FIELD',el:'Earth',cd:15,dur:6,desc:'A healing zone for 6s. Whoever stands in it heals 3% HP every second; the bench heals slowly too. Slows enemies.'},
       combo:{name:'Trine · Steady Hands',desc:'For 6s, any healing above full HP turns into a shield.'},
       ult:{name:'Code Blue',short:'CODE BLUE',dur:10,desc:'Revives every downed ally at 40% HP, heals everyone 40%, and gives +25% damage for 10s.'},
@@ -880,9 +880,9 @@ const CHARS={
       entrance:{name:'Field Test',el:'Fire',desc:'Drops a little fan drone that blasts enemies with air for 8s.'},
       basic:{name:'Air Pistol',tap:'Mid-range compressed-air shots. Aims itself at the nearest enemy.',hold:'Pressure Burst: a blast of air that hits up to 3 enemies at once.'},
       sun:{name:'Wind Turret',short:'TURRET',el:'Air',cd:12,dur:12,desc:'Builds a turret that fires once a second at enemies in its range for 12s. It keeps working while Theo is on the bench.'},
-      moon:{name:'Overclock',short:'OVERCLOCK',el:'Air',cd:15,dur:8,desc:'Team +20% damage and +20% attack speed for 8s. His machines fire twice as fast.'},
+      moon:{name:'Overclock',short:'OVERCLOCK',el:'Air',cd:15,dur:8,desc:'Team +10% damage and +10% attack speed for 8s. His machines fire 50% faster.'},
       combo:{name:'Trine · Eureka',desc:'His turrets last 50% longer.'},
-      ult:{name:'Big Idea',short:'BIG IDEA',dur:12,desc:'Summons a walking machine that fights next to you with missiles for 12s.'},
+      ult:{name:'Big Idea',short:'BIG IDEA',dur:12,desc:'Summons a walking machine that fights next to you with missiles for 9s.'},
       p1:{name:'Calibrated',desc:'While one of his turrets is up, everything Theo and his machines hit takes 20% more damage.'},
       p2:{name:'Show-off',desc:'When one of his machines gets a kill, the active character gains a little Ultimate energy.'}}},
   lucan:{id:'lucan',name:'Lucan Crane',short:'Lucan',role:'Main DPS · Long range',roleKey:'burst',col:'#BFE6FF',who:'20 · senior clerk at the Concord Office, the Chancellor’s adopted son',
@@ -1079,11 +1079,11 @@ const KIT_INFO={
   bram:{tldr:'The wall. Light damage, big shields, knockback and Stagger. Even on the bench he stumbles into enemies every 4s.',
     entrance:['Big knockback','Heavy Stagger'],basic:['Light damage','Stagger 34 per hit','Hold: stun 1.1s'],sun:['Wall blocks bullets','Draws enemies'],moon:['Shield 35% of Bram’s HP'],ult:['Dome 6s','Pushes out + stuns']},
   noemi:{tldr:'The doctor. Heals, boosts attack, does little damage. Hold to heal whoever is lowest, even on the bench.',
-    entrance:['Heal 12%'],basic:['70% ATK darts','Hold: heal lowest ally 10%'],sun:['Heal team 8% once','+20% damage 8s'],moon:['Zone 6s','Heals 3%/s'],ult:['Revive all','Heal 40% · +25% damage']},
+    entrance:['Heal 12%'],basic:['70% ATK darts','Hold: heal lowest ally 10%'],sun:['Heal team 12% once','+20% damage 8s'],moon:['Zone 6s','Heals 3%/s'],ult:['Revive all','Heal 40% · +25% damage']},
   theo:{tldr:'The inventor. Air pistol that aims itself, bursts that hit 3 enemies, and a wind turret that keeps working after you switch out.',
-    entrance:['Fan drone 8s'],basic:['100% ATK, auto-aim','Hold: 150% ×3 enemies'],sun:['Turret 12s','1 shot/s, short range'],moon:['+20% damage & speed','Machines ×2 fire rate'],ult:['Walking machine 12s']},
+    entrance:['Fan drone 8s'],basic:['100% ATK, auto-aim','Hold: 150% ×3 enemies'],sun:['Turret 12s','1 shot/s, short range'],moon:['+10% damage & speed','Machines ×1.5 fire rate'],ult:['Walking machine 9s']},
   lucan:{tldr:'Long-range damage built around the charged Lance. Slow, heavy needles; pin enemies, then pierce the whole line.',
-    entrance:['Stone fan 90% ×5','Shield 8%'],basic:['160% ATK, slow','Hold: 320% pierce'],sun:['6 needles 110% each','Pin 3s'],moon:['Shield 12%','+30% crit'],ult:['Petrify 3s','Shatter 600%']},
+    entrance:['Stone fan 90% ×5','Shield 8%'],basic:['160% ATK, slow','Hold: 320% pierce'],sun:['6 needles 110% each','Pin 3s'],moon:['Shield 12%','+30% crit'],ult:['Petrify 3s','Shatter 450%']},
   cass:{tldr:'Burn damage. Sets everything on fire; burning enemies take more damage and allies take less. Small heals.',
     entrance:['Fire slam 140%','Burns'],basic:['90% ATK, burns','Hold: spin 150%, long burn'],sun:['Fire area 6s'],moon:['Heal 12%','Burning foes take 200%'],ult:['Fire wave 300%','Team heal 15% once']},
   dess:{tldr:'Pure support. Weak attacks, but she makes the whole team hit harder, crit harder and charge Ultimates faster.',
@@ -1322,7 +1322,7 @@ const rul=k=>!!(player&&player.ch.rulers[k]);
 const memberOf=id=>team&&team.members.find(m=>m.id===id);
 const inParty=id=>{const m=memberOf(id);return !!(m&&!m.down);};
 function effDef(p){return Math.min(0.85,p.def+(team.benedT>0?0.2:0));}
-function effAspd(p){return p.aspd*(1+(p.bfx.aspd||0))*(team.tailwind>0?1.15:1)*(p.id==='kairos'&&p.ultT>0?1.3:1)*(team.stim>0?1.15:1)*(team.overclock>0?1.2:1);}
+function effAspd(p){return p.aspd*(1+(p.bfx.aspd||0))*(team.tailwind>0?1.15:1)*(p.id==='kairos'&&p.ultT>0?1.3:1)*(team.stim>0?1.15:1)*(team.overclock>0?1.1:1);}
 function effSpeed(p){return missionSpeed(p)*p.speed*(1+(p.bfx.spd||0))*(team.tailwind>0?1.1:1)*(room&&room.def.rule==='rush'?1.25:1);}
 // every character has their own Ultimate meter: the active one fills at full rate, the bench at 40%
 function gainPn(v){const k=(inParty('dess')?1.2:1)*(1+0.1*blv('jupiter')+(rul('jupiter')?0.05:0));for(const m of team.members){if(m.down)continue;const a=v*k*(m===player?1:0.4)*(1+(m.bfx.pn||0));m.pn=Math.min(team.maxPn,(m.pn||0)+a);}}
@@ -1778,7 +1778,7 @@ const KITS={
     hold(p){let low=null;for(const m of team.members)if(!m.down&&(!low||m.hp/m.maxHp<low.hp/low.maxHp))low=m;
       if(low){heal(low,low.maxHp*0.10,{sophia:true,show:true,by:p});if(low!==player)addText(player.x,player.y-46,'+ '+nameOf(low.id).toUpperCase(),C.hp,10,{life:0.9});}
       ring(p.x,p.y,40,C.hp,0.4);p.atkCd=0.5;sfx('heal');},
-    sun(p,combo){for(const m of team.members)heal(m,m.maxHp*0.08*starFx(p).sunMul,{sophia:true,show:m===player,by:p});buffAtk(0.2,8);burstParts(p.x,p.y,C.hp,20,140);sfx('heal');if(combo)team.overheal=6;},
+    sun(p,combo){for(const m of team.members)heal(m,m.maxHp*0.12*starFx(p).sunMul,{sophia:true,show:m===player,by:p});buffAtk(0.2,8);burstParts(p.x,p.y,C.hp,20,140);sfx('heal');if(combo)team.overheal=6;},
     moon(p,combo){zones.push({kind:'tide',x:p.x,y:p.y,r:95,t:6,max:6,src:p,pct:1});team.cleanseT=6;sfx('splash');if(combo)team.overheal=6;},
     ult(p){for(const m of team.members){if(m.down&&!m.processed){m.down=false;m.hp=m.maxHp*0.4;addText(p.x,p.y-40,nameOf(m.id).toUpperCase()+' REVIVED',C.hp,12,{life:1.4});}heal(m,m.maxHp*0.4,{sophia:true,show:m===player,by:p});}
       buffAtk(0.25,10+starFx(p).ultDur);burstParts(p.x,p.y,C.hp,40,220);sfx('heal');},
@@ -1794,8 +1794,8 @@ const KITS={
       for(const t of ts){playerHit(t,p.atk*1.5,{basic:true,src:p,col:'#CFEAFF',knock:{x:Math.sign(t.x-p.x)||1,y:0,f:90},pn:0.8});beams.push({a:{x:p.x,y:p.y-8},b:t,life:0.14,col:'#CFEAFF'});}
       ring(p.x,p.y,50,'#CFEAFF',0.35);p.atkCd=0.5;sfx('dodge');},
     sun(p,combo){spawnTurret(p,true,12*starFx(p).sunMul*(combo?1.5:1),p.x+p.fx*50,p.y+p.fy*50);if(combo)for(const a of allies)if(a.kind==='turret'){a.life*=1.5;a.max*=1.5;}},
-    moon(p,combo){team.overclock=8*larkMul();buffAtk(0.2,8);ring(p.x,p.y,60,'#CFEAFF',0.5);sfx('skill');if(combo)for(const a of allies)if(a.kind==='turret'){a.life*=1.5;a.max*=1.5;}},
-    ult(p){const ml=(12+starFx(p).ultDur)*summonK();allies.push({kind:'mech',x:p.x-30,y:p.y,r:16,life:ml,max:ml,zap:0.6,src:p,dead:false});burstParts(p.x,p.y,'#CFEAFF',30,200);sfx('boom');},
+    moon(p,combo){team.overclock=8*larkMul();buffAtk(0.1,8);ring(p.x,p.y,60,'#CFEAFF',0.5);sfx('skill');if(combo)for(const a of allies)if(a.kind==='turret'){a.life*=1.5;a.max*=1.5;}},
+    ult(p){const ml=(9+starFx(p).ultDur)*summonK();allies.push({kind:'mech',x:p.x-30,y:p.y,r:16,life:ml,max:ml,zap:0.6,src:p,dead:false});burstParts(p.x,p.y,'#CFEAFF',30,200);sfx('boom');},
     entrance(p,pw){const zl=8*pw*summonK();allies.push({kind:'zap',x:p.x,y:p.y-20,r:5,life:zl,max:zl,zap:0.5,src:p,dead:false});},
     update(p,dt){},
     status(p){const l=[];const n=allies.filter(a=>a.kind==='turret').length;if(n)l.push(['#CFEAFF','TURRET · +20% DMG']);if(team.overclock>0)l.push(['#CFEAFF','OVERCLOCK '+team.overclock.toFixed(1)+'s']);return l;},
@@ -1985,7 +1985,7 @@ function updatePlayer(dt){
 }
 function updateTeam(dt){
   const cdm=team.cdFast>0?2:1;
-  if(state==='play'&&(aliveCount()>0||(boss&&!boss.dead)))gainPn(2.0*dt);
+  if(state==='play'&&(aliveCount()>0||(boss&&!boss.dead))){gainPn(2.0*dt);for(const m of team.members)if(!m.down&&(m.id==='bram'||m.id==='noemi'||m.id==='dess'))m.pn=Math.min(team.maxPn,(m.pn||0)+1.0*dt*(m===player?1:0.4));}
   team.swapCd-=dt;
   for(const k of ['tailwind','benedT','firstClay','cdFast','starBoost','reflect','overheal','cleanseT','interCd','atkBuffT','stim','killzone','overclock','stand','bramBlock','dessDmgT','dessPulseT','cdmgT','crT'])if(team[k]>0)team[k]-=dt;
   if(team.shield){team.shield.t-=dt;if(team.shield.t<=0||team.shield.hp<=0)team.shield=null;}
@@ -2020,7 +2020,7 @@ function updateShots(dt){
 }
 const MEMORY_LINES=['“…don’t forget the bread…”','“Happy birthday, Lili.”','“I’ll be home by six.”','“Look, the river froze!”','“Sorry. I’m so sorry.”','“Hold my hand, okay?”'];
 function updSummon(a,dt){
-  const ov=team.overclock>0?2:1,src=a.src||player,sm=starFx(src).summonMul;
+  const ov=team.overclock>0?1.5:1,src=a.src||player,sm=starFx(src).summonMul;
   if(a.kind==='spirit'){a.ang+=dt*1.6;const tx=player.x+Math.cos(a.ang)*34,ty=player.y-8+Math.sin(a.ang)*22;a.x+=(tx-a.x)*Math.min(1,dt*5);a.y+=(ty-a.y)*Math.min(1,dt*5);
     a.zap-=dt*ov;if(a.zap<=0){a.zap=0.75;const t=nearestTarget(a.x,a.y,170,null);if(t){playerHit(t,src.atk*0.55*sm,{src,col:'#9BD4FF',summon:true});beams.push({a,b:t,life:0.15,col:'#9BD4FF'});}}
     if(a.life<=0){a.dead=true;burstParts(a.x,a.y,'#9BD4FF',8,80);if(rand()<0.2){buffAtk(0.1,3);addText(player.x,player.y-46,pick(MEMORY_LINES),'#CFEAFF',9,{life:1.6});}}
@@ -2028,7 +2028,7 @@ function updSummon(a,dt){
   if(a.kind==='turret'){a.zap-=dt*ov;const rate=1.0;if(a.zap<=0){a.zap=rate;const t=nearestTarget(a.x,a.y,150,null);if(t){playerHit(t,src.atk*(a.laser?0.22:(a.big?0.6:0.45))*sm,{src,col:a.laser?C.danger:'#CFEAFF',summon:true});beams.push({a:{x:a.x,y:a.y-4},b:t,life:a.laser?0.1:0.08,col:a.laser?C.danger:'#CFEAFF'});if(t.dead)gainPn(1.5);}}
     if(a.life<=0){a.dead=true;burstParts(a.x,a.y,'#CFEAFF',10,90);}return true;}
   if(a.kind==='mech'){const tx=player.x-34,ty=player.y+6;a.x+=(tx-a.x)*Math.min(1,dt*2.5);a.y+=(ty-a.y)*Math.min(1,dt*2.5);
-    a.zap-=dt*ov;if(a.zap<=0){a.zap=0.55;const t=nearestTarget(a.x,a.y,320,null);if(t){radial(t.x,t.y,42,src.atk*1.1*sm*starFx(src).ultMul,{src,col:'#CFEAFF',knock:80,summon:true});beams.push({a:{x:a.x,y:a.y-14},b:t,life:0.12,col:C.fire});sfx('thud');if(t.dead)gainPn(1.5);}}
+    a.zap-=dt*ov;if(a.zap<=0){a.zap=0.55;const t=nearestTarget(a.x,a.y,320,null);if(t){radial(t.x,t.y,42,src.atk*0.6*sm*starFx(src).ultMul,{src,col:'#CFEAFF',knock:80,summon:true});beams.push({a:{x:a.x,y:a.y-14},b:t,life:0.12,col:C.fire});sfx('thud');if(t.dead)gainPn(1.5);}}
     if(a.life<=0){a.dead=true;burstParts(a.x,a.y,'#CFEAFF',30,200);}return true;}
   if(a.kind==='zap'){const tx=player.x+Math.cos(T*2)*24,ty=player.y-24;a.x+=(tx-a.x)*Math.min(1,dt*5);a.y+=(ty-a.y)*Math.min(1,dt*5);
     a.zap-=dt*ov;if(a.zap<=0){a.zap=0.5;const t=nearestTarget(a.x,a.y,170,null);if(t){playerHit(t,src.atk*0.5*sm,{src,col:'#CFEAFF',summon:true});beams.push({a,b:t,life:0.12,col:'#CFEAFF'});if(t.dead)gainPn(1.5);}}
@@ -2069,7 +2069,7 @@ function updateZones(dt){
     } else if(z.kind==='soak'){for(const t of allTargets())if(Math.hypot(t.x-z.x,t.y-z.y)<z.r+(t.r||20)*0.5){t.soakUntil=T+0.3;if(t!==boss)t.slowT=Math.max(t.slowT||0,0.3);if(z.mark)t.markT=Math.max(t.markT||0,1);}
     } else if(z.kind==='slowpool'){for(const e of enemies)if(!e.dead&&dist(e,z)<z.r)e.slowT=Math.max(e.slowT,0.3);
     } else if(z.kind==='ice'){for(const e of enemies)if(!e.dead&&dist(e,z)<z.r+e.r){e.stunT=Math.max(e.stunT,0.2);e.st='stun';}
-      if(z.t<=0&&!z.done){z.done=true;radial(z.x,z.y,z.r,z.src.atk*6,{skill:'ult',src:z.src,col:'#BFE6FF',knock:160});burstParts(z.x,z.y,'#E7F7FF',50,260);shake(6,0.25);sfx('break');}
+      if(z.t<=0&&!z.done){z.done=true;radial(z.x,z.y,z.r,z.src.atk*4.5,{skill:'ult',src:z.src,col:'#BFE6FF',knock:160});burstParts(z.x,z.y,'#E7F7FF',50,260);shake(6,0.25);sfx('break');}
     } else if(z.kind==='decree'){
       for(const e of enemies)if(!e.dead&&dist(e,z)<z.r){e.slowT=Math.max(e.slowT,0.2);e.noHeal=0.3;}
       if(boss&&!boss.dead&&dist(boss,z)<z.r)boss.noHeal=0.3;
