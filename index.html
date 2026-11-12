@@ -1119,14 +1119,18 @@ function memberFx(id){const fx={},sl=save.chars[id].slots;for(const s of ['sun',
 function dayElement(){return ['Fire','Earth','Air','Water'][Math.floor(Date.now()/86400000)%4];}
 function rollFrag(src){
   const r=rand();let rar;
-  if(src==='boss')rar=r<0.4?2:1;else if(src==='champion'||src==='trial')rar=r<0.15?2:r<0.75?1:0;else if(src==='elite')rar=r<0.05?2:r<0.4?1:0;else if(src==='chest')rar=r<0.04?2:r<0.3?1:0;else rar=r<0.02?2:r<0.2?1:0;
+  if(src==='star')rar=2;
+  else if(/^rift[123]$/.test(src)){const t=+src[4];rar=r<[0,0.05,0.15,0.3][t]?2:r<[0,0.35,0.6,0.8][t]?1:0;}
+  else if(src==='boss')rar=r<0.4?2:1;else if(src==='champion'||src==='trial')rar=r<0.15?2:r<0.75?1:0;else if(src==='elite')rar=r<0.05?2:r<0.4?1:0;else if(src==='chest')rar=r<0.04?2:r<0.3?1:0;else rar=r<0.02?2:r<0.2?1:0;
   let sign;
-  if(room&&room.def.sign&&rand()<0.5)sign=room.def.sign;
+  if(room&&room.def.el)sign=pick(SIGNS.filter(s=>SIGN_EL[s]===room.def.el));
+  else if(room&&room.def.sign&&rand()<0.5)sign=room.def.sign;
   else if(rand()<0.3){const el=dayElement();sign=pick(SIGNS.filter(s=>SIGN_EL[s]===el));}
   else sign=pick(SIGNS);
   return {id:save.nextId++,sign,rar,slot:pick(['sun','moon','rising']),deg:Math.floor(rand()*30),traits:shuffle(Object.keys(TRAITS[SIGN_EL[sign]])).slice(0,rar+1),lvl:1,transits:0};
 }
 function gainFrag(src,x,y){
+  if(run&&run.practice)return;
   if(save.frags.length>=150){save.dust+=10;persist();return;}
   const f=rollFrag(src);save.frags.push(f);if(run)run.found.push(f.id);persist();fragTip();
   // already saved; this is the pickup you see on the ground
@@ -1191,6 +1195,7 @@ function storyMissionAward(){
   return {xp,ups,dust};}
 function awardRun(won){
   if(!run||run.awarded)return null;run.awarded=true;
+  if(run.practice)return {xp:0,ups:run.party.map(id=>({id,lvl:save.chars[id].lvl,up:false})),dust:0};
   // P1-7: starting Blessings make Battle easier, so they pay less (None 100%, Lv 1 60%, Lv 3 25%)
   const farm=run.mode==='battle'?[1,0.6,0.6,0.25][run.bless|0]:1;
   const xp=Math.round((run.kills*1.5+(run.mode==='battle'?15:run.roomNo*15)+(won?60:0))*farm);
@@ -1219,7 +1224,7 @@ const BL={
 const debuffK=()=>1+0.25*blv('neptune')+(rul('neptune')?0.1:0);
 const summonK=()=>1+0.2*blv('neptune')+(rul('neptune')?0.1:0);
 const ROOMS={
-  house1:{id:'house1',kind:'house',num:'1st House',name:'Self',sign:'Aries',place:'Vigil Yard',theme:'yard',rule:'rush',
+  house1:{id:'house1',kind:'house',num:'1st House',name:'Self',sign:'Aries',place:'Garrison Yard',theme:'yard',rule:'rush',
     ruleText:'Everyone moves 25% faster here, you included.',pool:['hothead','hothead','gossip','waxer','collector','spotlight']},
   house3:{id:'house3',kind:'house',num:'3rd House',name:'Communication',sign:'Gemini',place:'Market Ring',theme:'market',rule:'split',
     ruleText:'Every Vice splits once when it dies.',pool:['gossip','gossip','hothead','waxer','collector','spotlight']},
@@ -1235,7 +1240,7 @@ const ROOMS={
     ruleText:'All seven Vices, with lots of elites. A testing ground.',pool:['hothead','gossip','waxer','spotlight','deadline','devourer','collector']},
   trialMercury:{id:'trialMercury',kind:'trial',planet:'mercury',num:'Trial of Mercury',name:"The Messenger's Errand",place:'Clocktower Roofs',theme:'roof',
     ruleText:'Collect 12 sparks before they fade. Miss 5 and the errand fails.'},
-  trialMars:{id:'trialMars',kind:'trial',planet:'mars',num:'Trial of Mars',name:'Single Combat',place:'Vigil Arena',theme:'ring',
+  trialMars:{id:'trialMars',kind:'trial',planet:'mars',num:'Trial of Mars',name:'Single Combat',place:'Garrison Arena',theme:'ring',
     ruleText:'Destroy the Champion within 60 seconds. If you stop hitting it, it recovers.'},
   lethe:{id:'lethe',kind:'lethe',num:'Fountain',name:'Mercy Fountain',ruleText:'Restore and revive the whole team. One random Blessing level fades.'},
   boss:{id:'boss',kind:'boss',num:'Archon Gate',name:'Horaios',place:'Registry Hall',theme:'lobby',ruleText:'Kosmokrator of the Moon. Intake Window 1.'},
@@ -1338,7 +1343,7 @@ function heal(m,amt,o={}){
   return got;
 }
 function addShield(v,t,carry){
-  v*=1+((player&&player.bfx.shield)||0)+0.15*blv('saturn')+(rul('saturn')?0.1:0);
+  v*=1+((player&&player.bfx.shield)||0)+0.15*blv('saturn')+(rul('saturn')?0.1:0)+(modOn('shield')?0.3:0);
   const s=team.shield;
   if(s){s.hp+=v;s.max=Math.max(s.max,s.hp);s.t=Math.max(s.t,t);s.carry=s.carry||carry;}
   else team.shield={hp:v,max:v,t,carry};
@@ -1363,6 +1368,7 @@ function colorOf(e){return e.type==='gossip'?C.lime:e.type==='waxer'?C.wax:e.typ
 
 // ═══════════════════════════════════════════ enemies
 function rollElite(){
+  if(room&&run&&room.def.kind==='rift'){if(room.def.mech==='earth'&&rand()<0.45)return 'shielded';return rand()<RIFT_TIER[run.tier||1].elite?pick(['hasted','shielded','volatile']):null;}
   if(!room||!run||room.def.kind!=='house')return null;
   const ch=room.def.id==='arena'?0.35:(run.roomNo>=3?0.1+0.04*(run.roomNo-3):0);
   return rand()<ch?pick(['hasted','shielded','volatile']):null;
@@ -1421,6 +1427,7 @@ function spawnGroup(){
 }
 function targetFor(e){
   {const mt=missionTarget(e);if(mt)return mt;}
+  if(room&&room.obj&&room.def.kind==='rift'){if(e.rt===undefined)e.rt=rand()<0.5;if(e.rt)return room.obj;}
   let best=null,bd=1e9;
   for(const a of allies){if(a.kind!=='guard')continue;const d=dist(e,a),rng=a.big?260:180;if(d<rng&&d<bd){bd=d;best=a;}}
   return best||player;
@@ -1466,7 +1473,7 @@ function playerHit(t,dmg,o={}){
   if((o.critMarked&&t.markT>0)||(src&&src.id==='lucan'&&((src.critT>0&&rand()<0.3)||t.pinCritT>0)))o=Object.assign({},o,{crit:true});
   {const lv=blv('mars');if(lv>0){if(o.basic&&!o.burn&&rand()<0.1*lv){o=Object.assign({},o,{burn:3,mburn:1});}if(t.burnT>0)bonus+=0.08*lv+(rul('mars')?0.05:0);}}
   {const lv=blv('mercury');if(lv>0&&!o.crit&&rand()<0.05*lv+(rul('mercury')?0.03:0))o=Object.assign({},o,{crit:true});}
-  if(o.crit){m*=2+(team.cdmgT>0?0.3:0)+(src&&src.cdmgT>0?0.5:0);if(blv('mercury')>0&&src===player){player.cd.sun=Math.max(0,player.cd.sun-0.2);player.cd.moon=Math.max(0,player.cd.moon-0.2);}addText(t.x,t.y-(t.r||20)-10,'CRIT',C.gold,11);}
+  if(o.crit){m*=2+(modOn('crit')?0.25:0)+(team.cdmgT>0?0.3:0)+(src&&src.cdmgT>0?0.5:0);if(blv('mercury')>0&&src===player){player.cd.sun=Math.max(0,player.cd.sun-0.2);player.cd.moon=Math.max(0,player.cd.moon-0.2);}addText(t.x,t.y-(t.r||20)-10,'CRIT',C.gold,11);}
   m*=(1+bonus)*(1+vuln);
   dmg*=m;
   if(o.pn) gainPn(o.pn*clamp(dmg/Math.max(1,src.atk||10),1,3));
@@ -1479,8 +1486,11 @@ function playerHit(t,dmg,o={}){
   {const big=dmg>=(player.atk||10)*2.2||o.crit;sfx(big?'impactBig':'impact');for(let i=0;i<(big?7:3);i++)part(t.x+rr(-4,4),t.y-6+rr(-4,4),rr(-160,160),rr(-160,90),0.18,'#FFFFFF',big?2.4:1.6);if(big&&slowReal<=0&&!vol.fxLow)slowReal=0.045;}
   if(t!==boss){
     if(o.tide){t.tide=(t.tide||0)+o.tide;t.tideT=4;t.slowT=Math.max(t.slowT||0,1);if(t.tide>=3){t.tide=0;t.drowsyT=3*debuffK();t.slowT=Math.max(t.slowT,3);addText(t.x,t.y-(t.r||20)-14,'DROWSY','#7FE3F0',10,{life:0.8});}}
-    if(o.stag){t.stag=(t.stag||0)+o.stag;if(t.stag>=100){t.stag=0;if(t.type!=='champion'){t.stunT=Math.max(t.stunT||0,2);t.st='stun';}addText(t.x,t.y-(t.r||20)-14,'STUNNED',C.earth,10,{life:0.8});}}}
-  if(t===boss){hitBoss(dmg,o.col);return;}
+    if(o.stag){t.stag=(t.stag||0)+o.stag;if(t.stag>=100){t.stag=0;if(t.sh>0){t.sh=0;addText(t.x,t.y-(t.r||20)-24,'SHIELD BROKEN',C.earth,10,{life:0.8});}if(t.type!=='champion'){t.stunT=Math.max(t.stunT||0,2);t.st='stun';}addText(t.x,t.y-(t.r||20)-14,'STUNNED',C.earth,10,{life:0.8});}}}
+  if(t===boss){
+    if(boss.fsh>0){const sd=dmg*(o.stag?3:1);boss.fsh-=sd;dmg*=0.2;
+      if(boss.fsh<=0){boss.fsh=0;boss.idle=Math.max(boss.idle,2.5);boss.patT=0;bullets=[];addText(boss.x,boss.y-boss.r-30,'SHIELD BROKEN',C.earth,14,{life:1.4});shake(6,0.25);sfx('break');}}
+    hitBoss(dmg,o.col);return;}
   if(o.knock){const k=o.knock.f*(13/t.r)*(t.armor?0.5:1)*(t.type==='champion'?0.4:1)*(1+(sfx2.knock||0));t.kx+=o.knock.x*k;t.ky+=o.knock.y*k;}
   if(o.slow) t.slowT=Math.max(t.slowT,o.slow*(1+(sfx2.slow||0)));
   if(o.stun&&t.type!=='champion'){t.stunT=Math.max(t.stunT,o.stun);t.st='stun';}
@@ -1496,6 +1506,7 @@ function killEnemy(e){
   for(let i=0;i<n;i++) orbs.push({x:e.x+rr(-8,8),y:e.y+rr(-8,8),v:3,life:9,vx:rr(-40,40),vy:rr(-40,40)});
 
   if(e.elite==='volatile')tels.push({x:e.x,y:e.y,r:62,t:0,dur:0.8,dmg:14,vol:true});
+  if(room&&room.def.mech==='fire'&&e.burnT>0){radial(e.x,e.y,60,(player.atk||10)*1.2,{burn:2,col:C.fire,src:player});ring(e.x,e.y,60,C.fire,0.4);sfx('boom');}
   const lv=blv('venus'); if(lv>0)heal(player,2*lv+(rul('venus')?2:0));
   if(player.bfx.killHeal)heal(player,player.maxHp*player.bfx.killHeal);
   if(e.type==='champion')gainFrag('champion',e.x,e.y);
@@ -1543,7 +1554,7 @@ function updateEnemies(dt){
     if(e.shMax){if(e.shRegen>0)e.shRegen-=dt;else e.sh=Math.min(e.shMax,e.sh+e.shMax*0.25*dt);}
     if(e.spawnT>0){e.spawnT-=dt;continue;}
     if(e.burnT<=0&&e.burnDmg)e.burnDmg=0;
-    if(e.burnT>0){e.burnT-=dt;e.burnAcc+=dt;if(rand()<0.3)part(e.x+rr(-e.r,e.r),e.y-rr(0,e.r),rr(-10,10),-rr(30,60),0.4,C.fire,2);if(e.burnAcc>=0.5){e.burnAcc=0;hitEnemy(e,(e.burnDmg||3)*(e.burnMul||1),C.fire);if(e.dead)continue;}}
+    if(e.burnT>0){e.burnT-=dt;e.burnAcc+=dt;if(rand()<0.3)part(e.x+rr(-e.r,e.r),e.y-rr(0,e.r),rr(-10,10),-rr(30,60),0.4,C.fire,2);if(e.burnAcc>=0.5){e.burnAcc=0;hitEnemy(e,(e.burnDmg||3)*(e.burnMul||1)*(modOn('burn')?1.5:1),C.fire);if(e.dead)continue;}}
     const slow=e.drowsyT>0?0.25:(e.slowT>0?0.5:1); if(e.slowT>0) e.slowT-=dt;
     e.x+=e.kx*dt; e.y+=e.ky*dt; const kd=Math.max(0,1-9*dt); e.kx*=kd; e.ky*=kd;
     if(e.stunT>0){e.stunT-=dt;if(e.stunT<=0&&e.st==='stun'){e.st='walk';e.cd=rr(0.8,1.4);}clampE(e);contact(e,dt);continue;}
@@ -1862,6 +1873,7 @@ function swapTo(i,o={}){
   return true;
 }
 function memberDown(m){
+  if(run)run.downs=(run.downs|0)+1;
   if(m.down)return;
   falls.push({id:m.id,x:m.x,y:m.y,face:m.face,t:0});
   m.down=true;m.hp=0;m.dash=null;m.counterT=0;
@@ -2112,7 +2124,7 @@ function updateTels(dt){
 
 // ═══════════════════════════════════════════ boss: Horaios
 function lvlScale(){if(!team||!team.members||!team.members.length)return 1;const a=team.members.reduce((t,m)=>t+(m.rec||1),0)/team.members.length;return 1+0.045*(a-1);}
-function makeBoss(){const bh=Math.round(2600*lvlScale());return {x:W/2,y:-60,ty:100,r:34,hp:bh,maxHp:bh,flash:0,pat:-1,patT:0,act:0,actCd:0,idle:1.8,entering:1.8,enraged:false,dead:false,phase:1,cyc:0,spin:0,shieldT:0,papers:0,
+function makeBoss(){const bh=Math.round([3500,7000,12000][(run&&run.diff)|0]*lvlScale());return {x:W/2,y:-60,ty:100,r:34,hp:bh,maxHp:bh,flash:0,pat:-1,patT:0,act:0,actCd:0,idle:1.8,entering:1.8,enraged:false,dead:false,phase:1,cyc:0,spin:0,shieldT:0,papers:0,
   burnT:0,burnAcc:0,markT:0,anaT:0,ind:0,indT:0,secs:0,noHeal:0,skip:false,kx:0,ky:0};}
 function hitBoss(d,col){
   const b=boss;if(!b||b.dead||b.entering>0)return;
@@ -2169,6 +2181,9 @@ function updateBoss(dt){
   b.x+=clamp(player.x-b.x,-60*dt,60*dt);b.x=clamp(b.x,AX0+b.r+50,AX1-b.r-50);
   b.y=b.ty+Math.sin(T*1.3)*8;
   if(b.shieldT>0)b.shieldT-=dt;
+  if(!b.forced&&b.phase>=2){b.fshCd=(b.fshCd??3)-dt;if(b.fshCd<=0&&!(b.fsh>0)){b.fshCd=25;b.fsh=b.fshMax=Math.round(b.maxHp*0.06);setBanner('Filing Shield','Damage is cut 80%. Stagger hits (Bram, charged attacks) break it 3× faster.',2.2);sfx('stamp');}}
+  if((run.diff|0)===2&&!b.forced&&b.hp<=b.maxHp*0.15){if(!b.p4){b.p4=1;setBanner('Phase IV · Intake Window Closed','The Moon Gate pulls you in. Keep moving.',2.5);shake(8,0.4);}
+    const dx=b.x-player.x,dy=b.y-player.y,dd=Math.hypot(dx,dy)||1;if(dd>b.r+40){player.x+=dx/dd*55*dt;player.y+=dy/dd*55*dt;}}
   // three phases: Intake (stamps, pages) → Paperwork Storm (spirals, filing walls) → Registry Rewrite (the big stamp, swaps your hero, the queue)
   const np=b.hp<=b.maxHp*0.33?3:b.hp<=b.maxHp*0.66?2:1;
   if(np>b.phase){b.phase=np;b.enraged=np>=3;b.shieldT=1.6;b.idle=1.8;b.cyc=0;bullets=[];tels=[];
@@ -2183,11 +2198,12 @@ function updateBoss(dt){
       const N=['The Stamp','Paperwork','The Queue','Paper Spiral','Filing Wall','The Big Stamp','Reassignment'][b.pat];
       const D=['Red circles land a moment later. Step out.','A fan of red pages. Weave through the gaps.','He calls the next in line. Watch the ring.','Pages spin out of the desk. Circle with the gaps.','A wall of files sweeps the hall. Find the gap.','A giant seal follows you. Dash out before it lands.','He swaps your character and locks switching for a moment.'][b.pat];
       setBanner(N,D,1.6);}
-  } else {b.patT-=dt;b.actCd-=dt;if(b.actCd<=0)bossAct(b);if(b.patT<=0)b.idle=b.phase>=3?0.7:b.phase===2?0.95:1.2;}
+  } else {b.patT-=dt;b.actCd-=dt;if(b.actCd<=0){bossAct(b);if((run.diff|0)>=1&&room.t>120)b.actCd*=0.75;}if(b.patT<=0)b.idle=b.phase>=3?0.7:b.phase===2?0.95:1.2;}
   if(dist(b,player)<b.r+player.r)hurtPlayer(15);
 }
 function bossDie(){
   const b=boss;b.dead=true;run.won=true;
+  run.weekly=bossWeekly();
   gainFrag('boss',b.x-30,b.y);if(run.mode!=='battle')gainFrag('boss',b.x+30,b.y);
   burstParts(b.x,b.y,C.moon,60,260);burstParts(b.x,b.y,C.paper,40,200);shake(10,0.5);sfx('stamp');sfx('bless');
   enemies=[];bullets=[];tels=[];shots=[];meteors=[];
@@ -2226,7 +2242,8 @@ function enterRoom(id,opt={}){
   const sub=def.ruleText+(room.res?'  •  Resonance with '+room.res+': +20% damage here':'');
   const title=def.kind==='boss'?'Archon Gate · Horaios':def.num+' · '+(def.place||def.name);
   setBanner(title,sub,def.kind==='boss'?2.2:3.4);
-  if(def.kind==='boss'){boss=makeBoss();if(def.forced){boss.forced=true;boss.hp=boss.maxHp=1800;}state='play';return;}
+  if(def.kind==='boss'){room.atkScale*=[1,1.3,1.6][(run&&run.diff)|0];boss=makeBoss();if(def.forced){boss.forced=true;boss.hp=boss.maxHp=1800;}state='play';return;}
+  if(def.kind==='rift'){riftInit();state='play';return;}
   if(def.kind==='mission'){initMission(def);state='play';return;}
   state='play';
   if(def.kind==='house'&&rand()<0.5)setTimeout(()=>{if(state==='play'&&room&&room.def===def)spawnChest();},2500+rand()*5000);
@@ -2249,6 +2266,7 @@ function updateRoom(dt){
       if(room.spawned<room.budget&&room.spawnCd<=0&&aliveCount()<room.cap){spawnGroup();room.spawnCd=rr(1.2,1.9);}
       if(room.spawned>=room.budget&&enemies.length===0)finishRoom(true,'CLEARED');
     }
+  } else if(d.kind==='rift'){riftUpdate(dt);
   } else if(d.kind==='mission'){updateMission(dt);
   } else if(d.kind==='training'){updateTutorial(dt);
   } else if(d.id==='trialMercury'){
@@ -2290,6 +2308,113 @@ function afterRoom(def,ok){
 }
 function grant(k){run.bl[k]=Math.min(3,run.bl[k]+1);sfx('bless');}
 function proceed(){showDoors(run.roomNo>=6);}
+
+// ═══════════════════════════════════════════ Rifts: replayable stages with tiers, stars and set drops
+// Theo's reader finds rifts across the city. Each one drops one kind of reward and has its own mechanic.
+const RIFTS=['rift_fire','rift_water','rift_air','rift_earth','rift_xp','rift_dust'];
+Object.assign(ROOMS,{
+  rift_fire:{id:'rift_fire',kind:'rift',num:'Rift',name:'Ash Lane Blaze',place:'Ash Lane rooftops',theme:'rooftop',el:'Fire',mech:'fire',drop:'Fire Fragments',
+    ruleText:'Burning ground falls every few seconds: step out of the red circles. Vices that die while burning explode and hurt other Vices.',pool:['hothead','gossip','hothead','waxer','spotlight']},
+  rift_water:{id:'rift_water',kind:'rift',num:'Rift',name:'St. Lucia’s Ward',place:'St. Lucia’s · east ward',theme:'hospital',el:'Water',mech:'water',drop:'Water Fragments',
+    ruleText:'Protect the patients in the middle of the ward. Some Vices go straight for them. If their bar empties, the rift fails.',pool:['gossip','hothead','devourer','gossip','collector']},
+  rift_air:{id:'rift_air',kind:'rift',num:'Rift',name:'Institute Overload',place:'Institute sub-level',theme:'lab',el:'Air',mech:'air',drop:'Air Fragments',
+    ruleText:'Unstable cores appear by the tanks. Break each one within 6 seconds, or it hatches an elite Vice.',pool:['hothead','waxer','gossip','deadline','spotlight']},
+  rift_earth:{id:'rift_earth',kind:'rift',num:'Rift',name:'Garrison Yard',place:'Garrison Yard',theme:'yard',el:'Earth',mech:'earth',drop:'Earth Fragments',
+    ruleText:'Many Vices carry shields. Stagger them (Bram, charged attacks) until they’re stunned: the stun breaks the shield.',pool:['hothead','deadline','gossip','waxer','hothead']},
+  rift_xp:{id:'rift_xp',kind:'rift',num:'Rift',name:'Market Ring Waves',place:'Market Ring',theme:'market',mech:'xp',drop:'Memories (XP)',
+    ruleText:'Five waves, each bigger than the last. Every wave you clear gives Memories.',pool:['gossip','hothead','waxer','collector','spotlight']},
+  rift_dust:{id:'rift_dust',kind:'rift',num:'Rift',name:'Festival Sparks',place:'Festival Square',theme:'plaza',mech:'dust',drop:'Stardust',
+    ruleText:'Sparks fall over the square while Vices attack. Catch 15 sparks. Each one is Stardust.',pool:['gossip','hothead','spotlight','collector']},
+});
+const RIFT_TIER=[null,{rec:1,hp:1,atk:1,kills:12,elite:0.08},{rec:6,hp:1.6,atk:1.25,kills:16,elite:0.18},{rec:12,hp:2.4,atk:1.5,kills:20,elite:0.3}];
+const RIFT_PAR={rift_fire:75,rift_water:80,rift_air:80,rift_earth:85,rift_xp:110,rift_dust:70,trialMercury:35,trialMars:30,boss:120};
+const RIFT_MODS=[
+  {id:'burn',t:'Burns deal +50% damage'},{id:'shield',t:'Shields you get are 30% stronger'},
+  {id:'regen',t:'Vices heal if nobody hits them for 3 seconds'},{id:'crit',t:'Crits deal +25% damage'}];
+const riftMod=()=>RIFT_MODS[Math.floor(Date.now()/86400000)%RIFT_MODS.length];
+const inRift=()=>!!(room&&room.def.kind==='rift');
+const modOn=id=>inRift()&&riftMod().id===id;
+let battleSel={tier:1,diff:0};
+function starKey(id,tier,diff){return id+(id==='boss'?'#d'+(diff|0):RIFTS.includes(id)?'#t'+tier:'');}
+function starsOf(k){return (save.stars&&save.stars[k])|0;}
+function riftInit(){
+  const d=room.def,T0=RIFT_TIER[run.tier||1];
+  room.hpScale*=T0.hp;room.atkScale*=T0.atk;room.k0=run.kills;room.cap=4+(run.tier||1);
+  room.budget=d.mech==='xp'?0:d.mech==='dust'?999:T0.kills;
+  if(d.mech==='water')room.obj={x:W/2,y:H*0.52,r:64,hp:100,max:100,hit:0};
+  if(d.mech==='air'){room.coreCd=4;room.tanks=[[70,96],[150,96],[W-150,96],[W-70,96]];}
+  if(d.mech==='fire')room.emberCd=3;
+  if(d.mech==='xp'){room.wave=0;room.waveCd=1.5;room.waveLeft=0;}
+  if(d.mech==='dust'){room.sparkCd=1;room.collected=0;}
+  setBanner(d.name+' · Tier '+['','I','II','III'][run.tier||1],d.ruleText+'  •  Today: '+riftMod().t,4);
+}
+function riftUpdate(dt){
+  const d=room.def,tier=run.tier||1,got=run.kills-room.k0;
+  room.spawnCd-=dt;
+  if(d.mech==='xp'){
+    if(room.waveLeft>0&&room.spawnCd<=0&&aliveCount()<room.cap+2){enemies.push(spawnEdge(poolType()));room.waveLeft--;room.spawnCd=0.5;}
+    if(room.waveLeft<=0&&aliveCount()===0){
+      if(room.wave>=5){finishRoom(true,'CLEARED');return;}
+      room.waveCd-=dt;if(room.waveCd<=0){room.wave++;room.waveLeft=2+room.wave*2;room.waveCd=1.8;setBanner('Wave '+room.wave+' of 5','',1.2);}}
+  } else if(d.mech==='dust'){
+    room.sparkCd-=dt;if(sparks.length<2&&room.sparkCd<=0){spawnSpark();room.sparkCd=0.9;}
+    for(const sp of sparks){sp.life-=dt;if(Math.hypot(sp.x-player.x,sp.y-player.y)<player.r+13){sp.got=true;room.collected++;burstParts(sp.x,sp.y,C.gold,12,120);sfx('spark');addText(sp.x,sp.y-14,'+'+3*tier+' STARDUST',C.gold,10,{life:0.8});}else if(sp.life<=0)sp.got=true;}
+    sparks=sparks.filter(sp=>!sp.got);
+    if(room.spawnCd<=0&&aliveCount()<room.cap){enemies.push(spawnEdge(poolType()));room.spawnCd=1.6;}
+    if(room.collected>=15){finishRoom(true,'CLEARED');return;}
+  } else {
+    if(room.spawned<room.budget&&room.spawnCd<=0&&aliveCount()<room.cap){spawnGroup();room.spawnCd=rr(1.0,1.6);}
+    if(room.spawned>=room.budget&&aliveCount()===0){finishRoom(true,'CLEARED');return;}
+  }
+  if(d.mech==='fire'){room.emberCd-=dt;if(room.emberCd<=0){room.emberCd=Math.max(1.6,3.4-0.5*tier);
+    tels.push({x:clamp(player.x+rr(-30,30),AX0+30,AX1-30),y:clamp(player.y+rr(-30,30),AY0+30,AY1-30),r:44,t:0,dur:1.0,dmg:8+3*tier});}}
+  if(d.mech==='water'){const o=room.obj;let n=0;for(const e of enemies)if(!e.dead&&e.spawnT<=0&&Math.hypot(e.x-o.x,e.y-o.y)<o.r+e.r)n++;
+    if(n){o.hp-=n*(2.5+tier)*dt;o.hit=0.2;}else if(o.hit>0)o.hit-=dt;
+    if(o.hp<=0){o.hp=0;finishRoom(false,'DENIED');return;}}
+  if(d.mech==='air'){room.coreCd-=dt;if(room.coreCd<=0){room.coreCd=Math.max(5,10-tier*1.5);const [x,y]=pick(room.tanks);
+      const e=makeEnemy('hothead',x,y+34,{instant:true,elite:null});e.core=1;e.coreT=6;e.spd=0;e.dmg=0;e.cdmg=0;e.r=12;e.hp=e.maxHp=Math.round(30*room.hpScale);enemies.push(e);sfx('charge');}
+    for(const e of enemies)if(e.core&&!e.dead&&e.spawnT<=0){e.coreT-=dt;e.x=e.x;if(e.coreT<=0){e.dead=true;burstParts(e.x,e.y,'#B49CFF',20,160);
+      const z=makeEnemy(pick(['hothead','waxer','gossip']),e.x,e.y,{instant:true,elite:pick(['hasted','shielded','volatile'])});enemies.push(z);room.spawned++;room.budget++;addText(e.x,e.y-24,'OVERLOAD',C.danger,12,{life:1});sfx('boom');}}}
+  if(modOn('regen'))for(const e of enemies){if(e.dead||e.core)continue;e.idle=(e.hitT>0?0:(e.idle||0)+dt);if(e.idle>3&&e.hp<e.maxHp)e.hp=Math.min(e.maxHp,e.hp+e.maxHp*0.04*dt);}
+}
+function drawRift(c){
+  const d=room.def;
+  if(d.mech==='water'&&room.obj){const o=room.obj,k=o.hp/o.max;
+    c.strokeStyle=alpha(o.hit>0?C.danger:'#9BE7B8',0.6+0.3*Math.sin(T*4));c.lineWidth=2;c.setLineDash([6,5]);circ(c,o.x,o.y,o.r);c.stroke();c.setLineDash([]);
+    for(const [dx,dy] of [[-22,-8],[22,-8],[0,16]])drawNPC(c,o.x+dx,o.y+dy,{col:'#E8E2D4',face:dx<0?1:-1});
+    c.fillStyle='rgba(0,0,0,0.6)';c.fillRect(o.x-40,o.y-o.r-14,80,7);c.fillStyle=k>0.35?'#9BE7B8':C.danger;c.fillRect(o.x-39,o.y-o.r-13,78*k,5);
+    c.fillStyle='#F6EBD2';c.font=`800 8px ${FONT_UI}`;c.textAlign='center';c.fillText('PATIENTS',o.x,o.y-o.r-18);}
+}
+function riftSub(){
+  const d=room.def;if(!d||d.kind!=='rift')return '';
+  if(d.mech==='xp')return 'Wave '+room.wave+' / 5';
+  if(d.mech==='dust')return 'Sparks '+room.collected+' / 15';
+  return 'Vices '+Math.min(room.budget,run.kills-room.k0)+' / '+room.budget+(d.mech==='water'?' · Patients '+Math.ceil(room.obj.hp)+'%':'');
+}
+// stars: 1 = clear, 2 = under par time, 3 = nobody went down
+function stageStars(ok){
+  if(!ok||!run||run.practice)return null;
+  const id=run.stage,par=RIFT_PAR[id];if(!par)return null;
+  const n=1+(room&&room.t<=par?1:0)+(team.members.every(m=>!m.down)&&!run.downs?1:0);
+  const k=starKey(id,run.tier||1,run.diff||0);save.stars=save.stars||{};const before=save.stars[k]|0;
+  let bonus=0;if(n>before){bonus=(n-before)*20;save.dust+=bonus;save.stars[k]=n;}
+  save.best=save.best||{};if(room&&(!save.best[k]||room.t<save.best[k]))save.best[k]=Math.round(room.t*10)/10;
+  persist();return {n,bonus,time:room?room.t:0,par,best:save.best[k]};
+}
+function riftRewards(ok){
+  if(!ok||!run||run.practice)return null;
+  const d=ROOMS[run.stage];if(d&&d.kind==='trial'){gainFrag('trial');return {frags:[save.frags[save.frags.length-1]]};}if(!d||d.kind!=='rift')return null;const tier=run.tier||1,out={};
+  if(d.el){out.frags=[];for(let i=0;i<tier;i++){gainFrag('rift'+tier);out.frags.push(save.frags[save.frags.length-1]);}}
+  if(d.mech==='xp'){const xp=Math.round(25*room.wave*tier);out.xp=xp;out.ups=giveXp(run.party,xp);}
+  if(d.mech==='dust'){const dust=3*tier*room.collected;save.dust+=dust;out.dust=dust;}
+  persist();return out;
+}
+function bossWeekly(){
+  if(!run||run.practice||run.mode!=='battle')return false;
+  const wk=Math.floor(Date.now()/604800000);save.bossWeek=save.bossWeek||{};
+  if(save.bossWeek[run.diff|0]===wk)return false;save.bossWeek[run.diff|0]=wk;gainFrag('star');persist();return true;
+}
+
 function die(){
   if(state!=='play')return;
   state='dying';deathT=1.3;
@@ -4084,25 +4209,49 @@ function showPartySelect(mode){
     h('div',{class:'select-body'},roster,detail));
   openOverlay(wrap,'mode-select');
 }
-function showBattleMenu(party){
-  state='title';room=null;
+function showBattleMenu(party,tab){
+  state='title';room=null;tab=tab||'rifts';
   const prefs=loadPrefs();let lvl=[0,1,3].includes(prefs.bless)?prefs.bless:0;
-  const seg=h('div',{class:'seg',role:'group','aria-label':'Starting Blessings'},...[0,1,3].map(v=>h('button',{type:'button','aria-pressed':String(v===lvl),onclick:e=>{lvl=v;savePrefs({bless:v});for(const b of seg.children)b.setAttribute('aria-pressed',String(b===e.currentTarget));}},v===0?'None':v===1?'All Lv 1':'All Lv 3')));
-  const stage=(id,tag,name,sub)=>h('button',{class:'choice',type:'button',onclick:()=>{startBattle(party,id,lvl);}},h('span',{class:'tag'},tag),h('h3',null,name),h('p',null,sub));
-  const tmpTeam=team;team={members:party.map(makeMember)};
-  const items=HOUSES.map(id=>{const d=ROOMS[id];const res=resOf(d);return stage(id,d.num+' · '+d.sign+(res?' · resonates':''),d.place,d.ruleText);});
-  team=tmpTeam;
-  openOverlay(h('div',{class:'form',style:'max-width:840px'},
-    formHead('Battle · test a stage','Party · '+party.map(nameOf).join(' · ')),
-    h('h2',{style:'padding-right:0'},'Pick a stage'),
-    h('div',{class:'row',style:'margin:0 0 10px'},h('span',{class:'seglabel'},'Start with Blessings'),seg),
-    h('div',{class:'choices'},
-      stage('climb','Full run','The climb','All six districts and Horaios, without dialogue.'),
-      ...items,
-      stage('trialMercury','Trial of Mercury','Clocktower Roofs',ROOMS.trialMercury.ruleText),
-      stage('trialMars','Trial of Mars','Vigil Arena',ROOMS.trialMars.ruleText),
-      stage('arena','Vice Gallery','Every Vice',ROOMS.arena.ruleText),
-      stage('boss','Archon Gate','Horaios','The boss of the Sphere of the Moon. Three lunar phases.')),
+  const avg=Math.round(party.reduce((t,id)=>t+save.chars[id].lvl,0)/party.length);
+  const stars=k=>{const n=starsOf(k);return '★'.repeat(n)+'☆'.repeat(3-n);};
+  const seg=(vals,cur,labels,set)=>{const g=h('div',{class:'seg',role:'group'},...vals.map((v,i)=>h('button',{type:'button','aria-pressed':String(v===cur),onclick:()=>{set(v);showBattleMenu(party,tab);}},labels[i])));return g;};
+  const card=(tag,name,sub,extra,go,el)=>h('button',{class:'choice',type:'button',onclick:go},h('span',{class:'tag'},tag),h('h3',null,name),h('p',null,sub),extra?h('p',{class:'reward'},extra):null);
+  const tabs=h('div',{class:'seg',role:'tablist',style:'margin:0 0 10px'},...[['rifts','Rifts'],['boss','Horaios'],['trials','Trials'],['climb','Climb'],['practice','Practice']].map(([k,l])=>h('button',{type:'button','aria-pressed':String(k===tab),onclick:()=>showBattleMenu(party,k)},l)));
+  let body;
+  if(tab==='rifts'){
+    const t=battleSel.tier,TT=RIFT_TIER[t];
+    body=h('div',null,
+      h('div',{class:'row',style:'margin:0 0 6px'},h('span',{class:'seglabel'},'Tier'),seg([1,2,3],t,['I','II','III'],v=>battleSel.tier=v),
+        h('span',{class:'seglabel',style:'margin-left:8px'},'Recommended Lv '+TT.rec+' · your party Lv '+avg)),
+      h('p',{class:'serpent'},h('b',null,'Today’s rift condition: '),riftMod().t),
+      h('div',{class:'choices'},...RIFTS.map(id=>{const d=ROOMS[id];
+        return card(d.drop+' · '+stars(starKey(id,t)),d.name,d.ruleText,(d.el?'Drops '+t+' '+d.el+' Fragment'+(t>1?'s':'')+(t===3?' · best Star-born odds':''):d.mech==='xp'?'Up to '+125*t+' Memories':'Up to '+45*t+' Stardust')+' · par '+RIFT_PAR[id]+'s',
+          ()=>startBattle(party,id,0,{tier:t}));})));
+  } else if(tab==='boss'){
+    const df=battleSel.diff,wk=Math.floor(Date.now()/604800000),done=save.bossWeek&&save.bossWeek[df]===wk;
+    body=h('div',null,
+      h('div',{class:'row',style:'margin:0 0 6px'},h('span',{class:'seglabel'},'Difficulty'),seg([0,1,2],df,['Normal','Hard','Nightmare'],v=>battleSel.diff=v)),
+      h('div',{class:'choices'},card(['Normal','Hard','Nightmare'][df]+' · '+stars(starKey('boss',1,df)),'Horaios, Kosmokrator of the Moon',
+        ['3 phases. Filing Shields from phase 2: Stagger breaks them faster.','HP ×2, damage ×1.3. After 2 minutes he speeds up.','HP ×3.4, damage ×1.6, enrage at 2 minutes, and a 4th phase where the Moon Gate pulls you in.'][df],
+        (done?'Weekly Star-born Fragment: claimed':'Weekly reward: 1 Star-born Fragment (first clear this week)')+' · par 120s',()=>startBattle(party,'boss',0,{diff:df}))));
+  } else if(tab==='trials'){
+    body=h('div',{class:'choices'},...['trialMercury','trialMars'].map(id=>{const d=ROOMS[id],b=save.best&&save.best[id];
+      return card(d.num+' · '+stars(id),d.place,d.ruleText,(b?'Best '+b+'s':'No best time yet')+' · par '+RIFT_PAR[id]+'s · drops a Fragment',()=>startBattle(party,id,0,{}));}));
+  } else if(tab==='climb'){
+    body=h('div',{class:'choices'},card('Full run','The climb','All six districts, Blessings, the Mercy Fountain and Horaios in one run.','Memories, Stardust and Fragments',()=>startBattle(party,'climb',lvl)));
+  } else {
+    const blessSeg=h('div',{class:'seg',role:'group'},...[0,1,3].map(v=>h('button',{type:'button','aria-pressed':String(v===lvl),onclick:e=>{lvl=v;savePrefs({bless:v});for(const b of blessSeg.children)b.setAttribute('aria-pressed',String(b===e.currentTarget));}},v===0?'None':v===1?'All Lv 1':'All Lv 3')));
+    const tmpTeam=team;team={members:party.map(makeMember)};
+    const items=HOUSES.map(id=>{const d=ROOMS[id];return card(d.num+' · '+d.sign+(resOf(d)?' · resonates':''),d.place,d.ruleText,'Practice · no rewards',()=>startBattle(party,id,lvl,{practice:true}));});
+    team=tmpTeam;
+    body=h('div',null,h('div',{class:'row',style:'margin:0 0 10px'},h('span',{class:'seglabel'},'Start with Blessings'),blessSeg),
+      h('p',{class:'serpent'},'Practice anything with any Blessings. Nothing is earned or lost.'),
+      h('div',{class:'choices'},...items,card('Vice Gallery','Every Vice',ROOMS.arena.ruleText,'Practice · no rewards',()=>startBattle(party,'arena',lvl,{practice:true})),
+        card('Archon Gate','Horaios (practice)','Normal difficulty, with your chosen Blessings.','Practice · no rewards',()=>startBattle(party,'boss',lvl,{practice:true,diff:0}))));
+  }
+  openOverlay(h('div',{class:'form',style:'max-width:880px'},
+    formHead('Battle','Party · '+party.map(nameOf).join(' · ')+' · avg Lv '+avg),
+    h('h2',{style:'padding-right:0'},'Where to?'),tabs,body,
     h('div',{class:'row'},h('button',{class:'btn ghost',type:'button','data-back':'1',onclick:()=>{showPartySelect('battle');}},'Party'),
       buildsBtn(goHome),h('button',{class:'btn ghost',type:'button',onclick:()=>{goHome();}},'Home'))));
 }
@@ -4115,23 +4264,29 @@ function showTrainingDone(){
       h('button',{class:'btn ghost',type:'button',onclick:()=>{showPartySelect('battle');}},'Battle mode'),
       h('button',{class:'btn ghost',type:'button',onclick:()=>{goHome();}},'Home'))));
 }
-function startBattle(party,id,lvl){
+function startBattle(party,id,lvl,opt){
+  opt=opt||{};
   if(id==='climb'){newRun('climb',party,lvl);run.stage='climb';enterRoom(firstRoom(party[0]));return;}
-  newRun('battle',party,lvl);run.stage=id;run.roomNo=id==='boss'?6:2;enterRoom(id);
+  newRun('battle',party,opt.practice?lvl:0);run.stage=id;run.opt=opt;run.practice=!!opt.practice;run.tier=opt.tier||1;run.diff=opt.diff||0;run.roomNo=id==='boss'?6:2;enterRoom(id);
 }
 function showBattleResult(ok){
   state='panel';
   const lost=ok==='died'||ok===false;
-  const party=run.party.slice(),stageId=run.stage,lvl=run.bless;
+  const party=run.party.slice(),stageId=run.stage,lvl=run.bless,opt=run.opt||{};
   const d=ROOMS[stageId]||{num:'',name:''};
+  const st=stageStars(ok===true),rr2=riftRewards(ok===true);
+  const tierTxt=d.kind==='rift'?' · Tier '+['','I','II','III'][run.tier||1]:stageId==='boss'?' · '+['Normal','Hard','Nightmare'][run.diff|0]:'';
+  const starRow=st?h('div',{class:'mech rw'},h('div',{class:'rwh'},ico('star'),'★'.repeat(st.n)+'☆'.repeat(3-st.n)+'  ·  '+st.time.toFixed(1)+'s (par '+st.par+'s · best '+st.best+'s)'+(st.bonus?'  ·  first-time stars +'+st.bonus+' Stardust':''))):null;
+  const riftRow=rr2?h('div',{class:'mech rw'},rr2.frags?h('div',{class:'rwh'},ico('gem'),rr2.frags.length+' '+(d.el?d.el+' ':'Star ')+'Fragment'+(rr2.frags.length>1?'s':'')+' added to Builds'):null,rr2.xp?h('div',{class:'rwh'},ico('memory'),'Memories +'+rr2.xp+' each (wave reward)'):null,rr2.dust?h('div',{class:'rwh'},ico('star'),'+'+rr2.dust+' Stardust from sparks'):null):null;
+  const wk=run.weekly?h('p',{class:'serpent'},'Weekly reward: a Star-born Fragment for beating Horaios on '+['Normal','Hard','Nightmare'][run.diff|0]+' this week.'):null;
   openOverlay(h('div',{class:'form'},
-    formHead('Battle report',d.num+' · '+(d.place||d.name)),
+    formHead(run.practice?'Practice report':'Battle report',d.num+' · '+(d.name&&d.kind==='rift'?d.name:(d.place||d.name))+tierTxt),
     h('div',{class:'stamp '+(lost?'bad':'ok')},ok==='died'?'Recycled':lost?'Denied':'Cleared'),
     h('h2',null,ok==='died'?'The party went down':lost?'Stage failed':'Stage cleared'),
-    stats(),rewardBlock(ok===true),
+    stats(),starRow,riftRow,wk,run.practice?h('p',{class:'serpent'},'Practice: no rewards.'):rewardBlock(ok===true),
     h('div',{class:'row'},
-      h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>{startBattle(party,stageId,lvl);}},'Retry'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>{showBattleMenu(party);}},'Stages'),
+      h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>{startBattle(party,stageId,lvl,opt);}},'Retry'),
+      h('button',{class:'btn ghost',type:'button',onclick:()=>{showBattleMenu(party,run.practice?'practice':ROOMS[stageId]&&ROOMS[stageId].kind==='rift'?'rifts':stageId==='boss'?'boss':/^trial/.test(stageId)?'trials':'rifts');}},'Stages'),
       h('button',{class:'btn ghost',type:'button',onclick:()=>{showPartySelect('battle');}},'Party'),
       buildsBtn(goHome),h('button',{class:'btn ghost',type:'button',onclick:()=>{goHome();}},'Home'))));
 }
@@ -4519,7 +4674,7 @@ function guidePage(tab){
   if(tab==='runs')return [h('h2',null,'Modes and runs'),
     h('div',{class:'gcards'},
       gcard('book','Story','Chapter 1 · The Minute Meridian Held Its Breath. About 40 minutes, the cast grows to eight, saved at every scene. Missions give Memories and Stardust.'),
-      gcard('atk','Battle','Pick any 3 characters and jump straight into any district, Trial or the boss. Good for practice and farming.'),
+      gcard('atk','Battle','Pick any 3 characters. Rifts drop one kind of reward each (Fire, Water, Air or Earth Fragments, Memories or Stardust) in 3 tiers, with stars for clearing fast without anyone going down. Horaios has Normal, Hard and Nightmare. Practice lets you try anything without rewards.'),
       gcard('door','Doors','After a fight, choose where to go next. A full climb is 6 stops, and the last one is the boss.'),
       gcard('star','Planet Blessings','After each district, pick a Blessing. Each one boosts a kind of play: Mars (burning), Mercury (crits), Jupiter (Ultimates), Saturn (shields), Venus (healing), Uranus (switching) or Neptune (debuffs and summons). They last until the end of the climb.'),
       gcard('sun','Houses','Each district is a House with its own rule: faster enemies, splitting enemies, fog, a deadline… Read the rule when you enter.'),
@@ -4911,6 +5066,9 @@ function drawAlly(a){
 
 // ═══════════════════════════════════════════ art: enemies + boss
 function drawEnemy(e){
+  if(e.core&&!e.dead&&e.spawnT<=0){const c=ctx,k=clamp(e.coreT/6,0,1);lightPool(c,e.x,e.y,34,'#9A7BFF',0.4);c.fillStyle='#24160C';c.beginPath();c.moveTo(e.x,e.y-14);c.lineTo(e.x+10,e.y);c.lineTo(e.x,e.y+12);c.lineTo(e.x-10,e.y);c.closePath();c.fill();
+    c.fillStyle=e.flash>0?'#fff':'#B49CFF';c.beginPath();c.moveTo(e.x,e.y-12);c.lineTo(e.x+8,e.y);c.lineTo(e.x,e.y+10);c.lineTo(e.x-8,e.y);c.closePath();c.fill();
+    c.strokeStyle=alpha(C.danger,0.9);c.lineWidth=2.5;c.beginPath();c.arc(e.x,e.y,18,-Math.PI/2,-Math.PI/2+TAU*k);c.stroke();return;}
   if(e.cass&&!e.dead&&e.spawnT<=0){drawCassFoe(e);return;}
   if(e.dead||e.spawnT>0){drawEnemyBody(e);return;}
   const c=ctx,k=clamp((e.hitT||0)/0.14,0,1);
@@ -5061,6 +5219,7 @@ function drawBoss(){
   if(b.phase>=3){c.strokeStyle=alpha(C.danger,0.8);c.lineWidth=1.5;c.beginPath();c.moveTo(-6,-38);c.lineTo(-2,-26);c.lineTo(-9,-18);c.moveTo(18,-30);c.lineTo(10,-20);c.lineTo(14,-12);c.stroke();}
   c.strokeStyle=b.pat===2?'#1B1A2E':C.paper;c.lineWidth=2.5;c.beginPath();c.moveTo(-14,-12);c.lineTo(-5,-12);c.moveTo(5,-12);c.lineTo(14,-12);c.stroke();
   c.restore();
+  if(b.fsh>0){c.strokeStyle=alpha('#D8D2C4',0.75+0.2*Math.sin(T*6));c.lineWidth=4;circ(c,b.x,b.y-10,b.r+16);c.stroke();c.fillStyle='rgba(0,0,0,0.6)';c.fillRect(b.x-40,b.y-b.r-34,80,6);c.fillStyle='#D8D2C4';c.fillRect(b.x-39,b.y-b.r-33,78*b.fsh/b.fshMax,4);}
   if(b.anaT>0){c.strokeStyle=alpha(C.mercury,0.8);c.lineWidth=1.5;c.setLineDash([4,4]);circ(c,b.x,b.y-10,b.r+12);c.stroke();c.setLineDash([]);}
   drawStatusMarks(b,b.r+16);
 }
@@ -5449,6 +5608,7 @@ function render(){
 }
 function drawWorld(){
   const c=ctx;
+  if(room&&room.def.kind==='rift')drawRift(c);
   if(room.spot){const s=room.spot;lightPool(c,s.x,s.y,s.r,C.gold,0.35);c.strokeStyle=alpha(C.gold,0.5);c.lineWidth=1.5;c.setLineDash([6,5]);circ(c,s.x,s.y,s.r);c.stroke();c.setLineDash([]);}
   for(const z of zones){const k=clamp(z.t/z.max,0,1),fa=Math.min(1,z.t*3)*(vol.fxLow?0.45:1);
     if(z.kind==='rain'){c.fillStyle=alpha(C.fire,0.08*fa);circ(c,z.x,z.y,z.r);c.fill();c.strokeStyle=alpha(C.fire,0.5*fa);c.lineWidth=1.5;c.setLineDash([5,5]);circ(c,z.x,z.y,z.r);c.stroke();c.setLineDash([]);
@@ -5539,6 +5699,7 @@ function drawHUD(){
   if(p.lastSkill&&T-p.lastSkillT<=4){const other=p.lastSkill==='sun'?'moon':'sun';lines.push([C.gold,p.ch.aspect.toUpperCase()+' OPEN: cast '+p.ch.kit[other].name+' ('+(4-(T-p.lastSkillT)).toFixed(1)+'s)']);}
   if(p.swift>0)lines.push([C.mercury,'SWIFTNESS: next basic +'+Math.round(p.swift*100)+'%']);
   if(room.spot&&dist(p,room.spot)<room.spot.r)lines.push([C.gold,'IN THE SPOTLIGHT · x2 DAMAGE']);
+  if(room.def.kind==='rift'){lines.push([C.gold,riftSub()]);lines.push([C.ash,'Today: '+riftMod().t]);}
   const maxLines=Math.max(2,Math.floor((ports[0].y-ports[0].r-8-ly)/15)+1);
   for(const [col,txt] of lines.slice(0,maxLines)){ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(x-3,ly-7,ctx.measureText(txt).width+6,14);ctx.fillStyle=col;ctx.fillText(txt,x,ly);ly+=15;}
   const d=room.def;ctx.textAlign='center';
@@ -5669,12 +5830,12 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf={bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf={room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
     boss:boss&&{hp:Math.round(boss.hp),pat:boss.pat},bl:run&&run.bl,overlay:!overlay.hidden&&overlay.textContent.slice(0,160)}),
-  god:()=>{for(const m of team.members)m.def=1;}, auto:v=>{autoTest=v;}, battle:(party,id,l)=>startBattle(party,id,l||0), enter:id=>enterRoom(id),
+  god:()=>{for(const m of team.members)m.def=1;}, auto:v=>{autoTest=v;}, battle:(party,id,l,o)=>startBattle(party,id,l||0,o), enter:id=>enterRoom(id),
   clearRoom:()=>{for(const e of enemies)if(!e.dead)killEnemy(e);if(room){room.spawned=room.budget;room.collected=12;room.t=Math.max(room.t,40);if(room.champ)killEnemy(room.champ);}},
   hitBoss:d=>hitBoss(d), pn:v=>{team.pn=v;}, chest:()=>{spawnChest();const c=chests[chests.length-1];c.x=player.x+60;c.y=player.y;return c;}, loot:()=>loots.length, pnAll:()=>team.members.map(m=>Math.round(m.pn||0)), spawn:(type,x,y)=>{const e=makeEnemy(type,x,y,{elite:null});e.spawnT=0;enemies.push(e);return e;},
   ens:()=>enemies.filter(e=>!e.dead).map(e=>({t:e.type,x:Math.round(e.x),y:Math.round(e.y),d:Math.round(dist(e,player))})), clearEnemies:()=>{enemies=[];if(room){room.spawned=999;room.budget=999;}}, dbg:()=>({atkDown:atk.down,atkT:+atk.t.toFixed(2),tapBuf:+player.tapBuf.toFixed(2),atkCd:+player.atkCd.toFixed(2),step:player.step,shots:shots.length,useMouse,swings:swings.length,overlay:!overlay.hidden,paused}), act:a=>{actions.push(a);}, swap:i=>swapTo(i), tap:()=>KITS[player.id].tap(player), hold:()=>KITS[player.id].hold(player),
