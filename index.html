@@ -952,15 +952,21 @@ const ASPECTS=[['Conjunction',0,0.30],['Sextile',60,0.25],['Square',90,0.20],['T
 const ROLE_W={dps:{hp:0.03,atk:0.05},burst:{hp:0.035,atk:0.045},sub:{hp:0.035,atk:0.04},shield:{hp:0.05,atk:0.02},heal:{hp:0.045,atk:0.025}};
 const MAX_LVL=20,xpNeed=l=>80+l*60;
 const MILESTONES=[[5,'Entrance recharges in 6s and hits 30% harder'],[10,'Sun skill cooldown −15%'],[15,'Moon skill cooldown −15%'],[20,'True memory: +10% HP, ATK and DEF']];
+let saveWarn='';
 function loadSave(){
-  let s=null;try{s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');}catch(_){}
-  if(!s||typeof s!=='object'||!s.chars)s={chars:{},frags:[],dust:0,nextId:1};
+  let raw=null,s=null;try{raw=localStorage.getItem(SAVE_KEY);}catch(_){saveWarn='This browser blocks saving. Progress will be lost when you close the page.';}
+  if(raw){try{s=JSON.parse(raw);}catch(_){s=null;}
+    if(!s||typeof s!=='object'||!s.chars||typeof s.chars!=='object'){
+      try{localStorage.setItem(SAVE_KEY+'-broken-'+Date.now(),raw);}catch(_){}
+      saveWarn='Your save could not be read, so a new one was started. A copy of the old one was kept on this device.';s=null;}}
+  if(!s)s={chars:{},frags:[],dust:0,nextId:1};
+  s.v=1;
   s.frags=Array.isArray(s.frags)?s.frags:[];s.dust=s.dust|0;s.nextId=s.nextId||1;
   for(const id of CH_ORDER)if(!s.chars[id])s.chars[id]={xp:0,lvl:1,slots:{sun:null,moon:null,rising:null}};
   return s;
 }
 let save=loadSave();
-function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(_){}}
+function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(_){if(!saveWarn){saveWarn='Saving failed (storage full or blocked). Use Builds → Backup to keep a code of your progress.';}}}
 // Story checkpoint: written every time you reach the door choice between districts
 function storyCheckpoint(){
   if(!run||run.mode!=='story')return;
@@ -1096,7 +1102,7 @@ const KIT_INFO={
   theo:{tldr:'The inventor. Air pistol that aims itself, bursts that hit 3 enemies, and a wind turret that keeps working after you switch out.',
     entrance:['Fan drone 8s'],basic:['100% ATK, auto-aim','Hold: 150% ×3 enemies'],sun:['Turret 12s','1 shot/s, short range'],moon:['+20% damage & speed','Machines ×2 fire rate'],ult:['Walking machine 12s']},
   lucan:{tldr:'Long-range damage built around the charged Lance. Slow, heavy needles; pin enemies, then pierce the whole line.',
-    entrance:['Stone fan 90% ×5','Shield 8%'],basic:['160% ATK, slow','Hold: 440% pierce'],sun:['6 needles 110% each','Pin 3s'],moon:['Shield 12%','+30% crit'],ult:['Petrify 3s','Shatter 600%']},
+    entrance:['Stone fan 90% ×5','Shield 8%'],basic:['160% ATK, slow','Hold: 320% pierce'],sun:['6 needles 110% each','Pin 3s'],moon:['Shield 12%','+30% crit'],ult:['Petrify 3s','Shatter 600%']},
   cass:{tldr:'Burn damage. Sets everything on fire; burning enemies take more damage and allies take less. Small heals.',
     entrance:['Fire slam 140%','Burns'],basic:['90% ATK, burns','Hold: spin 150%, long burn'],sun:['Fire area 6s'],moon:['Heal 12%','Burning foes take 200%'],ult:['Fire wave 300%','Team heal 15% once']},
   dess:{tldr:'Pure support. Weak attacks, but she makes the whole team hit harder, crit harder and charge Ultimates faster.',
@@ -1840,7 +1846,7 @@ const KITS={
     sunUp:p=>0, moonUp:p=>{let m=0;for(const z of zones)if(z.kind==='soak')m=Math.max(m,z.t);return m;}},
   // ───────── Bram: light damage, Stagger/stun, walls, shields
   bram:{chargeT:0.55,
-    tap(p){const a=aimDir(130);faceTo(a);meleeArc(a,54,0.95,p.atk*1.0,{basic:true,knock:300,stag:34*starFx(p).basicMul,pn:1.2,col:C.earth,src:p});p.atkCd=1/effAspd(p);sfx('thud');},
+    tap(p){const a=aimDir(130);faceTo(a);meleeArc(a,54,0.95,p.atk*1.0,{basic:true,knock:90,stag:34*starFx(p).basicMul,pn:1.2,col:C.earth,src:p});p.atkCd=1/effAspd(p);sfx('thud');},
     hold(p){stunWave(p.x,p.y,85,1.1,40,200,p,p.atk*1.4);burstParts(p.x,p.y,C.earth,18,150);shake(3,0.1);p.atkCd=0.5;sfx('stamp');},
     sun(p,combo){const g=spawnGuard(p.x+p.fx*60,p.y+p.fy*60,true,(combo?12:8)*starFx(p).sunMul);g.wall=true;g.hp=g.max=240*starFx(p).sunMul;g.fort=combo;sfx('thud');shake(3,0.1);},
     moon(p,combo){addShield(p.maxHp*0.35*starFx(p).shieldMul,combo?15:10,true);ring(player.x,player.y,50,C.gold,0.5);sfx('block');},
@@ -1878,9 +1884,9 @@ const KITS={
     status(p){const l=[];const n=allies.filter(a=>a.kind==='turret').length;if(n)l.push(['#CFEAFF','TURRET · +20% DMG']);if(team.overclock>0)l.push(['#CFEAFF','OVERCLOCK '+team.overclock.toFixed(1)+'s']);return l;},
     sunUp:p=>{let m=0;for(const a of allies)if(a.kind==='turret')m=Math.max(m,a.life);return m;}, moonUp:p=>team.overclock},
   // ───────── Lucan: long-range shards, pins, Vow with Kairos
-  lucan:{chargeT:0.6,
+  lucan:{chargeT:0.9,
     tap(p){const a=aimDir(600);faceTo(a);shard(p,Math.atan2(a.y,a.x),{dmg:p.atk*1.6,mult:1+consumeSwift(),basic:true,spd:820,life:0.95});p.atkCd=1/effAspd(p);sfx('dart');},
-    hold(p){const t=nearestTarget(p.x,p.y,660,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(660);faceTo(a);shard(p,Math.atan2(a.y,a.x),{dmg:p.atk*4.4,mult:1+consumeSwift(),basic:true,pierce:true,big:true,r:8,spd:1100,life:1,pn:2});p.atkCd=0.45;sfx('laser');shake(2,0.06);},
+    hold(p){const t=nearestTarget(p.x,p.y,660,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(660);faceTo(a);shard(p,Math.atan2(a.y,a.x),{dmg:p.atk*3.2,mult:1+consumeSwift(),basic:true,pierce:true,big:true,r:8,spd:1100,life:1,pn:2});p.atkCd=0.6;sfx('laser');shake(2,0.06);},
     sun(p,combo){const a=aimDir(560),b=Math.atan2(a.y,a.x),n=6;for(let i=0;i<n;i++)shard(p,b+(i-(n-1)/2)*0.11,{dmg:p.atk*1.1,skill:'sun',stun:3,pin:true});sfx('slash');if(combo)p.cdmgT=6;},
     moon(p,combo){addShield(p.maxHp*0.12*starFx(p).shieldMul,6,false);p.critT=6;if(combo)p.cdmgT=6;sfx('block');},
     ult(p){const at=aimPoint(p,500);zones.push({kind:'ice',x:at.x,y:at.y,r:140,t:3,max:3,src:p});sfx('break');shake(4,0.15);},
@@ -2287,6 +2293,7 @@ function resetField(){
   if(player.down){const j=team.members.findIndex(m=>!m.down);if(j>=0){team.ai=j;player=team.members[j];}}
   for(const m of team.members){m.dash=null;m.dodgeT=0;m.counterT=0;m.scales2=0;m.marsT=null;m.marsS=0;m.swift=0;m.ultT=0;m.lastSkill=null;m.empower=0;}
   const p=player;p.x=W/2;p.y=H*0.62;p.iframe=0.8;
+  for(const k of ['killzone','overclock','atkBuffT','atkBuffV','stand','standT','stim','dessDmgT','cdmgT','crT','bramBlock'])team[k]=0;
   team.shield=null;team.timeStop=0;team.tailwind=0;team.benedT=0;team.firstClay=0;team.starBoost=0;team.reflect=0;team.overheal=0;team.cleanseT=0;team.cdFast=0;
   joy.id=null;actions.length=0;atk.down=false;atk.released=false;atk.t=0;
 }
@@ -4085,7 +4092,8 @@ function goHome(){
       h('button',{class:'btn outline'+(loadPrefs().guideSeen?'':' guide-new'),type:'button',onclick:()=>{ensureAudio();showGuide(goHome);}},'Guide')),
     h('p',{class:'hint'},'New: the full Chapter 1 with a cast of 8, about 40 minutes, saved at every scene. Battle mode: pick any party of 3 and jump into any district, trial, or the boss.'),
     h('p',{class:'hint'},isTouch?'Left thumb moves. Portraits on the left switch characters. Right thumb: ATTACK (tap or hold), DODGE, SUN, MOON, ULT.':'WASD move · J or click attack (hold to charge) · Space dodge · Q Sun · E Moon · R Ultimate · 1 2 3 switch · Esc pause'),
-    h('p',{class:'hint'},'Sound plays only if your iPhone’s silent switch is off.'));
+    h('p',{class:'hint'},'Sound plays only if your iPhone’s silent switch is off.'),
+    saveWarn?h('p',{class:'hint',role:'alert',style:'color:#FFB27A;font-weight:700'},'⚠ '+saveWarn):null);
   openOverlay(card,'mode-title');
 }
 function portrait(id,size,dim){
