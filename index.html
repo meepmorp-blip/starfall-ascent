@@ -893,8 +893,8 @@ const CHARS={
     rulers:{saturn:'Capricorn Sun',mars:'Scorpio Moon',jupiter:'Sagittarius Rising'},
     mech:'Spotted: marked enemies take +15% damage from everyone. On the bench, she keeps sniping.',
     kit:{
-      entrance:{name:'Overwatch Drop',el:'Fire',desc:'Fires one piercing shot as she lands. Everything it hits is Spotted.'},
-      basic:{name:'Rifle',tap:'Slow, heavy single shots.',hold:'Headshot: a charged shot that pierces the whole line and always crits on Spotted enemies.'},
+      entrance:{name:'Overwatch Drop',el:'Fire',desc:'Fires a piercing shot at each of up to 3 nearby enemies as she lands (aims itself). Everything hit is Spotted.'},
+      basic:{name:'Rifle',tap:'Slow, heavy shots that aim themselves. If you’re moving, she skips a short step in that direction with each shot.',hold:'Headshot: a charged piercing shot that aims at the nearest enemy and always crits on Spotted enemies.'},
       sun:{name:'Flare',short:'FLARE',el:'Earth',cd:9,dur:0,desc:'A flare round that Spots every enemy in a wide area. Spotted enemies take 15% more damage from everyone.'},
       moon:{name:'Soaking Round',short:'SOAK',el:'Water',cd:11,dur:5,desc:'Fires a water shell and rolls back. The splash leaves a pool for 5s: enemies in it are slowed and take 10% more damage.'},
       combo:{name:'Sextile · Crossfire',desc:'Flare then Soak: the pool Spots too. Soak then Flare: the flare explodes for damage.'},
@@ -1136,7 +1136,7 @@ const KIT_INFO={
   kairos:{tldr:'Main damage. Close range, a 3-hit combo, two dashes, and Ultimates full of finishers. His hits slow Vices and make them take more damage from everyone.',
     entrance:['Copies an Entrance ×120%'],basic:['100% ×2, 3rd: 200% spin','Hold: jump + 220% spin'],sun:['Dash 300% ×2','Slow trail'],moon:['Pulse 120% · ATK +10%','Counter 320%'],ult:['Stops time 3s','10 finishers · +35% dmg']},
   ines:{tldr:'Sniper sub-DPS. Spot enemies so the whole team hits 15% harder, soak them to slow them, then switch out: she keeps sniping.',
-    entrance:['Piercing shot 200%','Spots'],basic:['160% ATK per shot','Hold: 320% pierce'],sun:['Spots an area (+15%)','Combo: explosion 250%'],moon:['Water pool 5s','Slow · +10% damage taken'],ult:['3s: 240% shot every 0.8s','Works off-field']},
+    entrance:['Up to 3 piercing shots 160%','Spots'],basic:['160% ATK per shot','Hold: 320% pierce'],sun:['Spots an area (+15%)','Combo: explosion 250%'],moon:['Water pool 5s','Slow · +10% damage taken'],ult:['3s: 240% shot every 0.8s','Works off-field']},
   bram:{tldr:'The wall. Light damage, big shields, knockback and Stagger. Even on the bench he stumbles into enemies every 4s.',
     entrance:['Big knockback','Heavy Stagger'],basic:['Light damage','Stagger 34 per hit','Hold: stun 1.1s'],sun:['Wall blocks bullets','Draws enemies'],moon:['Shield 35% of Bram’s HP'],ult:['Dome 6s','Pushes out + stuns']},
   noemi:{tldr:'The doctor. Heals, boosts attack, does little damage. Hold to heal whoever is lowest, even on the bench.',
@@ -1828,8 +1828,10 @@ const KITS={
     sunUp:p=>p.ripWin||0, moonUp:p=>p.counterT},
   // ───────── Ines: sniper, Spotted, off-field overwatch
   ines:{chargeT:0.6,
-    tap(p){const a=aimDir(560);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*1.6,mult:1+consumeSwift(),basic:true,spd:950,r:4,life:0.75,kind:'arrow',big:true,src:p,pn:0.9,col:'#FFD38A',knock:110}));p.atkCd=1/effAspd(p);sfx('heavy');shake(1.5,0.04);},
-    hold(p){const a=aimDir(600);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*3.2,mult:1+consumeSwift(),basic:true,spd:1100,r:6,life:0.8,pierce:true,big:true,kind:'arrow',src:p,pn:2,col:'#FFE6A3',knock:200,critMarked:true}));p.atkCd=0.5;sfx('laser');shake(3,0.08);},
+    tap(p){const R=560;const t=nearestTarget(p.x,p.y,R,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(R);faceTo(a);
+      {const v=inputVec(),m=Math.hypot(v.x,v.y);if(m>0.2){p.dodgeT=Math.max(p.dodgeT,0.12);p.dvx=v.x/m*300;p.dvy=v.y/m*300;}}
+      shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*1.6,mult:1+consumeSwift(),basic:true,spd:950,r:4,life:0.75,kind:'arrow',big:true,src:p,pn:0.9,col:'#FFD38A',knock:110}));p.atkCd=1/effAspd(p);sfx('heavy');shake(1.5,0.04);},
+    hold(p){const R=600;const t=nearestTarget(p.x,p.y,R,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(R);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*3.2,mult:1+consumeSwift(),basic:true,spd:1100,r:6,life:0.8,pierce:true,big:true,kind:'arrow',src:p,pn:2,col:'#FFE6A3',knock:200,critMarked:true}));p.atkCd=0.5;sfx('laser');shake(3,0.08);},
     sun(p,combo){const at=aimPoint(p,420);let n=0;for(const t of allTargets())if(Math.hypot(t.x-at.x,t.y-at.y)<130){t.markT=8*debuffK();n++;}
       ring(at.x,at.y,130,C.gold,0.6);burstParts(at.x,at.y,C.gold,20,160);
       if(combo){radial(at.x,at.y,120,p.atk*2.5,{skill:'sun',col:C.gold,src:p});shake(4,0.12);}
@@ -1838,7 +1840,9 @@ const KITS={
       burstParts(at.x,at.y,C.water,22,170);
       const bx=-p.fx,by=-p.fy;p.dodgeT=0.18;p.dvx=bx*420;p.dvy=by*420;p.iframe=Math.max(p.iframe,0.3);sfx('splash');},
     ult(p){team.killzone=3+starFx(p).ultDur;for(const m of team.members)if(m.id==='ines')m.kzT=0;sfx('ult');},
-    entrance(p,pw){const a=aimDir(600);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*2*pw,spd:1000,pierce:true,mark:true,big:true,r:6,kind:'arrow',src:p,pn:0.5,col:'#FFD38A'}));sfx('heavy');},
+    entrance(p,pw){const ts=allTargets().filter(t=>Math.hypot(t.x-p.x,t.y-p.y)<420).sort((m,n)=>Math.hypot(m.x-p.x,m.y-p.y)-Math.hypot(n.x-p.x,n.y-p.y)).slice(0,3);
+      const angs=ts.length?ts.map(t=>Math.atan2(t.y-(p.y-8),t.x-p.x)):[Math.atan2(aimDir(600).y,aimDir(600).x)];
+      for(const ang of angs)shots.push(mkShot(p.x,p.y-8,ang,{dmg:p.atk*1.6*pw,spd:1000,pierce:true,mark:true,big:true,r:6,kind:'arrow',src:p,pn:0.5,col:'#FFD38A'}));sfx('heavy');},
     update(p,dt){if(team.killzone>0&&!p.down){p.kzT=(p.kzT||0)-dt;if(p.kzT<=0){p.kzT=0.8;let best=null;for(const t of allTargets())if(!best||t.hp>best.hp)best=t;
       if(best){playerHit(best,p.atk*2.4*starFx(p).ultMul,{src:p,col:'#FFD38A',mark:true,skill:'ult',knock:{x:0,y:-1,f:80}});beams.push({a:{x:best.x+(best.x<W/2?-260:260),y:AY0+6},b:best,life:0.25,col:'#FFE6A3'});sfx('heavy');shake(2,0.05);}}}},
     bench(m,dt){m.owT=(m.owT??1.5)-dt;if(m.owT>0)return;m.owT=2;
