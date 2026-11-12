@@ -443,6 +443,7 @@ body.playing #nl-badge-frame,body.playing [id^='nl-badge']{display:none!importan
 .cut-cap{position:absolute;left:0;right:0;top:0;padding:8px 14px 18px;font:italic 600 12px/1.35 var(--f-form);color:#F6EBD2;background:linear-gradient(rgba(0,0,0,.75),transparent);text-align:center;pointer-events:none}
 .cut-cap:empty{display:none}
 .cut-dlg{width:100%;max-width:700px;box-sizing:border-box}
+.cut-btns{display:flex;gap:6px;align-items:center}.skip.on{background:#C9A25A;color:#24160C;border-color:#C9A25A}
 .cut-ch{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;max-width:min(62%,330px);z-index:3}
 .cut-ch[hidden]{display:none}
 .cchoice{display:flex;align-items:center;gap:8px;text-align:left;font:700 13px/1.25 var(--f-form);color:#F6EBD2;background:rgba(24,18,12,0.88);border:2px solid #C9A25A;border-radius:22px;padding:8px 14px 8px 8px;cursor:pointer;box-shadow:0 2px 0 #2B2219}
@@ -1254,7 +1255,7 @@ const ROOMS={
     ruleText:'Collect 12 sparks before they fade. Miss 5 and the errand fails.'},
   trialMars:{id:'trialMars',kind:'trial',planet:'mars',num:'Trial of Mars',name:'Single Combat',place:'Vigil Arena',theme:'ring',
     ruleText:'Destroy the Champion within 60 seconds. If you stop hitting it, it recovers.'},
-  lethe:{id:'lethe',kind:'lethe',num:'Spring',name:'Lethe',ruleText:'Restore and revive the whole team. Forget one random Blessing level.'},
+  lethe:{id:'lethe',kind:'lethe',num:'Fountain',name:'Mercy Fountain',ruleText:'Restore and revive the whole team. One random Blessing level fades.'},
   boss:{id:'boss',kind:'boss',num:'Archon Gate',name:'Horaios',place:'Registry Hall',theme:'lobby',ruleText:'Kosmokrator of the Moon. Intake Window 1.'},
 };
 ROOMS.training={id:'training',kind:'training',num:'Training',name:'Vigil Yard drills',place:'Vigil Yard',theme:'yard',rule:'none',ruleText:'Ines runs you through the basics. You cannot be hurt here.'};
@@ -1376,7 +1377,7 @@ const STORY={
 };
 const STORY_PARTY=['kairos','ines','bram'];
 const QUIPS=['The Kosmokrators count seven planets. Funny. I count more.','Every door here was installed by someone who wanted you to go through it. Choose anyway.',
-  'Lethe tastes like nothing. That’s the trick.','Horaios has stamped four billion files. He has never read one.','The Vices aren’t monsters. They’re what people left behind.'];
+  'Mercy tastes like nothing. That’s the trick.','Horaios has stamped four billion files. He has never read one.','The Vices aren’t monsters. They’re what people left behind.'];
 const VICE_INFO={
   hothead:['Hothead','Mars · reckless daring','Charger. Flashes red, then rushes in a straight line. Bait it into a wall to stun it.'],
   gossip:['Gossip','Mercury · deceit','Fast biter. Zigzags in, lunges at you, and splits in two when destroyed.'],
@@ -2500,7 +2501,8 @@ function drawCloak(g,x,y,face,t,o){
   g.fillStyle='rgba(191,243,255,0.8)';g.fillRect(2.5,-15.5,1,1);
   g.restore();
 }
-let cut=null;
+let cut=null,cutAuto=!!loadPrefs().cutAuto;
+function leaveStory(){endCut(true);if(typeof sq!=='undefined')sq=null;goHome();}
 function speakerInto(L,who,say,face){
   const s=SPK[L[0]]||SPK.n;
   who.textContent=s.name;who.style.color=`var(--${s.col})`;
@@ -2515,13 +2517,16 @@ function playCutscene(panels,done){
   state='cutscene';
   const cv2=h('canvas',{class:'cut-cv'}),who=h('div',{class:'who'}),say=h('p',{class:'say'}),face=h('div',{class:'face'}),more=h('div',{class:'more'}),cap=h('div',{class:'cut-cap'});
   const skip=h('button',{class:'skip',type:'button',onclick:e=>{e.stopPropagation();endCut();}},'Skip scene'),chs=h('div',{class:'cut-ch'});chs.hidden=true;
-  const box=h('div',{class:'dlg cut-dlg'},h('div',{class:'dlg-top'},who,skip),h('div',{class:'dlg-body'},face,say),more);
+  const autoB=h('button',{class:'skip'+(cutAuto?' on':''),type:'button','aria-pressed':String(cutAuto),onclick:e=>{e.stopPropagation();cutAuto=!cutAuto;savePrefs({cutAuto});autoB.classList.toggle('on',cutAuto);autoB.setAttribute('aria-pressed',String(cutAuto));autoB.textContent=cutAuto?'Auto ▶':'Auto';if(cut)cut.wait=0;sfx('select');}},cutAuto?'Auto ▶':'Auto');
+  const menuB=h('button',{class:'skip',type:'button',onclick:e=>{e.stopPropagation();if(menuB.dataset.arm){leaveStory();return;}menuB.dataset.arm='1';menuB.textContent='Tap again: main menu';sfx('nope');setTimeout(()=>{delete menuB.dataset.arm;menuB.textContent='Menu';},2600);}},'Menu');
+  const box=h('div',{class:'dlg cut-dlg'},h('div',{class:'dlg-top'},who,h('div',{class:'cut-btns'},autoB,menuB,skip)),h('div',{class:'dlg-body'},face,say),more);
   const wrap=h('div',{class:'cut-wrap',onclick:cutAdvance},h('div',{class:'cut-stage'},cv2,cap,chs),box);
   openOverlay(wrap,'mode-cut');
   cut={panels,pi:-1,li:0,done,chs,choice:null,lines:[],cv:cv2,who,say,face,more,cap,box,skip,t:0,n:0,full:'',raf:0,last:performance.now()};
   cutNextPanel();
   const loop=now=>{if(!cut)return;const dt=Math.min(0.1,(now-cut.last)/1000);cut.last=now;cut.t+=dt;
     if(cut.n<cut.full.length){const before=Math.floor(cut.n);cut.n=Math.min(cut.full.length,cut.n+dt*48);if(Math.floor(cut.n)!==before){cut.say.textContent=cut.full.slice(0,Math.floor(cut.n));if(Math.floor(cut.n)%3===0)sfx('tick');}}
+    if(cutAuto&&!cut.choice&&cut.n>=cut.full.length){cut.wait=(cut.wait||0)+dt;const need=cut.full?Math.min(7,1.2+cut.full.length*0.045):1.6;if(cut.wait>=need){cut.wait=0;cutAdvance();if(!cut)return;}}
     drawCutPanel();cut.raf=requestAnimationFrame(loop);};
   cut.raf=requestAnimationFrame(loop);
 }
@@ -2530,6 +2535,7 @@ function cutNextPanel(){
   const P=cut.panels[cut.pi];cut.t=0;cut.li=0;cut.cap.textContent=P.cap||'';cut.lines=(P.lines||[]).slice();
   {const mu=P.mus||(P.tint==='frozen'?'stopped':(cut.pi===0?'warm':null));if(mu)playMusic(mu);}
   if(P.fx==='flash'||P.fx==='snap')sfx('ult');else if(P.fx==='shake')sfx('boom');else sfx('page');
+  if(P.tint==='frozen')setTimeout(()=>{if(cut&&cut.panels[cut.pi]===P)sfx('clock');},350);
   cutLine();
 }
 function cutLine(){
@@ -2537,6 +2543,7 @@ function cutLine(){
   const L=cut.lines[cut.li];
   cut.box.hidden=!L;cut.chs.hidden=true;cut.choice=null;
   if(L&&L[0]==='?'){cutChoice(L);return;}
+  cut.wait=0;
   if(!L){cut.full='';cut.n=0;cut.more.textContent='';return;}
   speakerInto(L,cut.who,cut.say,cut.face);
   cut.full=L[1];cut.n=reduceMotion?L[1].length:0;cut.say.textContent=reduceMotion?L[1]:'';
@@ -2592,7 +2599,7 @@ function drawCutPanel(){
     else if(id==='beam'){g.save();g.translate(X,Y);g.rotate(oo.rot||0.25);g.fillStyle=fz?'#7E8BA6':'#8A6A4A';g.fillRect(-46,-5,92,10);g.fillStyle=fz?'#5E6A82':'#5A4030';g.fillRect(-46,-5,92,2);g.fillRect(-46,3,92,2);g.restore();}
     else if(CHARS[id]){const glow=oo.glow;if(glow){const gl=g.createRadialGradient(X,Y-6,2,X,Y-6,40);gl.addColorStop(0,'rgba(191,243,255,0.7)');gl.addColorStop(1,'rgba(191,243,255,0)');g.fillStyle=gl;g.fillRect(X-40,Y-46,80,80);}
       if(oo.grey){g.save();if('filter' in g)g.filter='grayscale(1) brightness(1.15)';}
-      drawChar(g,id,X,Y,{face:face||1,scale:oo.scale||1.6,t:ct,moving:!!oo.moving&&!fz,fall:oo.fall,lunge:oo.lunge,hurt:oo.hurt,alpha:oo.grey&&!('filter' in g)?0.55:1});
+      drawChar(g,id,X,Y,{face:face||1,scale:oo.scale||1.6,t:ct,unarmed:!!oo.unarmed,moving:!!oo.moving&&!fz,fall:oo.fall,lunge:oo.lunge,hurt:oo.hurt,alpha:oo.grey&&!('filter' in g)?0.55:1});
       if(oo.grey)g.restore();}}
   if(P.fire&&!fz){const gr=g.createLinearGradient(0,H,0,H*0.25);gr.addColorStop(0,'rgba(255,90,30,0.32)');gr.addColorStop(1,'rgba(255,90,30,0)');g.fillStyle=gr;g.fillRect(0,0,W,H);
     for(let i=0;i<46;i++){const x=(i*131+t*24+Math.sin(t*2+i)*14)%W,y=H-((i*71+t*90)%H);g.fillStyle=i%3?'rgba(255,170,70,0.9)':'rgba(255,230,150,0.9)';g.fillRect(x,y,2,2);}}
@@ -3332,7 +3339,7 @@ const MATTEO='#7A6A5A',TESSA='#C96F4A',COAT='#2A2A3A',CLERK='#4A4A5A',MARRC='#E7
 const pn=(bg,cast,lines,o)=>Object.assign({bg,cast,lines},o||{});
 const NIGHT={tint:'night'},FROZEN={tint:'frozen'};
 const CAMPB='roof';
-const KID={scale:1.15};
+const KID={scale:1.15,unarmed:1};
 Object.assign(SPK,{cloak:{name:'The man in the black cloak',col:'ash'},woman:{name:'Woman',col:'paper'},man2:{name:'Man',col:'paper'},soldier:{name:'Garrison soldier',col:'earth'},
   matron:{name:'Sister Agathe',col:'paper'},crane:{name:'Chancellor Augustin Crane',col:'ash'},kidl:{name:'Lucan (age 9)',col:'water',ch:'lucan'},kidk:{name:'Kairos (age 9)',col:'water',ch:'kairos'}});
 const CH1_SEQ=[
@@ -3355,11 +3362,14 @@ const CH1_SEQ=[
       ['n','The clock above the orphanage gate ticks to 11:59.'],
       ['n','And everything stops.'],
       ['n','The rain hangs in the air like glass beads. The fire freezes mid-flicker. Every person in Meridian stops mid-scream.'],
-      ['n','Only the man in the cloak keeps moving.']],{...FROZEN,fire:1,crack:1,fx:'flash',focus:[0.5,0.6]}),
+      ['n','Only the man in the cloak keeps moving.'],
+      ['n','In the silence there is one sound left. Tick. Tick. Tick. Like a clock inside the stopped minute.'],
+      ['n','The bundle in his arms squirms. The baby is awake. Its face scrunches up at the ticking, and it starts to cry.'],
+      ['cloak','I know. It’s loud, isn’t it. I’m sorry.']],{...FROZEN,fire:1,crack:1,fx:'flash',focus:[0.5,0.6]}),
     pn('orphanage',[['cloak',0.46,0.72,1],['baby',0.54,0.76,1]],[
       ['n','He kneels and sets the baby down on the steps, very gently.'],
       ['cloak','I’m sorry. You’ll have to do this part without me.'],
-      ['cloak','Don’t trust the clocks. Don’t drink the water.'],
+      ['cloak','Don’t drink the water.'],
       ['cloak','And this time… finish it.']],{...FROZEN,fire:1,crack:1,focus:[0.5,0.62],zoom:0.15}),
     pn('orphanage',[['cloak',0.46,0.72,1,{fade:1}],['baby',0.54,0.76,1]],[
       ['n','Then he is gone. Not walking away. Just… gone, like a word rubbed out of a page.']],{...FROZEN,fire:1,crack:1,focus:[0.5,0.62]}),
@@ -3373,18 +3383,18 @@ const CH1_SEQ=[
 
   // ───────── SCENE 1: an ordinary Tuesday
   {sc:'Scene 1 · Tuesday Errands',cut:[
-    pn('market',[['kairos',0.42,0.7,1,{moving:1}],['npc',0.62,0.66,-1,{col:MATTEO}]],[
+    pn('market',[['kairos',0.42,0.7,1,{moving:1,unarmed:1}],['npc',0.62,0.66,-1,{col:MATTEO}]],[
       ['th','Tuesday. Three errands, two favors, and if I’m lucky, lunch.'],
       ['th','Fish for the orphanage kitchen. Nails for Matteo’s fence. Mrs. Rosa’s knee medicine, if the apothecary remembers she already paid.'],
       ['th','That’s how I eat, mostly. People need things carried, fixed, found. I do it. They pay me in coins, or bread, or a “thank you, dear,” which is harder to eat.']],{cap:'Twenty years later. The Market Ring.',mus:'market'}),
-    pn('market',[['kairos',0.44,0.72,1],['npc',0.62,0.68,-1,{col:'#5A6A3A',hat:'#3A4A2A'}]],[
+    pn('market',[['kairos',0.44,0.72,1,{unarmed:1}],['npc',0.62,0.68,-1,{col:'#5A6A3A',hat:'#3A4A2A'}]],[
       ['th','And there it is.'],
       ['th','The Sky Seam. A thin pink scratch over the city. It’s been there since I was a kid. Everyone stopped looking at it years ago.'],
       ['th','I didn’t. Last spring it was as long as my thumb, held out at arm’s length. Today it’s my whole hand.'],
       ['guard','Staring at the sky again, Kairos? It’s not going anywhere.'],
       ['kairos','That’s exactly what worries me.'],
       ['guard','Ha. Go do your errands, kid.']],{crack:1,focus:[0.5,0.45],mus:'market'}),
-    pn('market',[['kairos',0.48,0.72,1]],[
+    pn('market',[['kairos',0.48,0.72,1,{unarmed:1}]],[
       ['th','There’s one more thing I don’t tell people.'],
       ['th','Some mornings I wake up with my hand already reaching for something. Like I put it down yesterday and I need to pick it back up.'],
       ['th','I don’t know what it is. I just know I’m not finished with it.'],
@@ -3393,21 +3403,24 @@ const CH1_SEQ=[
       ['th','Anyway. Fish.']],{mus:'market'})]},
   {mission:'market'},
   {cut:[
-    pn('market',[['kairos',0.45,0.7,1],['npc',0.58,0.7,-1,{col:TESSA,small:1}]],[
+    pn('market',[['kairos',0.45,0.7,1,{unarmed:1}],['npc',0.58,0.7,-1,{col:TESSA,small:1}]],[
       ['tessa','Kairos. Why do you help everybody all the time?'],
       ['?',[
         {t:'Honestly? It pays in bread.',f:'c_bread',r:[['tessa','That’s not a real reason.'],['kairos','You’ve never been hungry enough to say that.']]},
         {t:'Somebody has to remember things for them.',f:'c_earnest',r:[['tessa','That sounds tiring.'],['kairos','It is. But it’s less tiring than watching them lose stuff.']]},
         {t:'Who said I’m helping? I’m collecting favors.',f:'c_joke',r:[['tessa','For what?'],['kairos','One day I’ll need a fish, a fence and a free roll at the same time. Then I cash in.'],['tessa','That’s so dumb.'],['kairos','It’s a long-term plan.']]}],'Why DO I help everybody?'],
       ['n','The clock tower above the square chimes nine. Kairos flinches like someone slammed a door next to his ear.'],
-      ['tessa','You always do that. You hate clocks.'],
-      ['kairos','Every time one ticks, it feels like it’s counting down to something.']],{fx:'shake',cap:'9:00 AM.',mus:'warm'}),
+      ['tessa','You always do that when the bells go.'],
+      ['kairos','Just loud. That’s all.'],
+      ['th','It isn’t the bells. It’s the tick under them.'],
+      ['th','When I was little, sometimes the whole world would go quiet. No wind, no voices. Just ticking. Then everything started again like nothing happened.'],
+      ['th','Nobody else ever heard it. Sister Agathe said I had a busy imagination. I stopped telling people.']],{fx:'shake',cap:'9:00 AM.',mus:'warm'}),
     pn('market',[['beam',0.6,0.4,1,{rot:0.6}],['npc',0.62,0.7,-1,{col:TESSA,up:1,small:1}]],[
       ['th','—What?'],
       ['th','The crane over the fruit stalls. The cable snaps. The beam falls. Tessa looks up. Too late.'],
       ['th','Half a second. Then it’s gone. The crane is fine. Nothing happened.'],
       ['th','…Yet.']],{...FROZEN,fx:'flash',cap:'A vision. Half a second of the future.',mus:'tense'}),
-    pn('market',[['kairos',0.45,0.7,1],['npc',0.58,0.7,-1,{col:TESSA,small:1}]],[
+    pn('market',[['kairos',0.45,0.7,1,{unarmed:1}],['npc',0.58,0.7,-1,{col:TESSA,small:1}]],[
       ['kairos','Tessa. Go find your mom. Right now.'],
       ['tessa','Why? You look weird.'],
       ['kairos','Please. Just go.'],
@@ -3416,15 +3429,17 @@ const CH1_SEQ=[
 
   // ───────── SCENE 2: the stopped minute
   {sc:'Scene 2 · The Stopped Minute',cut:[
-    pn('market',[['npc',0.78,0.66,-1,{up:1,col:TESSA,small:1}],['beam',0.78,0.4,1,{rot:0.5}],['kairos',0.45,0.7,1,{moving:1}]],[
+    pn('market',[['npc',0.78,0.66,-1,{up:1,col:TESSA,small:1}],['beam',0.78,0.4,1,{rot:0.5}],['kairos',0.45,0.7,1,{moving:1,unarmed:1}]],[
       ['n','The cable snaps. Exactly like the vision.'],
       ['th','Too far. I’m too far. I’m not going to—']],{fx:'shake',mus:'disaster'}),
-    pn('market',[['npc',0.78,0.66,-1,{up:1,col:TESSA,small:1}],['beam',0.78,0.45,1,{rot:0.5}],['npc',0.3,0.5,1],['npc',0.62,0.75,-1],['kairos',0.5,0.68,1]],[
+    pn('market',[['npc',0.78,0.66,-1,{up:1,col:TESSA,small:1}],['beam',0.78,0.45,1,{rot:0.5}],['npc',0.3,0.5,1],['npc',0.62,0.75,-1],['kairos',0.5,0.68,1,{unarmed:1}]],[
       ['th','…'],
       ['th','It’s quiet. Why is it so quiet?'],
+      ['th','Tick. Tick. Tick.'],
+      ['th','No. Not that sound. Not again. I haven’t heard it since I was a kid.'],
       ['th','The beam is hanging in the air. A pigeon is stuck mid-flap. Nobody is moving. Nobody is breathing.'],
       ['kairos','…Hello? Can anybody hear me?']],{...FROZEN,fx:'flash',focus:[0.6,0.55]}),
-    pn('market',[['kairos',0.5,0.68,1],['voice',0.75,0.45]],[
+    pn('market',[['kairos',0.5,0.68,1,{unarmed:1}],['voice',0.75,0.45]],[
       ['th','A light at the end of the street. A clock, made of light, floating at head height. Its two hands are spinning the wrong way.'],
       ['voice','Breathe. You’re the only one who can, right now.'],
       ['kairos','Did I do this? Who are you?'],
@@ -3434,9 +3449,10 @@ const CH1_SEQ=[
     pn('market',[['kairos',0.5,0.68,1,{glow:1}],['voice',0.68,0.48,1,{scale:1,nohands:1}]],[
       ['th','The clock’s two hands pull loose and fly into mine. They grow into blades. Curved, silver-blue, light as paper.'],
       ['th','The clock face goes on floating. Blank now. No hands.'],
-      ['voice','You hate clocks because you remember what they’re for.'],
-      ['kairos','I don’t remember anything like that.'],
-      ['voice','Not yet. The girl is still under the beam. Go.']],{...FROZEN,fx:'flash',focus:[0.55,0.55]})]},
+      ['voice','You hate that sound. I know. I’m sorry.'],
+      ['kairos','…It was you. When I was little. Every time the world went quiet.'],
+      ['voice','Only when I had to. Every time I hold the minute, the sky tears a little more. So I don’t do it often.'],
+      ['voice','Today I had to. The girl is still under the beam. Go.']],{...FROZEN,fx:'flash',focus:[0.55,0.55]})]},
   {mission:'chase'},
 
   // ───────── SCENE 3: the first fight
@@ -3684,16 +3700,25 @@ const CH1_SEQ=[
     pn('orphanage',[['kairos',0.44,0.72,1,{...KID,moving:1}],['lucan',0.58,0.74,-1,{...KID,fall:1}]],[
       ['n','A lamp tips over. The kitchen curtains catch.'],
       ['kidl','Kairos— the door’s stuck— I can’t—'],
-      ['kidk','Give me your hand! Don’t let go! Don’t you dare let go!']],{fire:1,fx:'shake',mus:'disaster'}),
+      ['kidk','Lucan! Lucan, hold on—']],{fire:1,fx:'shake',mus:'disaster'}),
+    pn('orphanage',[['kairos',0.44,0.72,1,{...KID,moving:1}],['lucan',0.58,0.74,-1,{...KID,fall:1}]],[
+      ['n','And the fire stops.'],
+      ['n','The flames hang still like paper cutouts. The smoke stops in the air. Only one boy is still moving.'],
+      ['kidk','That sound again… tick, tick, tick. Not now. Please, not now.'],
+      ['kidk','…Okay. Okay. Whatever this is, it’s helping. Lucan, give me your hand. Don’t let go.']],{...FROZEN,fire:1}),
     pn('orphanage',[['npc',0.32,0.68,1,{col:NUNC}],['npc',0.5,0.68,-1,{col:CRANEC,hat:'#1A1A28'}],['kairos',0.66,0.74,-1,{...KID,fall:1}],['lucan',0.78,0.72,-1,KID]],[
       ['matron','He pulled the other boy out through the fire, Chancellor. His hands are badly burned. He has a fever.'],
       ['crane','I came for the boy who counts. The one with the memory.'],
-      ['matron','He may not recover for weeks.'],
+      ['matron','He may not recover for weeks. And the other boy keeps saying the fire stopped. Smoke does strange things to children.'],
+      ['crane','And the Vices on your roof last night?'],
+      ['matron','The first in years. We don’t know why they came.'],
       ['crane','I don’t have weeks.'],
       ['crane','Give me the other one.'],
       ['kidl','But I— Kairos is—'],
       ['crane','You’ll forget him soon enough. The Church will see to that.']],{cap:'The next morning.',mus:'sorrow'}),
     pn('orphanage',[['lucan',0.5,0.7,1,{hurt:1}]],[
+      ['lucan','The fire stopped. I remember that now. Everything stopped, and he was the only one moving.'],
+      ['lucan','Then the Vices came that night, out of nowhere. Like the sky was angry about it.'],
       ['lucan','He chose Kairos. My life was supposed to be his.'],
       ['lucan','He burned his hands for me. And today I asked him if I knew him.'],
       ['lucan','That night the Church gave me a silver cup. “So the new life can begin clean.” I slept for two days.'],
@@ -3816,6 +3841,10 @@ const CH1_SEQ=[
       ['kairos','You made ME count. I hated it.'],
       ['lucan','You did it anyway.'],
       ['kairos','Because you asked.'],
+      ['lucan','The kitchen fire. It stopped, didn’t it. I didn’t dream that.'],
+      ['kairos','It stopped. I heard the ticking, and I pulled you out. I never knew why. I still don’t, not really.'],
+      ['lucan','And now you hear it again.'],
+      ['kairos','Now I think someone’s been watching me my whole life. I don’t know if that’s better or worse.'],
       ['lucan','I should be the one who…'],
       ['lucan','My father picked you. You should have had my life. The house, the name, all of it.'],
       ['kairos','I didn’t want your life. I wanted my friend back. Took a while.'],
@@ -4129,6 +4158,7 @@ function showPause(){
   const party=run.party.slice(),mode=run.mode,stg=run.stage,lvl=run.bless;
   const restart=mode==='battle'
     ?h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();startBattle(party,stg,lvl);}},'Restart stage')
+    :mode==='story2'&&run.retry?h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();const r=run.retry;r();}},'Restart fight')
     :h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();if(mode==='story')startStory(true);else{newRun(mode,party,lvl);enterRoom(firstRoom(party[0]));}}},mode==='story'?'Restart chapter':'Restart run');
   openOverlay(h('div',{class:'form',style:'max-width:740px'},
     formHead('Paused',d.kind==='boss'?'Archon Gate · Horaios':d.num+' · '+(d.place||d.name)),
@@ -4142,7 +4172,7 @@ function showPause(){
       h('button',{class:'btn',type:'button','data-back':'1','data-primary':'1','data-sound':'resume',onclick:()=>{resumeGame();}},'Resume'),
       restart,
       h('button',{class:'btn ghost',type:'button',onclick:()=>showGuide(showPause)},'Guide'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();goHome();}},'Quit to home'))),'mode-pause');
+      h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();if(mode==='story2'&&typeof sq!=='undefined')sq=null;goHome();}},mode==='story2'?'Main menu (saved at this scene)':'Quit to home'))),'mode-pause');
 }
 function goHome(){
   state='title';room=null;boss=null;paused=false;playMusic('title');
@@ -4303,7 +4333,7 @@ function doorCard(id,i){
   const d=ROOMS[id];let tag,reward,res=null;
   if(d.kind==='house'){tag=d.num+' · '+d.sign;res=resOf(d);reward=res?'Reward: choose 1 of 3 Blessings':'Reward: choose 1 of 2 Blessings';}
   else if(d.kind==='trial'){const b=BL[d.planet];tag=d.num;reward='Reward: '+b.planet+' · '+b.name+' (level '+Math.min(3,run.bl[d.planet]+1)+')';}
-  else if(d.kind==='lethe'){tag='Spring';reward='A full heal, at a cost';}
+  else if(d.kind==='lethe'){tag='Fountain';reward='A full heal, at a cost';}
   else {tag='Archon Gate';reward='Defeat him to leave the Sphere of the Moon';}
   return h('button',{class:'choice',type:'button',onclick:()=>{enterRoom(id);}},
     h('span',{class:'tag'},tag),
@@ -4369,21 +4399,21 @@ function showTrialResult(def,ok){
 }
 function showLethe(){
   state='panel';
-  const drink=()=>{for(const m of team.members){m.down=false;m.hp=m.maxHp;}let msg='You remember everything. Lucky.';
+  const drink=()=>{for(const m of team.members){m.down=false;m.hp=m.maxHp;}let msg='The water is cold and sweet. Nothing seems different.';
     const owned=Object.keys(BL).filter(k=>run.bl[k]>0);
-    if(owned.length){const k=pick(owned);run.bl[k]--;msg='You forgot '+BL[k].planet+' · '+BL[k].name+' (now level '+run.bl[k]+').';}
+    if(owned.length){const k=pick(owned);run.bl[k]--;msg=BL[k].planet+' · '+BL[k].name+' fades (now level '+run.bl[k]+'). You can’t quite say why.';}
     sfx('splash');afterLethe(msg);};
   openOverlay(h('div',{class:'form'},
-    formHead('Spring · Lethe','District '+run.roomNo+' of 6'),
-    h('h2',null,'The Spring of Lethe'),
-    h('p',{class:'lede'},'A still pool in a broken fountain. '+teamLine()+'. Drinking restores and revives the whole party, and you forget one random Blessing level.'),
+    formHead('Fountain · Mercy','District '+run.roomNo+' of 6'),
+    h('h2',null,'A Mercy Fountain'),
+    h('p',{class:'lede'},'A small church fountain, the kind the Sisters bless on Sundays. '+teamLine()+'. Drinking restores and revives the whole party, and one random Blessing level fades.'),
     h('div',{class:'choices'},
-      h('button',{class:'choice',type:'button',onclick:drink},h('span',{class:'tag'},'Drink'),h('h3',null,'Drink'),h('p',null,'Full heal and revive. Lose 1 Blessing level.')),
+      h('button',{class:'choice',type:'button',onclick:drink},h('span',{class:'tag'},'Drink'),h('h3',null,'Drink'),h('p',null,'Full heal and revive. 1 Blessing level fades.')),
       h('button',{class:'choice',type:'button','data-sound':'back',onclick:()=>{afterLethe('You walk past. Your mouths stay dry.');}},h('span',{class:'tag'},'Refuse'),h('h3',null,'Walk on'),h('p',null,'Keep everything. Keep the wounds too.'))),
-    h('p',{class:'serpent'},h('b',null,'Serpent: '),'Everyone drinks eventually. Not today, I hope.')));
+    h('p',{class:'serpent'},h('b',null,'Serpent: '),'Everyone drinks eventually. The Sisters make sure of it.')));
 }
 function afterLethe(msg){
-  openOverlay(h('div',{class:'form'},formHead('Spring · Lethe','District '+run.roomNo+' of 6'),h('h2',null,'The water settles'),h('p',{class:'lede'},msg),
+  openOverlay(h('div',{class:'form'},formHead('Fountain · Mercy','District '+run.roomNo+' of 6'),h('h2',null,'The water settles'),h('p',{class:'lede'},msg),
     h('div',{class:'row'},h('button',{class:'btn',type:'button',onclick:()=>{proceed();}},'Continue'))));
 }
 function showDeath(){
@@ -4690,7 +4720,7 @@ function guidePage(tab){
       gcard('sun','Houses','Each district is a House with its own rule: faster enemies, splitting enemies, fog, a deadline… Read the rule when you enter.'),
       gcard('cd','Trials','Special challenges. Mercury: collect sparks. Mars: beat the Champion. Winning always drops a Star Fragment.'),
       gcard('bag','Chests','Some districts hide a chest. Walk into it to open it: 1 to 5 Star Fragments pop out. Fragments glow on the ground with a light beam; walk over them to pick them up.'),
-      gcard('Water','Lethe spring','Fully heals and revives everyone, but you forget one random Blessing level.'),
+      gcard('Water','Mercy Fountain','Fully heals and revives everyone, but one random Blessing level fades.'),
       gcard('skull','Horaios (boss)','Fires fans of red bullets. Do not stand still: walk through the gaps and dodge through the thick parts.')),
     gtip('Losing still gives Memories and Stardust, so every run counts.')];
   return [h('h2',null,'Builds: getting stronger'),
@@ -4909,8 +4939,8 @@ const LOOKS={
     g.fillStyle='#24485C';g.beginPath();g.moveTo(-7.5,-3);g.lineTo(7,-3);g.lineTo(6.5,8.5);g.lineTo(-9,9);g.closePath();g.fill();
     g.fillStyle='#24485C';rrect(g,-7,-7.5,14,11,4);g.fill();
     g.fillStyle='#3FA7B5';rrect(g,-7.5,-8.6,15,3.4,1.6);g.fill();g.fillRect(-8,-6.5,3,7.5);
-    g.fillStyle='rgba(127,227,240,'+(0.55+0.35*Math.sin(T*4))+')';circ(g,1.5,-2,1.6);g.fill();
-    for(const [sx,rot,yy] of [[-8.5,0.95,3],[8,-0.8,0.5+step*0.6]]){g.save();g.translate(sx,yy);g.rotate(rot);g.fillStyle='#D8F2F6';g.beginPath();g.moveTo(0,-1.3);g.quadraticCurveTo(8,-3.2,13,0);g.quadraticCurveTo(8,1.6,0,1.3);g.closePath();g.fill();g.fillStyle='#3FA7B5';g.fillRect(-2,-1.8,2.2,3.6);g.restore();}
+    if(!UNARMED){g.fillStyle='rgba(127,227,240,'+(0.55+0.35*Math.sin(T*4))+')';circ(g,1.5,-2,1.6);g.fill();}
+    if(UNARMED){g.fillStyle='#D9A57E';g.fillRect(-9.8,2.2,2.6,2.6);g.fillRect(7.4,1.2+step*0.6,2.6,2.6);}else for(const [sx,rot,yy] of [[-8.5,0.95,3],[8,-0.8,0.5+step*0.6]]){g.save();g.translate(sx,yy);g.rotate(rot);g.fillStyle='#D8F2F6';g.beginPath();g.moveTo(0,-1.3);g.quadraticCurveTo(8,-3.2,13,0);g.quadraticCurveTo(8,1.6,0,1.3);g.closePath();g.fill();g.fillStyle='#3FA7B5';g.fillRect(-2,-1.8,2.2,3.6);g.restore();}
     figHead(g,'#D9A57E');
     g.fillStyle='#1A1E2A';g.beginPath();g.arc(0,-13.6,6.9,Math.PI,Math.PI*2);g.lineTo(7,-11.5);g.lineTo(3.5,-14.4);g.lineTo(0.5,-12.6);g.lineTo(-7,-9.5);g.closePath();g.fill();
     g.beginPath();g.moveTo(-6.4,-16.5);g.lineTo(-10.5,-15);g.lineTo(-6.8,-12.5);g.closePath();g.fill();g.beginPath();g.moveTo(-2.5,-19.6);g.lineTo(-4.5,-22.6);g.lineTo(-0.5,-20);g.closePath();g.fill();
@@ -4976,8 +5006,8 @@ const LOOKS={
 function torsoShade(g,x0,x1,y0,y1){g.fillStyle='rgba(0,0,0,0.16)';g.fillRect(x0,y0,2.2,y1-y0);g.fillStyle='rgba(255,255,255,0.12)';g.fillRect(x0+2.2,y0,x1-x0-2.2,1);}
 const LOOKS_X={
   kairos(g,step){torsoShade(g,-7.5,7,-7,8.5);
-    const k=0.55+0.35*Math.sin(T*4);g.strokeStyle='rgba(127,227,240,'+k+')';g.lineWidth=0.7;circ(g,1.5,-2,2.6);g.stroke();
-    g.fillStyle='rgba(127,227,240,'+k+')';g.fillRect(0.2,-3.6,1,1);g.fillRect(2,-0.8,1,1);
+    const k=0.55+0.35*Math.sin(T*4);if(!UNARMED){g.strokeStyle='rgba(127,227,240,'+k+')';g.lineWidth=0.7;circ(g,1.5,-2,2.6);g.stroke();
+    g.fillStyle='rgba(127,227,240,'+k+')';g.fillRect(0.2,-3.6,1,1);g.fillRect(2,-0.8,1,1);}
     g.fillStyle='#2F6E7E';g.fillRect(-7.5,4,14.5,1.3);g.fillStyle='#D8F2F6';g.fillRect(-1,4,2,1.3);
     g.fillStyle='rgba(120,150,200,0.35)';g.fillRect(-3,-19.2,4,0.8);g.fillRect(1.5,-18,3,0.7);},
   ines(g,step){torsoShade(g,-7,6.5,-7,8.5);
@@ -5039,6 +5069,7 @@ function drawSummon(a){
   return false;
 }
 
+let UNARMED=false;
 function drawChar(g,id,x,y,o){
   const face=o.face||1,mv=!!o.moving,t=o.t??T;
   const step=mv?Math.sin(t*16):0,bob=mv?Math.abs(Math.sin(t*16))*1.2:Math.sin(t*2.5)*0.4;
@@ -5055,8 +5086,10 @@ function drawChar(g,id,x,y,o){
   g.translate(0,6);
   g.scale(face,1);
   if(o.lunge){g.scale(1+o.lunge*0.08,1-o.lunge*0.08);}
+  UNARMED=!!o.unarmed;
   (LOOKS[id]||LOOKS.kairos)(g,step);
   if(LOOKS_X[id])LOOKS_X[id](g,step);
+  UNARMED=false;
   if(o.flash){g.fillStyle='rgba(255,77,94,0.35)';ell(g,0,-5,9,14);g.fill();}
   g.restore();
 }
@@ -5076,7 +5109,7 @@ function drawPlayer(){
   if(p.ultT>0){c.strokeStyle=alpha(C.gold,0.4+0.3*Math.sin(T*10));c.lineWidth=2;circ(c,p.x,p.y-4,p.r+16);c.stroke();}
   if(team.tailwind>0&&rand()<0.3)part(p.x+rr(-8,8),p.y+rr(-4,8),-p.fx*60,-p.fy*60,0.3,C.air,1.6);
   const blink=p.iframe>0&&p.dodgeT<=0&&!p.dash&&!team.shield&&Math.floor(T*22)%2===0;
-  drawCharOutlined(c,p.id,p.x,p.y,{face:p.face,moving:p.moving&&p.dodgeT<=0,alpha:blink?0.4:1,flash:p.flash>0,scale:1.2,lunge:clamp(1-(T-(p.lastAtkT??-9))/0.16,0,1),
+  drawCharOutlined(c,p.id,p.x,p.y,{unarmed:!!(room&&room.m&&room.m.M&&room.m.M.type==='walk'),face:p.face,moving:p.moving&&p.dodgeT<=0,alpha:blink?0.4:1,flash:p.flash>0,scale:1.2,lunge:clamp(1-(T-(p.lastAtkT??-9))/0.16,0,1),
     hurt:p.flash>0?clamp(p.flash/0.15,0,1):0,roll:p.dodgeT>0?1-p.dodgeT/0.17:0,pop:clamp(1-(T-(p.swapAt??-9))/0.22,0,1)});
 }
 function drawAlly(a){
