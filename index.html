@@ -527,6 +527,38 @@ body{font-weight:600}
 .title-card h1{font-family:var(--f-display);letter-spacing:.08em;text-indent:.08em;color:#FFE6A3;text-shadow:0 4px 0 #3B2617,0 0 24px rgba(255,182,92,.35)}
 .title-card .sub{font-family:var(--f-display);color:#9BE37A;letter-spacing:.25em}
 .title-card .blurb{font-weight:700}
+#overlay.mode-pause:has(.pz){background:linear-gradient(90deg,rgba(8,7,12,.88) 0%,rgba(8,7,12,.6) 100%)}
+.pz{width:100%;max-width:1000px;margin:auto;display:grid;grid-template-columns:minmax(240px,320px) minmax(0,1fr);gap:28px;align-items:center;color:#F6EBD2}
+.pz-left{display:flex;flex-direction:column;gap:10px}
+.pz-left .eyebrow{color:#F2D27A;margin:0}
+.pz-title{margin:0 0 6px;font:900 clamp(38px,6vw,60px)/1 var(--f-display);color:#FFE6A3;letter-spacing:.06em;text-shadow:0 4px 0 #3B2617}
+.pz-menu{width:100%}
+.pz-right{display:flex;flex-direction:column;gap:8px;background:rgba(13,11,20,.72);border-radius:12px;padding:14px 16px;box-shadow:inset 0 0 0 1.5px rgba(246,235,210,.1),0 10px 30px rgba(0,0,0,.45)}
+.pz-sect{font:800 10px var(--f-ui);letter-spacing:.18em;text-transform:uppercase;color:#F2D27A;opacity:.85}
+.pz-party{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pz-m{display:flex;gap:8px;align-items:center;padding:7px;border-radius:9px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);min-width:0}
+.pz-m.on{box-shadow:inset 0 0 0 2px #F2D27A}
+.pz-m.down{opacity:.55}
+.pz-m canvas{border-radius:50%;box-shadow:0 0 0 2px var(--cc);flex:0 0 auto}
+.pz-mb{min-width:0;flex:1;display:flex;flex-direction:column;gap:1px}
+.pz-mb b{font:700 14px var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pz-mb i{font:700 9px var(--f-ui);letter-spacing:.08em;text-transform:uppercase;font-style:normal;opacity:.6}
+.pz-mb em{font:700 10px var(--f-ui);font-style:normal;opacity:.75}
+.pz-hp{height:5px;border-radius:3px;background:rgba(255,255,255,.12);margin-top:3px}.pz-hp span{display:block;height:100%;border-radius:3px;background:#7BD88F}
+.pz-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.pz-chips span{display:inline-flex;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:3px 10px;font:700 11px var(--f-ui)}
+.pz-chips i{font-style:normal;opacity:.6}
+.pz-set{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;margin:0}
+.pz-set .setting{color:#F6EBD2;font:700 11px var(--f-ui);letter-spacing:.06em;text-transform:uppercase}
+.pz-set .setting .val{color:#F6EBD2;opacity:.7}
+.pz-set input[type=range]{accent-color:#F2D27A}
+.pz-set .toggle{background:transparent;color:#F6EBD2;border:1.5px solid rgba(246,235,210,.35);border-radius:999px;min-width:54px}
+.pz-set .toggle[aria-pressed="true"]{background:#F2D27A;color:#2A1B10;border-color:#F2D27A}
+.pz-keys{margin:2px 0 0;font:600 11px var(--f-ui);opacity:.5}
+@media (max-width:760px),(max-height:520px){.pz{grid-template-columns:minmax(170px,34%) minmax(0,1fr);gap:14px}.pz-title{font-size:30px;margin:0}.pz-left{gap:6px}
+  .pz-right{padding:10px 12px;gap:6px}.pz-m{padding:5px;gap:6px}.pz-m canvas{width:30px;height:30px}.pz-mb b{font-size:12px}.pz-mb i{display:none}.pz-keys{display:none}.pz-set{gap:4px 12px}.pz-menu .tm-s{display:none}}
+@media (max-width:520px){.pz{grid-template-columns:1fr}.pz-party{grid-template-columns:1fr}.pz-set{grid-template-columns:1fr}}
+
 .bm{max-width:1100px;gap:12px}
 .bm .seg{border-color:rgba(246,235,210,.3);border-radius:999px;background:rgba(13,11,20,.6)}
 .bm .seg button{color:#F6EBD2;padding:7px 14px}
@@ -4355,25 +4387,32 @@ function showPause(){
   const toggle=(id,label,key)=>{const b=h('button',{type:'button',id,class:'toggle','aria-pressed':String(!!vol[key]),
     onclick:()=>{vol[key]=!vol[key];savePrefs({[key]:vol[key]});b.setAttribute('aria-pressed',String(vol[key]));b.textContent=vol[key]?'On':'Off';}},vol[key]?'On':'Off');
     return h('div',{class:'setting'},h('span',null,label),b);};
-  const st=(k,v)=>h('div',null,h('b',null,v),k);
   const party=run.party.slice(),mode=run.mode,stg=run.stage,lvl=run.bless;
-  const restart=mode==='battle'
-    ?h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();startBattle(party,stg,lvl);}},'Restart stage')
-    :mode==='story2'&&run.retry?h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();const r=run.retry;r();}},'Restart fight')
-    :h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();newRun(mode,party,lvl);enterRoom(firstRoom(party[0]));}},'Restart run');
-  openOverlay(h('div',{class:'form',style:'max-width:740px'},
-    formHead('Paused',d.kind==='boss'?'Archon Gate · Horaios':d.num+' · '+(d.place||d.name)),
-    h('h2',{style:'padding-right:0'},'The party waits'),
-    h('div',{class:'stats'},...team.members.map(m=>st(m.ch.role,nameOf(m.id)+(m.down?' · down':' · '+Math.ceil(m.hp)+'/'+m.maxHp))),
-      st('Active ATK SPD',effAspd(player).toFixed(2)+'/s'),st('Blessings',blessSummary()||'None')),
-    h('div',{class:'settings'},slider('vol-music','Music','music'),slider('vol-sfx','Sound effects','sfx'),
-      toggle('opt-shake','Screen shake','shake'),toggle('opt-fx','Reduce effects','fxLow'),toggle('opt-nums','Damage numbers','nums'),toggle('opt-tips','Beginner tips','tips')),
-    h('p',{class:'serpent'},isTouch?'Tap a portrait on the left to switch characters.':'Esc or P resumes · J attack · Space dodge · Q Sun · E Moon · R Ultimate · 1/2/3 switch'),
-    h('div',{class:'row'},
-      h('button',{class:'btn',type:'button','data-back':'1','data-primary':'1','data-sound':'resume',onclick:()=>{resumeGame();}},'Resume'),
-      restart,
-      h('button',{class:'btn ghost',type:'button',onclick:()=>showGuide(showPause)},'Guide'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>{unpause();if(mode==='story2'&&typeof sq!=='undefined')sq=null;goHome();}},mode==='story2'?'Main menu (saved at this scene)':'Quit to home'))),'mode-pause');
+  const it=(label,sub,go,cls,attrs)=>h('button',Object.assign({class:'tm-item'+(cls||''),type:'button',onclick:go},attrs||{}),h('span',{class:'tm-l'},label),sub?h('span',{class:'tm-s'},sub):null);
+  const restart=mode==='battle'?it('Restart','Start this stage over',()=>{unpause();startBattle(party,stg,lvl);})
+    :mode==='story2'&&run.retry?it('Restart','Retry this fight',()=>{unpause();const r=run.retry;r();})
+    :it('Restart','Start the run over',()=>{unpause();newRun(mode,party,lvl);enterRoom(firstRoom(party[0]));});
+  const mem=m=>{const pct=m.down?0:Math.max(0,Math.min(100,m.hp/m.maxHp*100)),act=m===player;
+    return h('div',{class:'pz-m'+(act?' on':'')+(m.down?' down':''),style:'--cc:'+m.ch.col},portrait(m.id,40,m.down),
+      h('div',{class:'pz-mb'},h('b',null,nameOf(m.id)),h('i',null,m.ch.role.split(' · ')[0]),
+        h('div',{class:'pz-hp'},h('span',{style:'width:'+pct+'%'})),h('em',null,m.down?'Down':Math.ceil(m.hp)+' / '+m.maxHp)));};
+  openOverlay(h('div',{class:'pz'},
+    h('div',{class:'pz-left'},
+      h('p',{class:'eyebrow'},d.kind==='boss'?'Archon Gate · Horaios':d.num+' · '+(d.place||d.name)),
+      h('h2',{class:'pz-title'},'Paused'),
+      h('nav',{class:'tm-menu pz-menu'},
+        it('Resume',isTouch?'':'Esc / P',()=>{resumeGame();},' primary',{'data-back':'1','data-primary':'1','data-sound':'resume'}),
+        restart,
+        it('Guide','How everything works',()=>showGuide(showPause)),
+        it(mode==='story2'?'Main menu':'Quit',mode==='story2'?'Saved at this scene':'Back to home',()=>{unpause();if(mode==='story2'&&typeof sq!=='undefined')sq=null;goHome();}))),
+    h('div',{class:'pz-right'},
+      h('div',{class:'pz-sect'},'Party'),
+      h('div',{class:'pz-party'},...team.members.map(mem)),
+      h('div',{class:'pz-chips'},h('span',null,h('i',null,'ATK SPD'),effAspd(player).toFixed(2)+'/s'),h('span',null,h('i',null,'Blessings'),blessSummary()||'None')),
+      h('div',{class:'pz-sect'},'Settings'),
+      h('div',{class:'settings pz-set'},slider('vol-music','Music','music'),slider('vol-sfx','Sound effects','sfx'),
+        toggle('opt-shake','Screen shake','shake'),toggle('opt-fx','Reduce effects','fxLow'),toggle('opt-nums','Damage numbers','nums'),toggle('opt-tips','Beginner tips','tips')),
+      isTouch?null:h('p',{class:'pz-keys'},'J attack · Space dodge · Q Sun · E Moon · R Ultimate · 1/2/3 switch'))),'mode-pause');
 }
 function goHome(){
   state='title';room=null;boss=null;paused=false;playMusic('title');
