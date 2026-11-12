@@ -34,7 +34,7 @@ No game files were modified during this audit.
 | P2-4 Blessings vs kits | Done (each Blessing feeds one play style: Mars burn, Mercury crit, Jupiter Ultimates, Saturn shields, Venus healing, Uranus switching, Neptune debuffs/summons) | this sprint | Lv 3 measured: ignite 29%, crit 14.7%, shield +46%, heal +45%, mark 8→14 s, Ultimate cuts cooldowns 6 s, Entrance 3 s faster |
 | P2-8 iPhone playtest | **Open (you)** | | |
 | P3-2 Dead legacy code | Done (old Vigil story mode, checkpoints, story previews, old cast speakers, unused helpers: −26 KB, −257 lines) | this sprint | Home, Builds, Guide, Battle, Climb, death, pause, Training and full Chapter 1 run with no errors |
-| P3-3 Reduce-effects toggle | **Open** | | |
+| P3-3 Reduce-effects toggle | Done (Pause → Reduce effects: ~65% fewer particles, softer zones, small hit rings off, no hit-stop; saved) | this sprint | Heavy fight 685 → 473 ms per 90 frames (−31%) |
 | P3-5 Rooftop/lab art | **Open** | | |
 | P3-6 Choice callbacks | **Open** | | |
 

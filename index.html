@@ -629,7 +629,7 @@ function inputVec(){
 // ═══════════════════════════════════════════ audio
 let ac=null; const lastS={};
 const prefs0=loadPrefs();
-const vol={music:prefs0.music??0.6,sfx:prefs0.sfx??0.8,shake:prefs0.shake??true,nums:prefs0.nums??true,tips:prefs0.tips??true};
+const vol={music:prefs0.music??0.6,sfx:prefs0.sfx??0.8,shake:prefs0.shake??true,nums:prefs0.nums??true,tips:prefs0.tips??true,fxLow:prefs0.fxLow??false};
 let sfxBus=null,musicBus=null,musicDuck=1;
 function ensureAudio(){
   try{
@@ -1354,7 +1354,7 @@ function resOf(def){
 
 // ═══════════════════════════════════════════ fx helpers
 function shake(m,t){if(!vol.shake)return;if(reduceMotion)m*=0.3;shakeM=Math.max(shakeM,m);shakeT=Math.max(shakeT,t);}
-function part(x,y,vx,vy,life,col,s){if(parts.length<300)parts.push({x,y,vx,vy,life,max:life,col,s});}
+function part(x,y,vx,vy,life,col,s){if(vol.fxLow&&(parts.length>60||rand()<0.65))return;if(parts.length<300)parts.push({x,y,vx,vy,life,max:life,col,s});}
 function burstParts(x,y,col,n,sp=140){for(let i=0;i<n;i++){const a=rand()*TAU,v=rr(sp*0.3,sp);part(x,y,Math.cos(a)*v,Math.sin(a)*v,rr(0.3,0.7),col,rr(1.5,3.2));}}
 function addText(x,y,txt,col,size,o={}){if(texts.length>50)texts.shift();texts.push({x,y,txt,col,size:size||11,life:o.life||0.9,max:o.life||0.9,bubble:!!o.bubble,follow:o.follow||null,rise:o.rise??22});}
 function dmgText(x,y,d,col){if(d>=1&&vol.nums)addText(x+rr(-6,6),y,String(Math.round(d)),col||C.paper,10,{life:0.55});}
@@ -1475,7 +1475,7 @@ function playerHit(t,dmg,o={}){
   if(o.mark) t.markT=6*debuffK();
   if(o.ana) t.anaT=8;
   if(o.indict){t.ind=Math.min(3,(t.ind||0)+o.indict);t.indT=8;}
-  {const big=dmg>=(player.atk||10)*2.2||o.crit;sfx(big?'impactBig':'impact');for(let i=0;i<(big?7:3);i++)part(t.x+rr(-4,4),t.y-6+rr(-4,4),rr(-160,160),rr(-160,90),0.18,'#FFFFFF',big?2.4:1.6);if(big&&slowReal<=0)slowReal=0.045;}
+  {const big=dmg>=(player.atk||10)*2.2||o.crit;sfx(big?'impactBig':'impact');for(let i=0;i<(big?7:3);i++)part(t.x+rr(-4,4),t.y-6+rr(-4,4),rr(-160,160),rr(-160,90),0.18,'#FFFFFF',big?2.4:1.6);if(big&&slowReal<=0&&!vol.fxLow)slowReal=0.045;}
   if(t!==boss){
     if(o.tide){t.tide=(t.tide||0)+o.tide;t.tideT=4;t.slowT=Math.max(t.slowT||0,1);if(t.tide>=3){t.tide=0;t.drowsyT=3*debuffK();t.slowT=Math.max(t.slowT,3);addText(t.x,t.y-(t.r||20)-14,'DROWSY','#7FE3F0',10,{life:0.8});}}
     if(o.stag){t.stag=(t.stag||0)+o.stag;if(t.stag>=100){t.stag=0;if(t.type!=='champion'){t.stunT=Math.max(t.stunT||0,2);t.st='stun';}addText(t.x,t.y-(t.r||20)-14,'STUNNED',C.earth,10,{life:0.8});}}}
@@ -3951,7 +3951,7 @@ function showPause(){
     h('div',{class:'stats'},...team.members.map(m=>st(m.ch.role,nameOf(m.id)+(m.down?' · down':' · '+Math.ceil(m.hp)+'/'+m.maxHp))),
       st('Active ATK SPD',effAspd(player).toFixed(2)+'/s'),st('Blessings',blessSummary()||'None')),
     h('div',{class:'settings'},slider('vol-music','Music','music'),slider('vol-sfx','Sound effects','sfx'),
-      toggle('opt-shake','Screen shake','shake'),toggle('opt-nums','Damage numbers','nums'),toggle('opt-tips','Beginner tips','tips')),
+      toggle('opt-shake','Screen shake','shake'),toggle('opt-fx','Reduce effects','fxLow'),toggle('opt-nums','Damage numbers','nums'),toggle('opt-tips','Beginner tips','tips')),
     h('p',{class:'serpent'},isTouch?'Tap a portrait on the left to switch characters.':'Esc or P resumes · J attack · Space dodge · Q Sun · E Moon · R Ultimate · 1/2/3 switch'),
     h('div',{class:'row'},
       h('button',{class:'btn',type:'button','data-back':'1','data-primary':'1','data-sound':'resume',onclick:()=>{resumeGame();}},'Resume'),
@@ -5384,7 +5384,7 @@ function render(){
 function drawWorld(){
   const c=ctx;
   if(room.spot){const s=room.spot;lightPool(c,s.x,s.y,s.r,C.gold,0.35);c.strokeStyle=alpha(C.gold,0.5);c.lineWidth=1.5;c.setLineDash([6,5]);circ(c,s.x,s.y,s.r);c.stroke();c.setLineDash([]);}
-  for(const z of zones){const k=clamp(z.t/z.max,0,1),fa=Math.min(1,z.t*3);
+  for(const z of zones){const k=clamp(z.t/z.max,0,1),fa=Math.min(1,z.t*3)*(vol.fxLow?0.45:1);
     if(z.kind==='rain'){c.fillStyle=alpha(C.fire,0.08*fa);circ(c,z.x,z.y,z.r);c.fill();c.strokeStyle=alpha(C.fire,0.5*fa);c.lineWidth=1.5;c.setLineDash([5,5]);circ(c,z.x,z.y,z.r);c.stroke();c.setLineDash([]);
       for(let i=0;i<8;i++){const a=(i*2.4+T*3)%TAU,rr2=((i*37+T*90)%z.r),px=z.x+Math.cos(a)*rr2*0.9,py=z.y+Math.sin(a)*rr2*0.9;c.strokeStyle=alpha(C.fire,0.8*fa);c.lineWidth=1.4;c.beginPath();c.moveTo(px-3,py-9);c.lineTo(px,py);c.stroke();}}
     else if(z.kind==='tide'){c.fillStyle=alpha(C.water,0.12*fa);circ(c,z.x,z.y,z.r);c.fill();for(let i=0;i<3;i++){const f=((T*0.6+i/3)%1);c.strokeStyle=alpha(C.water,0.5*(1-f)*fa);c.lineWidth=1.5;circ(c,z.x,z.y,z.r*f);c.stroke();}
@@ -5397,7 +5397,7 @@ function drawWorld(){
     else if(z.kind==='decree'){c.fillStyle=alpha(C.jupiter,0.06*fa);circ(c,z.x,z.y,z.r);c.fill();c.strokeStyle=alpha(C.jupiter,0.7*fa);c.lineWidth=2;c.setLineDash([10,4,2,4]);circ(c,z.x,z.y,z.r);c.stroke();c.setLineDash([]);
       c.strokeStyle=alpha(C.jupiter,0.35*fa);c.lineWidth=1.5;c.beginPath();c.moveTo(z.x-16,z.y-6);c.lineTo(z.x+16,z.y-6);c.moveTo(z.x,z.y-12);c.lineTo(z.x,z.y+10);c.moveTo(z.x-16,z.y-6);c.lineTo(z.x-20,z.y+2);c.lineTo(z.x-12,z.y+2);c.closePath();c.moveTo(z.x+16,z.y-6);c.lineTo(z.x+12,z.y+2);c.lineTo(z.x+20,z.y+2);c.closePath();c.stroke();
       c.beginPath();c.arc(z.x,z.y,z.r+4,-Math.PI/2,-Math.PI/2+TAU*k);c.stroke();}}
-  for(const d of decals){const k=d.life/d.max;
+  for(const d of decals){if(vol.fxLow&&d.ring&&d.r<60)continue;const k=d.life/d.max;
     if(d.splat){c.fillStyle=alpha('#24160C',0.25*k);ell(c,d.x,d.y,d.r,d.r*0.35);c.fill();c.fillStyle=alpha(d.col,0.3*k);ell(c,d.x,d.y,d.r*0.6,d.r*0.2);c.fill();continue;}
     if(d.ring){c.strokeStyle=alpha(d.col,0.65*k);c.lineWidth=3;circ(c,d.x,d.y,d.r*(1.1-0.3*k));c.stroke();}
     else if(d.stamp){c.save();c.translate(d.x,d.y);c.rotate(d.rot);c.strokeStyle=alpha(C.paper,0.35*k);c.lineWidth=2;c.strokeRect(-46,-13,92,26);
