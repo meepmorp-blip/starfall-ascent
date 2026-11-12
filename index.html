@@ -874,7 +874,7 @@ const CHARS={
   kairos:{id:'kairos',name:'Kairos',role:'Main DPS',roleKey:'dps',col:'#3FA7B5',who:'20 · errand runner from St. Hesper’s, the Unwritten',
     blurb:'Left as a newborn under a stopped clock. He hates clocks without knowing why, remembers everything, and sometimes sees things a moment before they happen.',
     sun:'Pisces',moon:'Cancer',rising:null,aspect:'Trine',atkLabel:'BLADES',
-    hp:100,atk:12,def:0.12,aspd:3.4,spd:172,range:'Close',bars:{HP:3,ATK:5,DEF:2,ASPD:5,SPD:5,RANGE:1},
+    hp:120,atk:12,def:0.16,aspd:3.4,spd:172,range:'Close',bars:{HP:3,ATK:5,DEF:2,ASPD:5,SPD:5,RANGE:1},
     rulers:{jupiter:'Pisces Sun',neptune:'Pisces Sun'},
     mech:'Undertow: every hit slows a Vice’s movement and attacks. Slowed Vices he hits take +10% damage from everyone for 3s.',
     kit:{
@@ -913,7 +913,7 @@ const CHARS={
       sun:{name:'Mini Bram',short:'MINI',el:'Earth',cd:12,dur:8,desc:'Shapes a goofy clay Bram that stands in front of you, blocks bullets and makes enemies attack it instead.'},
       moon:{name:'Hold the Line',short:'HOLD',el:'Water',cd:13,dur:10,desc:'Gives the active character a big shield worth 40% of Bram’s HP. It stays when you switch.'},
       combo:{name:'Sextile · Fortify',desc:'Walls and shields last 50% longer, and the wall knocks back anything that hits it.'},
-      ult:{name:'Bram’s Stand',short:'STAND',dur:6,desc:'One huge slam (500%) around him, then a shield dome for 6s that keeps pushing enemies out and stunning them.'},
+      ult:{name:'Bram’s Stand',short:'STAND',dur:6,desc:'One huge slam (500%) around him, then a shield dome for 6s that keeps pushing enemies out and stunning them. The team deals +15% damage while it stands.'},
       p1:{name:'Oops',desc:'Every 4 seconds, on the field or from the bench, he stumbles by accident: a little quake around the active character that deals light damage and adds Stagger.'},
       p2:{name:'Guard Duty',desc:'While on the bench he blocks one bullet aimed at the active character every 8 seconds.'}}},
   noemi:{id:'noemi',name:'Dr. Noemi Lark',short:'Noemi',role:'Healer · Buffer',roleKey:'heal',col:'#7BE0A8',who:'30 · ER doctor at St. Lucia’s',
@@ -949,7 +949,7 @@ const CHARS={
   lucan:{id:'lucan',name:'Lucan Crane',short:'Lucan',role:'Main DPS · Long range',roleKey:'burst',col:'#BFE6FF',who:'20 · senior clerk at the Concord Office, the Chancellor’s adopted son',
     blurb:'Cold, controlled, and hard to reach. Grew up with Kairos in the orphanage, forgot him, and swore never to again.',
     sun:'Scorpio',moon:'Capricorn',rising:'Virgo',aspect:'Sextile',atkLabel:'SHARDS',
-    hp:92,atk:12,def:0.12,aspd:1.4,spd:160,range:'Long',bars:{HP:3,ATK:5,DEF:2,ASPD:1,SPD:4,RANGE:5},
+    hp:90,atk:16.5,def:0.1,aspd:1.9,spd:160,range:'Long',bars:{HP:3,ATK:5,DEF:2,ASPD:1,SPD:4,RANGE:5},
     rulers:{mars:'Scorpio Sun',saturn:'Capricorn Moon',mercury:'Virgo Rising'},
     mech:'Vow: with Kairos in the party, switching between them shields the one coming in, and Drowsy enemies take +25% from Lucan.',
     kit:{
@@ -979,16 +979,16 @@ const CHARS={
   dess:{id:'dess',name:'Dess Marr',short:'Dess',role:'Support · Buffer',roleKey:'heal',col:'#9BD4FF',who:'20 · lab assistant, Dr. Marr’s daughter',
     blurb:'Nervous, brilliant and guilty. She learned what her father keeps on his shelves, and took them with her.',
     sun:'Cancer',moon:'Libra',rising:'Gemini',aspect:'Square',atkLabel:'PULSE',
-    hp:110,atk:8,def:0.2,aspd:2.4,spd:150,range:'Mid',bars:{HP:4,ATK:2,DEF:4,ASPD:3,SPD:3,RANGE:3},
+    hp:80,atk:8,def:0.06,aspd:2.4,spd:150,range:'Mid',bars:{HP:4,ATK:2,DEF:4,ASPD:3,SPD:3,RANGE:3},
     rulers:{venus:'Libra Moon',mercury:'Gemini Rising'},
     mech:'Pure support: she barely fights, but makes everyone else hit harder, crit harder and charge their Ultimates faster.',
     kit:{
       entrance:{name:'Unlocked',el:'Air',desc:'Gives the active character a small shield (10% HP) as she arrives.'},
       basic:{name:'Core Pulse',tap:'Weak pulses of light from a core.',hold:'Tide Ring: a small burst of water around her that pushes enemies back and gives only Dess a small shield (12% HP).'},
-      sun:{name:'Undertow',short:'UNDERTOW',el:'Water',cd:14,dur:10,desc:'A small water burst around her (80%). Then for 10s, when any ally attacks, a water pulse bursts around the target (100% of Dess’s ATK, slows), at most once every 2 seconds.'},
-      moon:{name:'Clear Sky',short:'CLEAR',el:'Air',cd:14,dur:10,desc:'An air burst (60%) that pushes enemies back. Then all allies deal 30% more crit damage for 10s.'},
+      sun:{name:'Undertow',short:'UNDERTOW',el:'Water',cd:14,dur:10,desc:'A small water burst around her (80%). Then for 10s, when any ally attacks, a water pulse bursts around the target (300% of Dess’s ATK, slows), at most once every 1.5 seconds.'},
+      moon:{name:'Clear Sky',short:'CLEAR',el:'Air',cd:14,dur:10,desc:'An air burst (60%) that pushes enemies back. Then all allies get +10% crit chance and +30% crit damage for 10s.'},
       combo:{name:'Square · Insight',desc:'Using both skills in a row: allies get +15% crit chance for 10s.'},
-      ult:{name:'Recollection',short:'RECALL',dur:12,desc:'A wave of memories that deals small damage, and every ally deals 20% more damage for 12s.'},
+      ult:{name:'Recollection',short:'RECALL',dur:12,desc:'A wave of memories that deals small damage, and every ally deals 30% more damage for 12s.'},
       p1:{name:'Steady Hands',desc:'While she is in the party, all allies gain Pneuma 20% faster.'},
       p2:{name:'Team Notes',desc:'While she is in the party, all healing and shields are 10% stronger.'}}},
 };
@@ -1136,19 +1136,19 @@ const KIT_INFO={
   kairos:{tldr:'Main damage. Close range, a 3-hit combo, two dashes, and Ultimates full of finishers. His hits slow Vices and make them take more damage from everyone.',
     entrance:['Copies an Entrance ×120%'],basic:['100% ×2, 3rd: 200% spin','Hold: jump + 220% spin'],sun:['Dash 300% ×2','Slow trail'],moon:['Pulse 120% · ATK +10%','Counter 320%'],ult:['Stops time 3s','10 finishers · +35% dmg']},
   ines:{tldr:'Sniper sub-DPS. Spot enemies so the whole team hits 15% harder, soak them to slow them, then switch out: she keeps sniping.',
-    entrance:['Up to 3 piercing shots 160%','Spots'],basic:['160% ATK per shot','Hold: 320% pierce'],sun:['Spots an area (+15%)','Combo: explosion 250%'],moon:['Water pool 5s','Slow · +10% damage taken'],ult:['3s: 240% shot every 0.8s','Works off-field']},
+    entrance:['Up to 3 piercing shots 160%','Spots'],basic:['160% ATK per shot','Hold: 200% pierce, crits on Spotted'],sun:['Spots an area (+15%)','Combo: explosion 250%'],moon:['Water pool 5s','Slow · +10% damage taken'],ult:['3s: 240% shot every 0.8s','Works off-field']},
   bram:{tldr:'The wall. Light damage, big shields, knockback and Stagger. Even on the bench he stumbles into enemies every 4s.',
-    entrance:['Always crits','Big knockback'],basic:['5-hit combo','5th: slam 200%','Hold: 220% + stun'],sun:['Clay Bram decoy','Blocks bullets'],moon:['Shield 40% of Bram’s HP'],ult:['Slam 500%','Dome 6s, pushes out']},
+    entrance:['Always crits','Big knockback'],basic:['5-hit combo','5th: slam 200%','Hold: 220% + stun'],sun:['Clay Bram decoy','Blocks bullets'],moon:['Shield 40% of Bram’s HP'],ult:['Slam 500%','Dome 6s · team +15% dmg']},
   noemi:{tldr:'The doctor. Heals, boosts attack, does little damage. Hold to heal whoever is lowest, even on the bench.',
     entrance:['Heal team 10%'],basic:['60% darts + 3s water DoT','Hold: 70% splash + DoT'],sun:['Heal team 12% once','+20% damage 8s'],moon:['Zone 6s','Heals 3%/s'],ult:['Revive all','Heal 40% · +25% damage']},
   theo:{tldr:'The inventor. Air pistol that aims itself, bursts that hit 3 enemies, and a wind turret that keeps working after you switch out.',
-    entrance:['Fan drone 8s'],basic:['100% ATK, auto-aim','Hold: 150% ×3 enemies'],sun:['Turret 12s','1 shot/s, short range'],moon:['+10% damage & speed','Machines ×1.5 fire rate'],ult:['Walking machine 9s']},
+    entrance:['Fan drone 8s'],basic:['115% ATK, auto-aim','Hold: 150% ×3 enemies'],sun:['Turret 12s','1 shot/s, short range'],moon:['+10% damage & speed','Machines ×1.5 fire rate'],ult:['Walking machine 9s']},
   lucan:{tldr:'Long-range damage built around the charged Lance. Slow, heavy needles; pin enemies, then pierce the whole line.',
     entrance:['Stone fan 90% ×5','Shield 8%'],basic:['120% ×3, 4th: 300% pierce','Hold: 320% pierce (+50% double)'],sun:['Ricochet 220%','bounces ×3'],moon:['Decoy 10s · shield 12%','+30% crit 10s'],ult:['Petrify 3s','Shatter 450%']},
   cass:{tldr:'Burn damage. Sets everything on fire; burning enemies take more damage and allies take less. Small heals.',
     entrance:['Fire slam 140%','Burns'],basic:['90% ATK, burns','Hold: spin 150%, long burn'],sun:['Fire area 6s'],moon:['Heal 12%','Burning foes take 200%'],ult:['Fire wave 300%','Team heal 15% once']},
   dess:{tldr:'Pure support. Weak attacks, but she makes the whole team hit harder, crit harder and charge Ultimates faster.',
-    entrance:['Shield 10%'],basic:['50% ATK pulse','Hold: 80% water ring + self shield'],sun:['Burst 80%','Water pulse on ally hits · 10s'],moon:['Air push 60%','Team +30% crit damage 10s'],ult:['Small damage','Team +20% damage 12s']},
+    entrance:['Shield 10%'],basic:['50% ATK pulse','Hold: 80% water ring + self shield'],sun:['Burst 80%','Water pulse on ally hits · 10s'],moon:['Air push 60%','Team +10% crit, +30% crit dmg'],ult:['Small damage','Team +30% damage 12s']},
 };
 const CHAR_FIT={
   kairos:{t:{tide:2,soak:2,quick:2,fury:2,mirror:1,swift:1,gust:1},why:'fast blade work, slows and dodges'},
@@ -1515,8 +1515,9 @@ function playerHit(t,dmg,o={}){
   if(room&&room.spot&&dist(player,room.spot)<room.spot.r) m*=2;
   if(o.mult) m*=o.mult;
   if(team.atkBuffT>0)bonus+=team.atkBuffV;
-  if(team.dessDmgT>0)bonus+=0.2;
-  if(team.dessPulseT>0&&!o.pulse&&T>=(team.dessPulseNext||0)){const d=memberOf('dess');if(d&&!d.down){team.dessPulseNext=T+2;radial(t.x,t.y,80,d.atk*1.0,{col:C.water,src:d,pulse:true,slow:1});ring(t.x,t.y,80,C.water,0.4);sfx('splash');}}
+  if(team.dessDmgT>0)bonus+=0.30;
+  if(team.stand>0)bonus+=0.15;
+  if(team.dessPulseT>0&&!o.pulse&&T>=(team.dessPulseNext||0)){const d=memberOf('dess');if(d&&!d.down){team.dessPulseNext=T+1.5;radial(t.x,t.y,80,d.atk*3.0,{col:C.water,src:d,pulse:true,slow:1});ring(t.x,t.y,80,C.water,0.4);sfx('splash');}}
   if(src&&src.id==='theo'&&allies.some(a=>a.kind==='turret'&&!a.dead))bonus+=0.2;
   if(sfx2.dmgPct)bonus+=sfx2.dmgPct;
   if(sfx2.heat&&t.burnT>0)bonus+=sfx2.heat;
@@ -1528,6 +1529,7 @@ function playerHit(t,dmg,o={}){
   if(src&&src.id==='kairos'&&src.atkUpT>0)bonus+=0.1;
   if(t.burnT>0&&inParty('cass'))vuln+=0.1;
   if(team.crT>0&&!o.crit&&rand()<0.15)o=Object.assign({},o,{crit:true});
+  if(team.cdmgT>0&&!o.crit&&rand()<0.10)o=Object.assign({},o,{crit:true});
   if(src&&src.id&&STARS[src.id]){const F=starFx(src);if(o.basic)m*=F.basicMul;if(o.skill==='sun')m*=F.sunMul;else if(o.skill==='moon')m*=F.moonMul;else if(o.skill==='ult')m*=F.ultMul;
     if(src.id==='kairos'&&src.ultT>0)bonus+=0.35;
     if(t.drowsyT>0){if(src.id==='kairos')vuln+=0.15;if(src.id==='lucan'&&inParty('kairos'))vuln+=0.25;}
@@ -1833,7 +1835,7 @@ const KITS={
     tap(p){const R=560;const t=nearestTarget(p.x,p.y,R,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(R);faceTo(a);
       {const v=inputVec(),m=Math.hypot(v.x,v.y);if(m>0.2){p.dodgeT=Math.max(p.dodgeT,0.12);p.dvx=v.x/m*300;p.dvy=v.y/m*300;}}
       shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*1.6,mult:1+consumeSwift(),basic:true,spd:950,r:4,life:0.75,kind:'arrow',big:true,src:p,pn:0.9,col:'#FFD38A',knock:110}));p.atkCd=1/effAspd(p);sfx('heavy');shake(1.5,0.04);},
-    hold(p){const R=600;const t=nearestTarget(p.x,p.y,R,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(R);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*3.2,mult:1+consumeSwift(),basic:true,spd:1100,r:6,life:0.8,pierce:true,big:true,kind:'arrow',src:p,pn:2,col:'#FFE6A3',knock:200,critMarked:true}));p.atkCd=0.5;sfx('laser');shake(3,0.08);},
+    hold(p){const R=600;const t=nearestTarget(p.x,p.y,R,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(R);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*2.0,mult:1+consumeSwift(),basic:true,spd:1100,r:6,life:0.8,pierce:true,big:true,kind:'arrow',src:p,pn:2,col:'#FFE6A3',knock:200,critMarked:true}));p.atkCd=0.5;sfx('laser');shake(3,0.08);},
     sun(p,combo){const at=aimPoint(p,420);let n=0;for(const t of allTargets())if(Math.hypot(t.x-at.x,t.y-at.y)<130){t.markT=8*debuffK();n++;}
       ring(at.x,at.y,130,C.gold,0.6);burstParts(at.x,at.y,C.gold,20,160);
       if(combo){radial(at.x,at.y,120,p.atk*2.5,{skill:'sun',col:C.gold,src:p});shake(4,0.12);}
@@ -1882,7 +1884,7 @@ const KITS={
   // ───────── Theo: chain zaps, turrets, overclock, mech
   theo:{chargeT:0.5,
     tap(p){const t=nearestTarget(p.x,p.y,280,null);let a;if(t){const dx=t.x-p.x,dy=t.y-p.y,d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(280);faceTo(a);
-      shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*1.0,mult:1+consumeSwift(),basic:true,spd:620,r:5,life:0.45,kind:'dart',src:p,pn:0.6,col:'#CFEAFF'}));p.atkCd=1/effAspd(p);sfx('dart');},
+      shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*1.15,mult:1+consumeSwift(),basic:true,spd:620,r:5,life:0.45,kind:'dart',src:p,pn:0.6,col:'#CFEAFF'}));p.atkCd=1/effAspd(p);sfx('dart');},
     hold(p){const ts=allTargets().filter(t=>Math.hypot(t.x-p.x,t.y-p.y)<260).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,3);
       for(const t of ts){playerHit(t,p.atk*1.5,{basic:true,src:p,col:'#CFEAFF',knock:{x:Math.sign(t.x-p.x)||1,y:0,f:90},pn:0.8});beams.push({a:{x:p.x,y:p.y-8},b:t,life:0.14,col:'#CFEAFF'});}
       ring(p.x,p.y,50,'#CFEAFF',0.35);p.atkCd=0.5;sfx('dodge');},
