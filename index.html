@@ -1270,6 +1270,9 @@ function drawLoot(c){
 // A skill can never be higher than the character's Recollection level.
 const SKILLS=['entrance','basic','sun','moon','ult'],SKILL_MAX=10;
 const SKILL_NAME={entrance:'Entrance',basic:'Basic attack',sun:'Sun skill',moon:'Moon skill',ult:'Ultimate'};
+// Recollection milestones (Lv 5/10/15/20) are now upgrades you awaken with Stardust + Mastery once the level is reached
+function msOn(id,L){const c=save.chars[id];if(!c)return false;if(!c.ms){c.ms={};for(const l of [5,10,15,20])if(c.lvl>=l)c.ms[l]=1;}return !!c.ms[L];}
+function msCost(L){return {mp:L/5*2,dust:L*8};}
 function skLv(id,k){const c=save.chars[id];return (c&&c.sk&&c.sk[k])||1;}
 function skMul(id,k){return 1+0.05*(skLv(id,k)-1);}
 function skCost(lv){return {mp:lv,dust:15*lv};}
@@ -1406,7 +1409,7 @@ const RUMORS=['heard she’s a Virgo rising','typical Gemini','your Ledger has p
 function makeMember(id){
   const c=CHARS[id],L=save.chars[id].lvl,w=ROLE_W[c.roleKey],fx=memberFx(id);
   let hp=c.hp*(1+w.hp*(L-1)),atk=c.atk*(1+w.atk*(L-1)),def=c.def+0.003*(L-1);
-  if(L>=20){hp*=1.1;atk*=1.1;def+=0.03;}
+  if(L>=20&&msOn(id,20)){hp*=1.1;atk*=1.1;def+=0.03;}
   hp=Math.round(hp*(1+(fx.hp||0)));atk=+(atk*(1+(fx.atk||0))).toFixed(1);
   if(run&&/^story/.test(run.mode)&&typeof bondOf==='function'){const bk=1+BOND_FX*bondOf(id);hp=Math.round(hp*bk);atk=+(atk*bk).toFixed(1);}def=Math.min(0.75,def+(fx.def||0));
   return {id,ch:c,rec:L,bfx:fx,x:W/2,y:H*0.62,r:12,hp,maxHp:hp,def,atk,aspd:c.aspd,speed:c.spd,
@@ -1997,7 +2000,7 @@ function swapTo(i,o={}){
   if((old.id==='kairos'&&nm.id==='lucan')||(old.id==='lucan'&&nm.id==='kairos'))addShield(nm.maxHp*0.1,4,false);
   burstParts(nm.x,nm.y,nm.ch.col,16,140);ring(nm.x,nm.y,34,nm.ch.col,0.35);sfx('swap');
   if(nm.entCd<=0&&!o.noEntrance){
-    nm.entCd=(nm.rec>=5?6:8)-blv('uranus');const epw=(nm.rec>=5?1.3:1)*skMul(nm.id,'entrance');
+    const ms5=msOn(nm.id,5);nm.entCd=(ms5?6:8)-blv('uranus');const epw=(ms5?1.3:1)*skMul(nm.id,'entrance');
     if(nm.id==='kairos'&&old.id!=='kairos'){KITS[old.id].entrance(nm,1.2*epw,true);addText(nm.x,nm.y-40,'BORROWED HOUR · '+old.ch.kit.entrance.name.toUpperCase(),C.gold,10,{life:1.1});}
     else KITS[nm.id].entrance(nm,epw,false);
   }
@@ -2041,7 +2044,7 @@ function castSkill(s){
   if(p.dash) return;
   const combo=!!(p.lastSkill&&p.lastSkill!==s&&T-p.lastSkillT<=4);
   KITS[p.id][s](p,combo);if(tut&&s==='sun')tut.sun++;
-  p.cd[s]=info.cd*starFx(p)[s==='sun'?'sunCd':'moonCd']*(1-Math.min(0.4,p.bfx.cdRed||0))*(s==='sun'&&p.rec>=10?0.85:1)*(s==='moon'&&p.rec>=15?0.85:1);sfx('skill');
+  p.cd[s]=info.cd*starFx(p)[s==='sun'?'sunCd':'moonCd']*(1-Math.min(0.4,p.bfx.cdRed||0))*(s==='sun'&&msOn(p.id,10)?0.85:1)*(s==='moon'&&msOn(p.id,15)?0.85:1);sfx('skill');
   if(combo){
     p.lastSkill=null;
     if(p.id==='noemi'){team.overheal=6;}
@@ -4663,7 +4666,12 @@ function showBuilds(back){
       h('div',{class:'bigstat'},h('b',null,'Lv '+cs.lvl),h('span',null,cs.lvl>=MAX_LVL?'max level':cs.xp+' / '+need+' Memories')),
       h('div',{class:'xpbar',style:'height:6px;background:var(--ink-line)'},h('i',{style:'background:var(--star-ink);width:'+(cs.lvl<MAX_LVL?Math.round(cs.xp/need*100):100)+'%'})),
       h('div',{class:'sect'},ico('star'),'Milestones'),
-      h('ul',{class:'miles'},...MILESTONES.map(([lv,t])=>h('li',{class:cs.lvl>=lv?'on':null},ico(cs.lvl>=lv?'check':'lock'),h('b',null,'Lv '+lv),h('span',null,t)))),
+      h('p',{class:'bv-tip'},'Reach the level, then awaken each milestone with Mastery and Stardust.'),
+      h('ul',{class:'miles'},...MILESTONES.map(([lv,t])=>{const on=msOn(cid,lv),reach=cs.lvl>=lv,cost=msCost(lv),can=reach&&!on&&(cs.mp|0)>=cost.mp&&save.dust>=cost.dust;
+        return h('li',{class:on?'on':null},ico(on?'check':'lock'),h('b',null,'Lv '+lv),h('span',null,t),
+          on?null:h('button',{class:'btn small'+(can?'':' ghost'),type:'button',style:'margin-left:auto',disabled:can?null:'disabled',
+            onclick:()=>{if(!can)return;cs.mp=(cs.mp|0)-cost.mp;save.dust-=cost.dust;cs.ms=cs.ms||{};cs.ms[lv]=1;persist();msg='Lv '+lv+' milestone awakened.';sfx('bless');render();}},
+            reach?'Awaken · '+cost.mp+' Mastery · '+cost.dust+' ✦':'Needs Lv '+lv));})),
       h('div',{class:'sect'},ico('star'),'Turning Points'),
       h('p',{class:'bv-tip'},'At Lv 5, 10, 15 and 20, choose how one skill works. Swap any time.'),
       h('div',{class:'cons'},...[5,10,15,20].map(L=>{const lock=cs.lvl<L,ch=cs.stars&&cs.stars[L]!=null?cs.stars[L]:-1,kind={5:'Basic',10:'Sun skill',15:'Moon skill',20:'Ultimate'}[L];
@@ -4862,7 +4870,7 @@ function guidePage(tab){
   return [h('h2',null,'Builds: getting stronger'),
     h('p',{class:'lede'},'Open Builds from the home screen. Your progress is saved on this device.'),
     h('div',{class:'gcards'},
-      gcard('memory','Recollection (level)','Every run gives the party Memories. Levels raise HP, ATK and DEF. Lv 5, 10, 15 and 20 unlock milestone bonuses.'),
+      gcard('memory','Recollection (level)','Every run gives the party Memories. Levels raise HP, ATK and DEF. At Lv 5, 10, 15 and 20 you can awaken a milestone bonus with Mastery and Stardust.'),
       gcard('gem','Star Fragments','Equipment. Each character has 3 slots: ☉ Sun (ATK), ☽ Moon (DEF and cooldowns), ↑ Rising (HP).'),
       gcard('Fire','Traits','Each fragment has 1 to 3 traits from its element. Pick ones that fit the character, like Fire for burn damage or Water for healing.'),
       gcard('star','Rarity','Common, Rare and ★ Star-born. Elites, Trials and the boss drop the better ones.'),
