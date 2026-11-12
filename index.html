@@ -171,6 +171,30 @@ canvas#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-ac
 .vault-body{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:10px;align-items:start}
 @media (max-width:720px){.vault-body{grid-template-columns:1fr}}
 .vault-body>*{min-width:0}
+.vault:has(.sc){max-width:1240px}
+.sc{display:grid;grid-template-columns:minmax(260px,36%) minmax(0,1fr);gap:12px;align-items:start}
+.sc-stage{position:sticky;top:6px;border-radius:14px;overflow:hidden;min-height:440px;display:flex;flex-direction:column;align-items:center;
+  background:radial-gradient(120% 80% at 50% 70%,color-mix(in srgb,var(--cc) 55%,#0d0b14) 0%,#0d0b14 75%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.08),0 10px 30px rgba(0,0,0,.45)}
+.sc-stage::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-55deg,rgba(255,255,255,.035) 0 14px,transparent 14px 28px);pointer-events:none}
+.sc-bigname{position:absolute;top:8px;left:-6px;right:-6px;text-align:center;font:900 64px/1 var(--f-display);color:rgba(255,255,255,.07);letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;overflow:hidden;pointer-events:none}
+.sc-cv{width:min(100%,330px);height:auto;image-rendering:pixelated;margin-top:6px;position:relative}
+.sc-info{position:relative;width:100%;padding:10px 14px 14px;box-sizing:border-box;display:flex;flex-direction:column;gap:7px;color:#F6EBD2;background:linear-gradient(0deg,rgba(0,0,0,.55),transparent)}
+.sc-role{font:800 11px var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--cc)}
+.sc-lv{display:flex;align-items:baseline;gap:6px}.sc-lv b{font:900 26px var(--f-display)}.sc-lv span{font:700 12px var(--f-ui);opacity:.7}
+.sc-xp{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.15);align-self:center}.sc-xp i{display:block;height:100%;border-radius:3px;background:var(--cc)}
+.sc-pills,.sc-stats{display:flex;flex-wrap:wrap;gap:5px}
+.sc-pill{display:inline-flex;gap:5px;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:3px 9px;font:700 11px var(--f-ui)}
+.sc-pill i{font-style:normal;opacity:.65}
+.sc-panel{min-width:0;display:flex;flex-direction:column;gap:8px}
+.sc-frags{grid-template-columns:minmax(170px,230px) minmax(0,1fr)!important}
+.sc .bv-detail{position:fixed!important;inset:0!important;width:auto!important;z-index:40;background:rgba(10,8,6,0.6)!important;border:0!important;box-shadow:none!important;display:flex;align-items:center;justify-content:center;padding:12px!important;max-height:none!important;overflow:auto}
+.sc .bv-detail .detail{width:min(480px,100%);max-height:calc(100dvh - 24px);overflow:auto;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.6);scrollbar-width:none}
+.sc .bv-detail.empty{display:none!important}
+.bv-tabs .tab{border-radius:999px!important;padding:3px 12px 3px 3px!important;display:flex;align-items:center;gap:6px}
+.bv-tabs .tab canvas{border-radius:50%}
+.bv-tabs .tab .lv{font:700 10px var(--f-ui);opacity:.75;margin-left:2px}
+@media (max-height:520px){.sc{grid-template-columns:minmax(150px,24%) minmax(0,1fr)!important}.sc-cv{width:auto!important;height:min(48dvh,190px)}.sc-pills{display:none}.sc-stage{max-height:calc(100dvh - 120px)}}
+@media (max-width:900px),(max-height:520px){.sc{grid-template-columns:minmax(170px,30%) minmax(0,1fr)}.sc-stage{min-height:0}.sc-bigname{font-size:34px}.sc-info{padding:6px 8px 8px;gap:4px}.sc-stats{display:none}.sc-lv b{font-size:18px}.sc-frags{grid-template-columns:1fr!important}}
 .bv-body{display:grid;grid-template-columns:minmax(230px,280px) minmax(0,1fr) minmax(250px,320px);gap:10px;align-items:start}
 .bv-body>*{min-width:0;box-sizing:border-box}
 .bv-scroll,.bv-tabs,.bv-detail,.vault,#overlay{scrollbar-width:none;-ms-overflow-style:none}
@@ -4642,7 +4666,7 @@ function showBuilds(back){
     const cs=save.chars[cid],c=CHARS[cid],fx=memberFx(cid);
     const tabs=h('div',{class:'tabs bv-tabs',onwheel:e=>{const el=e.currentTarget;if(el.scrollWidth>el.clientWidth&&Math.abs(e.deltaY)>Math.abs(e.deltaX)){el.scrollLeft+=e.deltaY;e.preventDefault();}}},...CH_ORDER.map(id=>{const s=save.chars[id],need=xpNeed(s.lvl);
       return h('button',{class:'tab',type:'button','aria-pressed':String(id===cid),onclick:()=>{cid=id;sel=null;msg='';savePrefs({buildChar:id});render();}},
-        portrait(id,36),h('span',{class:'nm'},nameOf(id)),h('span',{class:'lv'},'Recollection '+s.lvl+(s.lvl<MAX_LVL?' · '+s.xp+'/'+need:' · max'),h('div',{class:'xpbar'},h('i',{style:'width:'+(s.lvl<MAX_LVL?Math.round(s.xp/need*100):100)+'%'}))));}));
+        portrait(id,40),h('span',{class:'nm'},nameOf(id)),h('span',{class:'lv'},'Lv '+s.lvl));}));
     const slotCard=s=>{const f=fragById(cs.slots[s]),inf=SLOT_INFO[s],p=placement(cid,s),on=filter===s;
       const pick2=()=>{filter=s;sel=f?f.id:null;msg='';showAll=false;savePrefs({buildSlot:s});render();};
       const head=h('span',{class:'bv-sk'},ico(SLOT_ICON[s]),h('b',null,inf.name),h('span',null,'· '+{sun:'ATK',moon:'DEF',rising:'HP'}[s]),on?h('span',{class:'bv-on'},'Selected'):null);
@@ -4753,11 +4777,31 @@ function showBuilds(back){
     const sheet=detail?h('div',{class:'bv-detail form',style:'max-width:none;padding:8px',onclick:e=>{if(e.target===e.currentTarget){sel=null;render();}}},detail):h('div',{class:'bv-detail empty form',style:'max-width:none'},h('p',{class:'lede'},'Tap a fragment to see it here.'));
     const vtabs=h('div',{class:'seg bv-view'},h('button',{type:'button','aria-pressed':String(view==='frags'),onclick:()=>{view='frags';render();}},ico('gem'),' Fragments'),
       h('button',{type:'button','aria-pressed':String(view==='skills'),onclick:()=>{view='skills';render();}},ico('up'),' Skills'),
-      h('button',{type:'button','aria-pressed':String(view==='recoll'),onclick:()=>{view='recoll';render();}},ico('star'),' Recollection'));
+      h('button',{type:'button','aria-pressed':String(view==='recoll'),onclick:()=>{view='recoll';render();}},ico('star'),' Level & milestones'));
     root.replaceChildren(
       h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},'Builds · Recollection and Star Fragments'),h('h2',null,'Who are you building?')),
         h('div',{class:'row'},h('button',{class:'btn outline',type:'button',onclick:()=>showBackup(()=>showBuilds(back))},'Backup'),h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>{(back||goHome)();}},'Back'))),
-      tabs,vtabs,view==='frags'?h('div',{class:'bv-body'},left,right,sheet):view==='skills'?skillsView():h('div',{class:'vault-body'},left));
+      tabs,h('div',{class:'sc',style:'--cc:'+c.col},stage(),h('div',{class:'sc-panel'},vtabs,
+        view==='frags'?h('div',{class:'bv-body sc-frags'},left,right,sheet):view==='skills'?skillsView():h('div',{class:'vault-body'},left))));
+    function stage(){
+      const cv=h('canvas',{class:'sc-cv',width:'360',height:'420','aria-label':nameOf(cid)});
+      const g=cv.getContext('2d');g.imageSmoothingEnabled=false;
+      const m=makeMember(cid),sun=c.sun,moon=c.moon,ris=c.rising;
+      const loop=()=>{if(!cv.isConnected)return;const t=performance.now()/1000;g.clearRect(0,0,360,420);
+        const gl=g.createRadialGradient(180,250,10,180,250,190);gl.addColorStop(0,'rgba(255,255,255,0.22)');gl.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gl;g.fillRect(0,0,360,420);
+        g.strokeStyle='rgba(255,255,255,0.12)';g.lineWidth=2;g.beginPath();g.ellipse(180,372,110,22,0,0,Math.PI*2);g.stroke();
+        drawChar(g,cid,180,330+Math.sin(t*1.6)*3,{face:1,scale:9,t:t});requestAnimationFrame(loop);};
+      requestAnimationFrame(loop);
+      const pill=(k,v)=>h('span',{class:'sc-pill'},h('i',null,k),v);
+      return h('div',{class:'sc-stage'},
+        h('div',{class:'sc-bigname'},nameOf(cid)),
+        cv,
+        h('div',{class:'sc-info'},
+          h('div',{class:'sc-role'},c.role),
+          h('div',{class:'sc-lv'},h('b',null,'Lv '+cs.lvl),h('span',null,'/ '+MAX_LVL),h('div',{class:'sc-xp'},h('i',{style:'width:'+(cs.lvl<MAX_LVL?Math.round(cs.xp/xpNeed(cs.lvl)*100):100)+'%'}))),
+          h('div',{class:'sc-pills'},pill('☉',sun),pill('☽',moon),pill('↑',ris||'—')),
+          h('div',{class:'sc-stats'},pill('HP',m.maxHp),pill('ATK',m.atk),pill('DEF',Math.round(m.def*100)+'%'),pill('SPD',c.aspd.toFixed(1)+'/s'))));
+    }
     function skillsView(){
       const mp=cs.mp|0,K=c.kit;
       const row=k=>{const lv=skLv(cid,k),max=lv>=SKILL_MAX,capped=lv>=cs.lvl,cost=skCost(lv),can=!max&&!capped&&mp>=cost.mp&&save.dust>=cost.dust;
@@ -4771,7 +4815,7 @@ function showBuilds(back){
             :h('button',{class:'btn small'+(can?'':' ghost'),type:'button',disabled:can?null:'disabled',title:capped?'Raise '+nameOf(cid)+' to Lv '+(lv+1)+' first':'',
               onclick:()=>{if(!can)return;cs.mp=mp-cost.mp;save.dust-=cost.dust;cs.sk=cs.sk||{};cs.sk[k]=lv+1;persist();msg=SKILL_NAME[k]+' → Lv '+(lv+1)+'.';sfx('bless');render();}},
               capped?'Needs Lv '+(lv+1):h('span',null,'Upgrade · '+cost.mp+' ',ico('up'),' '+cost.dust+' ',ico('star'))));};
-      return h('div',{class:'form',style:'max-width:760px'},formHead('Skill Mastery · '+nameOf(cid),'Recollection Lv '+cs.lvl),
+      return h('div',{class:'form',style:'max-width:none;box-sizing:border-box;width:100%'},formHead('Skill Mastery · '+nameOf(cid),'Recollection Lv '+cs.lvl),
         h('div',{class:'row',style:'gap:8px;margin:0 0 6px;flex-wrap:wrap'},h('span',{class:'dustpill'},ico('up'),mp+' Mastery'),h('span',{class:'dustpill'},ico('star'),save.dust+' Stardust')),
         h('p',{class:'bv-tip'},'Every match gives Mastery to each party member. Each skill level adds +5% power (damage, heals, shields or buff strength). Skills can’t go above '+nameOf(cid)+'’s level.'),
         msg?h('p',{class:'note',style:'color:var(--res-ink);margin:0 0 6px'},msg):null,
