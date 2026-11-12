@@ -526,6 +526,26 @@ body{font-weight:600}
 .title-card h1{font-family:var(--f-display);letter-spacing:.08em;text-indent:.08em;color:#FFE6A3;text-shadow:0 4px 0 #3B2617,0 0 24px rgba(255,182,92,.35)}
 .title-card .sub{font-family:var(--f-display);color:#9BE37A;letter-spacing:.25em}
 .title-card .blurb{font-weight:700}
+.bm{max-width:1100px;gap:12px}
+.bm .seg{border-color:rgba(246,235,210,.3);border-radius:999px;background:rgba(13,11,20,.6)}
+.bm .seg button{color:#F6EBD2;padding:7px 14px}
+.bm .seg button[aria-pressed="true"]{background:#F2D27A;color:#2A1B10}
+.bm .seglabel{color:rgba(246,235,210,.65)}
+.bm .serpent{margin:0 0 10px;color:#F6EBD2;background:rgba(13,11,20,.55);border-left:3px solid #F2D27A;padding:6px 12px;border-radius:0 6px 6px 0;display:inline-block}
+.bm .serpent b{color:#F2D27A}
+.bm .choices{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.bm-card{position:relative;overflow:hidden;min-height:168px;justify-content:flex-end;border:0!important;border-radius:10px!important;padding:40px 14px 14px!important;color:#F6EBD2!important;
+  background:linear-gradient(180deg,rgba(13,11,20,.35) 0%,rgba(13,11,20,.82) 55%,rgba(13,11,20,.96) 100%),var(--bg,none) center/cover,#1a1622!important;
+  box-shadow:inset 0 0 0 1.5px rgba(246,235,210,.12),0 8px 20px rgba(0,0,0,.4);transition:transform .15s,box-shadow .15s}
+.bm-card:hover,.bm-card:focus-visible{transform:translateY(-3px);box-shadow:inset 0 0 0 2px #F2D27A,0 12px 26px rgba(0,0,0,.5);outline:none}
+.bm-card .tag{position:absolute;top:10px;left:10px;background:rgba(13,11,20,.7);color:#F2D27A!important;padding:3px 9px;border-radius:999px;font-size:9px!important}
+.bm-card h3{font-size:20px!important;color:#FFF3D6;text-shadow:0 2px 0 rgba(0,0,0,.5)}
+.bm .seg{align-self:flex-start;width:max-content}
+.bm>div:not(.select-head) .row{justify-content:flex-start;align-items:center;gap:8px}
+.bm-rule{color:#F6EBD2!important;display:-webkit-box!important;margin:0;font:13px/1.4 var(--f-form);opacity:.85;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bm-card .reward{margin:4px 0 0;padding-top:6px;border-top:1px solid rgba(246,235,210,.15);color:#9BE37A!important;font:700 11px var(--f-ui);letter-spacing:.03em}
+@media (max-height:520px){.bm .eyebrow{display:none}.bm .select-head h2{font-size:18px}.bm-card{min-height:130px;padding:34px 10px 10px!important}.bm-card h3{font-size:16px!important}.bm-rule{-webkit-line-clamp:2;font-size:12px}.bm .choices{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}}
+
 .tm{gap:26px;max-width:none}
 .tm-logo{display:flex;flex-direction:column;align-items:center;gap:6px}
 .tm-menu{display:flex;flex-direction:column;gap:6px;width:min(320px,80vw)}
@@ -2676,6 +2696,9 @@ Object.assign(SPK,{
 
 // ── cutscene player: painted panels (map art or custom), staged cast, captions, typewriter dialogue
 const cutBG={};
+const THUMB={};
+function thumbOf(key){if(THUMB[key])return THUMB[key];try{const src=cutBg(key),c=document.createElement('canvas');c.width=320;c.height=180;const g=c.getContext('2d');
+  const sc=Math.max(320/src.width,180/src.height);g.drawImage(src,(320-src.width*sc)/2,(180-src.height*sc)/2,src.width*sc,src.height*sc);return THUMB[key]=c.toDataURL('image/jpeg',0.7);}catch(e){return null;}}
 function cutBg(key){
   const k=key+'|'+W;if(cutBG[k])return cutBG[k];
   const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
@@ -4458,7 +4481,8 @@ function showBattleMenu(party,tab){
   const avg=Math.round(party.reduce((t,id)=>t+save.chars[id].lvl,0)/party.length);
   const stars=k=>{const n=starsOf(k);return '★'.repeat(n)+'☆'.repeat(3-n);};
   const seg=(vals,cur,labels,set)=>{const g=h('div',{class:'seg',role:'group'},...vals.map((v,i)=>h('button',{type:'button','aria-pressed':String(v===cur),onclick:()=>{set(v);showBattleMenu(party,tab);}},labels[i])));return g;};
-  const card=(tag,name,sub,extra,go,el)=>h('button',{class:'choice',type:'button',onclick:go},h('span',{class:'tag'},tag),h('h3',null,name),h('p',null,sub),extra?h('p',{class:'reward'},extra):null);
+  const card=(tag,name,sub,extra,go,th)=>{const bg=thumbOf(th||'night');
+    return h('button',{class:'choice bm-card',type:'button',onclick:go,style:bg?'--bg:url('+bg+')':null},h('span',{class:'tag'},tag),h('h3',null,name),h('p',{class:'bm-rule'},sub),extra?h('p',{class:'reward'},extra):null);};
   const tabs=h('div',{class:'seg',role:'tablist',style:'margin:0 0 10px'},...[['rifts','Rifts'],['boss','Horaios'],['trials','Trials'],['climb','Climb'],['practice','Practice']].map(([k,l])=>h('button',{type:'button','aria-pressed':String(k===tab),onclick:()=>showBattleMenu(party,k)},l)));
   let body;
   if(tab==='rifts'){
@@ -4469,34 +4493,34 @@ function showBattleMenu(party,tab){
       h('p',{class:'serpent'},h('b',null,'Today’s rift condition: '),riftMod().t),
       h('div',{class:'choices'},...RIFTS.map(id=>{const d=ROOMS[id];
         return card(d.drop+' · '+stars(starKey(id,t)),d.name,d.ruleText,(d.el?'Drops '+t+' '+d.el+' Fragment'+(t>1?'s':'')+(t===3?' · best Star-born odds':''):d.mech==='xp'?'Up to '+Math.round(62.5*t)+' Memories':d.mech==='drill'?'+'+[0,4,7,10][t]+' Skill Mastery each':'Up to '+45*t+' Stardust')+' · par '+RIFT_PAR[id]+'s',
-          ()=>startBattle(party,id,0,{tier:t}));})));
+          ()=>startBattle(party,id,0,{tier:t}),d.theme);})));
   } else if(tab==='boss'){
     const df=battleSel.diff,wk=Math.floor(Date.now()/604800000),done=save.bossWeek&&save.bossWeek[df]===wk;
     body=h('div',null,
       h('div',{class:'row',style:'margin:0 0 6px'},h('span',{class:'seglabel'},'Difficulty'),seg([0,1,2],df,['Normal','Hard','Nightmare'],v=>battleSel.diff=v)),
       h('div',{class:'choices'},card(['Normal','Hard','Nightmare'][df]+' · '+stars(starKey('boss',1,df)),'Horaios, Kosmokrator of the Moon',
         ['3 phases. Filing Shields from phase 2: Stagger breaks them faster.','HP ×2, damage ×1.3. After 2 minutes he speeds up.','HP ×3.4, damage ×1.6, enrage at 2 minutes, and a 4th phase where the Moon Gate pulls you in.'][df],
-        (done?'Weekly Star-born Fragment: claimed':'Weekly reward: 1 Star-born Fragment (first clear this week)')+' · par 120s',()=>startBattle(party,'boss',0,{diff:df}))));
+        (done?'Weekly Star-born Fragment: claimed':'Weekly reward: 1 Star-born Fragment (first clear this week)')+' · par 120s',()=>startBattle(party,'boss',0,{diff:df}),ROOMS.boss.theme)));
   } else if(tab==='trials'){
     body=h('div',{class:'choices'},...['trialMercury','trialMars'].map(id=>{const d=ROOMS[id],b=save.best&&save.best[id];
-      return card(d.num+' · '+stars(id),d.place,d.ruleText,(b?'Best '+b+'s':'No best time yet')+' · par '+RIFT_PAR[id]+'s · drops a Fragment',()=>startBattle(party,id,0,{}));}));
+      return card(d.num+' · '+stars(id),d.place,d.ruleText,(b?'Best '+b+'s':'No best time yet')+' · par '+RIFT_PAR[id]+'s · drops a Fragment',()=>startBattle(party,id,0,{}),d.theme);}));
   } else if(tab==='climb'){
-    body=h('div',{class:'choices'},card('Full run','The climb','All six districts, Blessings, the Mercy Fountain and Horaios in one run.','Memories, Stardust and Fragments',()=>startBattle(party,'climb',lvl)));
+    body=h('div',{class:'choices'},card('Full run','The climb','All six districts, Blessings, the Mercy Fountain and Horaios in one run.','Memories, Stardust and Fragments',()=>startBattle(party,'climb',lvl),'night'));
   } else {
     const blessSeg=h('div',{class:'seg',role:'group'},...[0,1,3].map(v=>h('button',{type:'button','aria-pressed':String(v===lvl),onclick:e=>{lvl=v;savePrefs({bless:v});for(const b of blessSeg.children)b.setAttribute('aria-pressed',String(b===e.currentTarget));}},v===0?'None':v===1?'All Lv 1':'All Lv 3')));
     const tmpTeam=team;team={members:party.map(makeMember)};
-    const items=HOUSES.map(id=>{const d=ROOMS[id];return card(d.num+' · '+d.sign+(resOf(d)?' · resonates':''),d.place,d.ruleText,'Practice · no rewards',()=>startBattle(party,id,lvl,{practice:true}));});
+    const items=HOUSES.map(id=>{const d=ROOMS[id];return card(d.num+' · '+d.sign+(resOf(d)?' · resonates':''),d.place,d.ruleText,'Practice · no rewards',()=>startBattle(party,id,lvl,{practice:true}),d.theme);});
     team=tmpTeam;
     body=h('div',null,h('div',{class:'row',style:'margin:0 0 10px'},h('span',{class:'seglabel'},'Start with Blessings'),blessSeg),
       h('p',{class:'serpent'},'Practice anything with any Blessings. Nothing is earned or lost.'),
-      h('div',{class:'choices'},...items,card('Vice Gallery','Every Vice',ROOMS.arena.ruleText,'Practice · no rewards',()=>startBattle(party,'arena',lvl,{practice:true})),
-        card('Archon Gate','Horaios (practice)','Normal difficulty, with your chosen Blessings.','Practice · no rewards',()=>startBattle(party,'boss',lvl,{practice:true,diff:0}))));
+      h('div',{class:'choices'},...items,card('Vice Gallery','Every Vice',ROOMS.arena.ruleText,'Practice · no rewards',()=>startBattle(party,'arena',lvl,{practice:true}),ROOMS.arena.theme),
+        card('Archon Gate','Horaios (practice)','Normal difficulty, with your chosen Blessings.','Practice · no rewards',()=>startBattle(party,'boss',lvl,{practice:true,diff:0}),ROOMS.boss.theme)));
   }
-  openOverlay(h('div',{class:'form',style:'max-width:880px'},
-    formHead('Battle','Party · '+party.map(nameOf).join(' · ')+' · avg Lv '+avg),
-    h('h2',{style:'padding-right:0'},'Where to?'),tabs,body,
-    h('div',{class:'row'},h('button',{class:'btn ghost',type:'button','data-back':'1',onclick:()=>{showPartySelect('battle');}},'Party'),
-      buildsBtn(goHome),h('button',{class:'btn ghost',type:'button',onclick:()=>{goHome();}},'Home'))));
+  openOverlay(h('div',{class:'select bm'},
+    h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},party.map(nameOf).join(' · ')+' · avg Lv '+avg),h('h2',null,'Where to?')),
+      h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>{showPartySelect('battle');}},'Party'),
+        h('button',{class:'btn outline',type:'button',onclick:()=>{showBuilds(()=>showBattleMenu(party,tab));}},'Builds'),h('button',{class:'btn outline',type:'button',onclick:()=>{goHome();}},'Home'))),
+    tabs,body),'mode-select');
 }
 function showTrainingDone(){
   state='panel';
