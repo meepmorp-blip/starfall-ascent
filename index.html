@@ -905,7 +905,7 @@ const CHARS={
       ult:{name:'The Unwritten Minute',short:'MINUTE',dur:8,desc:'Stops time for 3 seconds. Then Overflow for 8s: +35% damage, and his next 10 basic attacks are all finishers.'},
       p1:{name:'Undertow',desc:'Every hit slows the Vice’s movement and its attacks for 1.5s.'},
       p2:{name:'Pull of the Tide',desc:'Slowed Vices he hits take 10% more damage from the whole team for 3s.'}}},
-  ines:{id:'ines',name:'Sgt. Ines Calder',short:'Ines',role:'Sub DPS · Sniper',roleKey:'sub',col:'#E0A040',who:'31 · sergeant, Meridian Garrison',
+  ines:{id:'ines',name:'Sgt. Agnes Calder',short:'Agnes',role:'Sub DPS · Sniper',roleKey:'sub',col:'#E0A040',who:'31 · sergeant, Meridian Garrison',
     blurb:'Dry, sharp and always in control. Would never admit she looks after her squad like an older sister.',
     sun:'Capricorn',moon:'Scorpio',rising:'Sagittarius',aspect:'Sextile',atkLabel:'RIFLE',
     hp:85,atk:13,def:0.08,aspd:1.25,spd:150,range:'Long',bars:{HP:2,ATK:5,DEF:1,ASPD:1,SPD:3,RANGE:5},
@@ -920,7 +920,7 @@ const CHARS={
       ult:{name:'Killzone',short:'KILLZONE',dur:3,desc:'For 3s, on or off the field, she fires a heavy shot every 0.8s at the toughest enemy and Spots it.'},
       p1:{name:'Overwatch',desc:'While on the bench she snipes the strongest Spotted enemy (or the closest one) every 2 seconds.'},
       p2:{name:'Sergeant',desc:'While she is in the party, switching characters recharges faster (1s → 0.7s).'}}},
-  bram:{id:'bram',name:'Bram',role:'Shielder · Control',roleKey:'shield',col:'#B08A52',who:'25 · corporal, Meridian Garrison',
+  bram:{id:'bram',name:'Big Boy Bram',role:'Shielder · Control',roleKey:'shield',col:'#B08A52',who:'25 · corporal, Meridian Garrison',
     blurb:'Huge, clumsy and kind. Apologizes to furniture. Would follow Sergeant Calder into a rift, and has.',
     sun:'Taurus',moon:'Cancer',rising:'Sagittarius',aspect:'Sextile',atkLabel:'BASH',
     hp:170,atk:6,def:0.32,aspd:1.5,spd:132,range:'Close',bars:{HP:5,ATK:1,DEF:5,ASPD:2,SPD:1,RANGE:1},
@@ -935,7 +935,7 @@ const CHARS={
       ult:{name:'Bram’s Stand',short:'STAND',dur:6,desc:'One huge slam (500%) around him, then a shield dome for 6s that keeps pushing enemies out and stunning them. The team deals +15% damage while it stands.'},
       p1:{name:'Oops',desc:'Every 4 seconds, on the field or from the bench, he stumbles by accident: a little quake around the active character that deals light damage and adds Stagger.'},
       p2:{name:'Guard Duty',desc:'While on the bench he blocks one bullet aimed at the active character every 8 seconds.'}}},
-  noemi:{id:'noemi',name:'Dr. Noemi Lark',short:'Noemi',role:'Healer · Buffer',roleKey:'heal',col:'#7BE0A8',who:'30 · ER doctor at St. Lucia’s',
+  noemi:{id:'noemi',name:'Dr. Naomi Lark',short:'Naomi',role:'Healer · Buffer',roleKey:'heal',col:'#7BE0A8',who:'30 · ER doctor at St. Lucia’s',
     blurb:'Precise and permanently tired. Writes the things she’s afraid of forgetting on her arm. Married to Theo.',
     sun:'Virgo',moon:'Taurus',rising:'Cancer',aspect:'Trine',atkLabel:'DARTS',
     hp:90,atk:7,def:0.15,aspd:2.4,spd:152,range:'Mid',bars:{HP:3,ATK:1,DEF:3,ASPD:3,SPD:3,RANGE:3},
@@ -951,7 +951,7 @@ const CHARS={
       p1:{name:'Notes on My Arm',desc:'Her healing is 30% stronger on anyone below 40% HP.'},
       p2:{name:'Lark & Lark',desc:'If Theo is in the party, every damage buff either of them gives lasts 50% longer.'}}},
   theo:{id:'theo',name:'Theo Lark',short:'Theo',role:'Support DPS · Inventor',roleKey:'sub',col:'#59DDEB',who:'31 · rift researcher nobody takes seriously',
-    blurb:'Talks too fast, believes the impossible, and builds machines out of whatever he finds. Married to Noemi.',
+    blurb:'Talks too fast, believes the impossible, and builds machines out of whatever he finds. Married to Naomi.',
     sun:'Aquarius',moon:'Gemini',rising:'Leo',aspect:'Trine',atkLabel:'ZAP',
     hp:88,atk:8,def:0.12,aspd:2.6,spd:155,range:'Mid',bars:{HP:2,ATK:2,DEF:2,ASPD:4,SPD:3,RANGE:4},
     rulers:{saturn:'Aquarius Sun',uranus:'Aquarius Sun',mercury:'Gemini Moon'},
@@ -965,12 +965,12 @@ const CHARS={
       ult:{name:'Big Idea',short:'BIG IDEA',dur:12,desc:'Summons a walking machine that fights next to you with missiles for 9s.'},
       p1:{name:'Calibrated',desc:'While one of his turrets is up, everything Theo and his machines hit takes 20% more damage.'},
       p2:{name:'Show-off',desc:'When one of his machines gets a kill, the active character gains a little Ultimate energy.'}}},
-  lucan:{id:'lucan',name:'Lucan Crane',short:'Lucan',role:'Main DPS · Long range',roleKey:'burst',col:'#BFE6FF',who:'20 · senior clerk at the Concord Office, the Chancellor’s adopted son',
+  lucan:{id:'lucan',name:'Lucas Crane',short:'Lucas',role:'Main DPS · Long range',roleKey:'burst',col:'#BFE6FF',who:'20 · senior clerk at the Concord Office, the Chancellor’s adopted son',
     blurb:'Cold, controlled, and hard to reach. Grew up with Kairos in the orphanage, forgot him, and swore never to again.',
     sun:'Scorpio',moon:'Capricorn',rising:'Virgo',aspect:'Sextile',atkLabel:'SHARDS',
     hp:90,atk:16.5,def:0.1,aspd:1.9,spd:160,range:'Long',bars:{HP:3,ATK:5,DEF:2,ASPD:1,SPD:4,RANGE:5},
     rulers:{mars:'Scorpio Sun',saturn:'Capricorn Moon',mercury:'Virgo Rising'},
-    mech:'Vow: with Kairos in the party, switching between them shields the one coming in, and Drowsy enemies take +25% from Lucan.',
+    mech:'Vow: with Kairos in the party, switching between them shields the one coming in, and Drowsy enemies take +25% from Lucas.',
     kit:{
       entrance:{name:'Cold Entry',el:'Earth',desc:'Fires a fan of stone shards and gives a small shield (8% HP).'},
       basic:{name:'Frost Pistol',tap:'A slow 4-shot combo that aims itself. The 4th shot is a big piercing finisher (300%).',hold:'Lance Shot: a charged piercing shot (320%) at the nearest enemy.'},
@@ -979,8 +979,8 @@ const CHARS={
       combo:{name:'Sextile · Discipline',desc:'Using both skills in a row: his crits deal 50% more damage for 6s.'},
       ult:{name:'Petrify',short:'PETRIFY',dur:3,desc:'Turns every enemy in a wide area to stone for 3s, then shatters them for big damage.'},
       p1:{name:'Double Tap',desc:'After a Lance Shot, 50% chance to fire a second one alongside it at half damage.'},
-      p2:{name:'Covering Fire',desc:'If Kairos is in the team, Lucan fires from the bench every time Kairos lands a finisher. (The Vow still holds: once per fight he takes a killing blow meant for Kairos.)'}}},
-  cass:{id:'cass',name:'Sister Cass Vire',short:'Cass',role:'Burn DPS · Healer',roleKey:'sub',col:'#FF7A45',who:'21 · former agent of the Office of Correction',
+      p2:{name:'Covering Fire',desc:'If Kairos is in the team, Lucas fires from the bench every time Kairos lands a finisher. (The Vow still holds: once per fight he takes a killing blow meant for Kairos.)'}}},
+  cass:{id:'cass',name:'Sister Cassie Vire',short:'Cassie',role:'Burn DPS · Healer',roleKey:'sub',col:'#FF7A45',who:'21 · former agent of the Office of Correction',
     blurb:'A true believer who saw what the Church calls mercy, and broke her chain. Fierce, blunt, all or nothing.',
     sun:'Sagittarius',moon:'Virgo',rising:'Aries',aspect:'Square',atkLabel:'CENSER',
     hp:105,atk:9,def:0.18,aspd:2.0,spd:156,range:'Mid',bars:{HP:4,ATK:3,DEF:3,ASPD:2,SPD:3,RANGE:2},
@@ -1325,7 +1325,7 @@ const ROOMS={
   lethe:{id:'lethe',kind:'lethe',num:'Fountain',name:'Mercy Fountain',ruleText:'Restore and revive the whole team. One random Blessing level fades.'},
   boss:{id:'boss',kind:'boss',num:'Archon Gate',name:'Horaios',place:'Registry Hall',theme:'lobby',ruleText:'Kosmokrator of the Moon. Intake Window 1.'},
 };
-ROOMS.training={id:'training',kind:'training',num:'Training',name:'Vigil Yard drills',place:'Vigil Yard',theme:'yard',rule:'none',ruleText:'Ines runs you through the basics. You cannot be hurt here.'};
+ROOMS.training={id:'training',kind:'training',num:'Training',name:'Vigil Yard drills',place:'Vigil Yard',theme:'yard',rule:'none',ruleText:'Agnes runs you through the basics. You cannot be hurt here.'};
 const TUT_STEPS=[
   {t:'Move',d:()=>isTouch?'Drag your left thumb anywhere on the left side to walk around.':'Walk around with WASD.',ic:'move',ok:u=>u.moved>220},
   {t:'Basic attack',d:()=>isTouch?'Tap the big button (your weapon icon) to hit the training dummy. Land 6 hits.':'Press J or click to hit the dummy. Land 6 hits.',ic:'atk',setup:()=>tutDummy(),ok:u=>u.hits>=6},
@@ -1849,7 +1849,7 @@ const KITS={
       if(p.ripWin>0){p.ripWin-=dt;if(p.ripWin<=0){p.ripWin=0;p.cd.sun=p.ch.kit.sun.cd*starFx(p).sunCd;}}},
     status(p){const l=[];if(p.ultT>0)l.push(['#7FE3F0','OVERFLOW '+p.ultT.toFixed(1)+'s']);if(p.finN>0)l.push([C.gold,'FINISHERS ×'+p.finN]);if(p.ripWin>0)l.push([C.water,'RIPTIDE · 2nd dash '+p.ripWin.toFixed(1)+'s']);if(p.atkUpT>0)l.push([C.water,'ATK +10% '+p.atkUpT.toFixed(1)+'s']);if(p.counterT>0)l.push([C.water,'SHELL · counter ready '+p.counterT.toFixed(1)+'s']);return l;},
     sunUp:p=>p.ripWin||0, moonUp:p=>p.counterT},
-  // ───────── Ines: sniper, Spotted, off-field overwatch
+  // ───────── Agnes: sniper, Spotted, off-field overwatch
   ines:{chargeT:0.6,
     tap(p){const R=560;const t=nearestTarget(p.x,p.y,R,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(R);faceTo(a);
       {const v=inputVec(),m=Math.hypot(v.x,v.y);if(m>0.2){p.dodgeT=Math.max(p.dodgeT,0.12);p.dvx=v.x/m*300;p.dvy=v.y/m*300;}}
@@ -1887,7 +1887,7 @@ const KITS={
     update(p,dt){if(p.down)return;p.oopsT=(p.oopsT??4)-dt;if(p.oopsT<=0){p.oopsT=4;const q=player;radial(q.x,q.y,80,p.atk*0.7,{stag:35,knock:120,col:C.earth,src:p});ring(q.x,q.y,80,C.earth,0.35);addText(q.x,q.y-34,p===player?'OOPS':'OOPS (BRAM)',C.earth,10,{life:0.7});shake(2,0.08);sfx('thud');}},
     status(p){const l=[];if(team.stand>0)l.push([C.earth,'STAND '+team.stand.toFixed(1)+'s']);const w=allies.filter(a=>a.clayBram&&!a.dead).length;if(w)l.push([C.earth,'MINI BRAM']);return l;},
     sunUp:p=>{let m=0;for(const a of allies)if(a.clayBram)m=Math.max(m,a.life);return m;}, moonUp:p=>team.shield?team.shield.t:0},
-  // ───────── Noemi: heals, damage buffs, revive ult
+  // ───────── Naomi: heals, damage buffs, revive ult
   noemi:{chargeT:0.5,
     tap(p){const a=aimDir(420);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*0.6,mult:1+consumeSwift(),basic:true,spd:640,r:4,kind:'dart',src:p,pn:0.6,col:C.water,wet:p.atk*0.25}));p.atkCd=1/effAspd(p);sfx('dart');},
     hold(p){const t=nearestTarget(p.x,p.y,420,null),at=t?{x:t.x,y:t.y}:aimPoint(p,200);faceTo({x:Math.sign(at.x-p.x)||1,y:0});
@@ -1914,7 +1914,7 @@ const KITS={
     update(p,dt){},
     status(p){const l=[];const n=allies.filter(a=>a.kind==='turret').length;if(n)l.push(['#CFEAFF','TURRET · +20% DMG']);if(team.overclock>0)l.push(['#CFEAFF','OVERCLOCK '+team.overclock.toFixed(1)+'s']);return l;},
     sunUp:p=>{let m=0;for(const a of allies)if(a.kind==='turret')m=Math.max(m,a.life);return m;}, moonUp:p=>team.overclock},
-  // ───────── Lucan: long-range shards, pins, Vow with Kairos
+  // ───────── Lucas: long-range shards, pins, Vow with Kairos
   lucan:{chargeT:0.9,
     tap(p){const t=nearestTarget(p.x,p.y,600,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(600);faceTo(a);
       const st=comboN(p,4),mult=1+consumeSwift();
@@ -1932,7 +1932,7 @@ const KITS={
     update(p,dt){if(p.critT>0)p.critT-=dt;if(p.cdmgT>0)p.cdmgT-=dt;},
     status(p){const l=[];if(p.critT>0)l.push([C.moon,'COMPOSURE '+p.critT.toFixed(1)+'s']);if(p.cdmgT>0)l.push(['#BFE6FF','CRIT DMG +50% '+p.cdmgT.toFixed(1)+'s']);if(inParty('kairos'))l.push(['#BFE6FF',team.vowUsed?'VOW · spent':'VOW · ready']);return l;},
     sunUp:p=>0, moonUp:p=>p.critT||0},
-  // ───────── Cass: holy fire, healing, censer
+  // ───────── Cassie: holy fire, healing, censer
   cass:{chargeT:0.55,
     tap(p){const a=aimDir(150);faceTo(a);meleeArc(a,68,1.15,p.atk*0.9,{basic:true,mult:1+consumeSwift(),burn:3,knock:80,pn:0.9,col:C.fire,src:p});p.atkCd=1/effAspd(p);sfx('slash');},
     hold(p){radial(p.x,p.y,92,p.atk*1.5,{basic:true,mult:1+consumeSwift(),burn:5,knock:180,pn:1.4,col:C.fire,src:p});burstParts(p.x,p.y,C.fire,24,180);p.atkCd=0.5;sfx('boom');},
@@ -2058,7 +2058,7 @@ function hurtPlayer(d){
     if(p.id==='kairos'&&lu&&!lu.down&&!team.vowUsed){
       team.vowUsed=true;swapTo(team.members.indexOf(lu),{forced:true,noEntrance:true});
       lu.hp=Math.max(1,lu.hp-d*(1-effDef(lu)));lu.iframe=0.8;
-      setBanner('Vow','Lucan takes the hit',1.2);sfx('block');shake(5,0.2);burstParts(lu.x,lu.y,'#BFE6FF',24,180);
+      setBanner('Vow','Lucas takes the hit',1.2);sfx('block');shake(5,0.2);burstParts(lu.x,lu.y,'#BFE6FF',24,180);
       return;
     }
   }
@@ -2950,7 +2950,7 @@ function showPick3(roster,o,done){
         return h('button',{class:'slot'+(on?' on':''),type:'button','aria-pressed':String(on),disabled:lock?true:null,onclick:()=>{
           if(on)sel=sel.filter(x=>x!==id);else if(sel.length<n)sel.push(id);else{sel.pop();sel.push(id);}sfx('tick');render();}},
           portrait(id,44),h('span',{class:'nm'},nameOf(id)+(lock?' · must go':on?' · #'+(sel.indexOf(id)+1):'')),h('span',{class:'rl '+ROLE_COL[c.roleKey]},c.role));})),
-      h('p',{class:'serpent'},'The first pick starts on the field. Bench characters still help: Ines snipes, Theo’s machines keep working, Bram blocks bullets.'),
+      h('p',{class:'serpent'},'The first pick starts on the field. Bench characters still help: Agnes snipes, Theo’s machines keep working, Bram blocks bullets.'),
       h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',disabled:sel.length<Math.min(n,roster.length)?true:null,onclick:()=>{closeOverlay();done(sel.slice());}},'Go · '+sel.map(nameOf).join(', '))));
   };
   render();openOverlay(root,'mode-select');
@@ -3197,12 +3197,12 @@ addMission('market',{type:'walk',name:'Tuesday Errands',place:'Market Ring',them
 addMission('first',{type:'fight',name:'First Fight',place:'Market Ring',theme:'market',party:['kairos'],lvl:1,kills:30,max:3,tut:1,pool:['gossip','hothead','gossip'],brief:'Vices pour out of the rift. Your body knows the stance.',
   tips:[[0,'Attack','Tap attack for the Clock Hands combo. The 5th hit is a finisher.'],[3,'Dodge','Dodge right before a hit. A perfect dodge triggers Slipstream.'],[6,'Tide','Your hits add Tide. At 3 stacks a Vice goes Drowsy.'],[8,'Foresight','Enemies flicker just before they attack. That’s you, seeing it early.']]});
 addMission('garrison',{type:'fight',name:'Garrison',place:'Market Ring',theme:'market',party:['kairos','ines','bram'],lvl:1,kills:24,max:5,pool:['gossip','hothead','waxer','gossip'],brief:'Hold the square with the Garrison until the rift seals.',
-  tips:[[0,'Switch',(isTouch?'Tap a portrait':'Press 1, 2 or 3')+' to switch. Everyone has an Entrance move.'],[4,'Ines','Ines Spots enemies (+15% damage taken) and keeps sniping from the bench.'],[8,'Bram','Bram hits light. His bashes stagger, then stun.'],[12,'Aspect combo','Use one skill, then the other, for an Aspect combo.']]});
+  tips:[[0,'Switch',(isTouch?'Tap a portrait':'Press 1, 2 or 3')+' to switch. Everyone has an Entrance move.'],[4,'Agnes','Agnes Spots enemies (+15% damage taken) and keeps sniping from the bench.'],[8,'Bram','Bram hits light. His bashes stagger, then stun.'],[12,'Aspect combo','Use one skill, then the other, for an Aspect combo.']]});
 addMission('assault',{type:'fight',name:'Breakout · Outside',place:'Institute sub-levels',theme:'lab',lvl:3,kills:20,max:5,pool:['hothead','waxer','gossip','deadline'],brief:'Fight down through the Institute. Third sub-level.',
-  tips:[[0,'Lucan','Lucan pins enemies from range. Switching Kairos ↔ Lucan gives a shield.']]});
+  tips:[[0,'Lucas','Lucas pins enemies from range. Switching Kairos ↔ Lucas gives a shield.']]});
 addMission('escape',{type:'fight',name:'Escape',place:'Institute sub-levels',theme:'lab',lvl:3,kills:16,max:5,pool:['hothead','gossip','waxer'],brief:'Get out. All of you.',
-  tips:[[0,'Dess','Dess is support: Sun = water pulses on ally hits, Moon = team crit damage, Ult = team +20% damage.'],[5,'The Vow','If Kairos would go down, Lucan takes the hit. Once per fight.']]});
-addMission('cass',{type:'fight',name:'The Inquisitor',place:'Ash Lane rooftops',theme:'rooftop',lvl:4,cass:1,pool:['gossip'],brief:'Sister Cass punishes standing still. Keep moving.'});
+  tips:[[0,'Dess','Dess is support: Sun = water pulses on ally hits, Moon = team crit damage, Ult = team +20% damage.'],[5,'The Vow','If Kairos would go down, Lucas takes the hit. Once per fight.']]});
+addMission('cass',{type:'fight',name:'The Inquisitor',place:'Ash Lane rooftops',theme:'rooftop',lvl:4,cass:1,pool:['gossip'],brief:'Sister Cassie punishes standing still. Keep moving.'});
 addMission('festival',{type:'defense',name:'Festival of the Mercy',place:'Festival Square',theme:'plaza',lvl:5,dur:100,crowd:1,fore:1,
   brief:'Five rifts at once. Keep the Vices off the crowd.',pool:['hothead','gossip','waxer','devourer','deadline','gossip']});
 
@@ -3260,7 +3260,7 @@ function initExtra(m){
   } else if(M.type==='fight'){
     p.x=W/2;p.y=H*0.62;m.k0=run.kills;m.spawned=0;m.ti=0;m.spawnCd=0.6;m.still=0;m.ct=2.5;
     if(M.cass){const e=makeEnemy('hothead',W/2,AY0+70,{instant:true});e.cass=1;e.hp=e.maxHp=Math.round(760*room.hpScale);e.r=15;e.spd=95;e.spawnT=0.4;enemies.push(e);m.foe=e;
-      m.goals=[{t:'Sister Cass · keep moving'}];}
+      m.goals=[{t:'Sister Cassie · keep moving'}];}
     else m.goals=[{t:M.brief}];
     if(M.tut){tut={i:0,moved:0,hits:0,fin:0,hold:0,dodge:0,sun:0,combo:0,swap:0,ult:0,lastT:0,lx:0,ly:0,done:false,steps:STORY_TUT,label:'First fight',k:run.kills};m.spawned=M.kills;tutShow();}
   }
@@ -3348,7 +3348,7 @@ function extraSub(m){
   const M=m.M;
   if(M.type==='walk'){const need=m.npcs.filter(n=>n.need),d=need.filter(n=>n.done).length;
     return 'Talked to '+d+' / '+need.length+(d===need.length-1&&!need.find(n=>n.last).done?' · Tessa is waiting for you':'')+' · '+(isTouch?'walk up and tap ⚔':'walk up and press F');}
-  if(M.cass){const e=m.foe;return 'Sister Cass '+Math.max(0,Math.ceil(e.hp/e.maxHp*100))+'% · don’t stand still';}
+  if(M.cass){const e=m.foe;return 'Sister Cassie '+Math.max(0,Math.ceil(e.hp/e.maxHp*100))+'% · don’t stand still';}
   if(M.type==='fight')return 'Vices '+Math.min(M.kills,run.kills-m.k0)+' / '+M.kills;
   return '';
 }
@@ -3361,7 +3361,7 @@ const NIGHT={tint:'night'},FROZEN={tint:'frozen'};
 const CAMPB='roof';
 const KID={scale:1.15,unarmed:1};
 Object.assign(SPK,{cloak:{name:'The man in the black cloak',col:'ash'},woman:{name:'Woman',col:'paper'},man2:{name:'Man',col:'paper'},soldier:{name:'Garrison soldier',col:'earth'},
-  matron:{name:'Sister Agathe',col:'paper'},crane:{name:'Chancellor Augustin Crane',col:'ash'},kidl:{name:'Lucan (age 9)',col:'water',ch:'lucan'},kidk:{name:'Kairos (age 9)',col:'water',ch:'kairos'}});
+  matron:{name:'Sister Agathe',col:'paper'},crane:{name:'Chancellor Augustin Crane',col:'ash'},kidl:{name:'Lucas (age 9)',col:'water',ch:'lucan'},kidk:{name:'Kairos (age 9)',col:'water',ch:'kairos'}});
 const CH1_SEQ=[
   // ───────── COLD OPEN: the disaster
   {sc:'Cold open · The Night the Sky Broke',cut:[
@@ -3521,7 +3521,7 @@ const CH1_SEQ=[
   {sc:'Scene 4 · Who Are You?',cut:[
     pn('market',[['ines',0.6,0.7,-1],['kairos',0.42,0.7,1],['bram',0.72,0.7,-1]],[
       ['n','The rift seals with a sound like a heavy book slamming shut. Smoke. Silence. Fruit everywhere.'],
-      ['ines','Sergeant Ines Calder, Meridian Garrison. That’s Corporal Bram.'],
+      ['ines','Sergeant Agnes Calder, Meridian Garrison. That’s Corporal Bram. Everybody calls him Big Boy Bram.'],
       ['bram','Hi!'],
       ['ines','You’re not army. Where did you learn to fight like that?'],
       ['kairos','I didn’t. Ten minutes ago I was buying fish.'],
@@ -3533,7 +3533,7 @@ const CH1_SEQ=[
       ['kairos','You won’t believe me.'],
       ['ines','Everyone in this square stopped breathing for a minute, and then the sky ripped open. Try me.'],
       ['kairos','The minute didn’t stop for me. Everybody else did. A light gave me these.'],
-      ['th','Ines looks at Bram. Bram looks at Ines. Neither of them laughs. That’s somehow worse.']],{mus:'warm'}),
+      ['th','Agnes looks at Bram. Bram looks at Agnes. Neither of them laughs. That’s somehow worse.']],{mus:'warm'}),
     pn('market',[['kairos',0.45,0.7,1,{glow:1}],['ines',0.6,0.7,-1],['bram',0.7,0.7,-1]],[
       ['bram','Uh. Sarge. His shirt is glowing.'],
       ['ines','I can see that, Bram.'],
@@ -3563,7 +3563,7 @@ const CH1_SEQ=[
       ['ines','Agreed. Write that down too.']],{...NIGHT,mus:'warm'}),
     pn('hospital',[['noemi',0.42,0.66,1],['kairos',0.58,0.7,-1],['bram',0.74,0.66,-1]],[
       ['kairos','The crane— the girl. Tessa. Is she okay?'],
-      ['noemi','Everyone from your square is fine. I’m Dr. Noemi Lark. What do you remember?'],
+      ['noemi','Everyone from your square is fine. I’m Dr. Naomi Lark. What do you remember?'],
       ['kairos','All of it. Time stopped. Everybody froze. A light talked to me. I pushed the beam.'],
       ['noemi','Mm. Possibly a concussion.'],
       ['?',[
@@ -3635,13 +3635,13 @@ const CH1_SEQ=[
     pn('office',[['kairos',0.4,0.7,1],['lucan',0.6,0.7,-1],['npc',0.72,0.66,-1,{col:CLERK}]],[
       ['n','A young man in a sharp grey coat takes the folder from the clerk without asking.'],
       ['clerk','Mr. Crane.'],
-      ['lucan','Lucan Crane, senior clerk. Yes, that Crane. The Chancellor’s son. You can stop staring.'],
+      ['lucan','Lucas Crane, senior clerk. Yes, that Crane. The Chancellor’s son. You can stop staring.'],
       ['n','He opens the folder. Reads it. His face doesn’t move.'],
       ['lucan','It’s blank. No hour. No stars. No Houses. Just a name, in pencil.'],
       ['lucan','Congratulations. You don’t exist.'],
-      ['th','Lucan.'],
+      ['th','Lucas.'],
       ['th','Taller. Colder. The same crooked eyebrow when he reads.'],
-      ['kairos','Lucan? It’s me.']],{mus:'tense'}),
+      ['kairos','Lucas? It’s me.']],{mus:'tense'}),
     pn('office',[['kairos',0.4,0.7,1],['lucan',0.6,0.7,-1]],[
       ['lucan','Do I know you?'],
       ['?',[
@@ -3661,13 +3661,13 @@ const CH1_SEQ=[
       ['marr','You won’t. You’re a helpful boy. Everyone in the Market Ring says so.'],
       ['marr','Besides, you already agreed. Didn’t you? You came here on your own.']],{mus:'tense'}),
     pn('office',[['kairos',0.4,0.7,1],['ines',0.24,0.7,1],['bram',0.3,0.7,1],['npc',0.62,0.66,-1,{col:'#3A4A6A'}],['lucan',0.78,0.7,-1]],[
-      ['n','The guards step forward. Bram moves to stop them. Ines grabs his arm.'],
+      ['n','The guards step forward. Bram moves to stop them. Agnes grabs his arm.'],
       ['ines','Not here. If we fight Council guards in the Council’s building, we all go to a cell, and then nobody can get him out.'],
       ['bram','But Sarge—'],
       ['ines','I know, Bram.'],
       ['kairos','It’s fine. I’ll be fine.'],
       ['th','I’m lying. I think everyone knows.'],
-      ['th','At the door I look back at Lucan. He’s looking at the floor.']],{mus:'sorrow'})]},
+      ['th','At the door I look back at Lucas. He’s looking at the floor.']],{mus:'sorrow'})]},
 
   // ───────── SCENE 8: the lab
   {sc:'Scene 8 · This Won’t Hurt',cut:[
@@ -3705,13 +3705,13 @@ const CH1_SEQ=[
       ['marr','There. You see? Now the numbers are interesting.'],
       ['th','He took the core away from her very fast. Faster than he does anything else.']],{...NIGHT,fx:'flash',mus:'sorrow'})]},
 
-  // ───────── SCENE 9: Lucan remembers
+  // ───────── SCENE 9: Lucas remembers
   {sc:'Scene 9 · There Wasn’t a Cat',cut:[
     pn('orphanage',[['lucan',0.45,0.7,1,{moving:1}]],[
       ['lucan','“There wasn’t a cat.”',{if:'c_truth'}],
       ['lucan','“Wrong person.” He was lying. Why would a stranger lie about that?',{if:'c_lie'}],
       ['lucan','And why do I know the way here? I’ve never been to St. Hesper’s in my life.'],
-      ['n','The bakery next door is closing. Warm bread. The smell hits him like a hand on the back of the neck.']],{...NIGHT,cap:'That evening. Lucan walks home the long way.',mus:'sorrow'}),
+      ['n','The bakery next door is closing. Warm bread. The smell hits him like a hand on the back of the neck.']],{...NIGHT,cap:'That evening. Lucas walks home the long way.',mus:'sorrow'}),
     pn('orphanage',[['kairos',0.44,0.72,1,KID],['lucan',0.56,0.72,-1,KID]],[
       ['kidl','If Sister Agathe catches us, we say the cat did it.'],
       ['kidk','There isn’t a cat.'],
@@ -3722,12 +3722,12 @@ const CH1_SEQ=[
     pn('orphanage',[['kairos',0.44,0.72,1,{...KID,moving:1}],['lucan',0.58,0.74,-1,{...KID,fall:1}]],[
       ['n','A lamp tips over. The kitchen curtains catch.'],
       ['kidl','Kairos— the door’s stuck— I can’t—'],
-      ['kidk','Lucan! Lucan, hold on—']],{fire:1,fx:'shake',mus:'disaster'}),
+      ['kidk','Lucas! Lucas, hold on—']],{fire:1,fx:'shake',mus:'disaster'}),
     pn('orphanage',[['kairos',0.44,0.72,1,{...KID,moving:1}],['lucan',0.58,0.74,-1,{...KID,fall:1}]],[
       ['n','And the fire stops.'],
       ['n','The flames hang still like paper cutouts. The smoke stops in the air. Only one boy is still moving.'],
       ['kidk','That sound again… tick, tick, tick. Not now. Please, not now.'],
-      ['kidk','…Okay. Okay. Whatever this is, it’s helping. Lucan, give me your hand. Don’t let go.']],{...FROZEN,fire:1}),
+      ['kidk','…Okay. Okay. Whatever this is, it’s helping. Lucas, give me your hand. Don’t let go.']],{...FROZEN,fire:1}),
     pn('orphanage',[['npc',0.32,0.68,1,{col:NUNC}],['npc',0.5,0.68,-1,{col:CRANEC,hat:'#1A1A28'}],['kairos',0.66,0.74,-1,{...KID,fall:1}],['lucan',0.78,0.72,-1,KID]],[
       ['matron','He pulled the other boy out through the fire, Chancellor. His hands are badly burned. He has a fever.'],
       ['crane','I came for the boy who counts. The one with the memory.'],
@@ -3785,7 +3785,7 @@ const CH1_SEQ=[
   {cut:[
     pn('lab',[['kairos',0.36,0.7,1],['dess',0.56,0.7,-1],['lucan',0.74,0.7,-1],['ines',0.84,0.7,-1]],[
       ['n','A sealed steel door. Kairos from one side, the others from the stairs. And Dess, already there, holding her father’s key card. Shaking.'],
-      ['kairos','Lucan?'],
+      ['kairos','Lucas?'],
       ['lucan','I remembered. The bread. The fire. Your hands.'],
       ['lucan','And I lied to you today. I said “next.”'],
       ['kairos','You said a lot worse when we were nine.'],
@@ -3804,7 +3804,7 @@ const CH1_SEQ=[
       ['th','The girl of light has a freckle under her left eye.'],
       ['th','So does Dess.']],{...NIGHT,mus:'sorrow'})]},
   {join:'dess'},
-  {mission:'escape',pick:3,must:['dess'],prefer:['dess','kairos','lucan'],title:'Escape',sub:'Dess must go: her spirits are new. Try switching Lucan to Kairos.'},
+  {mission:'escape',pick:3,must:['dess'],prefer:['dess','kairos','lucan'],title:'Escape',sub:'Dess must go: her spirits are new. Try switching Lucas to Kairos.'},
   {cut:[pn('street',[['lucan',0.45,0.7,1,{moving:1}],['kairos',0.58,0.7,1,{moving:1}]],[
       ['lucan','I’m sorry.'],
       ['kairos','For what?'],
@@ -3817,7 +3817,7 @@ const CH1_SEQ=[
   // ───────── SCENE 10: the Inquisitor
   {sc:'Scene 10 · The Inquisitor',cut:[pn('rooftop',[['cass',0.68,0.66,-1],['kairos',0.4,0.7,1],['ines',0.3,0.7,1]],[
       ['n','Church bells all over the city. On the rooftops of Ash Lane, a figure in grey and red blocks the way, swinging a chained censer that drips fire.'],
-      ['cass','Sister Cass Vire, Office of Correction. The Unwritten comes with me. The rest of you go home.'],
+      ['cass','Sister Cassie Vire, Office of Correction. The Unwritten comes with me. The rest of you go home.'],
       ['?',[
         {t:'I have a name. It’s Kairos.',f:'c_cass_name',r:[['cass','Not according to the Registry.']]},
         {t:'Do I get a say in this?',r:[['cass','No. That’s rather the point of the Office.']]},
@@ -3825,14 +3825,14 @@ const CH1_SEQ=[
       ['cass','A person with no birth record has no stars. A person with no stars was never meant to exist. The Church corrects mistakes.'],
       ['ines','Generous of you, letting the rest of us go.'],
       ['cass','It isn’t an offer, Sergeant.']],{...NIGHT,mus:'tense'})]},
-  {mission:'cass',pick:3,prefer:['kairos','lucan','noemi'],title:'The Inquisitor',sub:'Sister Cass punishes standing still. Keep moving.'},
+  {mission:'cass',pick:3,prefer:['kairos','lucan','noemi'],title:'The Inquisitor',sub:'Sister Cassie punishes standing still. Keep moving.'},
   {cut:[pn('rooftop',[['cass',0.62,0.66,-1],['npc',0.82,0.78,-1,{col:VANEC}],['kairos',0.4,0.7,1]],[
       ['vane','Sister. The building beneath them is a lodging house.'],
       ['cass','Yes, Father.'],
       ['vane','Burn it. If they won’t come down, bring the roof down with them.'],
       ['cass','Father, there are families inside.'],
       ['vane','Faithful people. They will be forgiven.'],
-      ['n','Cass hesitates. Too long. Vane sighs, and throws the flask himself.'],
+      ['n','Cassie hesitates. Too long. Vane sighs, and throws the flask himself.'],
       ['kairos','No— no, no, no!'],
       ['th','The minute. I can’t do this one alone.'],
       ['kairos','Please. Whoever you are. Hold it for me.'],
@@ -3852,14 +3852,14 @@ const CH1_SEQ=[
     pn(CAMPB,[['kairos',0.3,0.7,1],['lucan',0.42,0.68,-1],['ines',0.56,0.7,1],['bram',0.64,0.7,-1],['noemi',0.76,0.68,1],['theo',0.84,0.7,-1],['dess',0.18,0.66,1]],[
       ['lucan','The old clock tower over St. Hesper’s. We used to hide up here. Nobody climbs it anymore.'],
       ['th','Same dead clock. Still 11:59. I used to think it was waiting for me.'],
-      ['n','Bram makes toast over a lantern. Theo fixes a drone. Noemi checks everyone’s cuts, one by one.'],
+      ['n','Bram makes toast over a lantern. Theo fixes a drone. Naomi checks everyone’s cuts, one by one.'],
       ['theo','Okay. Recap. Because I need to hear it out loud.'],
       ['theo','Time stopped. A clock made of light gave you its hands as swords. Rifts in the city. A Vice core sang. The Church wants you. The Chancellor wants you.'],
       ['?',[
         {t:'When you say it like that it sounds bad.',r:[['theo','It sounds AMAZING.'],['noemi','Theo.'],['theo','Amazing and bad.']]},
         {t:'Honestly I just want breakfast.',f:'c_breakfast',r:[['bram','I have toast!'],['kairos','Bram. You’re my favorite person.'],['theo','Hey!']]},
         {t:'You forgot “and he has a job now.”',f:'c_job',r:[['theo','Mostly-real-money job. Yes. Welcome aboard, assistant.'],['noemi','Oh no. There are two of them now.']]}],'That’s… a lot, said out loud.'],
-      ['kairos','Ines. At the hospital you said “not inside the walls.” What about outside?'],
+      ['kairos','Agnes. At the hospital you said “not inside the walls.” What about outside?'],
       ['ines','Outside, it happened all the time. That’s why there’s nothing out there anymore.'],
       ['theo','Meridian is the last free city on the whole continent of Aster. Everything past the Wall fell before any of us were born.'],
       ['kairos','I’ve read every map in the orphanage library. Twice. They all stop at the same line.'],
@@ -3870,7 +3870,7 @@ const CH1_SEQ=[
       ['bram','That’s fair.',{if:'c_joke'}],
       ['ines','Kairos. Go talk to people. You look like you need it.']],{...NIGHT,fx:'rain',cap:'The clock tower of St. Hesper’s.',mus:'warm'})]},
   {bond:{n:2,title:'Who do you sit with tonight?',sub:'Pick two. Each talk raises that character’s Bond, and Bond makes them stronger in story fights.',choices:[
-    {who:['lucan'],title:'Lucan, at the clock face',cut:[pn(CAMPB,[['kairos',0.44,0.68,1],['lucan',0.56,0.68,-1]],[
+    {who:['lucan'],title:'Lucas, at the clock face',cut:[pn(CAMPB,[['kairos',0.44,0.68,1],['lucan',0.56,0.68,-1]],[
       ['lucan','You’d make me count the seconds up here, so we knew when inspection was over.'],
       ['kairos','You made ME count. I hated it.'],
       ['lucan','You did it anyway.'],
@@ -3886,7 +3886,7 @@ const CH1_SEQ=[
       ['lucan','Whatever comes out of those rifts. The Church. My father. I’m not losing you twice.'],
       ['kairos','That sounds like a vow.'],
       ['lucan','It is one. You’re making it weird.']],{...NIGHT,focus:[0.5,0.55],mus:'sorrow'})]},
-    {who:['ines','bram'],title:'Ines and Bram, by the lantern',cut:[pn(CAMPB,[['ines',0.4,0.68,1],['bram',0.56,0.68,-1],['kairos',0.7,0.7,-1]],[
+    {who:['ines','bram'],title:'Agnes and Bram, by the lantern',cut:[pn(CAMPB,[['ines',0.4,0.68,1],['bram',0.56,0.68,-1],['kairos',0.7,0.7,-1]],[
       ['kairos','How long have you two been partners?'],
       ['bram','Three years. Sarge saved my life at the Eastern Rift.'],
       ['ines','You followed me into the Eastern Rift. I told you to stay.'],
@@ -3900,7 +3900,7 @@ const CH1_SEQ=[
       ['ines','You said you’d run away screaming. You didn’t. I noticed.',{if:'c_ines_joke'}],
       ['kairos','Is that a compliment?'],
       ['ines','It’s an observation. Eat your toast.']],{...NIGHT,focus:[0.5,0.55],mus:'warm'})]},
-    {who:['noemi','theo'],title:'Noemi and Theo, at the window',cut:[pn(CAMPB,[['noemi',0.42,0.68,1],['theo',0.56,0.68,-1],['kairos',0.28,0.7,1]],[
+    {who:['noemi','theo'],title:'Naomi and Theo, at the window',cut:[pn(CAMPB,[['noemi',0.42,0.68,1],['theo',0.56,0.68,-1],['kairos',0.28,0.7,1]],[
       ['kairos','Why do you really write on your arm?'],
       ['noemi','Because people in this city talk themselves out of the scary things. I don’t want to be one of them.'],
       ['theo','She always says the scary thing first.'],
@@ -3944,7 +3944,7 @@ const CH1_SEQ=[
       ['n','A mother in black steps up, eyes red. She drinks. A moment later she is smiling, calm, like someone set down a heavy bag.'],
       ['mother','…I feel lighter. Why did I come here crying?'],
       ['th','She looks happy. She also looks empty.'],
-      ['th','Lucan said they gave him a silver cup the night he was adopted. This is the same cup.'],
+      ['th','Lucas said they gave him a silver cup the night he was adopted. This is the same cup.'],
       ['th','I don’t like that I noticed that.']],{cap:'The next day. Festival Square.',mus:'plaza'}),
     pn('plaza',[['cass',0.45,0.68,1],['npc',0.6,0.66,-1,{col:VANEC}]],[
       ['vane','Sister. The line is waiting.'],
@@ -3954,7 +3954,7 @@ const CH1_SEQ=[
       ['cass','I’ve drunk from that bowl every Sunday since I was six. I can’t remember my mother’s face. The Office calls that grace.'],
       ['vane','It is grace.'],
       ['cass','Then I don’t want any more of it.'],
-      ['vane','Cass.'],
+      ['vane','Cassie.'],
       ['cass','I’ve kept my vows my whole life, Father. That’s exactly why I can’t stay.']],{mus:'tense'}),
     pn('plaza',[['cass',0.6,0.7,-1],['kairos',0.42,0.7,1],['theo',0.3,0.7,1],['noemi',0.22,0.7,1]],[
       ['cass','I don’t want to hear “told you so.”'],
@@ -4016,10 +4016,10 @@ const CH1_SEQ=[
     pn('lobby',[['horaios',0.5,0.3,1,{phase:3}],['kairos',0.44,0.7,1,{hurt:1}],['hand',0.56,0.56,-1,{scale:0.75}]],[
       ['horaios','Processing.']],{...FROZEN,fx:'shake',z:1.1,focus:[0.5,0.42],mus:'tense'}),
     pn('lobby',[['horaios',0.52,0.3,1,{phase:3}],['kairos',0.36,0.74,1,{fall:1}],['lucan',0.5,0.66,-1],['hand',0.58,0.56,-1,{closed:1,scale:0.75}]],[
-      ['th','Lucan breaks through the grey. I don’t know how. I think it’s the vow.'],
+      ['th','Lucas breaks through the grey. I don’t know how. I think it’s the vow.'],
       ['lucan','Not him. Not again.']],{...FROZEN,fx:'flash',z:1.1,focus:[0.5,0.42],mus:'disaster'}),
     pn('black',[['gate',0.62,0.62,1,{scale:1.2}],['lucan',0.6,0.62,-1,{scale:1.4}],['kairos',0.4,0.66,1]],[
-      ['n','The hand closes around Lucan instead. Behind Horaios, a gate of white light opens.'],
+      ['n','The hand closes around Lucas instead. Behind Horaios, a gate of white light opens.'],
       ['kairos','LUCAN—'],
       ['horaios','Irregular. But acceptable.'],
       ['lucan','You pulled me out of a fire once. My turn.'],
@@ -4032,7 +4032,7 @@ const CH1_SEQ=[
       ['n','The Registry collapses behind them, with every birth record in Meridian inside it.']],{...NIGHT,fx:'shake',mus:'disaster'}),
     pn('rooftop',[['kairos',0.4,0.7,1],['ines',0.52,0.7,-1],['bram',0.62,0.7,-1],['noemi',0.3,0.7,1]],[
       ['th','Dawn. A rooftop. Seven of us. One empty space.'],
-      ['crane','Last night, heretics attacked the Registry of Births and destroyed it. My son Lucan was taken by them.'],
+      ['crane','Last night, heretics attacked the Registry of Births and destroyed it. My son Lucas was taken by them.'],
       ['crane','If you see these people, do not approach them.'],
       ['bram','He knows we didn’t take him. He has to know.'],
       ['ines','He knows. It’s just a better story this way.'],
@@ -4045,7 +4045,7 @@ const CH1_SEQ=[
         {t:'I don’t know. But I’ll find out.',r:[['theo','Then I’m building you something to find out with.']]},
         {t:'Somewhere I’ve been before.',f:'c_been',r:[['theo','…You keep saying that.'],['kairos','I keep meaning it.']]}],'Where did it take him?'],
       ['th','I remember every word Horaios said. Every inch of that hall. Every chair.'],
-      ['th','Something is calling me. It has been for twenty years. Now it has Lucan.'],
+      ['th','Something is calling me. It has been for twenty years. Now it has Lucas.'],
       ['th','Fine. I’ll answer.'],
       ['theo','Then, assistant. First assignment: we find him.',{if:'c_job'}],
       ['kairos','Is this one paid?',{if:'c_job'}],
@@ -4065,7 +4065,7 @@ const CH1_SEQ=[
       ['lyra','And when he does?'],
       ['cloak','Then I go home.']],{...NIGHT,fx:'flash',focus:[0.55,0.55],mus:'tense'}),
     pn('white',[['lucan',0.5,0.7,1,{grey:1}]],[
-      ['n','A white room. Rows of desks. Lucan, in a clerk’s uniform, filling in a form at Window 1.'],
+      ['n','A white room. Rows of desks. Lucas, in a clerk’s uniform, filling in a form at Window 1.'],
       ['n','He reaches the line that says NAME. And stops. Pen hovering.'],
       ['n','He doesn’t know what to write.']],{mus:'stopped'}),
     pn('black',[],[['n','CHAPTER 2: THE ARCHIVE'],['n','To be continued.']],{cap:'CHAPTER 2: THE ARCHIVE',mus:'title'})]},
@@ -4107,7 +4107,7 @@ function showCh1End(){
     found.length?h('div',{class:'rwh'},ico('gem'),found.length+' Star Fragments added to Builds'):null);
   openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story','Chapter 1 complete'),h('div',{class:'stamp'},'Chapter 1'),
     h('h2',null,'Then come get me'),
-    h('p',{class:'lede'},'Lucan is behind the Moon Gate, and the whole city is looking for you. Chapter 2, The Archive, is next.'),
+    h('p',{class:'lede'},'Lucas is behind the Moon Gate, and the whole city is looking for you. Chapter 2, The Archive, is next.'),
     rw,
     h('p',{class:'serpent'},'Bonds: '+(CH_ORDER.filter(id=>bondOf(id)).map(id=>nameOf(id)+' '+bondHearts(bondOf(id))).join(' · ')||'none yet')),
     h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>goHome()},'Home'))));
@@ -4752,7 +4752,7 @@ function guidePage(tab){
       h('li',null,h('div',null,h('b',null,'Switch often. '),'Every character does a free move when they jump in (their Entrance). Switching is how you combo.')),
       h('li',null,h('div',null,h('b',null,'Clear districts and pick doors. '),'After each fight, choose a Planet Blessing and the next door. The 6th stop is the boss.')),
       h('li',null,h('div',null,h('b',null,'Get stronger between runs. '),'Every run gives Memories (levels) and sometimes Star Fragments. Equip them in Builds.'))),
-    gtip('New? Start with Training. Then try Battle mode with Kairos, Ines and Bram.','First run')];
+    gtip('New? Start with Training. Then try Battle mode with Kairos, Agnes and Bram.','First run')];
   if(tab==='controls')return [h('h2',null,'Controls'),
     h('p',{class:'lede'},T?'You are on a touch screen. Your left thumb moves, your right thumb fights.':'Keyboard and mouse. Touch controls work on phones too.'),
     h('div',{class:'gcards'},
@@ -4780,7 +4780,7 @@ function guidePage(tab){
     h('div',{class:'gcards'},
       gcard('swap','Switching','There is a 1 second cooldown, and you are briefly safe the moment you switch in.'),
       gcard('rising','↑ Entrance (Rising)','Each character does a free move when they switch in: a piercing shot, a quake, a heal, a fan drone. Switch on purpose to use it.'),
-      gcard('hp','Benched characters','Only the active character takes damage. If someone is low, switch them out. Noemi’s Triage heals the bench too.'),
+      gcard('hp','Benched characters','Only the active character takes damage. If someone is low, switch them out. Naomi’s Triage heals the bench too.'),
       gcard('skull','Going down','If the active character falls, the next one jumps in. If all three fall, the run ends. Downed allies get back up between districts.'),
       gcard('team','Buffs follow you','Shields, Spotted marks, turrets and team buffs stay when you switch. Set them up, then switch to a damage dealer.')),
     gtip('A good loop: a support switches in → casts their Moon skill → switch to your main damage dealer → use everything → repeat.','Rotation')];
@@ -4796,7 +4796,7 @@ function guidePage(tab){
           h('span',{class:'chip'},ico('rising'),k.entrance.name),h('span',{class:'chip'},ico('sun'),k.sun.name),
           h('span',{class:'chip'},ico('moon'),k.moon.name),h('span',{class:'chip'},ico('ult'),k.ult.name)),
         h('p',{class:'how',style:'margin-top:6px;color:var(--ink-soft);font-size:12px'},h('b',null,'Combo: '),k.combo.desc)));}),
-    gtip('Starter team: Kairos (damage) + Ines (marks and sniping from the bench) + Bram (shields and stuns). Swap Bram for Noemi if you keep dying. Kairos + Lucan fight best together; add Dess for bosses.')];
+    gtip('Starter team: Kairos (damage) + Agnes (marks and sniping from the bench) + Bram (shields and stuns). Swap Bram for Naomi if you keep dying. Kairos + Lucas fight best together; add Dess for bosses.')];
   if(tab==='enemies')return [h('h2',null,'The Seven Vices'),
     h('p',{class:'lede'},'Each Vice fights differently. Learn how to beat each one.'),
     h('div',{class:'gcards'},...Object.entries(VICE_INFO).map(([k,v])=>{const card=gcard('•',v[0],v[2]);const gi=card.querySelector('.gi');gi.textContent='';gi.style.background=colorOf({type:k});gi.style.boxShadow='inset 0 0 0 3px rgba(0,0,0,.3)';

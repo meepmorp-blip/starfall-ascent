@@ -19,13 +19,13 @@ Decided 12 Nov 2026. These entries **override** `Starfall_Lore_Bible_v1.pdf` whe
 |---|---|---|
 | Old Matteo | Never misses a Sunday | Forgetful, loses his glasses |
 | Bram's mother | Never misses a Sunday | Called Bram by his brother's name |
-| Sister Cass | Drank every Sunday since age 6 | Can't remember her mother's face ("the Office calls that grace") |
-| Lucan | One silver cup at his adoption | Lost all memory of Kairos |
+| Sister Cassie | Drank every Sunday since age 6 | Can't remember her mother's face ("the Office calls that grace") |
+| Lucas | One silver cup at his adoption | Lost all memory of Kairos |
 | Festival mother | Drinks at the Festival | Forgets why she came crying |
 | Rosa | Stopped going after her husband's funeral | Sharp ("tastes like pennies") |
 | Fish vendor | Works Sundays | Sharp, knows every price |
-| Ines | Works every Sunday "on purpose" | Sharp |
-| Noemi, Theo | Skip the Festival, don't drink | Sharp; Noemi notices patients forgetting |
+| Agnes | Works every Sunday "on purpose" | Sharp |
+| Naomi, Theo | Skip the Festival, don't drink | Sharp; Naomi notices patients forgetting |
 | Kairos | Got a spoon every Sunday at the orphanage | Felt nothing, forgets nothing (unrecorded, the water can't touch him) |
 
 ## Kairos's divine self [CANON]
@@ -43,11 +43,11 @@ Decided 12 Nov 2026. These entries **override** `Starfall_Lore_Bible_v1.pdf` whe
 ## Cast renames (v1 → current)
 | v1 working name | Current |
 |---|---|
-| Seren | Ines Calder |
-| Elias | Bram |
-| Dr. Sophia Arden | Dr. Noemi Lark (and Theo Lark) |
-| Cyrus Crane | Lucan Crane |
+| Seren | Agnes Calder |
+| Elias | Big Boy Bram (Bram) |
+| Dr. Sophia Arden | Dr. Naomi Lark (and Theo Lark) |
+| Cyrus Crane | Lucas Crane |
 | Vigil (crew) | Meridian Garrison |
 | Barnabas | removed |
 
-New: Sister Cass Vire, Dess Marr, Lyra (non-playable), Father Ambrose Vane.
+New: Sister Cassie Vire, Dess Marr, Lyra (non-playable), Father Ambrose Vane.
