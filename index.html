@@ -876,16 +876,16 @@ const CHARS={
     sun:'Pisces',moon:'Cancer',rising:null,aspect:'Trine',atkLabel:'BLADES',
     hp:100,atk:12,def:0.12,aspd:3.4,spd:172,range:'Close',bars:{HP:3,ATK:5,DEF:2,ASPD:5,SPD:5,RANGE:1},
     rulers:{jupiter:'Pisces Sun',neptune:'Pisces Sun'},
-    mech:'Undertow: his hits add Tide. At 3 Tide an enemy turns Drowsy: heavily slowed, and takes +15% damage from him.',
+    mech:'Undertow: every hit slows a Vice’s movement and attacks. Slowed Vices he hits take +10% damage from everyone for 3s.',
     kit:{
       entrance:{name:'Borrowed Hour',el:null,desc:'He has no Rising, so he copies the Entrance of whoever he switched from, at 120% power. If he enters first, he dashes in with a slash.'},
-      basic:{name:'Clock Hands',tap:'A fast 5-hit combo with both blades. The 5th hit is a spinning double slash.',hold:'Current: a dash-slash through the nearest enemy that adds 2 Tide.'},
-      sun:{name:'Riptide',short:'RIPTIDE',el:'Water',cd:5,dur:0,desc:'Dashes through a line of enemies for heavy damage (300%), adds 2 Tide to each, and leaves a slowing water trail.'},
-      moon:{name:'Shell',short:'SHELL',el:'Water',cd:6,dur:1.2,desc:'A water pulse (120%) and a short counter stance. If something hits him in the next 1.2s, he blocks it and releases a big pulse (320%) that makes everyone nearby Drowsy.'},
-      combo:{name:'Trine · Flow',desc:'Riptide then Shell: half of Riptide’s cooldown comes back. Shell then Riptide: the dash hits twice.'},
-      ult:{name:'The Unwritten Minute',short:'MINUTE',dur:8,desc:'Stops time for 1 second, then Overflow for 8s: +35% damage, +30% attack speed, and every dodge resets Riptide.'},
-      p1:{name:'Foresight',desc:'His visions: enemy attack warnings appear earlier while he is on the field.'},
-      p2:{name:'Slipstream',desc:'A perfect dodge slows every nearby enemy for 2s, and his next hit deals double damage.'}}},
+      basic:{name:'Clock Hands',tap:'A fast 3-hit combo with both blades. The 3rd hit is a spinning finisher (200%).',hold:'Crosscurrent: a short jump forward into a wide spinning slash (220%).'},
+      sun:{name:'Riptide',short:'RIPTIDE',el:'Water',cd:5,dur:0,desc:'Dashes through a line of enemies for heavy damage (300%) and leaves a slowing water trail. Can be used twice: the second dash must come within 3s.'},
+      moon:{name:'Shell',short:'SHELL',el:'Water',cd:6,dur:1.2,desc:'A wide water pulse (120%), +10% ATK for 6s, and a short counter stance. If something hits him in the next 1.2s, he blocks it and releases a huge pulse (320%).'},
+      combo:{name:'Trine · Flow',desc:'Use both skills in a row: his next 3 basic attacks are all finishers.'},
+      ult:{name:'The Unwritten Minute',short:'MINUTE',dur:8,desc:'Stops time for 3 seconds. Then Overflow for 8s: +35% damage, and his next 10 basic attacks are all finishers.'},
+      p1:{name:'Undertow',desc:'Every hit slows the Vice’s movement and its attacks for 1.5s.'},
+      p2:{name:'Pull of the Tide',desc:'Slowed Vices he hits take 10% more damage from the whole team for 3s.'}}},
   ines:{id:'ines',name:'Sgt. Ines Calder',short:'Ines',role:'Sub DPS · Sniper',roleKey:'sub',col:'#E0A040',who:'31 · sergeant, Meridian Garrison',
     blurb:'Dry, sharp and always in control. Would never admit she looks after her squad like an older sister.',
     sun:'Capricorn',moon:'Scorpio',rising:'Sagittarius',aspect:'Sextile',atkLabel:'RIFLE',
@@ -1133,8 +1133,8 @@ const STARS={
     20:[['Total Recall','Recollection hits 40% harder.',{ultMul:1.4}],['Remembered','Recollection hits 20% harder.',{ultMul:1.2}]]},
 };
 const KIT_INFO={
-  kairos:{tldr:'Main damage. Close range, strong skills on short cooldowns. Stack Tide until enemies go Drowsy, dodge at the last moment.',
-    entrance:['Copies an Entrance ×120%'],basic:['85% ATK ×4','5th: spin 170%','Hold: dash 180%'],sun:['Dash 300% ATK','+2 Tide · 5s cd'],moon:['Pulse 120% on cast','Counter 320% · Drowsy · 6s cd'],ult:['Stops time 1s','+35% damage, 8s']},
+  kairos:{tldr:'Main damage. Close range, a 3-hit combo, two dashes, and Ultimates full of finishers. His hits slow Vices and make them take more damage from everyone.',
+    entrance:['Copies an Entrance ×120%'],basic:['100% ×2, 3rd: 200% spin','Hold: jump + 220% spin'],sun:['Dash 300% ×2','Slow trail'],moon:['Pulse 120% · ATK +10%','Counter 320%'],ult:['Stops time 3s','10 finishers · +35% dmg']},
   ines:{tldr:'Sniper sub-DPS. Spot enemies so the whole team hits 15% harder, soak them to slow them, then switch out: she keeps sniping.',
     entrance:['Piercing shot 200%','Spots'],basic:['160% ATK per shot','Hold: 320% pierce'],sun:['Spots an area (+15%)','Combo: explosion 250%'],moon:['Water pool 5s','Slow · +10% damage taken'],ult:['3s: 240% shot every 0.8s','Works off-field']},
   bram:{tldr:'The wall. Light damage, big shields, knockback and Stagger. Even on the bench he stumbles into enemies every 4s.',
@@ -1161,7 +1161,7 @@ const CHAR_FIT={
   dess:{t:{bulwark:2,mirror:2,breath:1,calm:1,roots:1},why:'shields and spirits'},
 };
 const CHAR_HOW={
-  kairos:['Stay close and keep cutting. Your hits add Tide; at 3 stacks enemies go Drowsy and slow to a crawl.',['Riptide through a group','Shell right before a hit','Ult when overwhelmed']],
+  kairos:['Stay close and keep cutting. Every hit slows Vices; slowed Vices take more from the whole team.',['Riptide twice through a group','Shell, then 3 finishers','Ult: freeze time, finish everything']],
   ines:['Stay far back. Spot and soak enemies so everyone hits harder, then switch out: she keeps sniping.',['Flare a group','Soak them','Killzone works from the bench']],
   bram:['Light damage only: knock enemies away, stun them, and shield whoever fights next.',['Wall in front of shooters','Hold the Line','switch to damage']],
   noemi:['Heal and buff, then switch out. Hold attack to heal whoever is lowest.',['Triage before a big fight','Field when it gets messy','Code Blue to undo a disaster']],
@@ -1388,7 +1388,7 @@ const rul=k=>!!(player&&player.ch.rulers[k]);
 const memberOf=id=>team&&team.members.find(m=>m.id===id);
 const inParty=id=>{const m=memberOf(id);return !!(m&&!m.down);};
 function effDef(p){return Math.min(0.85,p.def+(team.benedT>0?0.2:0));}
-function effAspd(p){return p.aspd*(1+(p.bfx.aspd||0))*(team.tailwind>0?1.15:1)*(p.id==='kairos'&&p.ultT>0?1.3:1)*(team.stim>0?1.15:1)*(team.overclock>0?1.1:1);}
+function effAspd(p){return p.aspd*(1+(p.bfx.aspd||0))*(team.tailwind>0?1.15:1)*1*(team.stim>0?1.15:1)*(team.overclock>0?1.1:1);}
 function effSpeed(p){return missionSpeed(p)*p.speed*(1+(p.bfx.spd||0))*(team.tailwind>0?1.1:1)*(room&&room.def.rule==='rush'?1.25:1);}
 // every character has their own Ultimate meter: the active one fills at full rate, the bench at 40%
 function gainPn(v){const k=(inParty('dess')?1.2:1)*(1+0.1*blv('jupiter')+(rul('jupiter')?0.05:0));for(const m of team.members){if(m.down)continue;const a=v*k*(m===player?1:0.4)*(1+(m.bfx.pn||0));m.pn=Math.min(team.maxPn,(m.pn||0)+a);}}
@@ -1525,6 +1525,8 @@ function playerHit(t,dmg,o={}){
   if(t.anaT>0)vuln+=0.15;
   if(t.dmarkUntil>T)vuln+=0.1;
   if(t.soakUntil>T)vuln+=0.1;
+  if(t.kslowUntil>T)vuln+=0.1;
+  if(src&&src.id==='kairos'&&src.atkUpT>0)bonus+=0.1;
   if(t.burnT>0&&inParty('cass'))vuln+=0.1;
   if(team.crT>0&&!o.crit&&rand()<0.15)o=Object.assign({},o,{crit:true});
   if(src&&src.id&&STARS[src.id]){const F=starFx(src);if(o.basic)m*=F.basicMul;if(o.skill==='sun')m*=F.sunMul;else if(o.skill==='moon')m*=F.moonMul;else if(o.skill==='ult')m*=F.ultMul;
@@ -1540,6 +1542,8 @@ function playerHit(t,dmg,o={}){
   if(o.pn) gainPn(o.pn*clamp(dmg/Math.max(1,src.atk||10),1,3));
   if(o.basic&&sfx2.ignite&&rand()<sfx2.ignite) o=Object.assign({},o,{burn:Math.max(o.burn||0,2)});
   if(o.dmark)t.dmarkUntil=T+8*debuffK();
+  if(o.kslow&&t!==boss){t.slowT=Math.max(t.slowT||0,1.5);t.kslowUntil=T+3;}
+  if(o.kslow&&t===boss)t.kslowUntil=T+3;
   if(o.burn){t.burnT=Math.max(t.burnT||0,o.burn);t.burnDmg=Math.max(t.burnDmg||0,src&&src.id==='cass'?src.atk*0.5:o.mburn?(src.atk||10)*0.35:3);t.burnMul=Math.max(t.burnMul||1,1+(sfx2.burnMult||0));}
   if(o.mark) t.markT=6*debuffK();
   if(o.ana) t.anaT=8;
@@ -1626,7 +1630,7 @@ function updateEnemies(dt){
         const champ=e.type==='champion';
         if(champ){if(room.t-e.lastHit>2.5){e.resting=true;if(e.noHeal<=0)e.hp=Math.min(e.maxHp,e.hp+30*dt);}else e.resting=false;}
         if(e.st==='walk'){
-          e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt;e.cd-=dt;
+          e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt;e.cd-=dt*(e.slowT>0?0.6:1);
           if(e.cd<=0&&d<(champ?330:240)){e.st='wind';e.wt=(champ?0.62:0.75)+(e.anaT>0?0.35:0);e.dx=dx/d;e.dy=dy/d;sfx('charge');}
         } else if(e.st==='wind'){e.wt-=dt;if(e.wt<=0){e.st='charge';e.ct=champ?0.7:0.6;sfx('rush');}}
         else if(e.st==='charge'){
@@ -1668,7 +1672,7 @@ function updateEnemies(dt){
         else{
           const px=(player.x-e.x)/(pd||1),py=(player.y-e.y)/(pd||1);let mx,my;
           if(pd>300){mx=px;my=py;}else if(pd<170){mx=-px;my=-py;}else{mx=-py*e.side;my=px*e.side;}
-          e.x+=mx*sp*dt;e.y+=my*sp*dt;e.cd-=dt;
+          e.x+=mx*sp*dt;e.y+=my*sp*dt;e.cd-=dt*(e.slowT>0?0.6:1);
           if(e.cd<=0&&pd<440){e.aim=0.95+(e.anaT>0?0.35:0);e.ax=player.x;e.ay=player.y;sfx('charge');}
           if(clampE(e))e.side*=-1;
         }
@@ -1799,20 +1803,29 @@ function stunWave(x,y,R,stun,stag,knock,src,dmg){radial(x,y,R,dmg||0,{stun,stag,
 const KITS={
   // ───────── Kairos: twin blades, Tide → Drowsy, time stop
   kairos:{chargeT:0.45,
-    tap(p){const a=aimDir(160);faceTo(a);const st=comboN(p,5),mult=1+consumeSwift();
-      if(st===4){radial(p.x,p.y,66,p.atk*1.7,{basic:true,mult,tide:1,knock:140,pn:1,col:'#7FE3F0',src:p});swings.push({x:p.x,y:p.y,ang:0,r:62,half:Math.PI,life:0.2,max:0.2,col:'#7FE3F0'});finisherFx(p,'#7FE3F0');p.atkCd=1.3/effAspd(p);sfx('heavy');return;}
-      meleeArc(a,50,0.9,p.atk*0.85,{basic:true,mult,tide:st%2?1:0,knock:45,pn:0.7,col:st%2?'#7FE3F0':C.paper,src:p});
+    tap(p){const a=aimDir(160);faceTo(a);const mult=1+consumeSwift();let st=comboN(p,3);
+      if(p.finN>0){p.finN--;st=2;}
+      if(st===2){radial(p.x,p.y,72,p.atk*2.0,{basic:true,mult,kslow:1,knock:140,pn:1.2,col:'#7FE3F0',src:p});swings.push({x:p.x,y:p.y,ang:0,r:66,half:Math.PI,life:0.2,max:0.2,col:'#7FE3F0'});finisherFx(p,'#7FE3F0');p.atkCd=(p.finN>0?0.9:1.25)/effAspd(p);sfx('heavy');return;}
+      meleeArc(a,52,0.9,p.atk*1.0,{basic:true,mult,kslow:1,knock:45,pn:0.8,col:st%2?'#7FE3F0':C.paper,src:p});
       p.x=clamp(p.x+a.x*5,AX0+p.r,AX1-p.r);p.y=clamp(p.y+a.y*5,AY0+p.r,AY1-p.r);p.atkCd=1/effAspd(p);sfx('slash');},
-    hold(p){p.lastAtkT=T;const t=nearestTarget(p.x,p.y,150,null);const a=t?(()=>{const dx=t.x-p.x,dy=t.y-p.y,d=Math.hypot(dx,dy)||1;return {x:dx/d,y:dy/d};})():aimDir(150);faceTo(a);
-      startDash(a,{dist:t?Math.min(150,Math.hypot(t.x-p.x,t.y-p.y)+20):110,time:0.14,kind:'current',dmg:p.atk*1.8,mult:1+consumeSwift(),knock:120,basic:true,tide:2});p.atkCd=0.45;sfx('heavy');},
-    sun(p,combo){const a=aimDir(220);faceTo(a);startDash(a,{dist:170,time:0.18,kind:'riptide',dmg:p.atk*3,knock:90,tide:2,skill:'sun',twice:combo});
-      zones.push({kind:'slowpool',x:p.x+a.x*85,y:p.y+a.y*85,r:70,t:3,max:3});sfx('splash');},
-    moon(p,combo){p.counterT=1.2;p.countered=false;radial(p.x,p.y,70,p.atk*1.2,{tide:1,knock:60,skill:'moon',col:C.water,src:p});ring(p.x,p.y,70,C.water,0.4);if(combo)p.cd.sun=Math.max(0,p.cd.sun*0.5);},
-    ult(p){team.timeStop=1.0;sfx('clock');burstParts(p.x,p.y,'#7FE3F0',40,240);},
-    entrance(p,pw){const a=aimDir(220);faceTo(a);startDash(a,{dist:110,time:0.15,kind:'slash',dmg:p.atk*1.4*pw,tide:1});},
-    update(p,dt){if(p.counterT>0){p.counterT-=dt;if(p.counterT<=0&&!p.countered&&p===player)ring(p.x,p.y,30,C.ash,0.3);}},
-    status(p){const l=[];if(p.ultT>0)l.push(['#7FE3F0','OVERFLOW '+p.ultT.toFixed(1)+'s']);if(p.counterT>0)l.push([C.water,'SHELL · counter ready '+p.counterT.toFixed(1)+'s']);return l;},
-    sunUp:p=>0, moonUp:p=>p.counterT},
+    hold(p){p.lastAtkT=T;const a=aimDir(150);faceTo(a);
+      p.x=clamp(p.x+a.x*42,AX0+p.r,AX1-p.r);p.y=clamp(p.y+a.y*42,AY0+p.r,AY1-p.r);p.iframe=Math.max(p.iframe,0.15);
+      radial(p.x,p.y,84,p.atk*2.2*(1+consumeSwift()),{basic:true,kslow:1,knock:160,pn:1.6,col:'#7FE3F0',src:p});
+      swings.push({x:p.x,y:p.y,ang:0,r:80,half:Math.PI,life:0.22,max:0.22,col:'#7FE3F0'});ring(p.x,p.y,84,C.water,0.35);shake(3,0.1);p.atkCd=0.5;sfx('heavy');},
+    sun(p,combo){const a=aimDir(220);faceTo(a);startDash(a,{dist:170,time:0.18,kind:'riptide',dmg:p.atk*3,knock:90,kslow:1,skill:'sun'});
+      zones.push({kind:'slowpool',x:p.x+a.x*85,y:p.y+a.y*85,r:70,t:3,max:3});sfx('splash');
+      if(!(p.ripWin>0)){p.ripRefund=1;p.ripWin=3;}else p.ripWin=0;
+      if(combo)p.finN=3;},
+    moon(p,combo){p.counterT=1.2;p.countered=false;p.atkUpT=6;radial(p.x,p.y,100,p.atk*1.2,{kslow:1,knock:60,skill:'moon',col:C.water,src:p});ring(p.x,p.y,100,C.water,0.4);
+      addText(p.x,p.y-40,'ATK +10%',C.water,10,{life:0.9});if(combo)p.finN=3;},
+    ult(p){team.timeStop=3.0;p.finN=10;sfx('clock');burstParts(p.x,p.y,'#7FE3F0',40,240);setBanner('The Unwritten Minute','Time stops for 3s · next 10 basic attacks are finishers',1.6);},
+    entrance(p,pw){const a=aimDir(220);faceTo(a);startDash(a,{dist:110,time:0.15,kind:'slash',dmg:p.atk*1.4*pw,kslow:1});},
+    update(p,dt){if(p.counterT>0){p.counterT-=dt;if(p.counterT<=0&&!p.countered&&p===player)ring(p.x,p.y,30,C.ash,0.3);}
+      if(p.atkUpT>0)p.atkUpT-=dt;
+      if(p.ripRefund){p.ripRefund=0;p.cd.sun=0;}
+      if(p.ripWin>0){p.ripWin-=dt;if(p.ripWin<=0){p.ripWin=0;p.cd.sun=p.ch.kit.sun.cd*starFx(p).sunCd;}}},
+    status(p){const l=[];if(p.ultT>0)l.push(['#7FE3F0','OVERFLOW '+p.ultT.toFixed(1)+'s']);if(p.finN>0)l.push([C.gold,'FINISHERS ×'+p.finN]);if(p.ripWin>0)l.push([C.water,'RIPTIDE · 2nd dash '+p.ripWin.toFixed(1)+'s']);if(p.atkUpT>0)l.push([C.water,'ATK +10% '+p.atkUpT.toFixed(1)+'s']);if(p.counterT>0)l.push([C.water,'SHELL · counter ready '+p.counterT.toFixed(1)+'s']);return l;},
+    sunUp:p=>p.ripWin||0, moonUp:p=>p.counterT},
   // ───────── Ines: sniper, Spotted, off-field overwatch
   ines:{chargeT:0.6,
     tap(p){const a=aimDir(560);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*1.6,mult:1+consumeSwift(),basic:true,spd:950,r:4,life:0.75,kind:'arrow',big:true,src:p,pn:0.9,col:'#FFD38A',knock:110}));p.atkCd=1/effAspd(p);sfx('heavy');shake(1.5,0.04);},
@@ -1960,7 +1973,7 @@ function doDodge(){
   const perfect=nearThreat();
   p.dodgeT=0.15;p.dvx=dx*440;p.dvy=dy*440;p.dodgeCd=0.8*(1-Math.min(0.5,p.bfx.dodge||0));p.iframe=Math.max(p.iframe,0.32);
   if(perfect){gainPn(6);slowReal=0.32;addText(p.x,p.y-30,'PERFECT +6',C.gold,12,{life:1});sfx('perfect');}else sfx('dodge');
-  if(p.id==='kairos'){if(perfect){for(const e of enemies)if(!e.dead&&dist(e,p)<140)e.slowT=Math.max(e.slowT,2);p.swift=Math.max(p.swift,1);ring(p.x,p.y,140,'#7FE3F0',0.5);}if(p.ultT>0)p.cd.sun=0;}
+  if(p.id==='kairos'){if(perfect){for(const e of enemies)if(!e.dead&&dist(e,p)<140)e.slowT=Math.max(e.slowT,2);p.swift=Math.max(p.swift,1);ring(p.x,p.y,140,'#7FE3F0',0.5);}}
   for(let i=0;i<7;i++)part(p.x,p.y,-dx*rr(40,130)+rr(-30,30),-dy*rr(40,130)+rr(-30,30),0.35,C.paper,2);
 }
 function castSkill(s){
@@ -2019,7 +2032,7 @@ function hurtPlayer(d){
 }
 function kairosCounter(p){
   p.counterT=0;p.countered=true;p.iframe=0.5;slowReal=0.25;
-  radial(p.x,p.y,115,p.atk*3.2,{tide:3,knock:200,skill:'moon',col:C.water,src:p,pn:3});
+  radial(p.x,p.y,150,p.atk*3.2,{tide:3,kslow:1,knock:200,skill:'moon',col:C.water,src:p,pn:3});
   addText(p.x,p.y-34,'SHELL',C.water,12,{life:1});burstParts(p.x,p.y,C.water,30,220);shake(5,0.15);sfx('counter');
 }
 function updatePlayer(dt){
@@ -2035,7 +2048,7 @@ function updatePlayer(dt){
     const D=p.dash;D.t-=dt;p.x+=D.vx*dt;p.y+=D.vy*dt;
     if(rand()<0.8)part(p.x,p.y,rr(-20,20),rr(-20,20),0.3,D.burn?C.fire:p.ch.col,2.4);
     if(D.dmg>0)for(const t of allTargets()){if(D.hit.has(t))continue;if(dist(t,p)<(t.r||20)+p.r+8){D.hit.add(t);const dd=Math.hypot(D.vx,D.vy)||1;
-      playerHit(t,D.dmg,{tide:D.tide,skill:D.skill,basic:!!D.basic,mult:D.mult,burn:D.burn,indict:D.indict,pn:1.2,knock:{x:D.vx/dd,y:D.vy/dd,f:D.knock||160},col:D.burn?C.fire:C.paper,src:p});}}
+      playerHit(t,D.dmg,{tide:D.tide,kslow:D.kslow,skill:D.skill,basic:!!D.basic,mult:D.mult,burn:D.burn,indict:D.indict,pn:1.2,knock:{x:D.vx/dd,y:D.vy/dd,f:D.knock||160},col:D.burn?C.fire:C.paper,src:p});}}
     const hitWall=p.x<AX0+p.r||p.x>AX1-p.r||p.y<AY0+p.r||p.y>AY1-p.r;
     if(D.t<=0||hitWall){
       if(D.kind==='noon'){radial(p.x,p.y,isB(p,5)?117:90,p.atk*2.6*(isB(p,5)?1.3:1),{basic:true,knock:220,burn:3,pn:1.5,col:C.fire,src:p});burstParts(p.x,p.y,C.fire,28,200);shake(4,0.12);sfx('boom');}
