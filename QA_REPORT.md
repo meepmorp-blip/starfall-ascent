@@ -35,7 +35,7 @@ No game files were modified during this audit.
 | P2-8 iPhone playtest | **Open (you)** | | |
 | P3-2 Dead legacy code | Done (old Vigil story mode, checkpoints, story previews, old cast speakers, unused helpers: −26 KB, −257 lines) | this sprint | Home, Builds, Guide, Battle, Climb, death, pause, Training and full Chapter 1 run with no errors |
 | P3-3 Reduce-effects toggle | Done (Pause → Reduce effects: ~65% fewer particles, softer zones, small hit rings off, no hit-stop; saved) | this sprint | Heavy fight 685 → 473 ms per 90 frames (−31%) |
-| P3-5 Rooftop/lab art | **Open** | | |
+| P3-5 Rooftop/lab art | Done (rooftops: 4 roofs with ridges, plank bridges, chimneys, lit skylights, lanterns, washing line; lab: brighter floor, walkway lanes, wall monitors, overhead lights, core shelves, hazard rings) | this sprint | Gameplay frames checked: Vices readable on both |
 | P3-6 Choice callbacks | Done (every flagged choice now echoes later: 28 conditional lines across 17 choices) | this sprint | 3 full playthroughs with different picks, no errors; callbacks shown for the picks made |
 
 ---
