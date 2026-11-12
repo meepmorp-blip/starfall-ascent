@@ -36,7 +36,7 @@ No game files were modified during this audit.
 | P3-2 Dead legacy code | Done (old Vigil story mode, checkpoints, story previews, old cast speakers, unused helpers: −26 KB, −257 lines) | this sprint | Home, Builds, Guide, Battle, Climb, death, pause, Training and full Chapter 1 run with no errors |
 | P3-3 Reduce-effects toggle | Done (Pause → Reduce effects: ~65% fewer particles, softer zones, small hit rings off, no hit-stop; saved) | this sprint | Heavy fight 685 → 473 ms per 90 frames (−31%) |
 | P3-5 Rooftop/lab art | **Open** | | |
-| P3-6 Choice callbacks | **Open** | | |
+| P3-6 Choice callbacks | Done (every flagged choice now echoes later: 28 conditional lines across 17 choices) | this sprint | 3 full playthroughs with different picks, no errors; callbacks shown for the picks made |
 
 ---
 
