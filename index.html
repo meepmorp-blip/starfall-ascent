@@ -764,6 +764,13 @@ body.playing #nl-badge-frame,body.playing [id^='nl-badge']{display:none!importan
 .gcard .gi.gv{background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--vc) 35%,transparent),rgba(255,255,255,.04))!important;box-shadow:inset 0 0 0 2px var(--vc)!important;overflow:hidden}
 .gcard .gi.gv canvas{width:44px;height:44px;image-rendering:pixelated;margin-top:2px}
 .gcard{border-radius:10px!important}
+
+.tr .tr-body{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:20px;align-items:end}
+.tr-chars{display:flex;flex-direction:column;gap:8px}
+.tr-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.tr-chip{width:auto!important}
+.tr .ss-title{max-width:none}
+@media (max-height:520px),(max-width:760px){.tr .tr-body{grid-template-columns:minmax(160px,34%) minmax(0,1fr);gap:12px}.tr .ss-info{display:none}.tr-grid{gap:5px}.tr-chip{padding:4px 2px!important}.tr-chip canvas{width:32px;height:32px}.tr-chip .ps-cr{display:none}}
 </style>
 </head>
 <body>
@@ -1583,6 +1590,47 @@ const STORY_TUT=[
 ];
 function stSpawn(a){for(const t of a)enemies.push(spawnEdge(t));}
 function tutDummy(){const e=makeEnemy('hothead',player.x+90>AX1-40?player.x-90:player.x+90,player.y,{instant:true});e.dummy=true;e.spawnT=0;e.hp=e.maxHp=99999;enemies.push(e);}
+const DRILL_PARTNERS={kairos:['dess','noemi'],ines:['kairos','dess'],bram:['kairos','noemi'],noemi:['kairos','bram'],theo:['kairos','lucan'],lucan:['kairos','dess'],cass:['kairos','bram'],dess:['kairos','lucan']};
+function drillSteps(id){
+  const c=CHARS[id],k=c.kit,I=KIT_INFO[id]||{},nm=nameOf(id),T2=isTouch;
+  const say=(a,b)=>T2?a:b;
+  const fight=(types,label)=>()=>{tut.k=run.kills;for(const e of enemies)if(e.dummy)e.dead=true;stSpawn(types);};
+  return [
+    {t:'Meet '+nm,d:()=>c.role+'. '+(I.tldr||c.blurb),ic:'star',ok:u=>u.st>4.5},
+    {t:k.basic.name,d:()=>'Basic: '+k.basic.tap+' Land 6 hits on the dummy.',ic:'atk',setup:()=>{tut.solo=true;tut.hits=0;tutDummy();},ok:u=>u.hits>=6},
+    {t:'Charged attack',d:()=>'Hold: '+k.basic.hold,ic:'up',setup:()=>{tut.hold=0;},ok:u=>u.hold>=1},
+    {t:k.sun.name,d:()=>'Sun skill ('+say('sun button','Q')+'): '+k.sun.desc,ic:'sun',setup:()=>{tut.sun=0;player.cd.sun=0;},ok:u=>u.sun>=1},
+    {t:k.moon.name,d:()=>'Moon skill ('+say('moon button','E')+'): '+k.moon.desc,ic:'moon',setup:()=>{tut.moon=0;player.cd.moon=0;},ok:u=>(u.moon|0)>=1},
+    {t:k.combo.name,d:()=>'Aspect combo: cast Sun and Moon within 4 seconds. '+k.combo.desc,ic:'combo',setup:()=>{tut.combo=0;player.cd.sun=0;player.cd.moon=0;},ok:u=>u.combo>=1},
+    {t:k.ult.name,d:()=>'Ultimate ('+say('star button','R')+'): '+k.ult.desc,ic:'ult',setup:()=>{tut.ult=0;team.pn=team.maxPn;},ok:u=>u.ult>=1},
+    {t:'Solo drill',d:()=>'Beat 4 Vices as '+nm+' alone. Switching is locked. Use your Sun, Moon and dodge.',ic:'skull',setup:fight(['gossip','hothead','gossip','waxer']),ok:u=>run.kills-u.k>=4},
+    {t:'Entrance: '+k.entrance.name,d:()=>'Team play starts now. '+say('Tap a partner portrait','Press 2')+', then switch back to '+nm+' to fire the Entrance: '+k.entrance.desc,ic:'swap',
+      setup:()=>{tut.solo=false;tut.swap=0;for(const m of team.members)m.entCd=0;team.swapCd=0;},ok:u=>u.swap>=2&&player.id===id},
+    {t:'Team passive',d:()=>k.p2.name+': '+k.p2.desc+' Read this, then keep going.',ic:'star',ok:u=>u.st>6},
+    {t:'Team drill',d:()=>'Beat 6 Vices together and switch at least 3 times. Bring '+nm+' in where they shine.',ic:'skull',setup:()=>{tut.swap=0;fight(['hothead','gossip','spotlight','gossip','waxer','hothead'])();},ok:u=>run.kills-u.k>=6&&u.swap>=3},
+  ];
+}
+function startCharTraining(id){
+  const pp=(DRILL_PARTNERS[id]||['kairos','dess']).filter(x=>x!==id&&CHARS[x]);
+  for(const x of CH_ORDER)if(pp.length<2&&x!==id&&!pp.includes(x))pp.push(x);
+  newRun('battle',[id,...pp.slice(0,2)],0);run.stage='training';run.roomNo=1;
+  tut={i:0,moved:0,hits:0,fin:0,hold:0,dodge:0,sun:0,moon:0,combo:0,swap:0,ult:0,lastT:0,lx:0,ly:0,done:false,st:0,char:id,steps:drillSteps(id),label:nameOf(id)+' training'};
+  enterRoom('training');tutShow();
+}
+function showTrainingMenu(){
+  state='title';room=null;boss=null;paused=false;playMusic('title');
+  const pr=loadPrefs(),doneC=Array.isArray(pr.tutChars)?pr.tutChars:[],bg=thumbOf('yard');
+  const it=(label,sub,go,cls,attrs)=>h('button',Object.assign({class:'tm-item'+(cls||''),type:'button',onclick:go},attrs||{}),h('span',{class:'tm-l'},label),sub?h('span',{class:'tm-s'},sub):null);
+  openOverlay(h('div',{class:'ss tr',style:bg?'--bg:url('+bg+')':null},
+    h('div',{class:'ss-hero'},h('p',{class:'eyebrow'},'Vigil Yard'),h('h2',{class:'ss-title'},'Training'),
+      h('p',{class:'ss-info'},'Basics teaches the controls. Character drills teach one character: their kit solo first, then how they play in a team.')),
+    h('div',{class:'tr-body'},
+      h('nav',{class:'tm-menu'},it('Basics','Controls · 10 steps',()=>{ensureAudio();startTutorial();},' primary'+(pr.tutDone?'':' guide-new'),{'data-primary':'1'}),it('Back','Main menu',()=>goHome(),'',{'data-back':'1'})),
+      h('div',{class:'tr-chars'},h('div',{class:'pz-sect'},'Character drills · solo + team'),
+        h('div',{class:'tr-grid'},...CH_ORDER.map(id=>{const c=CHARS[id],dn=doneC.includes(id);
+          return h('button',{class:'ps-chip tr-chip'+(dn?' in':''),type:'button',style:'--cc:'+c.col,title:c.role,onclick:()=>{ensureAudio();startCharTraining(id);}},
+            portrait(id,46),dn?h('span',{class:'ps-tag'},'✓'):null,h('span',{class:'ps-cn'},nameOf(id)),h('span',{class:'ps-cr'},c.role.split(' · ')[0]));}))))),'mode-select');
+}
 function startTutorial(){newRun('battle',['kairos','ines','bram'],0);run.stage='training';run.roomNo=1;tut={i:0,moved:0,hits:0,fin:0,hold:0,dodge:0,sun:0,combo:0,swap:0,ult:0,lastT:0,lx:0,ly:0,done:false};enterRoom('training');tutShow();}
 function tutShow(){const st=(tut.steps||TUT_STEPS)[tut.i];if(st.setup)st.setup();const el=document.getElementById('tut');el.hidden=false;
   el.replaceChildren(h('div',{class:'tut-k'},(tut.label||'Training')+' · '+(tut.i+1)+' / '+(tut.steps||TUT_STEPS).length),h('div',{class:'tut-h'},ico(st.ic),st.t),h('div',{class:'tut-d'},st.d()));sfx('select');}
@@ -1590,9 +1638,10 @@ function updateTutorial(dt){
   if(!tut||tut.done||tut.wait)return;
   if(tut.lx)tut.moved+=Math.hypot(player.x-tut.lx,player.y-tut.ly);tut.lx=player.x;tut.ly=player.y;
   if(tut.i===(tut.steps||TUT_STEPS).length-1)tut.lastT+=dt;
+  tut.st=(tut.st||0)+dt;
   if((tut.steps||TUT_STEPS)[tut.i].ok(tut)){burstParts(player.x,player.y,C.gold,20,160);addText(player.x,player.y-40,'✓ '+(tut.steps||TUT_STEPS)[tut.i].t.toUpperCase(),'#9BE37A',12,{life:1.2});sfx('bless');
-    tut.i++;if(tut.i>=(tut.steps||TUT_STEPS).length){tut.done=true;document.getElementById('tut').hidden=true;savePrefs({tutDone:true});finishRoom(true,tut.steps?'CLEAR':'TRAINED');return;}
-    tut.wait=true;setTimeout(()=>{if(tut&&!tut.done){tut.wait=false;tutShow();}},500);}
+    tut.i++;if(tut.i>=(tut.steps||TUT_STEPS).length){tut.done=true;document.getElementById('tut').hidden=true;if(tut.char){const pr=loadPrefs(),a=Array.isArray(pr.tutChars)?pr.tutChars:[];if(!a.includes(tut.char))a.push(tut.char);savePrefs({tutChars:a});}else savePrefs({tutDone:true});finishRoom(true,tut.steps?'CLEAR':'TRAINED');return;}
+    tut.wait=true;setTimeout(()=>{if(tut&&!tut.done){tut.wait=false;tut.st=0;tutShow();}},500);}
 }
 const HOUSES=['house1','house3','house5','house7','house10','house12'];
 const SPK={
@@ -2198,6 +2247,7 @@ function swapTo(i,o={}){
   const nm=team.members[i];
   if(!nm||i===team.ai)return false;
   if(nm.down){if(!o.forced)sfx('nope');return false;}
+  if(!o.forced&&tut&&tut.solo){sfx('nope');addText(player.x,player.y-34,'SOLO DRILL',C.ash,9,{life:0.6});return false;}
   if(!o.forced&&(team.swapCd>0||player.dash)){if(!o.forced)sfx('nope');return false;}
   const old=player;
   nm.x=old.x;nm.y=old.y;nm.fx=old.fx;nm.fy=old.fy;nm.face=old.face;
@@ -2252,7 +2302,7 @@ function castSkill(s){
   if(p.cd[s]>0){addText(p.x,p.y-30,info.name+' ready in '+Math.ceil(p.cd[s])+'s',C.ash,10);sfx('nope');return;}
   if(p.dash) return;
   const combo=!!(p.lastSkill&&p.lastSkill!==s&&T-p.lastSkillT<=4);
-  KITS[p.id][s](p,combo);if(tut&&s==='sun')tut.sun++;
+  KITS[p.id][s](p,combo);if(tut&&s==='sun')tut.sun++;if(tut&&s==='moon')tut.moon=(tut.moon|0)+1;
   p.cd[s]=info.cd*starFx(p)[s==='sun'?'sunCd':'moonCd']*(1-Math.min(0.4,p.bfx.cdRed||0))*(s==='sun'&&msOn(p.id,10)?0.85:1)*(s==='moon'&&msOn(p.id,15)?0.85:1);sfx('skill');
   if(combo){
     p.lastSkill=null;
@@ -2646,7 +2696,7 @@ function finishRoom(ok,label){
 }
 function afterRoom(def,ok){
   if(def.kind==='mission'){const cb=run.onDone;run.onDone=null;if(cb)cb(ok);else goHome();return;}
-  if(def.kind==='training'){tut=null;showTrainingDone();return;}
+  if(def.kind==='training'){const tc=tut&&tut.char;tut=null;showTrainingDone(tc);return;}
   if(run.mode==='battle'){showBattleResult(ok);return;}
   for(const m of team.members){if(m.down){m.down=false;m.hp=m.maxHp*0.25;}else heal(m,8,{});}
   if(def.kind==='house')showReward(def);
@@ -4480,7 +4530,7 @@ function goHome(){
       it('Story','Chapter 1',showStoryStart,' primary'),
       it('Battle','Rifts · Horaios · Trials',()=>showPartySelect('battle')),
       it('Builds','Fragments · Skills',()=>showBuilds(goHome)),
-      it('Training','Learn the controls',startTutorial,loadPrefs().tutDone?'':' guide-new'),
+      it('Training','Basics · character drills',showTrainingMenu,loadPrefs().tutDone?'':' guide-new'),
       it('Guide','How everything works',()=>showGuide(goHome),loadPrefs().guideSeen?'':' guide-new')),
     saveWarn?h('p',{class:'hint',role:'alert',style:'color:#FFB27A;font-weight:700'},'⚠ '+saveWarn):null,
     h('p',{class:'tm-foot'},'Prototype build'));
@@ -4619,14 +4669,17 @@ function showBattleMenu(party,tab){
         h('button',{class:'btn outline',type:'button',onclick:()=>{showBuilds(()=>showBattleMenu(party,tab));}},'Builds'),h('button',{class:'btn outline',type:'button',onclick:()=>{goHome();}},'Home'))),
     tabs,body),'mode-select');
 }
-function showTrainingDone(){
+function showTrainingDone(cid){
   state='panel';
-  openOverlay(h('div',{class:'form'},formHead('Vigil Yard','Training complete'),h('div',{class:'stamp ok'},'Trained'),
-    h('h2',null,'You know the basics'),
-    h('p',{class:'lede'},'Move, attack, finishers, charged attacks, dodge, Sun and Moon skills, Aspect combos, switching and Ultimates. The Guide (home screen and pause menu) has the details whenever you need them.'),
-    h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>{showStoryStart();}},'Start the Story'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>{showPartySelect('battle');}},'Battle mode'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>{goHome();}},'Home'))));
+  const it=(label,sub,go,cls,attrs)=>h('button',Object.assign({class:'tm-item'+(cls||''),type:'button',onclick:go},attrs||{}),h('span',{class:'tm-l'},label),sub?h('span',{class:'tm-s'},sub):null);
+  const head=cid?nameOf(cid)+' trained':'You know the basics';
+  const info=cid?'You used '+nameOf(cid)+'’s whole kit solo, then in a team. Their full details are in Guide → Characters and in Builds.':'Move, attack, finishers, charged attacks, dodge, Sun and Moon skills, Aspect combos, switching and Ultimates. The Guide has the details whenever you need them.';
+  openOverlay(h('div',{class:'ss ss-sm'},h('p',{class:'eyebrow'},'Vigil Yard · Training complete'),h('h2',{class:'ss-title'},head),h('p',{class:'ss-info'},info),
+    h('nav',{class:'tm-menu'},
+      cid?it('Train another','Pick a character',()=>showTrainingMenu(),' primary',{'data-primary':'1'}):it('Character drills','Learn each character',()=>showTrainingMenu(),' primary',{'data-primary':'1'}),
+      it('Story','Chapter 1',()=>showStoryStart()),
+      it('Battle','Rifts · Horaios · Trials',()=>showPartySelect('battle')),
+      it('Home','Main menu',()=>goHome(),'',{'data-back':'1'}))),'mode-select');
 }
 function startBattle(party,id,lvl,opt){
   opt=opt||{};
