@@ -527,6 +527,15 @@ body{font-weight:600}
 .title-card h1{font-family:var(--f-display);letter-spacing:.08em;text-indent:.08em;color:#FFE6A3;text-shadow:0 4px 0 #3B2617,0 0 24px rgba(255,182,92,.35)}
 .title-card .sub{font-family:var(--f-display);color:#9BE37A;letter-spacing:.25em}
 .title-card .blurb{font-weight:700}
+.ss{width:100%;max-width:980px;margin:auto;min-height:min(70vh,520px);display:flex;flex-direction:column;justify-content:flex-end;gap:18px;padding:28px;border-radius:14px;color:#F6EBD2;box-sizing:border-box;
+  background:linear-gradient(90deg,rgba(8,7,12,.94) 0%,rgba(8,7,12,.7) 50%,rgba(8,7,12,.25) 100%),var(--bg,none) center/cover,#141018;box-shadow:inset 0 0 0 1.5px rgba(246,235,210,.1),0 14px 40px rgba(0,0,0,.5)}
+.ss-sm{min-height:0;max-width:440px;background:rgba(13,11,20,.92)}
+.ss .eyebrow{color:#F2D27A;margin:0}
+.ss-title{margin:4px 0 6px;font:900 clamp(26px,4.6vw,46px)/1.05 var(--f-display);color:#FFE6A3;text-shadow:0 3px 0 #3B2617;max-width:16ch}
+.ss-info{margin:0;font:600 14px/1.4 var(--f-form);opacity:.8;max-width:52ch}
+.ss .tm-menu{width:min(320px,100%)}
+@media (max-height:520px){.ss{min-height:0;height:calc(100dvh - 24px);padding:16px 20px;gap:10px}.ss-sm{height:auto}.ss-title{font-size:26px}.ss-info{font-size:12px}}
+
 #overlay.mode-pause:has(.pz){background:linear-gradient(90deg,rgba(8,7,12,.88) 0%,rgba(8,7,12,.6) 100%)}
 .pz{width:100%;max-width:1000px;margin:auto;display:grid;grid-template-columns:minmax(240px,320px) minmax(0,1fr);gap:28px;align-items:center;color:#F6EBD2}
 .pz-left{display:flex;flex-direction:column;gap:10px}
@@ -694,7 +703,8 @@ body.playing #nl-badge-frame,body.playing [id^='nl-badge']{display:none!importan
 @media (max-height:520px){.cut-wrap{padding:0;gap:0}
 .cut-stage{width:100%;height:100%;aspect-ratio:auto;border:0;border-radius:0;box-shadow:none;flex:1 1 auto}
 .cut-cap{padding-top:max(8px,env(safe-area-inset-top));padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
-.cut-dlg{position:absolute;left:50%;bottom:max(8px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(88%,680px);padding:8px 12px 6px;gap:4px;opacity:.96}}
+.cut-dlg{position:absolute;left:50%;bottom:max(6px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(80%,640px);padding:6px 10px 4px;gap:2px;opacity:.94}
+.cut-dlg .face,.cut-dlg .face canvas,.cut-dlg .mono{width:34px;height:34px}.cut-dlg .mono{font-size:16px}.cut-dlg .say{font-size:14px;min-height:0}.cut-dlg .skip{padding:3px 8px;font-size:9px}.cut-dlg .more{font-size:10px}.cut-dlg .dlg-body{gap:8px;align-items:center}}
 .join-row{display:flex;gap:14px;align-items:center;margin:6px 0}
 .join-nm{font:700 22px var(--f-display);color:#7A4E2C}
 .join-ch{font:600 12px var(--f-form);color:#6B5A48;margin-top:4px}
@@ -2889,7 +2899,7 @@ function drawCutPanel(){
   const g=cv2.getContext('2d'),t=cut.t;
   g.setTransform(1,0,0,1,0,0);g.fillStyle='#07070B';g.fillRect(0,0,cw,chh);
   // cover-fit the W×H world, with a slow push-in
-  const zoom=(P.z||(cut.over?1.25:1.55))*(1+(P.zoom??0.05)*Math.min(1,t/8)),s=Math.max(cw/W,chh/H)*zoom,cy=cut.over?0.36:0.5,hw=cw/(2*s),fx=clamp(P.focus?P.focus[0]*W:W/2,hw,W-hw),fy=clamp(P.focus?P.focus[1]*H:H*0.58,cy*chh/s,H-(1-cy)*chh/s);
+  const zoom=(P.z?P.z*(cut.over?0.85:1):(cut.over?1.22:1.55))*(1+(P.zoom??0.05)*Math.min(1,t/8)),s=Math.max(cw/W,chh/H)*zoom,cy=cut.over?0.26:0.5,hw=cw/(2*s),fx=clamp(P.focus?P.focus[0]*W:W/2,hw,W-hw),fy=clamp(P.focus?P.focus[1]*H:H*0.58,cy*chh/s,H-(1-cy)*chh/s);
   let sx=0,sy=0;if(P.fx==='shake'&&t<0.8){sx=rr(-6,6)*(0.8-t);sy=rr(-6,6)*(0.8-t);}
   g.setTransform(s,0,0,s,cw/2-fx*s+sx,chh*cy-fy*s+sy);g.imageSmoothingEnabled=false;
   g.drawImage(cutBg(P.bg||'black'),0,0,W,H);
@@ -4276,13 +4286,18 @@ function startCh1(fresh){
 }
 function ch1Label(i){const q=CH1||(CH1=ch1Seq());let l='Cold open';for(let k=0;k<=i&&k<q.length;k++)if(q[k].sc)l=q[k].sc;return l;}
 function showCh1Menu(){
-  const sv=save.ch1b,cont=sv&&!sv.done&&sv.i>0;
-  openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story','Chapter 1'),
-    h('h2',{style:'padding-right:0'},'The Minute Meridian Held Its Breath'),
-    h('p',{class:'lede'},cont?'Saved at: '+ch1Label(sv.i)+'. Party: '+sv.roster.map(nameOf).join(', ')+'.':(sv&&sv.done?'Chapter 1 complete. Play it again any time; your Bonds carry over.':'About 40 minutes. Progress saves at every scene, so you can stop any time.')),
-    h('div',{class:'row'},h('button',{class:'btn ghost',type:'button','data-back':'1',onclick:()=>goHome()},'Back'),
-      cont?h('button',{class:'btn ghost',type:'button',onclick:()=>openOverlay(h('div',{class:'form',style:'max-width:460px'},formHead('Story','Start over?'),h('p',{class:'lede'},'Start Chapter 1 from the beginning? Your saved scene is replaced. Bond levels stay.'),h('div',{class:'row'},h('button',{class:'btn ghost',type:'button','data-back':'1',onclick:()=>showCh1Menu()},'Cancel'),h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>startCh1(true)},'Start over'))))},'Start over'):null,
-      h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>startCh1(!cont)},cont?'Continue':'Start Chapter 1'))));
+  const sv=save.ch1b,cont=sv&&!sv.done&&sv.i>0,bg=thumbOf('night');
+  const it=(label,sub,go,cls,attrs)=>h('button',Object.assign({class:'tm-item'+(cls||''),type:'button',onclick:go},attrs||{}),h('span',{class:'tm-l'},label),sub?h('span',{class:'tm-s'},sub):null);
+  const info=cont?'Saved at: '+ch1Label(sv.i)+' · Party: '+sv.roster.map(nameOf).join(', '):(sv&&sv.done?'Chapter 1 complete. Play it again any time; your Bonds carry over.':'About 40 minutes · saves at every scene');
+  const confirmRestart=()=>openOverlay(h('div',{class:'ss ss-sm'},h('p',{class:'eyebrow'},'Chapter 1'),h('h2',{class:'ss-title'},'Start over?'),
+    h('p',{class:'ss-info'},'Your saved scene is replaced. Bond levels stay.'),
+    h('nav',{class:'tm-menu'},it('Start over','From the beginning',()=>startCh1(true),' primary',{'data-primary':'1'}),it('Cancel','',()=>showCh1Menu(),'',{'data-back':'1'}))),'mode-select');
+  openOverlay(h('div',{class:'ss',style:bg?'--bg:url('+bg+')':null},
+    h('div',{class:'ss-hero'},h('p',{class:'eyebrow'},'Story · Chapter 1'),h('h2',{class:'ss-title'},'The Minute Meridian Held Its Breath'),h('p',{class:'ss-info'},info)),
+    h('nav',{class:'tm-menu'},
+      it(cont?'Continue':'Start','Chapter 1',()=>startCh1(!cont),' primary',{'data-primary':'1'}),
+      cont?it('Start over','From the beginning',confirmRestart):null,
+      it('Back','Main menu',()=>goHome(),'',{'data-back':'1'}))),'mode-select');
 }
 function showCh1End(){
   state='panel';
@@ -5123,7 +5138,7 @@ function hideTip(){tipCur=null;tipEl.hidden=true;}
 const TK=()=>isTouch;
 function updateTips(dt){
   if(!vol.tips){if(tipCur)hideTip();return;}
-  if(state!=='play'||!run||!player){if(tipCur)hideTip();return;}
+  if(state!=='play'||!run||!player||(tut&&!tut.done)){if(tipCur)hideTip();return;}
   tipClock+=dt;
   const p=player,t=run.t;
   // triggers
