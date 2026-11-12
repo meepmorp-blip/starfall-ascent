@@ -191,6 +191,17 @@ canvas#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-ac
 .sc .bv-detail .detail{width:min(480px,100%);max-height:calc(100dvh - 24px);overflow:auto;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.6);scrollbar-width:none}
 .sc .bv-detail.empty{display:none!important}
 .bv-tabs .tab{border-radius:999px!important;padding:3px 12px 3px 3px!important;display:flex;align-items:center;gap:6px}
+.vault:has(.sc)>.bv-tabs{display:flex!important;flex-wrap:wrap;gap:6px}
+.vault:has(.sc)>.bv-tabs .tab{flex:0 0 auto;min-width:0;padding:2px 12px 2px 2px!important}
+.vault:has(.sc)>.bv-tabs .tab canvas{width:30px!important;height:30px!important}
+.vault:has(.sc)>.bv-tabs .tab .nm{white-space:nowrap}
+.sc{align-items:stretch}
+.sc-stage{min-height:480px;justify-content:space-between}
+.sc-panel>.vault-body{display:flex;flex:1;align-items:stretch}
+.sc-panel>.bv-body{flex:1;align-items:stretch}
+.sc-panel>.bv-body .bv-right{display:flex;flex-direction:column}.sc-panel>.bv-body .bv-right .bv-scroll{flex:1;max-height:min(60vh,560px)}
+.sc-panel>.vault-body>.form,.sc-panel>.form{max-width:none!important;width:100%;box-sizing:border-box;flex:1}
+.sc-panel{min-height:480px}
 .bv-tabs .tab canvas{border-radius:50%}
 .bv-tabs .tab .lv{font:700 10px var(--f-ui);opacity:.75;margin-left:2px}
 @media (max-height:520px){
