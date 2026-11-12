@@ -686,7 +686,6 @@ body{font-weight:600}
 .ftile .teq{position:absolute;right:3px;top:3px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font:900 10px var(--f-ui);color:#fff;background:#3B2617}
 .ftile .teq.me{background:#5B8C3A}
 .ftile .tlv{position:absolute;right:4px;bottom:3px;font:800 9px var(--f-ui);color:var(--ink-soft)}
-body.playing #nl-badge-frame,body.playing [id^='nl-badge']{display:none!important}
 .mode-cut{background:#07070B!important;padding:0!important}
 .cut-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));cursor:pointer;box-sizing:border-box}
 .cut-stage{position:relative;width:min(100%,calc((100dvh - 150px)*2),900px);aspect-ratio:2/1;border:3px solid #7A4E2C;border-radius:8px;overflow:hidden;box-shadow:0 0 0 3px #2B2219;flex:0 0 auto}
@@ -778,6 +777,67 @@ body.playing #nl-badge-frame,body.playing [id^='nl-badge']{display:none!importan
 #overlay.mode-pause:has(.pz){background:rgba(8,7,12,.9)!important}
 @media (max-height:520px){.pz{gap:16px}.pz .tm-item{padding:8px 14px}.pz .tm-item .tm-l{font-size:13px}.pz-title{font-size:28px!important}.pz-sect{font-size:9px}
   .pz-right{padding:10px 12px}.pz-set .setting{font-size:10px}.pz-set .toggle{min-width:44px;padding:3px 8px;font-size:10px}.pz-chips span{font-size:10px;padding:2px 8px}}
+.dlg{background:linear-gradient(180deg,rgba(20,16,26,.94),rgba(12,10,16,.96))!important;border:0!important;border-radius:12px!important;
+  box-shadow:inset 0 0 0 1.5px rgba(246,235,210,.12),inset 3px 0 0 #F2D27A,0 10px 30px rgba(0,0,0,.55)!important;padding:12px 16px 10px 18px!important}
+.dlg .who{color:#F2D27A;font-weight:800}
+.dlg .say{color:#F6EBD2}
+.dlg .face canvas,.dlg .mono{border-radius:50%!important;box-shadow:0 0 0 2px rgba(242,210,122,.5)}
+.dlg .mono{background:rgba(242,210,122,.1)!important;border:0!important}
+.dlg .more{color:rgba(246,235,210,.45)}
+.skip{border-radius:999px!important;border-color:rgba(246,235,210,.25)!important;color:rgba(246,235,210,.75)!important;background:rgba(255,255,255,.04)!important}
+.skip:hover{border-color:#F2D27A!important;color:#FFE6A3!important}
+.skip.on{background:#F2D27A!important;color:#2A1B10!important;border-color:#F2D27A!important}
+.cchoice{background:rgba(14,11,18,.92)!important;border:0!important;border-radius:12px!important;box-shadow:inset 0 0 0 1.5px rgba(242,210,122,.45),0 6px 18px rgba(0,0,0,.45)!important;padding:10px 14px 10px 10px!important;transition:transform .12s,box-shadow .12s}
+.cchoice:hover,.cchoice:focus-visible{transform:translateX(-3px);box-shadow:inset 0 0 0 2px #F2D27A,0 8px 22px rgba(0,0,0,.5)!important;background:rgba(40,32,18,.95)!important}
+.cchoice .cn{background:#F2D27A!important;color:#2A1B10!important}
+.cut-stage{border:0!important;border-radius:12px!important;box-shadow:0 10px 34px rgba(0,0,0,.55),inset 0 0 0 1.5px rgba(246,235,210,.1)!important}
+
+.vr{width:100%;max-width:880px;margin:auto;display:flex;flex-direction:column;gap:14px;color:#F6EBD2;padding:18px 20px;border-radius:16px;box-sizing:border-box;
+  background:radial-gradient(120% 70% at 50% 0%,rgba(242,210,122,.18),transparent 60%),rgba(12,10,16,.94);box-shadow:inset 0 0 0 1.5px rgba(242,210,122,.25),0 16px 46px rgba(0,0,0,.6)}
+.vr.lost{background:radial-gradient(120% 70% at 50% 0%,rgba(255,90,90,.16),transparent 60%),rgba(12,10,16,.94);box-shadow:inset 0 0 0 1.5px rgba(255,120,110,.25),0 16px 46px rgba(0,0,0,.6)}
+.vr-top{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.vr-top .eyebrow{margin:0;color:#F2D27A}
+.vr-title{margin:0;font:900 clamp(40px,7vw,68px)/1 var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:#FFE6A3;text-shadow:0 4px 0 #3B2617,0 0 30px rgba(242,210,122,.4);animation:vrIn .5s cubic-bezier(.2,1.4,.4,1) both}
+.vr.lost .vr-title{color:#FFB4A0;text-shadow:0 4px 0 #3B1714}
+.vr-stars{display:flex;gap:10px;margin:2px 0}
+.vr-star{font-size:42px;line-height:1;color:rgba(246,235,210,.15);animation:vrStar .45s cubic-bezier(.2,1.6,.4,1) both}
+.vr-star.on{color:#F2D27A;text-shadow:0 0 18px rgba(242,210,122,.7)}
+@keyframes vrStar{from{transform:scale(0) rotate(-40deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes vrIn{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
+.vr-time{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.vr-time span{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.07);border-radius:999px;padding:3px 11px;font:700 11px var(--f-ui)}
+.vr-party{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.vr-m{position:relative;display:flex;gap:10px;align-items:center;padding:9px;border-radius:12px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);min-width:0}
+.vr-m.up{box-shadow:inset 0 0 0 2px #9BE37A,0 0 18px rgba(155,227,122,.25)}
+.vr-m canvas{border-radius:50%;box-shadow:0 0 0 2px var(--cc);flex:0 0 auto}
+.vr-mb{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.vr-mb b{font:700 15px var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vr-mb span{font:800 11px var(--f-ui);opacity:.8}
+.vr-mb em{font:700 10px var(--f-ui);font-style:normal;color:#B9A6FF}
+.vr-xp{height:5px;border-radius:3px;background:rgba(255,255,255,.12)}.vr-xp i{display:block;height:100%;border-radius:3px;background:#B9A6FF}
+.vr-lvup{position:absolute;top:-8px;right:8px;background:#9BE37A;color:#16220F;font:900 9px var(--f-ui);letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:999px;animation:vrIn .4s .6s both}
+.vr-tiles{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.vr-tile{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:92px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.vr-tile.gold{box-shadow:inset 0 0 0 1.5px rgba(242,210,122,.6);background:rgba(242,210,122,.08)}
+.vr-ti{font-size:18px;color:#F2D27A}.vr-tile b{font:900 18px var(--f-display)}.vr-tile i{font:700 9px var(--f-ui);font-style:normal;letter-spacing:.06em;text-transform:uppercase;opacity:.65}
+.vr-frags{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.vr-note{margin:0;text-align:center;opacity:.7}
+.vr-acts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.vr-acts .tm-item{justify-content:center;padding:10px}
+@media (max-height:520px){.vr{padding:10px 14px;gap:8px}.vr-title{font-size:30px}.vr-star{font-size:28px}.vr-m{padding:6px;gap:7px}.vr-m canvas{width:36px;height:36px}.vr-mb b{font-size:12px}.vr-mb em{display:none}
+  .vr-tile{min-width:74px;padding:5px 8px}.vr-tile b{font-size:15px}.vr-acts .tm-item{padding:7px}.vr-acts .tm-item .tm-l{font-size:13px}.vr-frags{display:none}}
+@media (max-width:560px){.vr-party{grid-template-columns:1fr}.vr-acts{grid-template-columns:1fr 1fr}}
+.vr .fr{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border-radius:999px;padding:3px 10px 3px 4px;font:700 11px var(--f-ui);color:#F6EBD2;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.vr .fr canvas,.vr .fr svg,.vr .fr img{width:20px!important;height:20px!important}
+@media (max-height:520px){.bm{gap:6px}.bm .select-head{margin:0}.bm .choices{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px}
+  .bm-card{min-height:0!important;padding:28px 9px 8px!important;gap:2px}.bm-card h3{font-size:14px!important}.bm-rule{-webkit-line-clamp:1!important;font-size:11px!important}
+  .bm-card .reward{font-size:9.5px!important;padding-top:3px;margin-top:2px}.bm-card .tag{top:6px;left:6px;font-size:8px!important;padding:2px 7px}
+  .bm .serpent{margin:0 0 4px;padding:3px 10px;font-size:11px}.bm .seg button{padding:5px 11px}.bm>div:not(.select-head) .row{margin:0 0 4px!important}}
+#overlay>*{animation:ovIn .22s ease-out both}
+@keyframes ovIn{from{opacity:0;transform:translateY(6px) scale(.99)}to{opacity:1;transform:none}}
+#overlay.mode-pause>*{animation-duration:.15s}
+.tm-item:active,.ps-chip:active,.bm-card:active{transform:scale(.98)}
+@media (prefers-reduced-motion:reduce){#overlay>*,.vr-title,.vr-star,.vr-lvup{animation:none!important}}
 </style>
 </head>
 <body>
@@ -4636,7 +4696,7 @@ function showBattleMenu(party,tab){
   const stars=k=>{const n=starsOf(k);return '★'.repeat(n)+'☆'.repeat(3-n);};
   const seg=(vals,cur,labels,set)=>{const g=h('div',{class:'seg',role:'group'},...vals.map((v,i)=>h('button',{type:'button','aria-pressed':String(v===cur),onclick:()=>{set(v);showBattleMenu(party,tab);}},labels[i])));return g;};
   const card=(tag,name,sub,extra,go,th)=>{const bg=thumbOf(th||'night');
-    return h('button',{class:'choice bm-card',type:'button',onclick:go,style:bg?'--bg:url('+bg+')':null},h('span',{class:'tag'},tag),h('h3',null,name),h('p',{class:'bm-rule'},sub),extra?h('p',{class:'reward'},extra):null);};
+    return h('button',{class:'choice bm-card',type:'button',title:sub,onclick:go,style:bg?'--bg:url('+bg+')':null},h('span',{class:'tag'},tag),h('h3',null,name),h('p',{class:'bm-rule'},sub),extra?h('p',{class:'reward'},extra):null);};
   const tabs=h('div',{class:'seg',role:'tablist',style:'margin:0 0 10px'},...[['rifts','Rifts'],['boss','Horaios'],['trials','Trials'],['climb','Climb'],['practice','Practice']].map(([k,l])=>h('button',{type:'button','aria-pressed':String(k===tab),onclick:()=>showBattleMenu(party,k)},l)));
   let body;
   if(tab==='rifts'){
@@ -4702,17 +4762,39 @@ function showBattleResult(ok){
   const tierTxt=d.kind==='rift'?' · Tier '+['','I','II','III'][run.tier||1]:stageId==='boss'?' · '+['Normal','Hard','Nightmare'][run.diff|0]:'';
   const starRow=st?h('div',{class:'mech rw'},h('div',{class:'rwh'},ico('star'),'★'.repeat(st.n)+'☆'.repeat(3-st.n)+'  ·  '+st.time.toFixed(1)+'s (par '+st.par+'s · best '+st.best+'s)'+(st.bonus?'  ·  first-time stars +'+st.bonus+' Stardust':''))):null;
   const riftRow=rr2?h('div',{class:'mech rw'},rr2.frags?h('div',{class:'rwh'},ico('gem'),rr2.frags.length+' '+(d.el?d.el+' ':'Star ')+'Fragment'+(rr2.frags.length>1?'s':'')+' added to Builds'):null,rr2.xp?h('div',{class:'rwh'},ico('memory'),'Memories +'+rr2.xp+' each (wave reward)'):null,rr2.dust?h('div',{class:'rwh'},ico('star'),'+'+rr2.dust+' Stardust from sparks'):null,rr2.mp?h('div',{class:'rwh'},ico('up'),'Drill reward: Skill Mastery +'+rr2.mp+' each'):null):null;
-  const wk=run.weekly?h('p',{class:'serpent'},'Weekly reward: a Star-born Fragment for beating Horaios on '+['Normal','Hard','Nightmare'][run.diff|0]+' this week.'):null;
-  openOverlay(h('div',{class:'form'},
-    formHead(run.practice?'Practice report':'Battle report',d.num+' · '+(d.name&&d.kind==='rift'?d.name:(d.place||d.name))+tierTxt),
-    h('div',{class:'stamp '+(lost?'bad':'ok')},ok==='died'?'Recycled':lost?'Denied':'Cleared'),
-    h('h2',null,ok==='died'?'The party went down':lost?'Stage failed':'Stage cleared'),
-    stats(),starRow,riftRow,wk,run.practice?h('p',{class:'serpent'},'Practice: no rewards.'):rewardBlock(ok===true),
-    h('div',{class:'row'},
-      h('button',{class:'btn',type:'button','data-primary':'1',onclick:()=>{startBattle(party,stageId,lvl,opt);}},'Retry'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>{showBattleMenu(party,run.practice?'practice':ROOMS[stageId]&&ROOMS[stageId].kind==='rift'?'rifts':stageId==='boss'?'boss':/^trial/.test(stageId)?'trials':'rifts');}},'Stages'),
-      h('button',{class:'btn ghost',type:'button',onclick:()=>{showPartySelect('battle');}},'Party'),
-      buildsBtn(goHome),h('button',{class:'btn ghost',type:'button',onclick:()=>{goHome();}},'Home'))));
+  const won=ok===true,a=run.practice?null:(awardRun(won)||run.lastAward);if(a)run.lastAward=a;
+  const found=run.practice?[]:run.found.map(fragById).filter(Boolean);
+  const nStar=st?st.n:0;
+  const it=(label,sub,go,cls,attrs)=>h('button',Object.assign({class:'tm-item'+(cls||''),type:'button',onclick:go},attrs||{}),h('span',{class:'tm-l'},label),sub?h('span',{class:'tm-s'},sub):null);
+  const tile=(icn,big,small,cls)=>h('div',{class:'vr-tile'+(cls?' '+cls:'')},h('span',{class:'vr-ti'},ico(icn)),h('b',null,big),h('i',null,small));
+  const ups=a?a.ups:[];
+  const member=id=>{const u=ups.find(x=>x.id===id),c=CHARS[id],cs=save.chars[id],need=xpNeed(cs.lvl);
+    return h('div',{class:'vr-m'+(u&&u.up?' up':''),style:'--cc:'+c.col},portrait(id,54),
+      h('div',{class:'vr-mb'},h('b',null,nameOf(id)),h('span',null,'Lv '+cs.lvl+(u&&u.up?' ↑':'')),
+        h('div',{class:'vr-xp'},h('i',{style:'width:'+(cs.lvl<MAX_LVL?Math.round(cs.xp/need*100):100)+'%'})),
+        a?h('em',null,'+'+a.xp+' Memories'+(a.mp?' · +'+((a.mp|0)+((rr2&&rr2.mp)|0))+' Mastery':'')):null),
+      u&&u.up?h('span',{class:'vr-lvup'},'Level up!'):null);};
+  const tiles=[];
+  if(a){tiles.push(tile('memory','+'+a.xp,'Memories each'));if(a.mp)tiles.push(tile('up','+'+a.mp,'Mastery each'));if(a.dust)tiles.push(tile('star','+'+a.dust,'Stardust'));}
+  if(rr2){if(rr2.xp)tiles.push(tile('memory','+'+rr2.xp,'Wave Memories'));if(rr2.mp)tiles.push(tile('up','+'+rr2.mp,'Drill Mastery','gold'));if(rr2.dust)tiles.push(tile('star','+'+rr2.dust,'Spark Stardust'));if(rr2.frags&&rr2.frags.length)tiles.push(tile('gem','×'+rr2.frags.length,(d.el?d.el+' ':'')+'Fragments','gold'));}
+  if(st&&st.bonus)tiles.push(tile('star','+'+st.bonus,'First-time stars','gold'));
+  if(found.length)tiles.push(tile('gem','×'+found.length,'Star Fragments','gold'));
+  if(run.weekly)tiles.push(tile('gem','★','Weekly Star-born','gold'));
+  const head=ok==='died'?'Defeated':lost?'Failed':'Victory';
+  openOverlay(h('div',{class:'vr'+(lost?' lost':'')},
+    h('div',{class:'vr-top'},
+      h('p',{class:'eyebrow'},(run.practice?'Practice · ':'')+d.num+' · '+(d.name&&d.kind==='rift'?d.name:(d.place||d.name))+tierTxt),
+      h('h2',{class:'vr-title'},head),
+      st&&!lost?h('div',{class:'vr-stars'},...[0,1,2].map(i=>h('span',{class:'vr-star'+(i<nStar?' on':''),style:'animation-delay:'+(0.25+i*0.22)+'s'},'★'))):null,
+      st?h('div',{class:'vr-time'},h('span',null,ico('clock'),st.time.toFixed(1)+'s'),h('span',null,'Par '+st.par+'s'),h('span',null,'Best '+st.best+'s')):h('div',{class:'vr-time'},h('span',null,'Vices '+run.kills),h('span',null,Math.round(run.t)+'s'))),
+    h('div',{class:'vr-party'},...party.map(member)),
+    run.practice?h('p',{class:'vr-note'},'Practice: no rewards.'):tiles.length?h('div',{class:'vr-tiles'},...tiles):null,
+    found.length?h('div',{class:'vr-frags'},...found.map(f=>{const bf=bestFor(f);return h('span',{class:'fr el-'+SIGN_EL[f.sign]},gemEl(f),(f.rar===2?'★ ':'')+f.sign+' '+f.deg+'° · '+SLOT_INFO[f.slot].name+(bf.tier?' · '+(bf.tier===2?'great':'good')+' for '+nameOf(bf.id):''));})):null,
+    h('nav',{class:'vr-acts'},
+      it('Retry','',()=>{startBattle(party,stageId,lvl,opt);},' primary',{'data-primary':'1'}),
+      it('Stages','',()=>{showBattleMenu(party,run.practice?'practice':ROOMS[stageId]&&ROOMS[stageId].kind==='rift'?'rifts':stageId==='boss'?'boss':/^trial/.test(stageId)?'trials':'rifts');}),
+      it('Builds','',()=>showBuilds(goHome)),
+      it('Home','',()=>goHome(),'',{'data-back':'1'}))),'mode-select');
 }
 function doorCard(id,i){
   const d=ROOMS[id];let tag,reward,res=null;
@@ -6347,6 +6429,9 @@ function buttonSound(b){
   if(b.dataset.sound) return b.dataset.sound;
   if(b.classList.contains('toggle')) return b.getAttribute('aria-pressed')==='true'?'toggleOn':'toggleOff';
   if(b.classList.contains('card')||b.closest('.seg')) return 'select';
+  if(b.classList.contains('ps-chip')||b.classList.contains('ps-slot')||b.classList.contains('gtab')||b.closest('.bv-tabs')) return 'select';
+  if(b.classList.contains('tm-item')&&b.classList.contains('primary')) return 'confirm';
+  if(b.classList.contains('bm-card')||b.classList.contains('cchoice')) return 'confirm';
   if(b.classList.contains('slot')) return 'back';
   if(b.hasAttribute('data-back')||b.classList.contains('skip')) return 'back';
   if(b.classList.contains('choice')||b.hasAttribute('data-primary')||b.classList.contains('light')) return 'confirm';

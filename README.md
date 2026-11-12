@@ -17,7 +17,10 @@ npx serve .
 - `index.html`: the whole game (HTML, CSS and JavaScript, Canvas 2D)
 - `docs/`: Lore Bible and the Chapter 1 script draft
 - `manifest.webmanifest`, `sw.js`, `icons/`: install-to-home-screen (PWA) and offline support
-- `netlify.toml`, `robots.txt`: hosting settings (the site is hidden from search engines)
+- `robots.txt`: asks search engines not to index the game
+
+## Hosting
+GitHub Pages from the `main` branch: https://meepmorp-blip.github.io/starfall-ascent/ (updates about a minute after a push).
 
 ## Saves
 Progress is stored in the browser (localStorage). Use **Builds → Backup** to copy a backup code and restore it on another device.
