@@ -36,7 +36,8 @@ html,body{height:100%}
 body{background:var(--void);color:var(--paper);overflow:hidden;font-family:var(--f-ui);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0;
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
-canvas#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+canvas#game{position:fixed;top:0;left:0;right:0;width:100%;height:100%;height:100lvh;display:block;touch-action:none}
+html{background:var(--void);min-height:100lvh}
 #safe-probe{position:fixed;inset:0;visibility:hidden;pointer-events:none;
   padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
 
@@ -740,7 +741,7 @@ for(const k in btn) Object.assign(btn[k],{x:0,y:0,r:30,down:0});
 const ports=[{},{},{}];
 function resize(){
   dpr=Math.min(window.devicePixelRatio||1,2);
-  sw=window.innerWidth; sh=window.innerHeight;
+  sw=cv.clientWidth||window.innerWidth; sh=Math.max(cv.clientHeight||0,window.innerHeight);
   cv.width=Math.round(sw*dpr); cv.height=Math.round(sh*dpr);
   const ps=getComputedStyle(probe);
   safe.t=parseFloat(ps.paddingTop)||0; safe.r=parseFloat(ps.paddingRight)||0;
@@ -760,7 +761,7 @@ function resize(){
   for(const e of enemies){e.x=clamp(e.x,AX0+e.r,AX1-e.r);}
   bgKey='';titleKey='';
 }
-addEventListener('resize',resize);
+addEventListener('resize',resize);if(window.visualViewport)visualViewport.addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,250));
 addEventListener('orientationchange',()=>setTimeout(resize,250));
 
 // ═══════════════════════════════════════════ input
