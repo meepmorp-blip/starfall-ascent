@@ -1655,6 +1655,7 @@ function playerHit(t,dmg,o={}){
   if(t!==boss){
     if(o.tide){t.tide=(t.tide||0)+o.tide;t.tideT=4;t.slowT=Math.max(t.slowT||0,1);if(t.tide>=3){t.tide=0;t.drowsyT=3*debuffK();t.slowT=Math.max(t.slowT,3);addText(t.x,t.y-(t.r||20)-14,'DROWSY','#7FE3F0',10,{life:0.8});}}
     if(o.stag){t.stag=(t.stag||0)+o.stag;if(t.stag>=100){t.stag=0;if(t.sh>0){t.sh=0;addText(t.x,t.y-(t.r||20)-24,'SHIELD BROKEN',C.earth,10,{life:0.8});}if(t.type!=='champion'){t.stunT=Math.max(t.stunT||0,2);t.st='stun';}addText(t.x,t.y-(t.r||20)-14,'STUNNED',C.earth,10,{life:0.8});}}}
+  if(room&&room.def.mech==='drill'&&o.basic&&!o.pulse){if(o.pn)gainPn(o.pn);addText(t.x,t.y-(t.r||20)-8,'SKILLS ONLY',C.ash,8,{life:0.4});return;}
   if(t===boss){
     if(boss.fsh>0){const sd=dmg*(o.stag?3:1);boss.fsh-=sd;dmg*=0.2;
       if(boss.fsh<=0){boss.fsh=0;boss.idle=Math.max(boss.idle,2.5);boss.patT=0;bullets=[];addText(boss.x,boss.y-boss.r-30,'SHIELD BROKEN',C.earth,14,{life:1.4});shake(6,0.25);sfx('break');}}
@@ -2507,7 +2508,7 @@ function proceed(){showDoors(run.roomNo>=6);}
 
 // ═══════════════════════════════════════════ Rifts: replayable stages with tiers, stars and set drops
 // Theo's reader finds rifts across the city. Each one drops one kind of reward and has its own mechanic.
-const RIFTS=['rift_fire','rift_water','rift_air','rift_earth','rift_xp','rift_dust'];
+const RIFTS=['rift_fire','rift_water','rift_air','rift_earth','rift_xp','rift_dust','rift_mastery'];
 Object.assign(ROOMS,{
   rift_fire:{id:'rift_fire',kind:'rift',num:'Rift',name:'Ash Lane Blaze',place:'Ash Lane rooftops',theme:'rooftop',el:'Fire',mech:'fire',drop:'Fire Fragments',
     ruleText:'Burning ground falls every few seconds: step out of the red circles. Vices that die while burning explode and hurt other Vices.',pool:['hothead','gossip','hothead','waxer','spotlight']},
@@ -2519,11 +2520,13 @@ Object.assign(ROOMS,{
     ruleText:'Many Vices carry shields. Stagger them (Bram, charged attacks) until they’re stunned: the stun breaks the shield.',pool:['hothead','deadline','gossip','waxer','hothead']},
   rift_xp:{id:'rift_xp',kind:'rift',num:'Rift',name:'Market Ring Waves',place:'Market Ring',theme:'market',mech:'xp',drop:'Memories (XP)',
     ruleText:'Five waves, each bigger than the last. Every wave you clear gives Memories.',pool:['gossip','hothead','waxer','collector','spotlight']},
+  rift_mastery:{id:'rift_mastery',kind:'rift',num:'Rift',name:'Clocktower Drills',place:'Clocktower roofs',theme:'roof',mech:'drill',drop:'Skill Mastery',
+    ruleText:'Drills: Vices only take damage from skills, Ultimates and Entrances. Basic attacks still charge your Ultimate. Switch often.',pool:['hothead','gossip','waxer','hothead']},
   rift_dust:{id:'rift_dust',kind:'rift',num:'Rift',name:'Festival Sparks',place:'Festival Square',theme:'plaza',mech:'dust',drop:'Stardust',
     ruleText:'Sparks fall over the square while Vices attack. Catch 15 sparks. Each one is Stardust.',pool:['gossip','hothead','spotlight','collector']},
 });
 const RIFT_TIER=[null,{rec:1,hp:1,atk:1,kills:12,elite:0.08},{rec:6,hp:1.6,atk:1.25,kills:16,elite:0.18},{rec:12,hp:2.4,atk:1.5,kills:20,elite:0.3}];
-const RIFT_PAR={rift_fire:75,rift_water:80,rift_air:80,rift_earth:85,rift_xp:110,rift_dust:70,trialMercury:35,trialMars:30,boss:120};
+const RIFT_PAR={rift_mastery:90,rift_fire:75,rift_water:80,rift_air:80,rift_earth:85,rift_xp:110,rift_dust:70,trialMercury:35,trialMars:30,boss:120};
 const RIFT_MODS=[
   {id:'burn',t:'Burns deal +50% damage'},{id:'shield',t:'Shields you get are 30% stronger'},
   {id:'regen',t:'Vices heal if nobody hits them for 3 seconds'},{id:'crit',t:'Crits deal +25% damage'}];
@@ -2601,7 +2604,8 @@ function riftRewards(ok){
   if(!ok||!run||run.practice)return null;
   const d=ROOMS[run.stage];if(d&&d.kind==='trial'){gainFrag('trial');return {frags:[save.frags[save.frags.length-1]]};}if(!d||d.kind!=='rift')return null;const tier=run.tier||1,out={};
   if(d.el){out.frags=[];for(let i=0;i<tier;i++){gainFrag('rift'+tier);out.frags.push(save.frags[save.frags.length-1]);}}
-  if(d.mech==='xp'){const xp=Math.round(25*room.wave*tier);out.xp=xp;out.ups=giveXp(run.party,xp);}
+  if(d.mech==='drill'){const mp=[0,4,7,10][tier];giveMp(run.party,mp);out.mp=mp;}
+  if(d.mech==='xp'){const xp=Math.round(12.5*room.wave*tier);out.xp=xp;out.ups=giveXp(run.party,xp);}
   if(d.mech==='dust'){const dust=3*tier*room.collected;save.dust+=dust;out.dust=dust;}
   persist();return out;
 }
@@ -4421,7 +4425,7 @@ function showBattleMenu(party,tab){
         h('span',{class:'seglabel',style:'margin-left:8px'},'Recommended Lv '+TT.rec+' · your party Lv '+avg)),
       h('p',{class:'serpent'},h('b',null,'Today’s rift condition: '),riftMod().t),
       h('div',{class:'choices'},...RIFTS.map(id=>{const d=ROOMS[id];
-        return card(d.drop+' · '+stars(starKey(id,t)),d.name,d.ruleText,(d.el?'Drops '+t+' '+d.el+' Fragment'+(t>1?'s':'')+(t===3?' · best Star-born odds':''):d.mech==='xp'?'Up to '+125*t+' Memories':'Up to '+45*t+' Stardust')+' · par '+RIFT_PAR[id]+'s',
+        return card(d.drop+' · '+stars(starKey(id,t)),d.name,d.ruleText,(d.el?'Drops '+t+' '+d.el+' Fragment'+(t>1?'s':'')+(t===3?' · best Star-born odds':''):d.mech==='xp'?'Up to '+Math.round(62.5*t)+' Memories':d.mech==='drill'?'+'+[0,4,7,10][t]+' Skill Mastery each':'Up to '+45*t+' Stardust')+' · par '+RIFT_PAR[id]+'s',
           ()=>startBattle(party,id,0,{tier:t}));})));
   } else if(tab==='boss'){
     const df=battleSel.diff,wk=Math.floor(Date.now()/604800000),done=save.bossWeek&&save.bossWeek[df]===wk;
@@ -4473,7 +4477,7 @@ function showBattleResult(ok){
   const st=stageStars(ok===true),rr2=riftRewards(ok===true);
   const tierTxt=d.kind==='rift'?' · Tier '+['','I','II','III'][run.tier||1]:stageId==='boss'?' · '+['Normal','Hard','Nightmare'][run.diff|0]:'';
   const starRow=st?h('div',{class:'mech rw'},h('div',{class:'rwh'},ico('star'),'★'.repeat(st.n)+'☆'.repeat(3-st.n)+'  ·  '+st.time.toFixed(1)+'s (par '+st.par+'s · best '+st.best+'s)'+(st.bonus?'  ·  first-time stars +'+st.bonus+' Stardust':''))):null;
-  const riftRow=rr2?h('div',{class:'mech rw'},rr2.frags?h('div',{class:'rwh'},ico('gem'),rr2.frags.length+' '+(d.el?d.el+' ':'Star ')+'Fragment'+(rr2.frags.length>1?'s':'')+' added to Builds'):null,rr2.xp?h('div',{class:'rwh'},ico('memory'),'Memories +'+rr2.xp+' each (wave reward)'):null,rr2.dust?h('div',{class:'rwh'},ico('star'),'+'+rr2.dust+' Stardust from sparks'):null):null;
+  const riftRow=rr2?h('div',{class:'mech rw'},rr2.frags?h('div',{class:'rwh'},ico('gem'),rr2.frags.length+' '+(d.el?d.el+' ':'Star ')+'Fragment'+(rr2.frags.length>1?'s':'')+' added to Builds'):null,rr2.xp?h('div',{class:'rwh'},ico('memory'),'Memories +'+rr2.xp+' each (wave reward)'):null,rr2.dust?h('div',{class:'rwh'},ico('star'),'+'+rr2.dust+' Stardust from sparks'):null,rr2.mp?h('div',{class:'rwh'},ico('up'),'Drill reward: Skill Mastery +'+rr2.mp+' each'):null):null;
   const wk=run.weekly?h('p',{class:'serpent'},'Weekly reward: a Star-born Fragment for beating Horaios on '+['Normal','Hard','Nightmare'][run.diff|0]+' this week.'):null;
   openOverlay(h('div',{class:'form'},
     formHead(run.practice?'Practice report':'Battle report',d.num+' · '+(d.name&&d.kind==='rift'?d.name:(d.place||d.name))+tierTxt),
