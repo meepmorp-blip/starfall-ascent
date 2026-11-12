@@ -33,6 +33,7 @@
   color-scheme:dark;
 }
 html,body{height:100%}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{background:var(--void);color:var(--paper);overflow:hidden;font-family:var(--f-ui);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0;
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
@@ -771,6 +772,12 @@ body.playing #nl-badge-frame,body.playing [id^='nl-badge']{display:none!importan
 .tr-chip{width:auto!important}
 .tr .ss-title{max-width:none}
 @media (max-height:520px),(max-width:760px){.tr .tr-body{grid-template-columns:minmax(160px,34%) minmax(0,1fr);gap:12px}.tr .ss-info{display:none}.tr-grid{gap:5px}.tr-chip{padding:4px 2px!important}.tr-chip canvas{width:32px;height:32px}.tr-chip .ps-cr{display:none}}
+.pz .tm-menu,.pz-menu{width:100%!important}
+.pz-left,.pz-right{min-width:0}
+.pz-left .eyebrow{font-size:10px;letter-spacing:.12em;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#overlay.mode-pause:has(.pz){background:rgba(8,7,12,.9)!important}
+@media (max-height:520px){.pz{gap:16px}.pz .tm-item{padding:8px 14px}.pz .tm-item .tm-l{font-size:13px}.pz-title{font-size:28px!important}.pz-sect{font-size:9px}
+  .pz-right{padding:10px 12px}.pz-set .setting{font-size:10px}.pz-set .toggle{min-width:44px;padding:3px 8px;font-size:10px}.pz-chips span{font-size:10px;padding:2px 8px}}
 </style>
 </head>
 <body>
