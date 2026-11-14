@@ -1,0 +1,1 @@
+{"name":"starfall-tools","private":true,"version":"1.0.0","description":"Visual testing and asset tools for Starfall: The Ascent (not shipped with the game)","scripts":{"shots":"node shots.js","serve":"node serve.js"},"devDependencies":{"playwright":"^1.65.1"}}
