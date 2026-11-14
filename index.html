@@ -849,6 +849,47 @@ body{font-weight:600}
 .pzl-msg{margin:10px 0 0;font:700 13px/1.4 var(--f-form);color:#FFB4A0}.pzl-msg.ok{color:#9BE37A}
 .pzl-row{justify-content:space-between;align-items:center;margin-top:10px}
 @media (max-height:520px){.pzl h2{font-size:17px}.pzl-hint{font-size:12px;margin-bottom:6px}.pzl-o{padding:8px 10px!important}}
+/* menu layout pass 1: readable Builds chips, one shared top bar (Back on the left, title, actions on the right) */
+.vault .tab,.bv-tabs .tab{color:#F6EBD2!important}.vault .tab .lv{color:rgba(246,235,210,.65)!important}
+.select-head{display:flex!important;align-items:center!important;flex-wrap:nowrap!important;gap:10px;padding-bottom:8px;border-bottom:1px solid rgba(242,210,122,.22)}
+.select-head>.row{display:contents}
+.select-head [data-back]{order:-1}
+.select-head>div:first-child{flex:1;min-width:0}
+.select-head h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.select-head .eyebrow{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* menu layout pass 2 */
+.tr2{max-width:1000px;gap:12px}
+.tr2-body{display:grid;grid-template-columns:minmax(220px,38%) minmax(0,1fr);gap:14px;align-items:stretch}
+.tr2-basics{position:relative;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;text-align:left;min-height:240px;padding:16px;border:0;border-radius:14px;cursor:pointer;color:#F6EBD2;
+  background:linear-gradient(180deg,rgba(8,7,12,.15) 0%,rgba(8,7,12,.9) 78%),var(--bg,none) center/cover,#141018;box-shadow:inset 0 0 0 2px rgba(242,210,122,.55),0 10px 28px rgba(0,0,0,.45);transition:transform .15s}
+.tr2-basics:hover,.tr2-basics:focus-visible{transform:translateY(-3px);outline:none}
+.tr2-k{font:800 10px var(--f-ui);letter-spacing:.16em;text-transform:uppercase;color:#F2D27A}
+.tr2-basics b{font:900 30px/1 var(--f-display);color:#FFE6A3;text-shadow:0 3px 0 #3B2617}
+.tr2-d{font:600 13px/1.4 var(--f-form);opacity:.85}
+.tr2-go{align-self:flex-start;margin-top:6px;background:#F2D27A;color:#2A1B10;font:800 12px var(--f-ui);letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:999px}
+.tr2-chars{display:flex;flex-direction:column;gap:8px;background:rgba(13,11,20,.72);border-radius:14px;padding:12px 14px;box-shadow:inset 0 0 0 1.5px rgba(246,235,210,.1)}
+.tr2 .tr-grid{flex:1;grid-auto-rows:1fr}
+.tr2 .tr-chip{padding:10px 4px!important;justify-content:center}
+.tr2-basics.guide-new::after{top:12px;right:12px;left:auto}
+/* title: keep the whole menu clear of the bottom edge on short screens */
+@media (max-height:520px){.title-card h1{font-size:50px!important}.title-card .sub{font-size:16px!important}.tm{gap:8px!important}.tm-item{padding:6px 16px!important}
+  /* Builds: one bar, then one scrolling row of character chips */
+  .vault:has(.sc)>.select-head{position:static!important;padding-bottom:5px}
+  .vault:has(.sc)>.select-head h2{display:block!important;font-size:16px!important}
+  .vault:has(.sc)>.bv-tabs{max-width:100%!important;flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none}
+  .vault:has(.sc)>.bv-tabs .tab .nm{font-size:12px}
+  .sc-stage{max-height:calc(100dvh - 118px)!important}.sc-cv{height:min(40dvh,160px)!important}
+  /* party: feet clear of the name strip, roster off the bottom edge */
+  .ps-slot{height:47vh!important}.ps-cv{bottom:24px!important;height:84%!important}.ps .select-head h2{font-size:17px}
+  /* battle menu: tabs, tier and today's condition share the space */
+  .bm>div:last-child:not(.choices){display:flex;flex-wrap:wrap;align-items:center;gap:5px 14px}
+  .bm>div:last-child>.row{margin:0!important}.bm>div:last-child>.serpent{margin:0!important}.bm>div:last-child>.choices{flex:1 0 100%}
+  .select-head{padding-bottom:5px}.select-head .btn{padding:6px 12px;font-size:11px}.select-head .eyebrow{display:none}
+  .tr2-basics{min-height:0}.tr2-basics b{font-size:22px}.tr2-d{font-size:12px}.tr2 .tr-chip{padding:5px 2px!important}.tr2-chars{padding:8px 10px}}
+@media (max-width:640px){.tr2-body{grid-template-columns:1fr}}
+.select-head h2{color:#F6EBD2!important}
+#overlay.mode-select>.select{margin-top:0;margin-bottom:auto}
+@media (max-height:520px){.ps-cv{bottom:32px!important;height:78%!important}}
 </style>
 </head>
 <body>
@@ -1699,12 +1740,13 @@ function showTrainingMenu(){
   state='title';room=null;boss=null;paused=false;playMusic('title');
   const pr=loadPrefs(),doneC=Array.isArray(pr.tutChars)?pr.tutChars:[],bg=thumbOf('yard');
   const it=(label,sub,go,cls,attrs)=>h('button',Object.assign({class:'tm-item'+(cls||''),type:'button',onclick:go},attrs||{}),h('span',{class:'tm-l'},label),sub?h('span',{class:'tm-s'},sub):null);
-  openOverlay(h('div',{class:'ss tr',style:bg?'--bg:url('+bg+')':null},
-    h('div',{class:'ss-hero'},h('p',{class:'eyebrow'},'Vigil Yard'),h('h2',{class:'ss-title'},'Training'),
-      h('p',{class:'ss-info'},'Basics teaches the controls. Character drills teach one character: their kit solo first, then how they play in a team.')),
-    h('div',{class:'tr-body'},
-      h('nav',{class:'tm-menu'},it('Basics','Controls · 10 steps',()=>{ensureAudio();startTutorial();},' primary'+(pr.tutDone?'':' guide-new'),{'data-primary':'1'}),it('Back','Main menu',()=>goHome(),'',{'data-back':'1'})),
-      h('div',{class:'tr-chars'},h('div',{class:'pz-sect'},'Character drills · solo + team'),
+  openOverlay(h('div',{class:'select tr2'},
+    h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},'Vigil Yard'),h('h2',null,'Training')),
+      h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>goHome()},'Back'))),
+    h('div',{class:'tr2-body'},
+      h('button',{class:'tr2-basics'+(pr.tutDone?'':' guide-new'),type:'button','data-primary':'1',style:bg?'--bg:url('+bg+')':null,onclick:()=>{ensureAudio();startTutorial();}},
+        h('span',{class:'tr2-k'},pr.tutDone?'Done · play again':'Start here'),h('b',null,'Basics'),h('span',{class:'tr2-d'},'Move, attack, dodge, skills, switching and Ultimates. 10 short steps.'),h('span',{class:'tr2-go'},'Start ›')),
+      h('div',{class:'tr2-chars'},h('div',{class:'pz-sect'},'Character drills · their kit solo, then in a team'),
         h('div',{class:'tr-grid'},...CH_ORDER.map(id=>{const c=CHARS[id],dn=doneC.includes(id);
           return h('button',{class:'ps-chip tr-chip'+(dn?' in':''),type:'button',style:'--cc:'+c.col,title:c.role,onclick:()=>{ensureAudio();startCharTraining(id);}},
             portrait(id,46),dn?h('span',{class:'ps-tag'},'✓'):null,h('span',{class:'ps-cn'},nameOf(id)),h('span',{class:'ps-cr'},c.role.split(' · ')[0]));}))))),'mode-select');
@@ -5315,7 +5357,7 @@ function showBuilds(back){
       h('button',{type:'button','aria-pressed':String(view==='skills'),onclick:()=>{view='skills';render();}},ico('up'),' Skills'),
       h('button',{type:'button','aria-pressed':String(view==='recoll'),onclick:()=>{view='recoll';render();}},ico('star'),' Level & milestones'));
     root.replaceChildren(
-      h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},'Builds · Recollection and Star Fragments'),h('h2',null,'Who are you building?')),
+      h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},'Recollection and Star Fragments'),h('h2',null,'Builds')),
         h('div',{class:'row'},h('button',{class:'btn outline',type:'button',onclick:()=>showBackup(()=>showBuilds(back))},'Backup'),h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>{(back||goHome)();}},'Back'))),
       tabs,h('div',{class:'sc',style:'--cc:'+c.col},stage(),h('div',{class:'sc-panel'},vtabs,
         view==='frags'?h('div',{class:'bv-body sc-frags'},left,right,sheet):view==='skills'?skillsView():h('div',{class:'vault-body'},left))));
