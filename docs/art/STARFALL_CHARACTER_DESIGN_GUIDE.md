@@ -7,7 +7,7 @@
 |---|---|---|
 | Kairos | Navy spiked hair, teal jacket | Chest emblem: a clock face with no hands. Twin curved silver-blue blades (the clock hands) |
 | Sgt. Agnes Calder | Olive Garrison uniform, beret, auburn hair | Long rifle |
-| Big Boy Bram | Very large, green helmet, beard | Round shield |
+| Big Boy Bram | Very large and round; messy brown hair, rust-orange scarf, dark strapped leather coat, orange-over-steel shoulder plates, belt with pouches, torn rust cloth, knee plates, steel-toed boots (redesigned 15 Nov 2026 from the owner's reference) | Oval steel shield with a rust-orange boss |
 | Dr. Naomi Lark | White coat, dark hair | Writing on her forearm; dart tool |
 | Theo Lark | Wild orange curls, goggles | Brass devices, turrets |
 | Lucas Crane | Pale hair, sharp grey coat | Pistol |
