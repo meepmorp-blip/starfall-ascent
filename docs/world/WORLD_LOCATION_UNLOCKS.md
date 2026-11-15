@@ -26,5 +26,5 @@ A locked place shows "???" until the story has shown it:
 | St. Hesper's | 2 | **Yes** |
 | Concord Office | 3 | **Yes** (exit from The Cloister opens at Scene 7) |
 | Ash Lane | 4 | **Yes** (exit from St. Lucia's opens at Scene 10) |
-| Clock Tower | 5 | Not yet |
+| Clock Tower | 5 | **Yes** (exit from St. Hesper's opens after Chapter 1) |
 | Drowned Canals | 6 | Prepared only (story-locked) |

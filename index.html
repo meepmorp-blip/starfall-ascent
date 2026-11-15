@@ -1665,10 +1665,10 @@ function giveMp(ids,n){if(n<=0)return;for(const id of ids){const c=save.chars[id
 const KEEP_XP=120; // one Keepsake = 120 Memories to one character
 function rewardLines(r){const L=[];if(!r)return L;
   if(r.dust)L.push('+'+r.dust+' Stardust');if(r.keep)L.push('+'+r.keep+' Keepsake'+(r.keep>1?'s':''));
-  if(r.mpAll)L.push('Mastery +'+r.mpAll+' for all eight');if(r.frag)L.push(r.frag==='star'?'a Star-born Fragment':'a Star Fragment');return L;}
+  if(r.mpAll)L.push('Mastery +'+r.mpAll+' for all eight');if(r.bond)for(const b of r.bond)L.push('Bond +1 · '+nameOf(b));if(r.frag)L.push(r.frag==='star'?'a Star-born Fragment':'a Star Fragment');return L;}
 function grantReward(r,key){
   if(key&&save.claims[key])return null;
-  if(r.dust)save.dust+=r.dust;if(r.keep)save.keep=(save.keep|0)+r.keep;if(r.mpAll)giveMp(CH_ORDER,r.mpAll);
+  if(r.dust)save.dust+=r.dust;if(r.keep)save.keep=(save.keep|0)+r.keep;if(r.mpAll)giveMp(CH_ORDER,r.mpAll);if(r.bond)for(const b of r.bond)bondUp(b);
   if(r.frag){const was=save.frags.length;gainFrag(r.frag);if(save.frags.length===was&&r.frag==='star')save.dust+=80;}
   if(key)save.claims[key]=Date.now();persist();return rewardLines(r);}
 const claimed=key=>!!save.claims[key];
@@ -4009,6 +4009,8 @@ Object.assign(SPK,{mxlaund:{name:'Laundress',col:'paper'},mxlamp:{name:'Lampligh
   mxrosa:{name:'Rosa',col:'paper'},mxmat:{name:'Old Matteo',col:'paper'},mxfish:{name:'Fish vendor',col:'paper'},mxtess:{name:'Tessa',col:'paper'}});
 function mxS(){const x=save.mx||(save.mx={v:1,at:'market',seen:{},talk:{},found:{},q:{},items:{},f:{}});
   for(const k of ['seen','talk','found','q','items','f'])if(!x[k]||typeof x[k]!=='object')x[k]={};if(!MX_DISTRICTS[x.at])x.at='market';return x;}
+// story era of the hub: 'before' the Festival (Chapter 1 in progress) or 'fugitive' (Chapter 1 cleared: the party is wanted, Lucas is gone)
+function mxEra(){return ch1Scene()>=99?'fugitive':'before';}
 // has the player met this character in Chapter 1 yet?
 function mxMet(id){return (save.ch1Clears|0)>0||!!(save.ch1b&&Array.isArray(save.ch1b.roster)&&save.ch1b.roster.includes(id));}
 const mxQ=id=>mxS().q[id]||null,mxF=k=>!!mxS().f[k],mxSet=k=>{mxS().f[k]=1;},mxHas=k=>!!mxS().items[k];
@@ -4018,12 +4020,13 @@ const MX_DISTRICTS={
   plaza:{name:'Festival Square',theme:'plaza',arrive:[0.3,0.5],blurb:'The fountain, and the Festival getting ready around it.',exits:[['w','market'],['e','hesper']],solids:[[0.5,0.555,34]]},
   yard:{name:'Garrison Yard',theme:'yard',arrive:[0.5,0.7],blurb:'Barracks, drills, and the rooftop guns.',exits:[['e','market']]},
   chapel:{name:'The Cloister',theme:'chapel',arrive:[0.5,0.82],blurb:'The Concord Church’s walled garden.',exits:[['s','market'],['e','office']],solids:[[0.5,0.5,16]]},
+  tower:{name:'The Clock Tower',theme:'roof',arrive:[0.5,0.7],blurb:'The old clock tower above St. Hesper’s. The party’s hideout.',exits:[['s','hesper']],solids:[],painted:'tower'},
   ashlane:{name:'Ash Lane',theme:'street',arrive:[0.5,0.62],blurb:'Terraced houses, washing lines and lamps, on the road to St. Lucia’s.',exits:[['w','ward']],solids:[],painted:'ashlane'},
   office:{name:'Concord Office',theme:'office',arrive:[0.5,0.62],blurb:'The whole city on paper. Take a number.',exits:[['s','chapel']],solids:[],painted:'office'},
-  hesper:{name:'St. Hesper’s',theme:'orphanage',arrive:[0.5,0.62],blurb:'The orphanage where Kairos grew up, at dusk.',exits:[['w','plaza']],solids:[],painted:'hesper'},
+  hesper:{name:'St. Hesper’s',theme:'orphanage',arrive:[0.5,0.62],blurb:'The orphanage where Kairos grew up, at dusk.',exits:[['w','plaza'],['e','tower']],solids:[],painted:'hesper'},
   ward:{name:'St. Lucia’s',theme:'hospital',arrive:[0.5,0.66],blurb:'The east ward, between visiting hours.',exits:[['n','market'],['e','ashlane']]},
 };
-const MX_ORDER=['market','plaza','yard','chapel','ward','hesper','office','ashlane'];
+const MX_ORDER=['market','plaza','yard','chapel','ward','hesper','office','ashlane','tower'];
 // Know the Streets was written for the first five districts; it stays that way for every save
 const MX_STREETS=['market','plaza','yard','chapel','ward'];
 // future activities: where each one will open from (see MERIDIAN_GAMEPLAY_ROADMAP.md)
@@ -4038,20 +4041,30 @@ const MX_ACTIVITIES={
 const MX_QUESTS={
   streets:{title:'Know the Streets',kind:'main',giver:'Old Matteo · Market Ring',desc:'Matteo wants you to walk the whole city today and tell him it is all still there.',reward:{dust:40,keep:2},
     steps:[{id:'walk',t:'Visit every district',prog:()=>MX_STREETS.filter(d=>mxS().seen[d]).length+' / '+MX_STREETS.length,ok:()=>MX_STREETS.every(d=>mxS().seen[d])},
-      {id:'tell',t:'Tell Matteo what you saw (Market Ring)',ok:()=>mxF('streetsTold')}]},
+      {id:'tell',at:'market',t:'Tell Matteo what you saw (Market Ring)',ok:()=>mxF('streetsTold')}]},
   glasses:{title:'Matteo’s Glasses',kind:'optional',giver:'Old Matteo · Market Ring',desc:'Not on his head this time. He last had them feeding the pigeons by the fountain in Festival Square.',reward:{dust:30,keep:1},
-    steps:[{id:'find',t:'Look by the fountain in Festival Square',ok:()=>mxHas('glasses')},{id:'back',t:'Bring the glasses to Matteo (Market Ring)',ok:()=>mxF('glassesBack')}]},
+    steps:[{id:'find',at:'plaza',t:'Look by the fountain in Festival Square',ok:()=>mxHas('glasses')},{id:'back',at:'market',t:'Bring the glasses to Matteo (Market Ring)',ok:()=>mxF('glassesBack')}]},
   roster:{title:'The Duty Roster',kind:'optional',giver:'Garrison soldier · Garrison Yard',desc:'The evening rooftop roster has to go up on the Market Ring board before the shift changes.',reward:{dust:30,keep:1},
-    steps:[{id:'post',t:'Pin the roster to the board in the Market Ring',ok:()=>mxF('rosterPosted')},{id:'back',t:'Report back to the soldier (Garrison Yard)',ok:()=>mxF('rosterDone')}]},
+    steps:[{id:'post',at:'market',t:'Pin the roster to the board in the Market Ring',ok:()=>mxF('rosterPosted')},{id:'back',at:'yard',t:'Report back to the soldier (Garrison Yard)',ok:()=>mxF('rosterDone')}]},
   lanterns:{title:'Lanterns for Vespers',kind:'optional',giver:'Lantern seller · Festival Square',desc:'The Cloister ordered a lantern for evening prayers, and the seller cannot leave the stall.',reward:{dust:25,keep:1},
-    steps:[{id:'take',t:'Take the lantern to the Sister at the Cloister gate',ok:()=>mxF('lanternGiven')}]},
+    steps:[{id:'take',at:'chapel',t:'Take the lantern to the Sister at the Cloister gate',ok:()=>mxF('lanternGiven')}]},
   rounds:{title:'Rounds',kind:'optional',giver:'Ward nurse · St. Lucia’s',desc:'Dr. Lark’s ward is asking people their birthdays. The nurse wants a few answers from people who are not patients.',reward:{dust:40,keep:1},
-    steps:[{id:'ask',t:'Ask Matteo, Rosa and the fish vendor their birthdays',prog:()=>['bd_matteo','bd_rosa','bd_fish'].filter(mxF).length+' / 3',ok:()=>['bd_matteo','bd_rosa','bd_fish'].every(mxF)},
-      {id:'back',t:'Tell the nurse at St. Lucia’s',ok:()=>mxF('roundsDone')}]},
+    steps:[{id:'ask',at:'market',t:'Ask Matteo, Rosa and the fish vendor their birthdays',prog:()=>['bd_matteo','bd_rosa','bd_fish'].filter(mxF).length+' / 3',ok:()=>['bd_matteo','bd_rosa','bd_fish'].every(mxF)},
+      {id:'back',at:'ward',t:'Tell the nurse at St. Lucia’s',ok:()=>mxF('roundsDone')}]},
   records:{title:'Meridian Records',kind:'optional',giver:'Found on your own',desc:'Notices, plaques and odd corners. The city keeps more than it says.',reward:{dust:50,frag:'boss'},
     steps:[{id:'find',t:'Find 8 records around Meridian',prog:()=>mxRecordCount()+' / 8',ok:()=>mxRecordCount()>=8}]},
 };
-function mxStart(id){const x=mxS();if(x.q[id])return;x.q[id]={s:'active',n:0,at:Date.now()};persist();
+// quest states: completed · active · locked_by_story · locked_by_prerequisite · undiscovered · available
+// a quest may carry story:()=>bool (story condition), pre:[ids] (quests that must be completed), at:'district' (where it starts)
+function mxQState(id){const x=mxS(),q=x.q[id],Q=MX_QUESTS[id];if(q&&q.s==='done')return 'completed';if(q)return 'active';
+  if(Q.story&&!Q.story())return 'locked_by_story';if(Q.pre&&!Q.pre.every(p=>x.q[p]&&x.q[p].s==='done'))return 'locked_by_prerequisite';
+  return (x.qseen||{})[id]?'available':'undiscovered';}
+function mxDiscover(id){const x=mxS();x.qseen=x.qseen||{};if(x.qseen[id])return;x.qseen[id]=1;persist();if(room)setBanner('New story · '+MX_QUESTS[id].title,MX_QUESTS[id].giver||'',2.2);}
+const mxQuestsAvailable=()=>Object.keys(MX_QUESTS).filter(id=>mxQState(id)==='available');
+// places with something to do: the giver of an available quest, or where an active quest's current step happens
+function mxQuestPlaces(){const x=mxS(),P={};for(const id in MX_QUESTS){const st=mxQState(id),Q=MX_QUESTS[id];
+    if(st==='available'&&Q.at)P[Q.at]=1;if(st==='active'){const sp=Q.steps[x.q[id].n];if(sp&&sp.at)P[sp.at]=1;}}return P;}
+function mxStart(id){const x=mxS();if(x.q[id])return;x.qseen=x.qseen||{};x.qseen[id]=1;x.q[id]={s:'active',n:0,at:Date.now()};persist();
   if(room)setBanner('New quest · '+MX_QUESTS[id].title,MX_QUESTS[id].steps[0].t,2.4);sfx('select');mxTick();}
 function mxTick(){const x=mxS();let ch=false;
   for(const id in MX_QUESTS){const q=x.q[id];if(!q||q.s!=='active')continue;const Q=MX_QUESTS[id];
@@ -4093,6 +4106,7 @@ const MX_FINDS=[
   {id:'office.notice',at:'office',fx:0.7,fy:0.26,title:'The notice board',text:[['n','NOTICES · Re-charting: clerical errors in your birth chart corrected free of charge, Tuesdays and Thursdays.'],['n','Lost: one umbrella, black. Found: eleven umbrellas, black.']]},
   {id:'office.queue',at:'office',fx:0.22,fy:0.84,title:'The waiting benches',text:[['n','Names carved into the waiting benches, decades of them, each with a ticket number beside it. The highest is 1,204.']]},
   {id:'office.stamp',at:'office',fx:0.62,fy:0.47,hidden:1,title:'A stamp under the rug',reward:{dust:10},text:[['n','Kicked half under the rug: a brass stamp. You press it on your palm. APPROVED.'],['th','First thing in this building that’s approved of me.']]},
+  {id:'tower.view',at:'tower',fx:0.5,fy:0.2,title:'The view from the tower',text:[['n','The whole city from up here: the Ring, the Square, the Cloister’s roof, the hospital lamps. And past the last roofs, the long grey line of the Wall.']]},
   {id:'hesper.clock',at:'hesper',fx:0.5,fy:0.25,title:'The gate clock',text:[['n','The clock above the orphanage gate says 11:59. It has said 11:59 for as long as anyone remembers.'],['n','Nobody fixes it. Nobody takes it down either.']]},
   {id:'hesper.sun',at:'hesper',fx:0.5,fy:0.86,title:'The chalk sun',text:[['n','A chalk sun on the cobbles with a name in every ray. The rain will take them by Sunday, and someone will draw them again.']]},
   {id:'hesper.chores',at:'hesper',fx:0.35,fy:0.26,title:'The chore board',text:[['n','CHORES · sweep the yard · peel potatoes · fetch bread at six.'],['n','Underneath, in a child’s capitals: “AND DO NOT FEED THE PIGEONS (MATTEO)”.']]},
@@ -4118,14 +4132,17 @@ function mxPeople(d){const L=[];
         if(mxQ('streets')&&!mxQ('glasses'))return {lines:[['mxmat','While you’re out… have you seen my glasses?'],['kairos','On your—'],['mxmat','Not on my head. I checked twice.'],
           ['mxmat','I had them at the fountain in Festival Square this morning, feeding the pigeons. Then I didn’t.']],then:()=>mxStart('glasses')};
         if(mxAct('glasses'))return {lines:[['mxmat','The fountain, Kairos. By the pigeons. Probably.']]};
+        if(mxEra()==='fugitive')return {amb:1,lines:[['mxmat','Keep your hood up, boy. Half the Ring has your face on paper and the other half pretends it can’t read.']]};
         const t=mxTalked('market.matteo');return {amb:1,lines:[[['mxmat','Twelve loaves, three mackerel. Or was it the other way round.'],['mxmat','Sundays I sit at the back. Best seat for a nap, don’t tell Father Vane.'],['mxmat','You remember everything, they say. Must be heavy.']][t%3]]};}});
     L.push({id:'rosa',fx:0.38,fy:0.78,col:'#A0607A',hair:'#2A1A12',long:1,face:1,label:'Rosa',
       mark:()=>mxStepOf('rounds')==='ask'&&!mxF('bd_rosa')?'!':null,
       say:()=>{if(mxStepOf('rounds')==='ask'&&!mxF('bd_rosa'))return {lines:[['kairos','Rosa, when’s your birthday?'],['mxrosa','Third of Taurus. Six in the morning, my mother said, and she never let me forget the hours she was in labour.'],['mxrosa','Why, are you baking?']],then:()=>mxSet('bd_rosa')};
+        if(mxEra()==='fugitive')return {amb:1,lines:[['mxrosa','I don’t believe a word on those posters. Sit down. Eat something before you go.']]};
         const t=mxTalked('market.rosa');return {amb:1,lines:[[['mxrosa','There’s my sharp boy. Still eating nothing but the baker’s rolls?'],['mxrosa','My shutter still sticks, if you’re looking for something to do with those hands.'],['mxrosa','No, I don’t go up to the Cloister. Not since the funeral. I can talk to God from my own kitchen.']][t%3]]};}});
     L.push({id:'fish',fx:0.7,fy:0.8,col:'#4A7FA0',hat:'#2E4A6A',apron:1,face:-1,label:'Fish vendor',
       mark:()=>mxStepOf('rounds')==='ask'&&!mxF('bd_fish')?'!':null,
       say:()=>{if(mxStepOf('rounds')==='ask'&&!mxF('bd_fish'))return {lines:[['kairos','When’s your birthday?'],['mxfish','Twenty-first of Pisces, noon tide. Why, you buying me a present?'],['mxfish','Make it something that isn’t fish.']],then:()=>mxSet('bd_fish')};
+        if(mxEra()==='fugitive')return {amb:1,lines:[['mxfish','Haven’t seen you. Never saw you. Mackerel’s three.']]};
         const t=mxTalked('market.fish');return {amb:1,lines:[[['mxfish','Mackerel’s three today. Don’t look at me like that, it really is three.'],['mxfish','Sundays I work. Best day for selling. Everybody’s in church, nobody haggles after.'],['mxfish','I know every price on this Ring, every day back to spring. Try me.']][t%3]]};}});
     L.push({id:'tessa',fx:0.9,fy:0.5,col:TESSA,hair:'#6A3A1A',long:1,small:1,face:-1,label:'Tessa',
       say:()=>{const t=mxTalked('market.tessa');return {amb:1,lines:[[['mxtess','Kairos! Did you see the lanterns in the Square? Mama says I can carry one at the Festival.'],['mxtess','I’m going to remember EVERYTHING about the Festival this year. Like you.'],['mxtess','The pigeons by the fountain are fat. Somebody keeps feeding them bread.']][t%3]]};}});
@@ -4148,9 +4165,9 @@ function mxPeople(d){const L=[];
         if(mxStepOf('roster')==='back')return {lines:[['kairos','It’s up. Top of the board.'],['mxsold','Good lad. If anyone asks, I walked it there myself.']],then:()=>mxSet('rosterDone')};
         if(mxAct('roster'))return {lines:[['mxsold','The bounty board, in the Market Ring. Top left, where people actually look.']]};
         return {amb:1,lines:[['mxsold','Eleven last night. None in the streets. Say it with me: none in the streets.']]};}});
-    L.push({id:'agnes',ch:'ines',fx:0.74,fy:0.4,face:-1,label:'Agnes',cond:()=>mxMet('ines'),
+    L.push({id:'agnes',ch:'ines',fx:0.74,fy:0.4,face:-1,label:'Agnes',cond:()=>mxMet('ines')&&mxEra()==='before',
       say:()=>{const t=mxTalked('yard.agnes');return {amb:1,lines:[[['ines','Rooftop rotation in twenty. You’re not on it.'],['ines','I take the Sunday shifts. Somebody has to, and I prefer the quiet.'],['ines','Eleven last night. I got four of them. Don’t tell Bram, he’ll want a number too.']][t%3]]};}});
-    L.push({id:'bram',ch:'bram',fx:0.56,fy:0.8,face:-1,label:'Bram',cond:()=>mxMet('bram'),
+    L.push({id:'bram',ch:'bram',fx:0.56,fy:0.8,face:-1,label:'Bram',cond:()=>mxMet('bram')&&mxEra()==='before',
       say:()=>{const t=mxTalked('yard.bram');return {amb:1,lines:[[['bram','I polished the shield. Then I sat on the polish.'],['bram','Mum sends bread for the whole barracks on Tuesdays. You can have a piece. Two pieces.'],['bram','Agnes says I stand like a door. I think doors are good. Nothing gets past a door.']][t%3]]};}});
   }
   if(d==='chapel'){
@@ -4178,6 +4195,14 @@ function mxPeople(d){const L=[];
     L.push({id:'baker2',fx:0.18,fy:0.3,col:'#E8DCC0',hair:'#3A2A1A',apron:1,face:1,label:'Baker next door',
       say:()=>{const t=mxTalked('hesper.baker2');return {amb:1,lines:[[['mxbaker','Bread for the home goes over at six. The little ones line up at the fence like sparrows.'],
         ['mxbaker','My oven’s older than that gate clock. Don’t tell the Sister I said so.'],['mxbaker','Smell that? Honey rolls. Not for you. …One. Fine.']][t%3]]};}});
+  }
+  if(d==='tower'){ // the party after Chapter 1 (Lucas is not here: Horaios took him through the Gate)
+    L.push({id:'h_agnes',ch:'ines',fx:0.22,fy:0.34,face:1,label:'Agnes',say:()=>({amb:1,lines:[[['ines','Two Garrison patrols on the bridge at dusk. We move after the bells, not before.'],['ines','I’ve slept in worse places. Not many.'],['ines','Stop looking at the Gate side of the sky. It doesn’t help.']][mxTalked('tower.h_agnes')%3]]})});
+    L.push({id:'h_bram',ch:'bram',fx:0.58,fy:0.74,face:-1,label:'Bram',say:()=>({amb:1,lines:[[['bram','I brought bread. I always bring bread.'],['bram','Sarge says I snore. I say the tower snores. It creaks a lot.'],['bram','We’ll get him back. Lucas. I don’t know how. But we will.']][mxTalked('tower.h_bram')%3]]})});
+    L.push({id:'h_noemi',ch:'noemi',fx:0.78,fy:0.7,face:-1,label:'Naomi',say:()=>({amb:1,lines:[[['noemi','Sit. Hands. I’m checking those scars whether you like it or not.'],['noemi','Eat, sleep, then argue with me. In that order.'],['noemi','I wrote something new on my arm. I’ll tell you when I’m sure.']][mxTalked('tower.h_noemi')%3]]})});
+    L.push({id:'h_theo',ch:'theo',fx:0.74,fy:0.3,face:-1,label:'Theo',say:()=>({amb:1,lines:[[['theo','Don’t lean on that gear. It’s holding up a surprising amount of tower.'],['theo','Every instrument I brought up here disagrees with every other one. I love it.'],['theo','Naomi says I need sleep. I say sleep is just waiting with your eyes shut.']][mxTalked('tower.h_theo')%3]]})});
+    L.push({id:'h_cass',ch:'cass',fx:0.36,fy:0.6,face:1,label:'Cassie',say:()=>({amb:1,lines:[[['cass','I still say grace. I just don’t say it to them anymore.'],['cass','The bells for vespers. Six years I never missed them.'],['cass','If you’re going to stare at the city, at least stare at it with your back to a wall.']][mxTalked('tower.h_cass')%3]]})});
+    L.push({id:'h_dess',ch:'dess',fx:0.46,fy:0.32,face:1,label:'Dess',say:()=>({amb:1,lines:[[['dess','The cores hum louder at night. I’m writing down which ones. Just… in case.'],['dess','Sorry. I talk to the cores sometimes. They’re easier.'],['dess','Do you think he’s cold, wherever he is? Lucas. Sorry. I just wondered.']][mxTalked('tower.h_dess')%3]]})});
   }
   if(d==='ashlane'){
     L.push({id:'laundress',fx:0.42,fy:0.24,col:'#C9A882',hair:'#4A2A1A',long:1,apron:1,face:1,label:'Laundress',
@@ -4222,9 +4247,9 @@ function mxPeople(d){const L=[];
           ['nurse','Two exact, one “spring”.'],['nurse','Huh. That’s about what we get in here. I’ll put it in Dr. Lark’s notes.']],then:()=>mxSet('roundsDone')};
         if(mxAct('rounds'))return {lines:[['nurse','Matteo, Rosa and the fish vendor, in the Market Ring. Exact dates if they have them.']]};
         return {amb:1,lines:[['nurse','Visiting hours are over at six. You can stay as long as you’re useful.']]};}});
-    L.push({id:'naomi',ch:'noemi',fx:0.7,fy:0.56,face:-1,label:'Naomi',cond:()=>mxMet('noemi'),
+    L.push({id:'naomi',ch:'noemi',fx:0.7,fy:0.56,face:-1,label:'Naomi',cond:()=>mxMet('noemi')&&mxEra()==='before',
       say:()=>{const t=mxTalked('ward.naomi');return {amb:1,lines:[[['noemi','If you’re here to help, roll bandages. If you’re here to talk, roll bandages while you talk.'],['noemi','I don’t go to the Festival. Somebody has to keep the ward open.'],['noemi','Eat something today. That’s not advice.']][t%3]]};}});
-    L.push({id:'theo',ch:'theo',fx:0.26,fy:0.76,face:1,label:'Theo',cond:()=>mxMet('theo'),
+    L.push({id:'theo',ch:'theo',fx:0.26,fy:0.76,face:1,label:'Theo',cond:()=>mxMet('theo')&&mxEra()==='before',
       say:()=>{const t=mxTalked('ward.theo');return {amb:1,lines:[[['theo','Don’t touch the box. The needle’s finally sitting still and I’d like to keep it that way.'],['theo','Naomi says I need a hobby that isn’t a hobby. I said that’s just a job.'],['theo','If you hear a pop from the store cupboard, that was not me.']][t%3]]};}});
     L.push({id:'pat',fx:0.86,fy:0.34,col:'#8A8A7A',hair:'#E0E0D8',face:-1,label:'Patient',
       say:()=>({amb:1,lines:[['mxpat','Is it Tuesday? They keep telling me it’s Tuesday.'],['kairos','It’s Tuesday.'],['mxpat','Then I believe you. You have an honest face.']]})});
@@ -4285,9 +4310,16 @@ function mxDrawUnder(c,m){const D=MX_DISTRICTS[m.M.dist];mxLivingDraw(c,m);
     const lab=MX_DISTRICTS[to].name,lp=mxExitPos(side,side==='n'?30:side==='s'?32:60);
     c.font=`800 9px ${FONT_UI}`;c.textAlign=side==='w'?'left':side==='e'?'right':'center';c.textBaseline='middle';
     const tx=side==='w'?AX0+26:side==='e'?AX1-26:lp.x,ty=side==='w'||side==='e'?lp.y+22:lp.y;
-    wlabel(tx,ty,lab,{px:11,col:'#FFE6A3',align:side==='w'?'left':side==='e'?'right':'center'});}}
+    wlabel(tx,ty,lab+(mxQuestPlaces()[to]?'  !':''),{px:11,col:'#FFE6A3',align:side==='w'?'left':side==='e'?'right':'center'});}}
 function mxDrawOver(c,m){const f=m.leave?Math.min(1,m.leave.t/0.22):mxFade;if(f>0){c.fillStyle='rgba(10,8,18,'+f+')';c.fillRect(0,0,W,H);}}
 function mxSub(m){if(m.act)return mxActSub(m);return MX_DISTRICTS[m.M.dist].name+' · '+mxChestLine(m.M.dist)+' · '+mxRecordCount()+' / '+MX_RECORDS+' records · '+(isTouch?'walk up and tap ⚔':'walk up and press F')+' · walk off an edge arrow to travel';}
+// a fight from the hub: plays a normal fight mission, then returns to the same district and calls back with the result
+function mxFightTheme(theme,o){const id='mxf_'+theme+(o&&o.tag?'_'+o.tag:'');if(!MISSIONS[id])addMission(id,Object.assign({type:'fight',name:'Vices',place:'Meridian',theme,party:['kairos'],lvl:2,kills:8,max:3,pool:['gossip','hothead'],brief:'Vices spill out of a crack in the air.'},o||{}));return id;}
+function mxFight(missionId,party,cb){const d=room&&room.m&&room.m.M&&room.m.M.dist||mxS().at;
+  startMission(missionId,party||['kairos'],ok=>{mxS().at=d;persist();mxBegin();if(cb)cb(ok);});}
+// a scene from the hub: cutscene panels (pn(...)) played through the story sequencer, then back to the same district
+function mxScene(panels,cb,roster){const d=room&&room.m&&room.m.M&&room.m.M.dist||mxS().at;
+  runSeq([{cut:panels}],{roster:roster||['kairos'],end:()=>{mxS().at=d;persist();mxBegin();if(cb)cb();}});}
 function mxBegin(fast){ensureAudio();const x=mxS();persist();newRun('explore',['kairos'],0);mxFrom=null;mxFade=1;mxFast=!!fast;enterRoom('m_mx_'+x.at);}
 
 // ═══════════════════════════════════════════ Living maps (Expansion 04)
@@ -4310,13 +4342,14 @@ const MX_CHEST_SPOTS={ // chosen by tools/chest_spots.js: clear of solids, peopl
   ward:[[0.03,0.94],[0.96,0.22],[0.54,0.67],[0.69,0.94],[0.36,0.85],[0.69,0.4],[0.18,0.46]],
   ashlane:[[0.03,0.94],[0.96,0.34],[0.45,0.4],[0.72,0.94],[0.3,0.88],[0.18,0.4],[0.72,0.22]],
   office:[[0.21,0.94],[0.78,0.22],[0.21,0.37],[0.54,0.7],[0.33,0.61],[0.48,0.43],[0.6,0.22]],
-  hesper:[[0.03,0.91],[0.9,0.52],[0.42,0.25],[0.57,0.94],[0.3,0.82],[0.69,0.25],[0.18,0.4]],
+  tower:[],
+  hesper:[[0.03,0.91],[0.81,0.64],[0.42,0.25],[0.57,0.94],[0.3,0.82],[0.69,0.25],[0.18,0.4]],
 };
 const MX_CHEST_REWARD={common:{dust:6},fine:{dust:12},precious:{dust:20,keep:1}};
 // today's chests for a district: same all day, different tomorrow
 function mxChests(d){const k=mxDayState().key,R=mulberry(hashStr(k+':'+d)),sp=MX_CHEST_SPOTS[d].map((p,i)=>({p,i}));
   for(let i=sp.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[sp[i],sp[j]]=[sp[j],sp[i]];}
-  const pool=MX_ORDER.filter(q=>{const L=WORLD_LOCS.find(o=>o.d===q);return !L||wmUnlocked(L);}),n=R()<0.5?2:3,prec=pool[hashStr(k+':precious')%pool.length]===d,fine=R()<0.5;
+  const pool=MX_ORDER.filter(q=>{const L=WORLD_LOCS.find(o=>o.d===q);return MX_CHEST_SPOTS[q].length&&(!L||wmUnlocked(L));}),n=R()<0.5?2:3,prec=pool[hashStr(k+':precious')%pool.length]===d,fine=R()<0.5;
   return sp.slice(0,n).map((o,i)=>({n:i,spot:o.i,fx:o.p[0],fy:o.p[1],tier:i===0&&prec?'precious':i===0&&fine?'fine':'common',key:'chest:'+k+':'+d+':'+i}));}
 const mxChestOpen=c=>!!claimed(c.key);
 function mxChestLine(d){const L=mxChests(d),o=L.filter(mxChestOpen).length;return 'Chests '+o+' / '+L.length+' today';}
@@ -4372,6 +4405,9 @@ const MX_LOOKS=[
   {id:'look.clock',at:'ward',fx:0.76,fy:0.22,title:'The ward clock',text:[['n','The ward clock has stopped at 9:04. Nobody has wound it.'],['n','A note taped under it in Theo’s handwriting: “Please don’t.”']]},
   {id:'look.cart',at:'ashlane',fx:0.2,fy:0.6,title:'The handcart',text:[['n','A handcart with one barrel and a lot of opinions painted on its side: NO LEANING. NO SITTING. NO.']]},
   {id:'look.washing',at:'ashlane',fx:0.55,fy:0.24,title:'The washing line',text:[['n','Sheets, shirts and one very small sock, strung between the third and fifth houses.']]},
+  {id:'look.wanted.market',at:'market',fx:0.6,fy:0.36,era:'fugitive',title:'A wanted notice',text:[['n','WANTED by order of the Concord Council: for the destruction of the Registry of Births and the abduction of Lucas Crane, son of the Chancellor.'],['n','Seven persons. The sketch of the errand boy looks nothing like you. You check twice anyway.']]},
+  {id:'look.wanted.plaza',at:'plaza',fx:0.56,fy:0.24,era:'fugitive',title:'A wanted notice',text:[['n','The same notice, pasted over the Festival poster. Someone has drawn a moustache on the Garrison sergeant.']]},
+  {id:'look.bedrolls',at:'tower',fx:0.27,fy:0.8,title:'The bedrolls',text:[['n','Bedrolls along the beams, one for each of you. One more is still tied up, waiting.']]},
   {id:'look.ticket',at:'office',fx:0.4,fy:0.26,title:'The number machine',text:()=>{const n=180+hashStr(mxDay()+':ticket')%90;return [['n','The ticket machine sticks, then gives. Number '+n+'.'],['n','The board over the counter says NOW SERVING 41.']];}},
   {id:'look.ladder',at:'office',fx:0.21,fy:0.26,title:'The rolling ladder',text:[['n','A rolling ladder on a brass rail, for the top shelves. A sign: CLERKS ONLY. A smaller sign under it: THIS MEANS YOU, TOBIN.']]},
   {id:'look.swing',at:'hesper',fx:0.95,fy:0.5,title:'The rope swing',text:[['n','A rope swing on the big tree. The seat is worn pale where a hundred children have sat.']]},
@@ -4391,7 +4427,7 @@ function mxExtras(d){const L=[],x=mxS();
   for(const ch of mxChests(d)){const n={id:'chest.'+ch.n,fx:ch.fx,fy:ch.fy,spot:1,verb:'open',tier:ch.tier,key:ch.key};
     n.opened=()=>mxChestOpen(ch);n.lines=()=>[];n.talk=(F,m,nn)=>mxOpenChest(nn);n.mkf=()=>null;n.draw=(c,nn)=>mxDrawChest(c,nn);L.push(n);}
   // things to read
-  for(const f of MX_LOOKS.filter(f=>f.at===d)){const n={id:f.id,fx:f.fx,fy:f.fy,spot:1};
+  for(const f of MX_LOOKS.filter(f=>f.at===d&&(!f.era||f.era===mxEra()))){const n={id:f.id,fx:f.fx,fy:f.fy,spot:1};
     n.lines=()=>typeof f.text==='function'?f.text():f.text;n.talk=()=>{const y=mxS();y.looked=y.looked||{};y.looked[f.id]=1;persist();};
     n.mkf=()=>(mxS().looked||{})[f.id]?null:'?';L.push(n);}
   if(d==='yard'){const n={id:'drill.board',fx:0.32,fy:0.28,spot:1,verb:'read'};
@@ -4407,6 +4443,9 @@ function mxExtras(d){const L=[],x=mxS();
     n.talk=(F,m,nn)=>{if(claimed('act:sundial'))return;const L2=grantReward({dust:30,frag:'boss'},'act:sundial')||[];nn.openT=T;burstParts(nn.x,nn.y-6,'#C9A8FF',30,150);sfx('bless');
       setBanner('The Hour Candles · solved',L2.join(' · '),2.6);};L.push(n);}
   if(d==='ashlane')for(const n of mxOddNpcs())L.push(n);
+  if(d==='tower'){
+    const wb={id:'tower.bench',fx:0.62,fy:0.66,spot:1,verb:'use',ptitle:'workbench',lines:()=>[],mkf:()=>'?'};wb.talk=()=>{state='panel';showBuilds(()=>{mxS().at='tower';persist();mxBegin();});};L.push(wb);
+    const nb={id:'tower.board',fx:0.38,fy:0.24,spot:1,verb:'read',ptitle:'notice board',lines:()=>[],mkf:()=>mxQuestsAvailable().length?'!':'?'};nb.talk=()=>{state='panel';showJournal(()=>{closeOverlay();state='play';last=performance.now();},'stories');};L.push(nb);}
   if(d==='hesper'){const n=mxHideNpc();const q=n.at();n.x=q.x;n.y=q.y;L.push(n);}
   if(d==='plaza'){const n={id:'pages.stand',fx:0.92,fy:0.24,spot:1,verb:'look'};
     n.lines=()=>{const g=mxPagesGot(),k='act:pages:'+mxDay();
@@ -4536,6 +4575,10 @@ function streetClutter(){const R=mulberry(hashStr('street~detail')),out=[];for(l
   for(let i=0;i<6;i++){const x=R()<0.5?W*0.02+R()*W*0.05:W*0.93+R()*W*0.05,y=90+R()*(H-150);out.push([R()<0.5?'barrel':'crate',x,y]);}return out;}
 // solids that match props painted into a theme (so the art is solid where it looks solid)
 function mxPaintedSolids(k){
+  if(k==='tower')return [
+    {x:40-1,y:40-1,w:26,h:30},{x:W-60-1,y:50-1,w:26,h:30},{x:50-1,y:H-50-1,w:26,h:30},{x:W-70-1,y:H-60-1,w:26,h:30}, // chimneys
+    {x:W*0.1,y:H*0.5,r:26},{x:W*0.1+34,y:H*0.5+30,r:15},{x:W*0.9,y:H*0.46,r:22},{x:W*0.9-28,y:H*0.46-26,r:13},       // gears
+    {x:W*0.62-1,y:H*0.84-1,w:16,h:14}];                                                                            // the bread crate
   if(k==='ashlane'){const L=[
     {x:AX0,y:AY0,w:AX1-AX0,h:40-AY0},                                    // the terraced houses
     {x:W*0.3-1,y:H*0.32-1,w:30,h:20},                                    // stacked crates
@@ -4624,6 +4667,7 @@ function mxHideNpc(){const n={id:'hide.spot',spot:1,verb:'look',ptitle:'behind h
   n.talk=(F,m,nn)=>mxHideFound(m,nn);return n;}
 // ── townsfolk routes: [fx, fy, pause seconds, face] in a loop; one-point routes stay put and look around
 const MX_ROUTES={
+  'tower.h_agnes':[[0.22,0.34,0]],'tower.h_bram':[[0.58,0.74,0]],'tower.h_noemi':[[0.78,0.7,0]],'tower.h_theo':[[0.74,0.3,0]],'tower.h_cass':[[0.36,0.6,0]],'tower.h_dess':[[0.46,0.32,0]],
   'market.rosa':[[0.38,0.78,3],[0.31,0.62,1.5],[0.28,0.36,5,-1],[0.31,0.62,1.5]],
   'market.tessa':[[0.84,0.6,2],[0.8,0.7,1.5],[0.87,0.74,2],[0.82,0.52,2]],
   'market.fish':[[0.7,0.8,0]],'market.matteo':[[0.22,0.3,0]],
@@ -4772,6 +4816,7 @@ function drawWorldMap(c,sel){const r=c.getBoundingClientRect(),d=Math.min(window
     wmIcon(g,L.icon,x,y,k,on);
     if(st==='locked'){g.fillStyle='#24160C';g.fillRect(x+k*0.6,y+k*0.4,k*0.9,k*0.75);g.strokeStyle='#24160C';g.lineWidth=k*0.18;g.beginPath();g.arc(x+k*1.05,y+k*0.42,k*0.28,Math.PI,TAU);g.stroke();}
     if(st==='found'){g.fillStyle='#24160C';g.font=`900 ${Math.round(k*1.2)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='middle';g.fillText('?',x+k*0.95,y-k*0.8);}
+    if(L.d&&mxQuestPlaces()[L.d]&&st!=='locked'){g.globalAlpha=1;const bx=x-k*1.05,by=y-k*1.05,br=k*0.55+Math.sin(performance.now()/250)*k*0.05;g.fillStyle='#24160C';g.beginPath();g.arc(bx,by,br+k*0.12,0,TAU);g.fill();g.fillStyle='#FFD166';g.beginPath();g.arc(bx,by,br,0,TAU);g.fill();g.fillStyle='#24160C';g.font=`900 ${Math.round(k*0.85)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='middle';g.fillText('!',bx,by+k*0.04);}
     g.globalAlpha=1;
     const name=st==='locked'&&!wmNameKnown(L)?'???':L.name;g.font=`800 ${Math.round(u*0.36)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='top';
     g.lineJoin='round';g.miterLimit=2;g.lineWidth=u*0.12;g.strokeStyle='rgba(240,228,200,0.92)';g.strokeText(name,x,y+k*1.45);g.fillStyle=on?'#24160C':'#5A4A3A';g.fillText(name,x,y+k*1.45);
@@ -4827,7 +4872,7 @@ function showMeridian(){
   const seen=MX_ORDER.filter(d=>x.seen[d]).length,qd=Object.keys(MX_QUESTS).filter(id=>x.q[id]&&x.q[id].s==='done').length;
   const started=seen>0;
   openOverlay(h('div',{class:'ss mx',style:thumbOf('market')?'--bg:url('+thumbOf('market')+')':null},
-    h('div',{class:'ss-hero'},h('p',{class:'eyebrow'},'Meridian · before the Festival'),h('h2',{class:'ss-title'},'The last free city'),
+    h('div',{class:'ss-hero'},h('p',{class:'eyebrow'},mxEra()==='fugitive'?'Meridian · after the Registry':'Meridian · before the Festival'),h('h2',{class:'ss-title'},'The last free city'),
       h('p',{class:'ss-info'},started?'Renown rank '+mxRank()+' · Districts '+seen+' / '+MX_ORDER.length+' · Quests '+qd+' / '+Object.keys(MX_QUESTS).length+' · Records '+mxRecordCount()+' / '+MX_RECORDS+' · Chests today '+mxChestsToday()+' · ✦ '+save.dust+' · Keepsakes '+(save.keep|0)
         :'Walk the city as Kairos. Talk to people, help where you can, and find what Meridian keeps in its corners.'),mxMapGrid()),
     h('nav',{class:'tm-menu'},
@@ -4837,6 +4882,12 @@ function showMeridian(){
       it('Renown',mxClaimable()?mxClaimable()+' reward'+(mxClaimable()>1?'s':'')+' to claim':'Rank '+mxRank()+' of '+MX_RANKS.length,()=>showRenown(showMeridian),mxClaimable()?' guide-new':''),
       it('Back','Main menu',()=>goHome(),'',{'data-back':'1'}))),'mode-select');
 }
+function mxStoriesList(){const ids=Object.keys(MX_QUESTS).filter(id=>MX_QUESTS[id].kind==='bond'||MX_QUESTS[id].kind==='side');
+  const vis=ids.filter(id=>['available','active','completed'].includes(mxQState(id))),locked=ids.length-vis.length;
+  const out=vis.map(id=>{const Q=MX_QUESTS[id],st=mxQState(id);return h('div',{class:'mx-q'+(st==='completed'?' done':'')},h('h4',null,Q.title,h('em',{class:'opt'},Q.kind==='bond'?'Bond story':'World story'),st==='completed'?h('em',{class:'opt'},'Done'):null),
+    h('p',null,Q.desc),st==='available'?h('p',{class:'ob'},'→ '+(Q.giver||'Find out more')):st==='active'?h('p',{class:'ob'},'→ '+Q.steps[mxS().q[id].n].t):null);});
+  if(!out.length)out.push(h('p',{class:'ss-info'},mxEra()==='fugitive'?'No stories found yet. Listen to the people around you, and to the party at the hideout.':'Stories open up after Chapter 1.'));
+  if(locked)out.push(h('p',{class:'ss-info'},locked+' more '+(locked>1?'stories are':'story is')+' still hidden or locked.'));return out;}
 function showJournal(back,tab){
   tab=tab||'quests';const x=mxS();
   const qCard=id=>{const Q=MX_QUESTS[id],q=x.q[id],done=q.s==='done',st=!done&&Q.steps[q.n];
@@ -4852,8 +4903,8 @@ function showJournal(back,tab){
     return h('div',{class:'mx-r'+(got?'':' lock')},h('b',null,got?f.title:'???'),h('span',null,D.name+(f.act?' · '+MX_ACTIVITIES[f.act].name:'')),got?h('p',null,txt||'Read on the board itself.'):h('p',null,f.hidden?'Something hidden, off the beaten path.':'Not found yet.'));});
   const tb=(k,label)=>h('button',{class:'btn'+(tab===k?'':' outline'),type:'button','aria-pressed':String(tab===k),onclick:()=>showJournal(back,k)},label);
   openOverlay(h('div',{class:'form mx'},formHead('Meridian','Journal'),
-    h('div',{class:'mx-tabs'},tb('quests','Quests'),tb('records','Records '+mxRecordCount()+' / '+MX_RECORDS),tb('map','Map')),
-    h('div',{class:'mx-list'},...(tab==='quests'?quests:tab==='records'?recs:[mxMapGrid(),h('p',{class:'ss-info'},'Walk off a gold arrow at the edge of a district, or open the world map to travel.'),h('button',{class:'btn small',type:'button',onclick:()=>showWorldMap({from:'journal',back:()=>showJournal(back,'map')})},'Open the world map')])),
+    h('div',{class:'mx-tabs'},tb('quests','Quests'),tb('stories','Stories'),tb('records','Records '+mxRecordCount()+' / '+MX_RECORDS),tb('map','Map')),
+    h('div',{class:'mx-list'},...(tab==='stories'?mxStoriesList():tab==='quests'?quests:tab==='records'?recs:[mxMapGrid(),h('p',{class:'ss-info'},'Walk off a gold arrow at the edge of a district, or open the world map to travel.'),h('button',{class:'btn small',type:'button',onclick:()=>showWorldMap({from:'journal',back:()=>showJournal(back,'map')})},'Open the world map')])),
     h('div',{class:'row'},h('button',{class:'btn',type:'button','data-back':'1','data-primary':'1',onclick:()=>back()},'Back'))),'mode-select');
 }
 
@@ -8648,7 +8699,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,

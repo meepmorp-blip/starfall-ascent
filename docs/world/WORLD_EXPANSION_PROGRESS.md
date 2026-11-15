@@ -6,7 +6,7 @@
 | 2 | St. Hesper's Orphanage (Expansion 06) | **Done** |
 | 3 | Concord Office (Expansion 07) | **Done** |
 | 4 | Ash Lane (Expansion 08) | **Done** |
-| 5 | St. Hesper's Clock Tower (Expansion 09) | Not started (unlocks after Chapter 1) |
+| 5 | St. Hesper's Clock Tower (Expansion 09) | **Done** (built as the hideout in Narrative Stage A) |
 | 6 | Drowned Canals (Expansion 10) | Prepare only; story-locked until Chapter 2 |
 
 ## Stage 1 · World map and fast travel
@@ -129,3 +129,12 @@
   - **Daily chests:** seven spots from `tools/chest_spots.js`.
 - **Story rules held:** no fire, lodging house, Inquisitor, rooftops or Lucas. The test fails on any of them.
 - **New test:** `tools/ashlane_test.js` (32 checks): story gating, painted collision, reachability flood fill, the activity, the secret, chests, travel, reload.
+
+## Stage 5 · St. Hesper's Clock Tower (built with Narrative Stage A)
+- **District** `tower` (roof theme, night), reached through a new east exit from St. Hesper's (south exit back). Opens after Chapter 1 is cleared.
+- **Collision** for the four chimneys, the four gears and the bread crate. The clock face is walkable.
+- **The party's hideout:** Agnes, Bram, Naomi, Theo, Cassie and Dess, each with three post-Chapter 1 lines. Lucas is not there.
+- **Stations:** a workbench (opens Builds) and a notice board (opens the Journal's Stories tab).
+- **Readables:** the view from the tower, the bedrolls.
+- **No daily chests** on the tower. The precious chest pool skips districts with no chest spots.
+- See `docs/narrative/PRE_CH2_IMPLEMENTATION_AUDIT.md` § 6 for the era and quest foundation.
