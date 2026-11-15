@@ -8,7 +8,7 @@ const check=process.argv[2]==='check';
 for(const [w,h,touch] of VIEWS){
   const ctx=await b.newContext(touch?{viewport:{width:w,height:h},hasTouch:true,isMobile:true,deviceScaleFactor:2}:{viewport:{width:w,height:h}});const p=await ctx.newPage();
   await p.goto(url);await p.evaluate(()=>{localStorage.clear();localStorage.setItem('starfall-ascent-prefs',JSON.stringify({music:0,sfx:0,tutDone:1,guideSeen:1,tipsSeen:['move','attack']}));
-    localStorage.setItem('starfall-ascent-save',JSON.stringify({v:2,chars:{},frags:[],dust:0,nextId:1,keep:0,claims:{},ch1Clears:1,mx:{v:1,at:'market',seen:{market:1},talk:{},found:{},q:{streets:{s:'active',n:0,at:1}},items:{},f:{}}}));});
+    localStorage.setItem('starfall-ascent-save',JSON.stringify({v:2,chars:{},frags:[],dust:0,nextId:1,keep:0,claims:{},ch1Clears:1,ch1b:{done:true,i:0,k:null},mx:{v:1,at:'market',seen:{market:1},talk:{},found:{},q:{streets:{s:'active',n:0,at:1}},items:{},f:{}}}));});
   await p.goto(url);await p.waitForTimeout(500);await p.evaluate(()=>__sf.mxBegin());await p.waitForTimeout(700);
   for(const d of await p.evaluate(()=>Object.keys(window.__sf_exits))){
     await p.evaluate(d=>__sf.mxGo(d),d);await p.waitForTimeout(900);
@@ -16,6 +16,7 @@ for(const [w,h,touch] of VIEWS){
       const exits=window.__sf_exits[d];
       const avoid=[];for(const n of m.npcs){if(n.tier)continue;for(const q of (n.pts||[{x:n.x,y:n.y}]))avoid.push([q.x,q.y,n.spot?30:34]);}
       if(d==='hesper')for(const [fx,fy] of window.__sf_hide)avoid.push([X(fx),Y(fy),40]);
+      if(d==='office')for(const [fx,fy] of window.__sf_folders)avoid.push([X(fx),Y(fy),34]);
       for(const o of m.objs||[])avoid.push([o.x+(o.w||0)/2,o.y+(o.h||0)/2,(o.w?Math.max(o.w,o.h)/2:o.r||8)+26]);
       // the market corner (crate wall) is off limits for daily chests
       const inCorner=(x,y)=>d==='market'&&x<B[0]+110&&y>B[3]-110;

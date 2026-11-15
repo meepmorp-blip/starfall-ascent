@@ -24,7 +24,7 @@ A locked place shows "???" until the story has shown it:
 |---|---|---|
 | 5 districts | — | Yes |
 | St. Hesper's | 2 | **Yes** |
-| Concord Office | 3 | Not yet: map shows "Not open yet" once unlocked |
+| Concord Office | 3 | **Yes** (exit from The Cloister opens at Scene 7) |
 | Ash Lane | 4 | Not yet |
 | Clock Tower | 5 | Not yet |
 | Drowned Canals | 6 | Prepared only (story-locked) |

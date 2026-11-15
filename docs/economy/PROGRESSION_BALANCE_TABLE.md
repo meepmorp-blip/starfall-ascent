@@ -90,3 +90,12 @@ Each activity's first clear adds 10 Renown, and each of the two secrets (Expansi
 | Three marbles (hidden record) | 10 Stardust | once | `mxf:hesper.marbles` |
 
 Renown available rises from 225 to 260: +5 for the new district, +20 for four new records, +10 for Hide-and-Seek.
+
+## World Expansion 01 · Concord Office
+| Source | Reward | Repeat | Claim key |
+|---|---|---|---|
+| Office daily chests (2–3) | as other districts | daily | `chest:<day>:office:<n>` |
+| Misfiled Folders | first time 1 Keepsake, then 12 Stardust a day | daily | `act:folders`, `act:folders:<day>` |
+| APPROVED stamp (hidden record) | 10 Stardust | once | `mxf:office.stamp` |
+
+Renown available rises from 260 to 295: +5 for the district, +20 for four records, +10 for Misfiled Folders.

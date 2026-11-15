@@ -23,7 +23,7 @@ await p.goto(url);await p.waitForTimeout(600);await p.evaluate(()=>__sf.mxBegin(
 const H=await p.evaluate(()=>__sf.hud());ok(H.wl>=11,'world labels draw at '+H.wl+' CSS px or more, at any scale (scale '+H.scale.toFixed(2)+')');
 // ── every interactable added in 04/05 stays clear of the HUD and touch controls
 const hudBad=[];
-for(const d of ['market','plaza','yard','chapel','ward','hesper']){await go(d);
+for(const d of ['market','plaza','yard','chapel','ward','hesper','office']){await go(d);
   hudBad.push(...await p.evaluate(d=>{const m=__sf.m(),H=__sf.hud(),out=[],sw=H.sw;const scr=[[sw*0.1,0,sw*0.9,H.safe.t+70],[0,0,H.safe.l+14+Math.min(190,Math.max(130,sw*0.2))+6,H.safe.t+74]];
     if(H.touch)for(const k of ['atk','dodge','sun','moon','ult']){const c=H.btn[k];if(c&&c.r)scr.push([c.x-c.r-6,c.y-c.r-6,c.x+c.r+6,c.y+c.r+6]);}
     for(const c of H.ports)if(c&&c.r)scr.push([c.x-c.r-4,c.y-c.r-4,c.x+c.r+40,c.y+c.r+4]);
@@ -88,7 +88,7 @@ await p.evaluate(()=>{localStorage.setItem('starfall-ascent-prefs',JSON.stringif
 await p.reload();await p.waitForTimeout(600);await p.evaluate(()=>__sf.mxBegin());await p.waitForTimeout(800);
 await p.evaluate(()=>{const m=__sf.m(),n=m.npcs.find(o=>o.id==='tessa');n.x=n.pts[0].x;n.y=n.pts[0].y;n.wait=5;});
 const t1=await murm();await interact('tessa');ok(await murm()===t1,'with Sound effects at 0, no murmur');
-for(const d of ['market','plaza','yard','chapel','ward','hesper']){await go(d);await p.screenshot({path:`out/pol_${mode}_${d}.png`});}
+for(const d of ['market','plaza','yard','chapel','ward','hesper','office']){await go(d);await p.screenshot({path:`out/pol_${mode}_${d}.png`});}
 }catch(e){log.push('CRASH '+String(e.stack).split(String.fromCharCode(10)).slice(0,3).join(' '));}
 ok(errs.length===0,'no page errors'+(errs.length?': '+errs.join(' | '):''));
 console.log(log.join('\n'));fs.writeFileSync(`out/pol_${mode}_log.txt`,log.join('\n'));await b.close();server.close();})();

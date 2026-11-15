@@ -4,7 +4,7 @@
 |---|---|---|
 | 1 | Regional world map, unlocks, fast travel | **Done** |
 | 2 | St. Hesper's Orphanage (Expansion 06) | **Done** |
-| 3 | Concord Office (Expansion 07) | Not started (map shows it once Scene 7 is reached) |
+| 3 | Concord Office (Expansion 07) | **Done** |
 | 4 | Ash Lane (Expansion 08) | Not started (unlocks at Scene 10) |
 | 5 | St. Hesper's Clock Tower (Expansion 09) | Not started (unlocks after Chapter 1) |
 | 6 | Drowned Canals (Expansion 10) | Prepare only; story-locked until Chapter 2 |
@@ -71,6 +71,40 @@
 | `hesper_test.js` (new) | 31/31 | 31/31 | 31/31 |
 | World map | 22/22 | 22/22 | 22/22 |
 | Exploration polish (now includes St. Hesper's) | 33/33 | 33/33 | 33/33 |
+| Exploration | 36/36 | 36/36 | — |
+| Meridian | 41/41 | 41/41 | — |
+| Economy | 29/29 | 29/29 | — |
+| Chest spots vs HUD + routes (5 sizes) | all OK | | |
+
+## Stage 3 · Concord Office (Expansion 07)
+- **Existed before:** the `office` theme (base paint + dressing: back wall, shelves, window light, wall clock, TAKE A NUMBER counter, queue rope, desk and cabinet columns down both sides, rug, pot plants, paper stacks). It was used by Chapter 1 Scene 7 "The Queue", Scene 13 "The Stacks" and Battle House 10. It was not explorable.
+- **Reused:** the painted hall as-is; the district, NPC, route, voice, record, readable, chest, reward and Renown systems; `showPuzzle` for the filing step.
+- **Added:**
+  - **District** `office`, reached through a new east exit from The Cloister (south door back), with a fast-travel arrival point.
+  - **Unlock:** Chapter 1 Scene 7. The Cloister's east exit stays closed and undrawn until then (`mxExits` filters exits by world-map unlock).
+  - **Collision for the painted hall:** back wall, both sealed desk and cabinet columns, the queue rope, the counter, pot plants.
+  - **People** (new townsfolk; Scene 7's couple, mother, widow and records clerk stay story-only): the counter clerk, a filing clerk walking the aisles, a man with ticket 206, and Tobin the apprentice. All murmur on small talk.
+  - **Misfiled Folders:**
+    - Tobin dropped four coloured folders, each for a House. They lie at four of eight spots, which change daily.
+    - Walk over them, return to Tobin, then file them First House to Twelfth (`showPuzzle`, three rounds; a wrong drawer is explained).
+    - Reward: first time 1 Keepsake (`act:folders`), then 12 Stardust once a day (`act:folders:<day>`). First clear +10 Renown.
+  - **Records:** the motto "YOUR CHART IS YOUR CALLING" (canon), the notice board (Re-charting, the Church's public face), the waiting benches, plus a hidden APPROVED stamp (10 Stardust once).
+  - **Readables:** the ticket machine (number changes daily), the rolling ladder.
+  - **Daily chests:** seven spots from `tools/chest_spots.js`; the tool now avoids folder spots.
+- **Story rules held:** nothing about Kairos's record, Window 3, the Archive, Lucas, the Ledger or confessions ([DRAFT] lore). The test fails on any of them.
+- **Save:** new state is `save.mx.seen.office`, records and claims only.
+- **New test:** `tools/office_test.js` (24 checks). It includes a **reachability flood fill**: every person, record, readable, chest spot and folder spot must be reachable on foot from the door.
+- **Bugs found and fixed during Stage 3:**
+  - The office readables along the top sat under the objective bar on phones; they moved to the strip above the queue rope, and two office chest spots moved with them.
+  - The daily precious chest could be placed in a story-locked district (unreachable that day). It now picks only from districts the player can reach.
+- **Tests:**
+
+| Suite | Desktop | Phone (844×390) | Small (667×375) |
+|---|---|---|---|
+| `office_test.js` (new) | 24/24 | 24/24 | 24/24 |
+| St. Hesper's | 31/31 | 31/31 | 31/31 |
+| World map | 22/22 | 22/22 | 22/22 |
+| Exploration polish (now includes the office) | 33/33 | 33/33 | 33/33 |
 | Exploration | 36/36 | 36/36 | — |
 | Meridian | 41/41 | 41/41 | — |
 | Economy | 29/29 | 29/29 | — |

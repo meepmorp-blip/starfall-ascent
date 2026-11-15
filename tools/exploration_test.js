@@ -27,7 +27,7 @@ const pos=()=>p.evaluate(D=>D.map(d=>__sf.mxChests(d).map(c=>c.spot+':'+c.tier).
 const day1=await pos();await p.reload();await p.waitForTimeout(700);const day1b=await pos();
 ok(day1===day1b,'chest positions are the same after a reload ('+day1+')');
 const counts=day1.split('|').map(x=>x.split(',').length);ok(counts.every(n=>n>=2&&n<=3),'2 or 3 chests per district ('+counts.join(',')+')');
-ok((day1.match(/precious/g)||[]).length===1,'exactly one precious chest in the city today');
+{const all=await p.evaluate(()=>Object.keys(window.__sf_exits).map(d=>__sf.mxChests(d).filter(c=>c.tier==='precious').length).reduce((a,b)=>a+b,0));ok(all===1,'exactly one precious chest in the city today, in a reachable district ('+all+')');}
 // ── 2. every chest spot is valid in every district
 await p.evaluate(()=>__sf.mxBegin());await p.waitForTimeout(800);
 let bad=[];
