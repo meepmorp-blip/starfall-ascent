@@ -5,7 +5,7 @@
 | 1 | Regional world map, unlocks, fast travel | **Done** |
 | 2 | St. Hesper's Orphanage (Expansion 06) | **Done** |
 | 3 | Concord Office (Expansion 07) | **Done** |
-| 4 | Ash Lane (Expansion 08) | Not started (unlocks at Scene 10) |
+| 4 | Ash Lane (Expansion 08) | **Done** |
 | 5 | St. Hesper's Clock Tower (Expansion 09) | Not started (unlocks after Chapter 1) |
 | 6 | Drowned Canals (Expansion 10) | Prepare only; story-locked until Chapter 2 |
 
@@ -109,3 +109,23 @@
 | Meridian | 41/41 | 41/41 | — |
 | Economy | 29/29 | 29/29 | — |
 | Chest spots vs HUD + routes (5 sizes) | all OK | | |
+
+## Stage 4 · Ash Lane (Expansion 08)
+- **Existed before:** the `street` theme (base paint + night dressing: terraced houses, awnings, washing line, lamps, cart, crates, a barrel, a striped bench, kerb posters, wall clutter). It was used by Chapter 1 Scene 5 "Carry Him" and Scene 10 "The Frozen Fire". It was not explorable.
+- **Reused:** the painted street as-is; the district, NPC, route, voice, record, readable, chest, reward and Renown systems.
+- **Added:**
+  - **District** `ashlane`, reached through a new east exit from St. Lucia's (west exit back).
+  - **Unlock:** Chapter 1 Scene 10, after the Lane's story events. The exit stays closed and undrawn until then.
+  - **Collision** for the houses, crates, barrel, bench, cart, lamps, kerb posters, and the six wall crates and barrels.
+    - The wall clutter is placed by the dressing's seeded random generator. `streetClutter()` re-derives it from the same seed.
+    - While the background bakes, the painter records where it actually drew them (`bgProps`). The test checks the two match.
+  - **People:** a laundress, the lamplighter (walks the lamps), a shopkeeper, and a kid with a hoop. All murmur on small talk.
+  - **Odd Things on the Lane** (observation):
+    - The shopkeeper gives three clues each day, chosen from six odd objects (a teacup on the rain barrel, a boot by the cart, a kite on the washing, a ribbon on a lamp, a chalk arrow on the crates, a thimble on the bench).
+    - Only today's three appear. Find them, then return.
+    - Reward: first time 1 Keepsake (`act:oddities`), then 12 Stardust a day (`act:oddities:<day>`). First clear +10 Renown.
+  - **Records:** kerb posters, the awnings, Lamp No. 7, plus hidden chalk marks (10 Stardust once).
+  - **Readables:** the handcart, the washing line.
+  - **Daily chests:** seven spots from `tools/chest_spots.js`.
+- **Story rules held:** no fire, lodging house, Inquisitor, rooftops or Lucas. The test fails on any of them.
+- **New test:** `tools/ashlane_test.js` (32 checks): story gating, painted collision, reachability flood fill, the activity, the secret, chests, travel, reload.

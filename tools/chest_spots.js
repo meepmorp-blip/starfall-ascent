@@ -17,6 +17,7 @@ for(const [w,h,touch] of VIEWS){
       const avoid=[];for(const n of m.npcs){if(n.tier)continue;for(const q of (n.pts||[{x:n.x,y:n.y}]))avoid.push([q.x,q.y,n.spot?30:34]);}
       if(d==='hesper')for(const [fx,fy] of window.__sf_hide)avoid.push([X(fx),Y(fy),40]);
       if(d==='office')for(const [fx,fy] of window.__sf_folders)avoid.push([X(fx),Y(fy),34]);
+      if(d==='ashlane')for(const [x,y] of window.__sf_odd())avoid.push([x,y,34]);
       for(const o of m.objs||[])avoid.push([o.x+(o.w||0)/2,o.y+(o.h||0)/2,(o.w?Math.max(o.w,o.h)/2:o.r||8)+26]);
       // the market corner (crate wall) is off limits for daily chests
       const inCorner=(x,y)=>d==='market'&&x<B[0]+110&&y>B[3]-110;

@@ -99,3 +99,12 @@ Renown available rises from 225 to 260: +5 for the new district, +20 for four ne
 | APPROVED stamp (hidden record) | 10 Stardust | once | `mxf:office.stamp` |
 
 Renown available rises from 260 to 295: +5 for the district, +20 for four records, +10 for Misfiled Folders.
+
+## World Expansion 01 · Ash Lane
+| Source | Reward | Repeat | Claim key |
+|---|---|---|---|
+| Ash Lane daily chests (2–3) | as other districts | daily | `chest:<day>:ashlane:<n>` |
+| Odd Things on the Lane | first time 1 Keepsake, then 12 Stardust a day | daily | `act:oddities`, `act:oddities:<day>` |
+| Chalk marks (hidden record) | 10 Stardust | once | `mxf:ashlane.chalk` |
+
+Renown available rises from 295 to 330: +5 for the district, +20 for four records, +10 for Odd Things.

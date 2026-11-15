@@ -25,6 +25,6 @@ A locked place shows "???" until the story has shown it:
 | 5 districts | — | Yes |
 | St. Hesper's | 2 | **Yes** |
 | Concord Office | 3 | **Yes** (exit from The Cloister opens at Scene 7) |
-| Ash Lane | 4 | Not yet |
+| Ash Lane | 4 | **Yes** (exit from St. Lucia's opens at Scene 10) |
 | Clock Tower | 5 | Not yet |
 | Drowned Canals | 6 | Prepared only (story-locked) |

@@ -4004,7 +4004,7 @@ function extraSub(m){
 // ═══════════════════════════════════════════ Meridian exploration (Gameplay Expansion 01)
 // Five connected districts on the walk-scene engine. Set in the ordinary days before the Festival of the Mercy.
 // State lives in save.mx (see docs/meridian/MERIDIAN_WORLD_STRUCTURE.md). Writing follows Lore v1.1: the Mercy is clues only.
-Object.assign(SPK,{mxcclerk:{name:'Counter clerk',col:'ash'},mxfiler:{name:'Filing clerk',col:'ash'},mxwait:{name:'Man with a ticket',col:'paper'},mxtobin:{name:'Tobin, apprentice',col:'paper'},mxpip:{name:'Pip',col:'paper'},mxwren:{name:'Wren',col:'paper'},mxbaker:{name:'Baker next door',col:'paper'},nurse:{name:'Ward nurse',col:'paper'},fwoman:{name:'Woman with a basket',col:'paper'},mxpat:{name:'Patient',col:'paper'},
+Object.assign(SPK,{mxlaund:{name:'Laundress',col:'paper'},mxlamp:{name:'Lamplighter',col:'paper'},mxshop:{name:'Shopkeeper',col:'paper'},mxkid:{name:'Kid with a hoop',col:'paper'},mxcclerk:{name:'Counter clerk',col:'ash'},mxfiler:{name:'Filing clerk',col:'ash'},mxwait:{name:'Man with a ticket',col:'paper'},mxtobin:{name:'Tobin, apprentice',col:'paper'},mxpip:{name:'Pip',col:'paper'},mxwren:{name:'Wren',col:'paper'},mxbaker:{name:'Baker next door',col:'paper'},nurse:{name:'Ward nurse',col:'paper'},fwoman:{name:'Woman with a basket',col:'paper'},mxpat:{name:'Patient',col:'paper'},
   lseller:{name:'Lantern seller',col:'paper'},gsister:{name:'Sister at the gate',col:'paper'},mxsold:{name:'Garrison soldier',col:'earth'},
   mxrosa:{name:'Rosa',col:'paper'},mxmat:{name:'Old Matteo',col:'paper'},mxfish:{name:'Fish vendor',col:'paper'},mxtess:{name:'Tessa',col:'paper'}});
 function mxS(){const x=save.mx||(save.mx={v:1,at:'market',seen:{},talk:{},found:{},q:{},items:{},f:{}});
@@ -4018,11 +4018,12 @@ const MX_DISTRICTS={
   plaza:{name:'Festival Square',theme:'plaza',arrive:[0.3,0.5],blurb:'The fountain, and the Festival getting ready around it.',exits:[['w','market'],['e','hesper']],solids:[[0.5,0.555,34]]},
   yard:{name:'Garrison Yard',theme:'yard',arrive:[0.5,0.7],blurb:'Barracks, drills, and the rooftop guns.',exits:[['e','market']]},
   chapel:{name:'The Cloister',theme:'chapel',arrive:[0.5,0.82],blurb:'The Concord Church’s walled garden.',exits:[['s','market'],['e','office']],solids:[[0.5,0.5,16]]},
+  ashlane:{name:'Ash Lane',theme:'street',arrive:[0.5,0.62],blurb:'Terraced houses, washing lines and lamps, on the road to St. Lucia’s.',exits:[['w','ward']],solids:[],painted:'ashlane'},
   office:{name:'Concord Office',theme:'office',arrive:[0.5,0.62],blurb:'The whole city on paper. Take a number.',exits:[['s','chapel']],solids:[],painted:'office'},
   hesper:{name:'St. Hesper’s',theme:'orphanage',arrive:[0.5,0.62],blurb:'The orphanage where Kairos grew up, at dusk.',exits:[['w','plaza']],solids:[],painted:'hesper'},
-  ward:{name:'St. Lucia’s',theme:'hospital',arrive:[0.5,0.66],blurb:'The east ward, between visiting hours.',exits:[['n','market']]},
+  ward:{name:'St. Lucia’s',theme:'hospital',arrive:[0.5,0.66],blurb:'The east ward, between visiting hours.',exits:[['n','market'],['e','ashlane']]},
 };
-const MX_ORDER=['market','plaza','yard','chapel','ward','hesper','office'];
+const MX_ORDER=['market','plaza','yard','chapel','ward','hesper','office','ashlane'];
 // Know the Streets was written for the first five districts; it stays that way for every save
 const MX_STREETS=['market','plaza','yard','chapel','ward'];
 // future activities: where each one will open from (see MERIDIAN_GAMEPLAY_ROADMAP.md)
@@ -4084,6 +4085,10 @@ const MX_FINDS=[
   {id:'chapel.hymn',at:'chapel',fx:0.38,fy:0.24,title:'The hymn board',text:[['n','SUNDAY · The Mercy is offered at every service. Come as you are; leave lighter.']]},
   {id:'chapel.cups',at:'chapel',fx:0.82,fy:0.64,title:'The silver cups',text:[['n','A shelf of small silver cups, each engraved with a date and one word: ADOPTION. WEDDING. FUNERAL. ADOPTION.'],['th','The Church keeps one for every big day in somebody’s life.']]},
   {id:'chapel.alcove',at:'chapel',fx:0.2,fy:0.64,act:'memory',title:'The quiet alcove',text:[['n','A stone alcove with one candle. The city’s noise drops away here, and old days feel close enough to touch.'],['n','Memory Expeditions will begin here in a later update.']]},
+  {id:'ashlane.posters',at:'ashlane',fx:0.35,fy:0.86,title:'Posters on the kerb',text:[['n','LOST: one grey goose, answers to Admiral. ROOMS TO LET, ask at the green door. CHOIR PRACTICE, Thursday.']]},
+  {id:'ashlane.awnings',at:'ashlane',fx:0.2,fy:0.26,title:'The striped awnings',text:[['n','Striped awnings in four colours, one for each shop. The stripes are older than the shops.']]},
+  {id:'ashlane.lamp7',at:'ashlane',fx:0.92,fy:0.24,title:'Lamp No. 7',text:[['n','Lamp No. 7 has a dent and a small brass plate: LIT BY THE SAME HAND FOR THIRTY YEARS.']]},
+  {id:'ashlane.chalk',at:'ashlane',fx:0.84,fy:0.26,hidden:1,title:'Chalk marks by the wall',reward:{dust:10},text:[['n','Three small chalk marks low on the wall: the bakery boys’ delivery code. Someone has wedged a coin behind the drainpipe.']]},
   {id:'office.motto',at:'office',fx:0.3,fy:0.26,title:'The motto over the counter',text:[['n','Carved over the counter in gold leaf: YOUR CHART IS YOUR CALLING.'],['n','Someone has polished “YOUR” more than the rest.']]},
   {id:'office.notice',at:'office',fx:0.7,fy:0.26,title:'The notice board',text:[['n','NOTICES · Re-charting: clerical errors in your birth chart corrected free of charge, Tuesdays and Thursdays.'],['n','Lost: one umbrella, black. Found: eleven umbrellas, black.']]},
   {id:'office.queue',at:'office',fx:0.22,fy:0.84,title:'The waiting benches',text:[['n','Names carved into the waiting benches, decades of them, each with a ticket number beside it. The highest is 1,204.']]},
@@ -4173,6 +4178,23 @@ function mxPeople(d){const L=[];
     L.push({id:'baker2',fx:0.18,fy:0.3,col:'#E8DCC0',hair:'#3A2A1A',apron:1,face:1,label:'Baker next door',
       say:()=>{const t=mxTalked('hesper.baker2');return {amb:1,lines:[[['mxbaker','Bread for the home goes over at six. The little ones line up at the fence like sparrows.'],
         ['mxbaker','My oven’s older than that gate clock. Don’t tell the Sister I said so.'],['mxbaker','Smell that? Honey rolls. Not for you. …One. Fine.']][t%3]]};}});
+  }
+  if(d==='ashlane'){
+    L.push({id:'laundress',fx:0.42,fy:0.24,col:'#C9A882',hair:'#4A2A1A',long:1,apron:1,face:1,label:'Laundress',
+      say:()=>{const t=mxTalked('ashlane.laundress');return {amb:1,lines:[[['mxlaund','Mind the sheets. If they touch the cobbles, they go back in the tub, and so do you.'],
+        ['mxlaund','Six houses share this line. Six houses argue about this line.'],['mxlaund','Washing dries faster on Ash Lane. Something about the wind off the roofs.']][t%3]]};}});
+    L.push({id:'lamplighter',fx:0.1,fy:0.24,col:'#3A4A5A',hat:'#2A2A3A',face:1,label:'Lamplighter',
+      say:()=>{const t=mxTalked('ashlane.lamplighter');return {amb:1,lines:[[['mxlamp','Nine lamps on this lane. I light them at dusk and put them out at dawn, and nobody notices either.'],
+        ['mxlamp','Number seven sticks. Always has. I talk to it.'],['mxlamp','You walk fast for someone with nowhere to be.']][t%3]]};}});
+    L.push({id:'shopkeep',fx:0.78,fy:0.26,col:'#5B8C3A',hair:'#9A9A9A',apron:1,face:-1,label:'Shopkeeper',
+      mark:()=>mxOddState()==='idle'&&!claimed('act:oddities:'+mxDay())?'!':mxOddState()==='hunt'&&mxOddGot()>=3?'!':null,
+      say:()=>{const st=mxOddState();
+        if(st==='hunt'&&mxOddGot()>=3)return {lines:[['mxshop','All three! You have eyes like a Garrison spotter.']],then:()=>mxOddDone()};
+        if(st==='hunt')return {lines:[['mxshop','Still looking? Here they are again.']].concat(mxOddClues())};
+        if(claimed('act:oddities:'+mxDay()))return {lines:[['mxshop','Nothing odd left on the Lane today. Come back tomorrow; it always finds new ways.']]};
+        return {lines:[['mxshop','I keep a game going for the children. Every day three things on this lane are where they shouldn’t be.'],['mxshop','Find them and I’ll pay you like I pay them. Better, actually. Listen:']].concat(mxOddClues(true)),then:()=>mxOddStart()};}});
+    L.push({id:'hoopkid',fx:0.45,fy:0.74,col:'#B5523A',hair:'#2A1A12',small:1,face:1,label:'Kid with a hoop',
+      say:()=>{const t=mxTalked('ashlane.hoopkid');return {amb:1,lines:[[['mxkid','Bet you can’t keep a hoop going the whole lane. I did it twice.'],['mxkid','Lamp number seven is haunted. The lamplighter talks to it.'],['mxkid','My mum says don’t talk to strangers. You’re not strange. You’re Kairos.']][t%3]]};}});
   }
   if(d==='office'){
     L.push({id:'counter',fx:0.5,fy:0.2,col:'#4A4A5A',hair:'#2A2A2A',face:1,label:'Counter clerk',
@@ -4286,6 +4308,7 @@ const MX_CHEST_SPOTS={ // chosen by tools/chest_spots.js: clear of solids, peopl
   yard:[[0.03,0.94],[0.96,0.22],[0.42,0.22],[0.69,0.94],[0.42,0.76],[0.69,0.34],[0.18,0.46]],
   chapel:[[0.03,0.94],[0.96,0.22],[0.45,0.37],[0.75,0.94],[0.36,0.94],[0.18,0.25],[0.72,0.46]],
   ward:[[0.03,0.94],[0.96,0.22],[0.54,0.67],[0.69,0.94],[0.36,0.85],[0.69,0.4],[0.18,0.46]],
+  ashlane:[[0.03,0.94],[0.96,0.34],[0.45,0.4],[0.72,0.94],[0.3,0.88],[0.18,0.4],[0.72,0.22]],
   office:[[0.21,0.94],[0.78,0.22],[0.21,0.37],[0.54,0.7],[0.33,0.61],[0.48,0.43],[0.6,0.22]],
   hesper:[[0.03,0.91],[0.9,0.52],[0.42,0.25],[0.57,0.94],[0.3,0.82],[0.69,0.25],[0.18,0.4]],
 };
@@ -4347,6 +4370,8 @@ const MX_LOOKS=[
   {id:'look.coins',at:'plaza',fx:0.4,fy:0.66,title:'Coins in the fountain',text:[['n','Coins glint at the bottom of the basin, years of them. Nobody fishes them out.'],['th','Tessa says it’s bad luck. Tessa says a lot of things are bad luck.']]},
   {id:'look.helmet',at:'yard',fx:0.79,fy:0.3,title:'A dented helmet',text:[['n','A Garrison helmet with a dent the shape of a shield rim. Painted inside: “B. · size LARGE (larger)”.']]},
   {id:'look.clock',at:'ward',fx:0.76,fy:0.22,title:'The ward clock',text:[['n','The ward clock has stopped at 9:04. Nobody has wound it.'],['n','A note taped under it in Theo’s handwriting: “Please don’t.”']]},
+  {id:'look.cart',at:'ashlane',fx:0.2,fy:0.6,title:'The handcart',text:[['n','A handcart with one barrel and a lot of opinions painted on its side: NO LEANING. NO SITTING. NO.']]},
+  {id:'look.washing',at:'ashlane',fx:0.55,fy:0.24,title:'The washing line',text:[['n','Sheets, shirts and one very small sock, strung between the third and fifth houses.']]},
   {id:'look.ticket',at:'office',fx:0.4,fy:0.26,title:'The number machine',text:()=>{const n=180+hashStr(mxDay()+':ticket')%90;return [['n','The ticket machine sticks, then gives. Number '+n+'.'],['n','The board over the counter says NOW SERVING 41.']];}},
   {id:'look.ladder',at:'office',fx:0.21,fy:0.26,title:'The rolling ladder',text:[['n','A rolling ladder on a brass rail, for the top shelves. A sign: CLERKS ONLY. A smaller sign under it: THIS MEANS YOU, TOBIN.']]},
   {id:'look.swing',at:'hesper',fx:0.95,fy:0.5,title:'The rope swing',text:[['n','A rope swing on the big tree. The seat is worn pale where a hundred children have sat.']]},
@@ -4381,6 +4406,7 @@ function mxExtras(d){const L=[],x=mxS();
     n.opened=()=>claimed('act:sundial');n.lines=()=>[];n.mkf=()=>null;n.ptitle='hidden chest';n.draw=(c,nn,m)=>{if(m&&m.solvedT&&T-m.solvedT<2.5){const k=1-(T-m.solvedT)/2.5,gr=c.createLinearGradient(nn.x,nn.y,nn.x,nn.y-90);gr.addColorStop(0,alpha('#E6D2FF',0.5*k));gr.addColorStop(1,alpha('#E6D2FF',0));c.fillStyle=gr;c.fillRect(nn.x-7,nn.y-90,14,90);}mxDrawChest(c,nn);};n.hide=()=>!mxF('sundial');
     n.talk=(F,m,nn)=>{if(claimed('act:sundial'))return;const L2=grantReward({dust:30,frag:'boss'},'act:sundial')||[];nn.openT=T;burstParts(nn.x,nn.y-6,'#C9A8FF',30,150);sfx('bless');
       setBanner('The Hour Candles · solved',L2.join(' · '),2.6);};L.push(n);}
+  if(d==='ashlane')for(const n of mxOddNpcs())L.push(n);
   if(d==='hesper'){const n=mxHideNpc();const q=n.at();n.x=q.x;n.y=q.y;L.push(n);}
   if(d==='plaza'){const n={id:'pages.stand',fx:0.92,fy:0.24,spot:1,verb:'look'};
     n.lines=()=>{const g=mxPagesGot(),k='act:pages:'+mxDay();
@@ -4505,8 +4531,21 @@ function mxObjDraw(c,m){if(!m.objs)return;const d=m.M.dist;
     for(let x=6;x<W;x+=24){const f=0.5+0.5*Math.sin(T*3+x*0.1);c.fillStyle=alpha('#FFE6A3',0.35+0.35*f);c.fillRect(x,46,2,2);}}
   // the ward hatch under the moved cart
   if(d==='ward'&&m.cart&&m.cartOff>20&&!claimed('sec:ward.hatch')){const x=m.cartX0+5,y=m.cart.y+3;c.fillStyle='#24160C';c.fillRect(x,y,20,12);c.fillStyle='#9AA8A4';c.fillRect(x+1,y+1,18,10);c.fillStyle='#7E8A86';c.fillRect(x+1,y+5,18,1);}}
+// the edge clutter of the `street` dressing, re-derived from the same seed and call order as enrichTheme('street')
+function streetClutter(){const R=mulberry(hashStr('street~detail')),out=[];for(let i=0;i<14;i++)R();for(let i=0;i<9;i++)R();
+  for(let i=0;i<6;i++){const x=R()<0.5?W*0.02+R()*W*0.05:W*0.93+R()*W*0.05,y=90+R()*(H-150);out.push([R()<0.5?'barrel':'crate',x,y]);}return out;}
 // solids that match props painted into a theme (so the art is solid where it looks solid)
 function mxPaintedSolids(k){
+  if(k==='ashlane'){const L=[
+    {x:AX0,y:AY0,w:AX1-AX0,h:40-AY0},                                    // the terraced houses
+    {x:W*0.3-1,y:H*0.32-1,w:30,h:20},                                    // stacked crates
+    {x:W*0.7,y:H*0.7,r:8},                                               // the barrel
+    {x:W*0.55-1,y:H*0.38-1,w:52,h:10},                                   // the striped bench
+    {x:W*0.15-1,y:H*0.5-12,w:30,h:30}];                                  // the cart and its barrel
+    for(let x=30;x<W;x+=150)L.push({x,y:58,r:4});for(let x=100;x<W;x+=150)L.push({x,y:H-16,r:4}); // lamps
+    for(let i=0;i<4;i++)L.push({x:W*(0.1+i*0.25)-1,y:H*0.92-1,w:12,h:15});                           // posters on the kerb
+    for(const [kind,x,y] of streetClutter())L.push(kind==='barrel'?{x,y,r:8}:{x:x-1,y:y-1,w:16,h:14}); // crates and barrels by the walls
+    return L;}
   if(k==='office'){const cx=W/2;return [
     {x:AX0,y:AY0,w:AX1-AX0,h:36-AY0},                                   // the back wall, shelves and windows
     {x:AX0,y:AY0,w:W*0.16+17-AX0,h:AY1-AY0},                            // west desks and cabinet column (sealed by the painting)
@@ -4522,6 +4561,31 @@ function mxPaintedSolids(k){
     {x:30,y:112,r:12},{x:W-30,y:122,r:12},{x:24,y:H-18,r:13},{x:W-24,y:H-22,r:13}, // trees
     {x:W*0.7-1,y:H*0.74-1,w:34,h:10}];                                  // the back step
   return [];}
+// ═══ Odd Things on the Lane (Ash Lane). First time: 1 Keepsake (act:oddities); then 12 Stardust once a day (act:oddities:<day>).
+const ODD_THINGS=[
+  {id:'teacup',name:'a teacup',clue:'Something you drink from, sitting where rainwater collects.',x:()=>W*0.7,y:()=>H*0.7-12,col:'#F6EBD2'},
+  {id:'boot',name:'a single boot',clue:'One boot, waiting for its other half, by something with wheels.',x:()=>W*0.15+38,y:()=>H*0.5+6,col:'#5A3A26'},
+  {id:'kite',name:'a kite',clue:'Something that belongs in the sky, caught low on the washing.',x:()=>W*0.66,y:()=>70,col:'#E84A4A'},
+  {id:'ribbon',name:'a ribbon',clue:'A red ribbon tied where the light comes from at night, low on the south side.',x:()=>250,y:()=>H-30,col:'#C8323C'},
+  {id:'arrow',name:'a chalk arrow',clue:'A chalk arrow pointing at nothing, drawn on something stacked.',x:()=>W*0.3+14,y:()=>H*0.32+26,col:'#F6EBD2'},
+  {id:'thimble',name:'a thimble',clue:'A thimble left on a bench with stripes.',x:()=>W*0.55+26,y:()=>H*0.38+16,col:'#B8B4AC'}];
+let mxOdd={st:'idle',ids:[],got:{}};
+const mxOddState=()=>mxOdd.st,mxOddGot=()=>Object.keys(mxOdd.got).length;
+function mxOddPick(){const R=mulberry(hashStr(mxDay()+':oddities')),ix=ODD_THINGS.map((o,i)=>i);for(let i=ix.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[ix[i],ix[j]]=[ix[j],ix[i]];}return ix.slice(0,3).map(i=>ODD_THINGS[i].id);}
+function mxOddClues(first){const ids=mxOdd.st==='hunt'?mxOdd.ids:mxOddPick();return ids.filter(id=>!mxOdd.got[id]).map(id=>['mxshop','· '+ODD_THINGS.find(o=>o.id===id).clue]);}
+function mxOddStart(){mxOdd={st:'hunt',ids:mxOddPick(),got:{}};sfx('select');if(room)setBanner('Odd Things on the Lane','Three things are out of place. Look closely and read the clues again from the shopkeeper.',2.6);}
+function mxOddDone(){mxOdd.st='idle';const L=(grantReward({keep:1},'act:oddities')||[]).concat(grantReward({dust:12},'act:oddities:'+mxDay())||[]);setBanner('Odd Things · all found',L.join(' · ')||'The shopkeeper laughs. No prize today.',2.4);sfx('bless');}
+function mxOddNpcs(){return ODD_THINGS.map(o=>{const n={id:'odd.'+o.id,x:o.x(),y:o.y(),spot:1,verb:'look',ptitle:'something odd',lines:()=>[],mkf:()=>null};
+  n.hide=()=>mxOdd.st!=='hunt'||!mxOdd.ids.includes(o.id)||!!mxOdd.got[o.id];
+  n.talk=()=>{if(n.hide())return;mxOdd.got[o.id]=1;sfx('orb');addText(n.x,n.y-22,'Found '+o.name+' · '+mxOddGot()+' / 3',C.gold,10,{life:1.2});burstParts(n.x,n.y-4,C.gold,8,70);};
+  n.draw=(c,nn)=>{if(nn.hide())return;const x=nn.x,y=nn.y;c.fillStyle='rgba(0,0,0,0.25)';ell(c,x,y+4,5,2);c.fill();c.fillStyle='#24160C';
+    if(o.id==='teacup'){c.fillRect(x-4,y-4,8,6);c.fillStyle=o.col;c.fillRect(x-3,y-3,6,4);c.fillRect(x+3,y-2,2,2);}
+    else if(o.id==='boot'){c.fillRect(x-3,y-7,5,9);c.fillRect(x-3,y,8,3);c.fillStyle=o.col;c.fillRect(x-2,y-6,3,8);c.fillRect(x-2,y,6,2);}
+    else if(o.id==='kite'){c.beginPath();c.moveTo(x,y-7);c.lineTo(x+5,y);c.lineTo(x,y+6);c.lineTo(x-5,y);c.closePath();c.fill();c.fillStyle=o.col;c.beginPath();c.moveTo(x,y-5);c.lineTo(x+3,y);c.lineTo(x,y+4);c.lineTo(x-3,y);c.closePath();c.fill();c.strokeStyle='#F6EBD2';c.lineWidth=0.6;c.beginPath();c.moveTo(x,y+6);c.lineTo(x+3,y+12);c.stroke();}
+    else if(o.id==='ribbon'){c.fillStyle=o.col;c.fillRect(x-3,y-2,6,3);c.fillRect(x-1,y,2,6);c.fillRect(x+1,y,2,5);}
+    else if(o.id==='arrow'){c.fillStyle=o.col;c.fillRect(x-5,y,8,1.5);c.beginPath();c.moveTo(x+3,y-2.5);c.lineTo(x+6,y+0.75);c.lineTo(x+3,y+4);c.closePath();c.fill();}
+    else{c.fillRect(x-3,y-3,6,6);c.fillStyle=o.col;c.fillRect(x-2,y-2,4,4);c.fillStyle='#24160C';c.fillRect(x-1,y-1,1,1);c.fillRect(x+1,y,1,1);}};
+  return n;});}
 // ═══ Misfiled Folders (Concord Office). First time: 1 Keepsake (act:folders); then 12 Stardust once a day (act:folders:<day>).
 const FOLDER_SPOTS=[[0.25,0.45],[0.4,0.38],[0.6,0.38],[0.75,0.46],[0.3,0.7],[0.52,0.6],[0.7,0.72],[0.47,0.88]];
 const FOLDER_COLS=['#B5523A','#3E8FC2','#7FA36B','#C9A25A'],HOUSE_ORD=['First','Second','Third','Fourth','Fifth','Sixth','Seventh','Eighth','Ninth','Tenth','Eleventh','Twelfth'];
@@ -4567,14 +4631,16 @@ const MX_ROUTES={
   'yard.sold':[[0.3,0.62,3],[0.3,0.9,2],[0.14,0.9,2],[0.14,0.62,2]],
   'chapel.sister':[[0.72,0.3,4],[0.86,0.3,3]],'chapel.believer':[[0.24,0.74,0]],
   'ward.nurse':[[0.42,0.48,3],[0.42,0.32,2],[0.58,0.32,2],[0.58,0.48,2]],'ward.pat':[[0.86,0.34,0]],
+  'ashlane.lamplighter':[[0.1,0.24,3],[0.36,0.24,2],[0.62,0.24,2],[0.36,0.24,2]],'ashlane.hoopkid':[[0.45,0.74,1],[0.58,0.8,1],[0.66,0.62,1],[0.52,0.6,1]],'ashlane.laundress':[[0.42,0.24,0]],'ashlane.shopkeep':[[0.78,0.26,0]],
   'office.filer':[[0.66,0.6,3],[0.66,0.84,2],[0.76,0.84,2],[0.76,0.6,2]],'office.counter':[[0.5,0.2,0]],'office.waiter':[[0.3,0.48,0]],'office.tobin':[[0.42,0.72,0]],
   'hesper.agathe':[[0.56,0.36,4],[0.62,0.6,3],[0.5,0.5,2]],'hesper.pip':[[0.4,0.64,2],[0.45,0.6,1.5],[0.42,0.7,1.5]],'hesper.wren':[[0.92,0.42,0]],'hesper.baker2':[[0.18,0.3,0]],
 };
 const MX_VOICE={'market.matteo':'oldman','market.rosa':'oldwoman','market.fish':'man','market.tessa':'child','plaza.lseller':'man','plaza.fwoman':'woman',
   'yard.sold':'man','chapel.sister':'woman','chapel.believer':'woman','ward.nurse':'woman','ward.pat':'oldman',
+  'ashlane.laundress':'woman','ashlane.lamplighter':'oldman','ashlane.shopkeep':'oldwoman','ashlane.hoopkid':'child',
   'office.counter':'man','office.filer':'woman','office.waiter':'oldman','office.tobin':'child',
   'hesper.agathe':'woman','hesper.pip':'child','hesper.wren':'child','hesper.baker2':'man'};
-function mxLivingEnter(m,d){mxDayState();if(d!=='hesper'&&mxHide.st==='hiding')mxHide.st='idle';if(d!=='office'&&mxFold.st==='carry')mxFold.st='idle';
+function mxLivingEnter(m,d){mxDayState();if(d!=='hesper'&&mxHide.st==='hiding')mxHide.st='idle';if(d!=='ashlane'&&mxOdd.st==='hunt')mxOdd.st='idle';if(d!=='office'&&mxFold.st==='carry')mxFold.st='idle';
   for(const [k,fx,fy] of MX_OBST[d]||[]){const p=MXP(fx,fy);for(const so of mxObstSolids(k,p.x,p.y))m.solids.push(so);}
   if(d==='chapel')for(const cd of CANDLES){const p=MXP(cd.fx,cd.fy);m.solids.push({x:p.x,y:p.y,r:5});}
   for(const n of m.npcs){n.r=8;if(n.fx!=null&&n.x==null){const p=MXP(n.fx,n.fy);n.x=p.x;n.y=p.y;}
@@ -4728,7 +4794,7 @@ function wmIcon(g,ic,x,y,k,on){const ink=on?'#24160C':'#4A3A2A',p=k*0.16;g.fillS
 const MX_RANKS=[{at:20,r:{keep:1,dust:30}},{at:50,r:{keep:2,dust:50}},{at:90,r:{mpAll:2,dust:60}},{at:130,r:{keep:3,dust:80}},{at:175,r:{frag:'star',keep:3,dust:100}}];
 function mxRenown(){const x=mxS();let n=MX_ORDER.filter(d=>x.seen[d]).length*5+mxRecordCount()*5;
   for(const id in MX_QUESTS){const q=x.q[id];if(q&&q.s==='done')n+=MX_QUESTS[id].kind==='main'?30:15;}
-  for(const k of ['act:drill','act:sundial','act:pages','act:hideseek','act:folders'])if(claimed(k))n+=10;
+  for(const k of ['act:drill','act:sundial','act:pages','act:hideseek','act:folders','act:oddities'])if(claimed(k))n+=10;
   for(const k of ['sec:market.alcove','sec:ward.hatch'])if(claimed(k))n+=5;return n;}
 const mxRank=()=>{const n=mxRenown();return MX_RANKS.filter(k=>n>=k.at).length;};
 const mxClaimable=()=>MX_RANKS.filter((k,i)=>mxRenown()>=k.at&&!claimed('renown:'+(i+1))).length;
@@ -4754,7 +4820,7 @@ function mxMigrate(){const x=save.mx;if(!x||!x.q)return;let ch=false;
 mxMigrate();
 // ── Meridian menu and Journal
 function mxMapGrid(){const x=mxS(),cell=d=>d?h('div',{class:'mx-n'+(x.seen[d]?'':' off')+(x.at===d?' here':'')},x.seen[d]?MX_DISTRICTS[d].name:'Not visited',h('i',null,x.at===d?'You are here':(x.seen[d]?MX_DISTRICTS[d].blurb.split('.')[0]:'?'))):h('div',{class:'mx-n mx-gap'});
-  return h('div',{class:'mx-map','aria-label':'Map of Meridian'},cell(null),cell('chapel'),cell('office'),cell(null),cell('yard'),cell('market'),cell('plaza'),cell('hesper'),cell(null),cell('ward'),cell(null),cell(null));}
+  return h('div',{class:'mx-map','aria-label':'Map of Meridian'},cell(null),cell('chapel'),cell('office'),cell(null),cell('yard'),cell('market'),cell('plaza'),cell('hesper'),cell(null),cell('ward'),cell('ashlane'),cell(null));}
 function showMeridian(){
   state='title';room=null;boss=null;paused=false;playMusic('title');
   const x=mxS(),it=(label,sub,go,cls,attrs)=>h('button',Object.assign({class:'tm-item'+(cls||''),type:'button',onclick:go},attrs||{}),h('span',{class:'tm-l'},label),sub?h('span',{class:'tm-s'},sub):null);
@@ -7725,11 +7791,11 @@ function ensureBG(k){
   if(key===bgKey)return;bgKey=key;
   bgc.width=Math.ceil(W*k);bgc.height=Math.ceil(H*k);
   const g=bgc.getContext('2d');g.setTransform(k,0,0,k,0,0);
-  bgLights=[];bgCollect=true;paintTheme(g,room.def.theme);bgCollect=false;
+  bgLights=[];bgProps=[];bgCollect=true;paintTheme(g,room.def.theme);bgCollect=false;
   bakeGrade(g,room.def.theme);
 }
 // ═══ atmosphere: every district has a mood (colour grade + vignette baked into the map) and a little life (drawn each frame)
-let bgLights=[],bgCollect=false;
+let bgLights=[],bgCollect=false,bgProps=[];
 const ATMO={
   market:{grade:['#FFC98A',0.12,'#3A4A7A',0.05],vig:0.20,motes:{n:26,col:'#FFE6A3',kind:'dust'},clouds:1,bunting:1,fountain:1},
   plaza:{grade:['#FFD6A0',0.10,'#5A3A6A',0.10],vig:0.30,motes:{n:34,col:'#FFB7D0',kind:'petal'},clouds:1,fountain:2},
@@ -7966,7 +8032,7 @@ function enrichTheme(g,theme){
       for(let k=0;k<9;k++){const t=k/8,x=W*0.3+t*W*0.4,y=52+Math.sin(t*Math.PI)*7;g.fillStyle=pick2(R,['#F6EBD2','#C7D5E8','#E84A4A','#E9C477']);g.fillRect(x-3,y,6,8+((k*3)%4));}
       for(const y of [50,H-22]){g.fillStyle='rgba(30,24,20,0.5)';g.fillRect(0,y,W,3);for(let x=30;x<W;x+=120){g.fillStyle=OL;g.fillRect(x,y-1,12,5);g.fillStyle='#3A3632';g.fillRect(x+1,y,10,3);}}
       {const x=W*0.15,y=H*0.5;shadow(g,x+14,y+14,20,5);g.fillStyle=OL;g.fillRect(x-1,y-1,30,14);g.fillStyle='#8B5A2B';g.fillRect(x,y,28,12);g.fillStyle='#A86F38';g.fillRect(x,y,28,2);barrel(g,x+8,y-2);g.fillStyle=OL;circ(g,x+5,y+14,4);g.fill();circ(g,x+23,y+14,4);g.fill();}
-      for(let i=0;i<6;i++){const x=R()<0.5?W*0.02+R()*W*0.05:W*0.93+R()*W*0.05,y=90+R()*(H-150);R()<0.5?barrel(g,x,y):crate2(g,x,y);}
+      for(let i=0;i<6;i++){const x=R()<0.5?W*0.02+R()*W*0.05:W*0.93+R()*W*0.05,y=90+R()*(H-150),b=R()<0.5;b?barrel(g,x,y):crate2(g,x,y);if(bgCollect)bgProps.push([b?'barrel':'crate',x,y]);}
       for(let i=0;i<4;i++){const x=W*(0.1+i*0.25),y=H*0.92;g.fillStyle=OL;g.fillRect(x-1,y-1,12,15);g.fillStyle='#E9DDC0';g.fillRect(x,y,10,13);g.fillStyle='#8E2B2B';g.fillRect(x+2,y+2,6,3);g.fillStyle='#3B2617';g.fillRect(x+2,y+7,6,1);g.fillRect(x+2,y+9,4,1);}
       break;}
     case 'rooftop':{ // Meridian rooftops: chimney smoke, water tanks, a pigeon coop, lit skylights
@@ -8582,7 +8648,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
