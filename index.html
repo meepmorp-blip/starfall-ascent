@@ -6123,6 +6123,109 @@ function cassBack(g,step){
   g.fillStyle=CSP.gold;g.beginPath();g.moveTo(-6.6,-1.4);g.lineTo(0,3.4);g.lineTo(6.6,-1.4);g.lineTo(6.6,-0.6);g.lineTo(0,4.2);g.lineTo(-6.6,-0.6);g.closePath();g.fill();
   cMark(g,0,-3.4,1.1);g.fillStyle=CSP.charHi;g.fillRect(-4,-19.6,6,0.7);g.fillStyle='rgba(0,0,0,0.25)';g.fillRect(4.6,-12,1.6,10);
   g.fillStyle=CSP.ivory;g.fillRect(-5.6,-18.4,11.2,1.2);}
+// ═══ Dess: shy researcher. Sage hair, small round glasses, ivory lab coat with dusty-pink cuffs, dark green dress, notebook, satchel and vials.
+const DP={hair:'#8FAE96',hairHi:'#C4DCC4',hairSh:'#5E7C66',skin:'#F0D2B6',skinSh:'#D2B096',coat:'#E6DCC8',coatSh:'#BEB298',coatHi:'#F6F0E2',
+  pink:'#C46A80',pinkHi:'#E0909E',green:'#2A4030',greenHi:'#3C5A44',leather:'#5A3A24',leatherHi:'#7A5236',frame:'#3A2E2A',lens:'rgba(200,230,240,0.35)',
+  tights:'#26222A',boot:'#4A3024',bootHi:'#6A4834',gold:'#C9A25A',book:'#6A4A7A',bookHi:'#8E6CA0',page:'#F2EAD6',core:'155,212,255'};
+function dLegs(g,step){figLegs(g,step,DP.tights,DP.boot);g.fillStyle=DP.bootHi;g.fillRect(-4.9,8.8+step,4.6,0.7);g.fillRect(0.6,8.8-step,4.6,0.7);
+  g.fillStyle=DP.pink;g.fillRect(-2.8,8.9+step,0.8,0.5);g.fillRect(2.6,8.9-step,0.8,0.5);}
+// dark green dress under the coat with a pleated hem
+function dDress(g,x0,x1,y){g.fillStyle=DP.green;g.fillRect(x0,y,x1-x0,7.4-y+0.6);g.fillStyle=DP.greenHi;for(let x=x0+1;x<x1-0.4;x+=2)g.fillRect(x,6.4,0.6,1.6);}
+function dVials(g,x,y){const c=['#7FD0C8','#E0909E'];for(let i=0;i<2;i++){g.fillStyle='#24160C';g.fillRect(x+i*1.7-0.2,y-0.2,1.5,2.8);g.fillStyle=c[i];g.fillRect(x+i*1.7,y+0.8,1.1,1.6);g.fillStyle='rgba(230,245,255,0.7)';g.fillRect(x+i*1.7,y,1.1,0.8);g.fillStyle=DP.leatherHi;g.fillRect(x+i*1.7,y-0.6,1.1,0.6);}}
+function dSatchel(g,x,y,w,h){g.fillStyle='#24160C';g.fillRect(x-0.5,y-0.5,w+1,h+1);g.fillStyle=DP.leather;g.fillRect(x,y,w,h);g.fillStyle=DP.leatherHi;g.fillRect(x,y,w,h*0.36);g.fillStyle=DP.gold;g.fillRect(x+w/2-0.5,y+h*0.3,1,1);}
+// gold compass charm with a pink tassel
+function dCompass(g,x,y){g.fillStyle='#24160C';circ(g,x,y,1.4);g.fill();g.fillStyle=DP.gold;circ(g,x,y,1.05);g.fill();g.fillStyle=DP.page;circ(g,x,y,0.55);g.fill();g.fillStyle=DP.pink;g.fillRect(x-0.1,y-0.5,0.3,0.6);g.fillRect(x-0.3,y+1.3,0.7,1.8);}
+// the research notebook, held to her chest
+function dBook(g,x,y,open){g.fillStyle='#24160C';g.fillRect(x-0.5,y-0.5,5,5.6);g.fillStyle=DP.book;g.fillRect(x,y,4,4.6);g.fillStyle=DP.page;g.fillRect(x+3.3,y+0.3,0.7,4);g.fillStyle=DP.bookHi;g.fillRect(x,y,4,0.6);g.fillStyle=DP.pinkHi;g.fillRect(x+1.4,y+4.4,0.7,1.2);}
+// glowing vice core (her weapon; hidden in ordinary scenes)
+function dCore(g,x,y){if(UNARMED)return;g.fillStyle='rgba('+DP.core+',0.3)';circ(g,x,y,3.2);g.fill();g.fillStyle='rgba('+DP.core+','+(0.7+0.25*Math.sin(T*5))+')';circ(g,x,y,1.9);g.fill();g.fillStyle='#EAF6FF';g.fillRect(x-0.6,y-0.8,0.9,0.9);}
+// soft messy sage hair: ahoge, side locks, short low tail, a pink bow
+function dHair(g,mode){g.fillStyle=DP.hair;
+  if(mode==='back'){circ(g,0,-13.8,7);g.fill();g.fillRect(-7,-13.8,14,5);g.beginPath();g.moveTo(-7,-9);g.lineTo(-5.2,-7.4);g.lineTo(-3.4,-8.8);g.lineTo(-1.6,-7.2);g.lineTo(1.4,-8.8);g.lineTo(3.4,-7.2);g.lineTo(5.4,-8.6);g.lineTo(7,-7.6);g.lineTo(7,-9.4);g.closePath();g.fill();
+    g.fillStyle=DP.hairSh;g.fillRect(-1.6,-8.6,3.2,4);g.fillStyle=DP.hair;g.beginPath();g.moveTo(-1.8,-8.6);g.lineTo(1.8,-8.6);g.lineTo(1,-3.6);g.lineTo(0,-2.8);g.lineTo(-1,-3.6);g.closePath();g.fill();
+    g.fillStyle=DP.hairHi;g.fillRect(-4,-17,6.4,0.7);g.fillRect(-5,-14.6,3,0.6);}
+  else{g.beginPath();g.arc(0,-14,7,Math.PI*0.94,Math.PI*2.06);g.closePath();g.fill();
+    g.fillRect(-7.4,-14.2,2.4,6.2);g.beginPath();g.moveTo(-7.4,-8);g.lineTo(-6.6,-6.2);g.lineTo(-5,-8);g.closePath();g.fill();
+    if(mode==='front'){g.fillRect(5,-14.2,2.4,6.2);g.beginPath();g.moveTo(5,-8);g.lineTo(6.6,-6.2);g.lineTo(7.4,-8);g.closePath();g.fill();
+      g.beginPath();g.moveTo(-6.6,-15.4);g.lineTo(-5,-12.6);g.lineTo(-3.4,-14.6);g.lineTo(-1.6,-12.2);g.lineTo(0.2,-14.8);g.lineTo(2,-12.4);g.lineTo(3.8,-14.6);g.lineTo(5.2,-12.8);g.lineTo(6.6,-15.4);g.lineTo(6.6,-16.8);g.lineTo(-6.6,-16.8);g.closePath();g.fill();
+      g.fillStyle=DP.hairSh;g.fillRect(-1.8,-13,0.8,0.8);g.fillRect(3.2,-13.4,0.7,0.7);}
+    else{g.beginPath();g.moveTo(-6.6,-15.4);g.lineTo(-1.4,-16.4);g.lineTo(0.6,-12.8);g.lineTo(2.4,-15.2);g.lineTo(4.2,-12.6);g.lineTo(6.6,-15.6);g.lineTo(5.6,-17.6);g.closePath();g.fill();
+      // low tail at the nape
+      g.beginPath();g.moveTo(-6.4,-10.6);g.lineTo(-9,-7);g.lineTo(-8.4,-4.8);g.lineTo(-6.6,-6.6);g.lineTo(-5.4,-9.4);g.closePath();g.fill();g.fillStyle=DP.hairSh;g.fillRect(-8.4,-6.6,1.2,1.4);}
+    g.fillStyle=DP.hairSh;g.fillRect(-7,-11,1.2,2.4);
+    g.fillStyle=DP.hairHi;g.fillRect(-3.6,-19.6,4.4,0.8);g.fillRect(1.2,-18.6,3,0.7);}
+  // ahoge
+  g.fillStyle=DP.hair;g.beginPath();g.moveTo(0.4,-20.6);g.quadraticCurveTo(1,-24.2,3.4,-23.6);g.quadraticCurveTo(1.6,-23,1.8,-20.6);g.closePath();g.fill();}
+function dBow(g,x,y){g.fillStyle='#24160C';g.fillRect(x-2.2,y-1.2,4.4,2.4);g.fillStyle=DP.pink;g.fillRect(x-1.9,y-0.9,1.5,1.8);g.fillRect(x+0.4,y-0.9,1.5,1.8);g.fillStyle=DP.pinkHi;g.fillRect(x-0.4,y-0.6,0.8,1.2);}
+function dSleeve(g,x,y){g.fillStyle=DP.coat;g.fillRect(x,y,2.9,5);g.fillStyle=DP.coatSh;g.fillRect(x,y,0.7,5);g.fillStyle=DP.pink;g.fillRect(x-0.2,y+4.2,3.3,1.1);g.fillStyle=DP.skin;g.fillRect(x+0.3,y+5.3,2.4,2.2);}
+function dessSide(g,step){
+  // low tail of the coat behind
+  g.fillStyle=DP.coatSh;g.beginPath();g.moveTo(-6.6,0);g.lineTo(-9,8.8);g.lineTo(-6,8.4);g.closePath();g.fill();
+  dLegs(g,step);
+  // dress, then the long coat over it
+  dDress(g,-5.4,6.4,1.4);
+  g.fillStyle=DP.coat;g.beginPath();g.moveTo(-7,-7);g.lineTo(5.6,-7);g.lineTo(5.6,8.6);g.lineTo(3.4,8.6);g.lineTo(2,1.6);g.lineTo(-1,1.6);g.lineTo(-2,8.8);g.lineTo(-7.6,8.8);g.closePath();g.fill();
+  g.fillStyle=DP.green;g.fillRect(3,-6.6,2.6,8.2);g.fillStyle=DP.coatSh;g.fillRect(-7,-5,1.8,13.6);g.fillStyle=DP.coatHi;g.fillRect(-4.4,-6.8,6.4,0.8);
+  g.fillStyle=DP.pink;g.fillRect(-7.6,8.2,5.6,0.6);g.fillRect(2.4,-6.6,0.6,8);
+  // satchel strap, belt, satchel on the back hip, vials in the coat pocket
+  g.strokeStyle=DP.leather;g.lineWidth=0.9;g.beginPath();g.moveTo(4,-6.8);g.lineTo(-5,1.6);g.stroke();
+  dSatchel(g,-8.6,1,4.4,4.4);dCompass(g,-6.4,6.4);
+  g.fillStyle=DP.coatSh;g.fillRect(-1.6,3.4,3.4,3);dVials(g,-1.2,2.4);
+  // arm and the notebook to her chest
+  dSleeve(g,3.4,-4.6);dBook(g,4.6,-2.4+step*0.3);
+  dCore(g,9.6,2+step*0.5);
+  // collar
+  g.fillStyle=DP.coat;g.beginPath();g.moveTo(-5.6,-8.6);g.lineTo(-1.4,-8.2);g.lineTo(-2.6,-4.8);g.lineTo(-6.2,-5.6);g.closePath();g.fill();g.fillStyle=DP.pink;g.fillRect(1.4,-8.4,2.4,0.8);
+  figHead(g,DP.skin);dHair(g,'side');dBow(g,-5.4,-11);
+  // single round lens over the eye, a freckle below
+  figEye(g,2.8);g.fillStyle='rgba(60,100,80,0.7)';g.fillRect(2.8,-12.8,1.5,0.7);
+  g.strokeStyle=DP.frame;g.lineWidth=0.55;circ(g,3.5,-12.2,1.9);g.stroke();g.fillStyle=DP.lens;circ(g,3.5,-12.2,1.6);g.fill();g.fillStyle=DP.frame;g.fillRect(-1,-12.6,2.6,0.4);
+  g.fillStyle='rgba(225,120,120,0.4)';g.fillRect(2.4,-9.8,1.8,0.7);g.fillStyle='rgba(120,70,50,0.75)';g.fillRect(4.4,-9.8,0.5,0.5);}
+function dessFront(g,step){
+  dLegs(g,step);
+  dDress(g,-4.2,4.2,1.4);
+  // open lab coat
+  g.fillStyle=DP.coat;g.beginPath();g.moveTo(-7.4,-7);g.lineTo(7.4,-7);g.lineTo(8.6,8.8);g.lineTo(3.4,8.8);g.lineTo(2.4,-1);g.lineTo(-2.4,-1);g.lineTo(-3.4,8.8);g.lineTo(-8.6,8.8);g.closePath();g.fill();
+  g.fillStyle=DP.green;g.fillRect(-2.6,-6.8,5.2,8.4);g.fillStyle=DP.greenHi;g.fillRect(-0.3,-6.4,0.6,7.6);
+  g.fillStyle=DP.pink;g.fillRect(-3.2,-6.8,0.6,15.6);g.fillRect(2.6,-6.8,0.6,15.6);g.fillRect(-8.6,8.2,5.2,0.6);g.fillRect(3.4,8.2,5.2,0.6);
+  g.fillStyle=DP.coatSh;g.fillRect(-7.4,-5,1.6,13.6);
+  // pockets: vials on one side, compass charm on the other
+  g.fillStyle=DP.coatSh;g.fillRect(-7,3.6,3.4,3);g.fillRect(3.8,3.6,3.4,3);dVials(g,-6.6,2.6);dCompass(g,5.4,4.4);
+  // satchel strap across, satchel on her hip
+  g.strokeStyle=DP.leather;g.lineWidth=0.9;g.beginPath();g.moveTo(-5.2,-6.8);g.lineTo(6.4,2);g.stroke();dSatchel(g,6.6,1,3.6,4);
+  // arms: one holds the notebook to her chest, the other hangs
+  dSleeve(g,-10,-4.6);dSleeve(g,7.2,-4.6);dBook(g,-4.2,-3.6);g.fillStyle=DP.skin;g.fillRect(-4.6,-1.4,2,1.6);
+  dCore(g,10.4,3.4);
+  // collar, pink ribbon at the throat
+  g.fillStyle=DP.coat;for(const sx of [-1,1]){g.beginPath();g.moveTo(sx*1.4,-8.6);g.lineTo(sx*5.4,-8.6);g.lineTo(sx*3,-4.8);g.closePath();g.fill();}
+  dBow(g,0,-7.4);
+  // head straight on
+  g.fillStyle=DP.skin;g.fillRect(-1.8,-8.4,3.6,1.2);circ(g,0,-13,6.2);g.fill();g.fillStyle='rgba(0,0,0,0.1)';g.beginPath();g.arc(0,-13,6.2,Math.PI*0.15,Math.PI*0.85);g.closePath();g.fill();
+  dHair(g,'front');dBow(g,5.6,-16.4);
+  for(const ex of [-3.2,1.8]){g.fillStyle='#14101A';g.fillRect(ex,-12.4,1.4,1.8);g.fillStyle='rgba(60,100,80,0.8)';g.fillRect(ex,-11.2,1.4,0.6);g.fillStyle='#FFFFFF';g.fillRect(ex+0.7,-12.4,0.6,0.6);
+    g.strokeStyle=DP.frame;g.lineWidth=0.5;circ(g,ex+0.7,-11.6,1.85);g.stroke();g.fillStyle=DP.lens;circ(g,ex+0.7,-11.6,1.6);g.fill();}
+  g.fillStyle=DP.frame;g.fillRect(-0.6,-11.9,1.2,0.4);
+  g.fillStyle='rgba(225,120,120,0.42)';g.fillRect(-4.8,-9.6,1.6,0.8);g.fillRect(3.2,-9.6,1.6,0.8);
+  g.fillStyle='rgba(120,70,50,0.8)';g.fillRect(-2.2,-9.2,0.5,0.5);
+  g.fillStyle='rgba(120,60,50,0.6)';g.fillRect(-0.6,-9,1.2,0.4);}
+function dessBack(g,step){
+  dLegs(g,step);
+  g.fillStyle=DP.coat;g.beginPath();g.moveTo(-7.4,-7);g.lineTo(7.4,-7);g.lineTo(8.6,8.8);g.lineTo(0.7,8.8);g.lineTo(0,5);g.lineTo(-0.7,8.8);g.lineTo(-8.6,8.8);g.closePath();g.fill();
+  g.fillStyle=DP.green;g.beginPath();g.moveTo(-0.7,8.8);g.lineTo(0,5);g.lineTo(0.7,8.8);g.closePath();g.fill();
+  g.fillStyle=DP.pink;g.fillRect(-8.6,8.2,7.9,0.6);g.fillRect(0.7,8.2,7.9,0.6);
+  g.fillStyle=DP.coatSh;g.fillRect(-7.4,-5,1.6,13.6);g.fillStyle=DP.coatHi;g.fillRect(-4,-6.8,8,0.8);
+  // half-belt with two pink buttons
+  g.fillStyle=DP.coatSh;g.fillRect(-4.4,1,8.8,1.4);g.fillStyle=DP.pink;g.fillRect(-3.6,1.3,0.8,0.8);g.fillRect(2.8,1.3,0.8,0.8);
+  // strap and satchel on the hip with vials and the compass charm
+  g.strokeStyle=DP.leather;g.lineWidth=0.9;g.beginPath();g.moveTo(5.2,-6.8);g.lineTo(-5.6,2);g.stroke();
+  dSatchel(g,-8.8,1,4.6,4.4);dVials(g,-8.2,-0.6);dCompass(g,-4,5.4);
+  dSleeve(g,-10,-4.6);dSleeve(g,7.2,-4.6);
+  dCore(g,10.4,3.4);
+  g.fillStyle=DP.coat;rrect(g,-5.4,-9,10.8,3.4,1.6);g.fill();g.fillStyle=DP.coatSh;g.fillRect(-5,-6,10,0.6);
+  g.fillStyle=DP.skinSh;g.fillRect(-7.2,-13.4,1.2,2);g.fillRect(6,-13.4,1.2,2);
+  dHair(g,'back');dBow(g,0,-8.4);
+  // glasses arms over the ears
+  g.fillStyle=DP.frame;g.fillRect(-7.2,-12.4,1.4,0.4);g.fillRect(5.8,-12.4,1.4,0.4);}
 const LOOKS={
   kairos(g,step){(CHDIR==='down'?kairosFront:CHDIR==='up'?kairosBack:kairosSide)(g,step);},
   ines(g,step){
@@ -6191,15 +6294,7 @@ const LOOKS={
   theo(g,step){(CHDIR==='down'?theoFront:CHDIR==='up'?theoBack:theoSide)(g,step);},
   lucan(g,step){(CHDIR==='down'?lucasFront:CHDIR==='up'?lucasBack:lucasSide)(g,step);},
   cass(g,step){(CHDIR==='down'?cassFront:CHDIR==='up'?cassBack:cassSide)(g,step);},
-  dess(g,step){figLegs(g,step,'#2B2F3A','#14161F');
-    g.fillStyle='#E8E4DC';g.beginPath();g.moveTo(-7.5,-6);g.lineTo(7,-6);g.lineTo(7,7);g.lineTo(-8,7);g.closePath();g.fill();
-    g.fillStyle='#5A4A7A';g.fillRect(-3,-6,6,11);
-    g.fillStyle='#6E4421';g.save();g.translate(-7,3-step*0.4);rrect(g,-3,-3,6,7,1.5);g.fill();g.fillStyle='rgba(155,212,255,'+(0.6+0.3*Math.sin(T*5))+')';circ(g,0,0,1.5);g.fill();circ(g,1.4,2.5,1.1);g.fill();g.restore();
-    g.fillStyle='rgba(155,212,255,0.85)';circ(g,9,0+step*0.6,2.4);g.fill();g.fillStyle='#F0D2B6';circ(g,8,1+step*0.6,1.6);g.fill();
-    figHead(g,'#F0D2B6');
-    g.fillStyle='#16121E';g.beginPath();g.arc(0,-13.6,6.9,Math.PI*0.95,Math.PI*2.05);g.lineTo(6,-11.5);g.quadraticCurveTo(0,-15,-6.4,-11);g.closePath();g.fill();g.beginPath();g.ellipse(-7.6,-8,2,5.5,0.3,0,TAU);g.fill();
-    g.strokeStyle='#C7D5E8';g.lineWidth=0.8;circ(g,3.2,-12.4,1.9);g.stroke();
-    figEye(g,2.7);},
+  dess(g,step){(CHDIR==='down'?dessFront:CHDIR==='up'?dessBack:dessSide)(g,step);},
 };
 // detail pass: shading, trims and the one prop that makes each character readable at a glance
 function torsoShade(g,x0,x1,y0,y1){g.fillStyle='rgba(0,0,0,0.16)';g.fillRect(x0,y0,2.2,y1-y0);g.fillStyle='rgba(255,255,255,0.12)';g.fillRect(x0+2.2,y0,x1-x0-2.2,1);}
@@ -6224,11 +6319,7 @@ const LOOKS_X={
   theo(g,step){},
   lucan(g,step){},
   cass(g,step){if(!UNARMED&&rand()<0.25){g.fillStyle='rgba(255,140,60,0.8)';g.fillRect(10+rr(-1,1),5+step*0.6-rr(0,4),0.9,0.9);}},
-  dess(g,step){torsoShade(g,-7.5,7,-6,7);
-    g.fillStyle='rgba(0,0,0,0.12)';g.fillRect(1,1,4,3);g.fillStyle='#5A4A7A';g.fillRect(1,1,4,0.7);
-    g.strokeStyle='#4A2E18';g.lineWidth=0.9;g.beginPath();g.moveTo(5.5,-6);g.lineTo(-6.5,1);g.stroke();
-    const a=T*2;g.fillStyle='rgba(155,212,255,0.55)';circ(g,-11+Math.cos(a)*2,-10+Math.sin(a*1.3)*2,1.5);g.fill();
-    g.fillStyle='rgba(255,255,255,0.25)';g.fillRect(-3.5,-19.6,4,0.8);},
+  dess(g,step){const a=T*2;g.fillStyle='rgba(155,212,255,0.55)';circ(g,-11+Math.cos(a)*2,-10+Math.sin(a*1.3)*2,1.4);g.fill();},
 };
 // ═══ summons
 function drawSummon(a){
