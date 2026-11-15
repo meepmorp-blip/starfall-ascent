@@ -25,3 +25,9 @@ A full day of chests is about 13 chests: roughly 100 Stardust and 1 Keepsake, ab
 ## Feedback
 - Chests are small and dark. Once every few seconds a glint shows on them, so they can be found without being obvious.
 - Opening a chest throws the lid, plays a burst of particles and a chime, and floats the reward text above it. Opened chests stay open (dimmed) until the next day.
+
+## Expansion 05 changes
+- **Spots re-picked** with `tools/chest_spots.js`. Every spot is checked against solids, people and their routes, objects, exits, and the real HUD and touch-control rectangles at five screen sizes (844×390, 667×375, 932×430, 1024×768 touch; 1280×720 desktop). Run `node tools/chest_spots.js check` after any map change. The daily logic, tiers and claim keys are unchanged.
+- **Tiers look different:** common is plain wood with iron bands; fine is dark wood with silver-blue bands and pale motes when you are near; precious is indigo with gold bands, a gold star on the lid and violet motes.
+- **Discovery:** the first time Kairos comes within reach of a closed chest on a visit, a soft two- or three-note chime plays (on the sound effects bus) and a ring flashes. The glint also comes faster when you are close. Nothing shows from a distance.
+- **Opening:** the lid flips up with a small bounce, a burst sized by tier plays, then two lines float up: the tier name, then exactly what you got ("+12 Stardust").

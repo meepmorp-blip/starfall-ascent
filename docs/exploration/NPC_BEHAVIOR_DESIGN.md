@@ -26,3 +26,10 @@ When you talk to an **ordinary** townsperson on the map (their line is small tal
 - Routed through the existing sound effects bus, so the Sound effects slider and mute apply. Quiet by design.
 
 **Limitation:** a synthesized murmur is an approximation. For real character in the voices, record 3 to 4 short nonverbal takes per voice type (child, young woman, woman, man, older man, older woman). Use OGG or M4A, 0.2 to 0.6 seconds, peak at -6 dB. Store them in `audio/voice/<type>_<n>.m4a`. `mxMurmur()` is the single place to switch to playing files.
+
+## Expansion 05 changes
+- Routed townsfolk **start on their route** (fixes the Sister standing beside the hidden sundial chest).
+- Each NPC gets its own walking speed (±15%) and varied pauses (70 to 130% of the route value).
+- While pausing they turn now and then, as if looking around the stall or the square.
+- Tessa's play area moved a little west, so her name no longer collides with the "Festival Square" exit label.
+- Murmurs were reviewed and left as they are: volume, slider and mute, variation, and the rule that only small talk murmurs.

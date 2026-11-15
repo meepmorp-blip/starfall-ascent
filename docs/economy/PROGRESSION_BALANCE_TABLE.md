@@ -80,4 +80,4 @@ Points available today: 5 districts × 5 + 11 records × 5 + 30 + 5 optional que
 | The Festival Programme | first time 1 Keepsake, then 15 Stardust a day | daily | `act:pages`, `act:pages:<day>` |
 
 A full day in Meridian (about 13 chests, the drill and the pages) pays about 125 Stardust and 1 Keepsake, roughly four Battle stages. This also gives Keepsakes the repeatable source they were missing: one a day.
-Each activity's first clear adds 10 Renown (total available: 215).
+Each activity's first clear adds 10 Renown, and each of the two secrets (Expansion 05) adds 5: total available 225. Expansion 05 also adds an old barrel (10 Stardust once), a daily supply crate (4 Stardust a day) and two secrets (25 and 15 Stardust once).

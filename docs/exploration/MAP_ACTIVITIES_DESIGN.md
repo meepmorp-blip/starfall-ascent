@@ -29,3 +29,35 @@ Obstacles sit away from exits, NPC routes and the main walking lines.
 | St. Lucia's | The ward clock | Stopped at 9:04. Nobody has wound it; Theo asked them not to. |
 
 Each shows `?` until read, then goes quiet. They are not Records, so Records and Renown are unchanged.
+
+## Expansion 05: interactive objects and secrets
+A small reusable set (`mxObjDefs`, `mxObjEnter`, `mxObjUpdate`, `mxObjDraw`). Positions are relative to the arena edges, so they hold on every screen width.
+
+| Kind | Behaviour | Saved |
+|---|---|---|
+| `wall` | Solid crate wall | n/a |
+| `push` | Walk into it for about 0.2 s to slide it one step (24 units). It stops at solids, walls, people and the map edge, with a dull knock when blocked. | Position, permanently (`save.mx.obj`) |
+| `break` | Interact to break: wood chips fly, a small reward through `grantReward`, collision removed. `once` stays broken forever; `daily` comes back the next day. | `save.mx.obj` / today's `save.mx.day.obj` |
+| `lever` | Interact to pull. `toggle` flips on and off; `once` stays released. | `save.mx.obj` |
+
+| District | Object | Result | Reward |
+|---|---|---|---|
+| Market Ring | **The stall-keepers' corner**: a crate wall in the south-west corner with one loose crate in the gap. Push it in to open the corner. | A hidden path to a rainy-day tin | 25 Stardust, once (`sec:market.alcove`) |
+| Garrison Yard | An old barrel (west) | Breaks for good | 10 Stardust, once (`brk:yard.oldbarrel`) |
+| Garrison Yard | A Garrison supply crate (south) | A new one every day | 4 Stardust a day (`brk:yard.supply:<day>`) |
+| Festival Square | The lantern switch (south-west) | Lights the eight lantern posts and the bunting; on and off | none |
+| St. Lucia's | The cart brake | The supply cart rolls aside and uncovers a loose floor tile with a note | 15 Stardust, once (`sec:ward.hatch`) |
+
+The two secrets add 5 Renown each (total available: 225).
+
+## Expansion 05: Hour Candles polish
+- Each correct candle flares as it lights and plays a rising note (four steps up a scale).
+- A wrong candle flashes red, the others puff out with smoke, and a "Wrong hour" line appears.
+- When solved, all four flare with a beam to the sundial, the dial rings, and a column of light marks the chest behind the east statue for a moment.
+- The engravings are 1.45× larger. When Kairos is close, each candle also shows its word ("Sun rising", "Sun high", "Sun setting", "Moon") in crisp text.
+- The ordered-sequence rule is now a reusable function (`mxSeqStep`) for future puzzles.
+
+## Expansion 05: text and prompts
+- Names, prompts, exit labels and engraving words are drawn after the pixel buffer is scaled up, at a fixed on-screen size: names and exit labels at 11 px, prompts at 13 px. They stay sharp and readable on phones, and the art itself is not scaled.
+- The prompt now names its target ("F · talk · Rosa", "Tap ⚔ to break · supply crate"). It moves above the target when Kairos stands below it, replacing that target's bubble so it never covers him.
+- Prompts and floating text are kept inside the screen near the edges.
