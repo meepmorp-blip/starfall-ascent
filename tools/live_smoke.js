@@ -12,10 +12,12 @@ await p.goto(URL,{waitUntil:'load'});await p.waitForTimeout(1200);
 ok(await p.locator('.tm-item',{hasText:'Meridian'}).count()===1,'live: home menu loads with Meridian');
 await p.locator('.tm-item',{hasText:'Meridian'}).click();await p.waitForTimeout(500);
 await p.locator('.tm-item',{hasText:'Walk the city'}).click();await p.waitForTimeout(1500);
-for(const d of ['market','plaza','yard','chapel','ward']){await p.evaluate(d=>__sf.mxGo(d),d);await p.waitForTimeout(1300);
+for(const d of ['market','plaza','yard','chapel','ward','hesper']){await p.evaluate(d=>__sf.mxGo(d),d);await p.waitForTimeout(1300);
   const r=await p.evaluate(()=>({at:__sf.mx().at,st:__sf.st(),objs:(__sf.m().objs||[]).length,chests:__sf.m().npcs.filter(n=>n.tier).length}));
   ok(r.at===d&&r.st==='play'&&r.chests>=2,'live: '+d+' loads ('+r.chests+' chests, '+r.objs+' objects)');await p.screenshot({path:`out/live_${tag}_${d}.png`});}
 await p.evaluate(()=>__sf.mxGo('market'));await p.waitForTimeout(1000);
+if(!phone){await p.keyboard.press('KeyM');await p.waitForTimeout(500);ok(await p.locator('.wm canvas').count()===1,'live: the world map opens');await p.screenshot({path:`out/live_${tag}_map.png`});
+  await p.evaluate(()=>window.__wmSel('chapel'));await p.locator('.wm-side .btn',{hasText:'Travel'}).click();await p.waitForTimeout(1400);ok(await p.evaluate(()=>__sf.mx().at)==='chapel','live: fast travel to The Cloister');await p.evaluate(()=>__sf.mxGo('market'));await p.waitForTimeout(1000);}
 const c=await p.evaluate(()=>{const n=__sf.m().npcs.find(o=>o.tier);return {x:n.x,y:n.y};});
 await p.evaluate(c=>{const pl=__sf.p();pl.x=c.x-22;pl.y=c.y+6;},c);await p.waitForTimeout(200);const d0=await p.evaluate(()=>__sf.save().dust);
 await p.keyboard.down('KeyF');await p.waitForTimeout(60);await p.keyboard.up('KeyF');await p.waitForTimeout(600);
