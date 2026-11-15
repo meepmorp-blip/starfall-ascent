@@ -5,10 +5,10 @@
 ## Established identities (from the game, do not change)
 | Character | Read at a glance | Signature |
 |---|---|---|
-| Kairos | Messy dark navy hair, warm brown skin, dark navy jacket with rolled cream sleeves and an open cream shirt with a violet panel, starry violet scarf (long tail down his back with a gold ring sigil), brown belt with a small gold clock medallion and blue tassel, navy and cream tabard panels, fingerless gloves, brown boots with navy bands (redesigned 15 Nov 2026 from the owner's reference). Only character with front, back and side views | Twin water blades shaped like clock hands (hidden in ordinary scenes) |
+| Kairos | Messy dark navy hair, warm brown skin, dark navy jacket with rolled cream sleeves and an open cream shirt with a violet panel, starry violet scarf (long tail down his back with a gold ring sigil), brown belt with a small gold clock medallion and blue tassel, navy and cream tabard panels, fingerless gloves, brown boots with navy bands (redesigned 15 Nov 2026 from the owner's reference). Front, back and side views | Twin water blades shaped like clock hands (hidden in ordinary scenes) |
 | Sgt. Agnes Calder | Black bob with a side fringe, navy scarf and tattered navy half-cape, black strapped tactical gear, navy tabard and armband with a pale arrow sigil, knee pads, dark boots, gold Garrison pin (redesigned 15 Nov 2026 from the owner's reference) | Long dark rifle |
 | Big Boy Bram | Very large and round; messy brown hair, rust-orange scarf, dark strapped leather coat, orange-over-steel shoulder plates, belt with pouches, torn rust cloth, knee plates, steel-toed boots (redesigned 15 Nov 2026 from the owner's reference) | Oval steel shield with a rust-orange boss |
-| Dr. Naomi Lark | White coat, dark hair | Writing on her forearm; dart tool |
+| Dr. Naomi Lark | Wavy dark-green bob with an ivory bow, forest-green hooded capelet with gold trim, a white cross and a gold brooch, ivory dress with green side panels, brown belt with vials, brown medical satchel with a cross, brown gloves, dark tights, buckled brown boots (redesigned 15 Nov 2026 from the owner's reference). Front, back and side views | Dart syringe (hidden in ordinary scenes) |
 | Theo Lark | Wild orange curls, goggles | Brass devices, turrets |
 | Lucas Crane | Pale hair, sharp grey coat | Pistol |
 | Sister Cassie Vire | Grey and red habit | Chained censer that drips fire |
