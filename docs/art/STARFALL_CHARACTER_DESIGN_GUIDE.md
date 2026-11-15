@@ -9,7 +9,7 @@
 | Sgt. Agnes Calder | Black bob with a side fringe, navy scarf and tattered navy half-cape, black strapped tactical gear, navy tabard and armband with a pale arrow sigil, knee pads, dark boots, gold Garrison pin (redesigned 15 Nov 2026 from the owner's reference) | Long dark rifle |
 | Big Boy Bram | Very large and round; messy brown hair, rust-orange scarf, dark strapped leather coat, orange-over-steel shoulder plates, belt with pouches, torn rust cloth, knee plates, steel-toed boots (redesigned 15 Nov 2026 from the owner's reference) | Oval steel shield with a rust-orange boss |
 | Dr. Naomi Lark | Wavy dark-green bob with an ivory bow, forest-green hooded capelet with gold trim, a white cross and a gold brooch, ivory dress with green side panels, brown belt with vials, brown medical satchel with a cross, brown gloves, dark tights, buckled brown boots (redesigned 15 Nov 2026 from the owner's reference). Front, back and side views | Dart syringe (hidden in ordinary scenes) |
-| Theo Lark | Wild orange curls, goggles | Brass devices, turrets |
+| Theo Lark | Mop of curly orange hair, freckles, brass goggles pushed up, rumpled ivory lab coat with rolled sleeves, navy cuffs and blue arm patches, navy shirt, satchel strap, belt with blue vials and a gold pocket watch, pencils in the pocket, darned patch and a stain, buckled brown boots (redesigned 15 Nov 2026 from the owner's reference). Front, back and side views | Brass gadget; turrets |
 | Lucas Crane | Pale hair, sharp grey coat | Pistol |
 | Sister Cassie Vire | Grey and red habit | Chained censer that drips fire |
 | Dess Marr | Dark hair, lab apron, freckle under the left eye | Vice cores; a small girl of blue light |

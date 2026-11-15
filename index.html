@@ -5857,6 +5857,98 @@ function naomiBack(g,step){
   g.fillStyle=NP.trim;g.fillRect(-0.4,-4.6,0.8,2.4);circ(g,0,-2,0.9);g.fill();
   g.fillStyle=NP.skinSh;g.fillRect(-7.2,-13.4,1.2,2);g.fillRect(6,-13.4,1.2,2);
   nHair(g,'back');nBow(g,0,-16.4);}
+// ═══ Theo: rumpled ivory lab coat over a navy shirt, curly orange hair, goggles pushed up, vials and a pocket watch on his belt.
+const TP={hair:'#D2602A',hairHi:'#F08A48',hairSh:'#9A4018',skin:'#F0C9A8',skinSh:'#D0A688',coat:'#E2D6BE',coatSh:'#B8AA8E',coatHi:'#F4ECDA',
+  navy:'#2A3A66',navyHi:'#3E5290',belt:'#6B4428',beltHi:'#8E6038',glove:'#4A2E1E',pants:'#2E2626',boot:'#5A3A26',bootHi:'#7A5236',band:'#34407A',
+  frame:'#8E6038',lens:'#6EA8D8',vial:'#5AA8E8',patch:'#3A5A9A',stain:'#A88A70',gold:'#D8B060'};
+function tLegs(g,step){figLegs(g,step,TP.pants,TP.boot);
+  g.fillStyle=TP.band;g.fillRect(-4.9,8.4+step,4.6,1);g.fillRect(0.6,8.4-step,4.6,1);g.fillStyle='#B8B4AC';g.fillRect(-2.8,8.5+step,1,0.8);g.fillRect(2.6,8.5-step,1,0.8);
+  g.fillStyle='#8E8A84';g.fillRect(-4.8,10.6+step,1.6,0.8);g.fillRect(3.6,10.6-step,1.6,0.8);}
+function tVials(g,x,y,n){for(let i=0;i<n;i++){g.fillStyle='#24160C';g.fillRect(x+i*1.8-0.2,y-0.2,1.6,3);g.fillStyle=TP.vial;g.fillRect(x+i*1.8,y,1.2,2.6);g.fillStyle='#E8F4FF';g.fillRect(x+i*1.8,y,0.5,1.2);g.fillStyle='#8E8A84';g.fillRect(x+i*1.8,y-0.6,1.2,0.6);}}
+function tWatch(g,x,y){g.fillStyle='#24160C';circ(g,x,y,1.7);g.fill();g.fillStyle=TP.gold;circ(g,x,y,1.3);g.fill();g.fillStyle='#F4ECDA';circ(g,x,y,0.8);g.fill();g.fillStyle='#24160C';g.fillRect(x-0.1,y-0.7,0.3,0.8);}
+// his brass gadget, the thing he always has in hand
+function tGadget(g,x,y){g.save();g.translate(x,y);g.fillStyle='#24160C';rrect(g,-1.2,-2.4,8.4,4.8,1.2);g.fill();g.fillStyle='#8E6038';rrect(g,-0.8,-2,7.6,4,1);g.fill();
+  g.fillStyle='#59DDEB';g.fillRect(6.6,-1,2.4,2);g.strokeStyle='#59DDEB';g.lineWidth=0.6;g.beginPath();g.arc(2.6,0,1.6,0,TAU);g.stroke();g.fillStyle=TP.gold;g.fillRect(0.2,-1.6,1,1);g.restore();}
+// a mop of curls; goggles pushed up on the forehead
+function tHair(g,mode){
+  const curls=mode==='back'?[[-5,-17,3.2],[-1.4,-19.6,3.4],[2.6,-19,3.2],[5.4,-16,3],[-6.4,-13.4,2.8],[6.4,-12.6,2.6],[0,-14,5.6],[-3.4,-11,3],[3.4,-11,3]]
+    :[[-5,-17.4,3.2],[-1.4,-19.8,3.4],[2.6,-19.4,3.2],[5.6,-16.6,2.8],[-6.6,-14,2.6],[-7.2,-10.8,2]].concat(mode==='front'?[[6.8,-13.4,2.6],[7.2,-10.6,2]]:[[6.2,-14.6,2.2]]);
+  g.fillStyle=TP.hairSh;for(const [x,y,r] of curls){circ(g,x+0.4,y+0.5,r);g.fill();}
+  g.fillStyle=TP.hair;for(const [x,y,r] of curls){circ(g,x,y,r);g.fill();}
+  g.fillStyle=TP.hairHi;for(const [x,y,r] of curls.slice(0,4)){g.fillRect(x-r*0.5,y-r*0.6,r*0.7,0.8);}
+  // stray tufts
+  g.fillStyle=TP.hair;for(const [x1,y1,x2,y2,x3,y3] of [[-3,-21.6,-4.4,-24,-1.2,-22.4],[2,-21.8,4.2,-24,3.8,-21]]){g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.lineTo(x3,y3);g.closePath();g.fill();}
+  if(mode==='front'){g.beginPath();g.moveTo(-6.4,-15);g.lineTo(-4.4,-12.6);g.lineTo(-2.8,-14.8);g.lineTo(-0.6,-12.4);g.lineTo(1.4,-14.8);g.lineTo(3.4,-12.6);g.lineTo(5.4,-14.8);g.lineTo(6.4,-15.6);g.lineTo(-6.4,-15.6);g.closePath();g.fill();}
+  else if(mode==='side'){g.beginPath();g.moveTo(-6.6,-15.4);g.lineTo(0.4,-16.2);g.lineTo(1.6,-13);g.lineTo(3.2,-15);g.lineTo(5,-12.8);g.lineTo(6.4,-15.4);g.lineTo(5,-17.4);g.closePath();g.fill();}}
+function tGoggles(g,mode){
+  if(mode==='back'){g.fillStyle='#2A1E18';g.fillRect(-7,-15.2,14,1.6);return;}
+  g.fillStyle='#2A1E18';g.fillRect(-7,-16.8,14,1.4);
+  const lenses=mode==='front'?[-2.8,2.8]:[1,4.4];
+  for(const x of lenses){g.fillStyle='#24160C';circ(g,x,-16.4,2.2);g.fill();g.fillStyle=TP.frame;circ(g,x,-16.4,1.8);g.fill();g.fillStyle=TP.lens;circ(g,x,-16.4,1.2);g.fill();g.fillStyle='#E8F4FF';g.fillRect(x-0.8,-17.2,0.7,0.7);}
+  if(mode==='front'){g.fillStyle=TP.frame;g.fillRect(-0.6,-16.8,1.2,0.8);}}
+function tFreckles(g,xs){g.fillStyle='rgba(170,90,50,0.6)';for(const x of xs){g.fillRect(x,-10.8,0.5,0.5);g.fillRect(x+1,-10.4,0.5,0.5);}}
+function tCoatSleeve(g,x,y){g.fillStyle=TP.coat;g.fillRect(x,y,2.8,4.4);g.fillStyle=TP.coatSh;g.fillRect(x,y+3.4,2.8,1);g.fillStyle=TP.navy;g.fillRect(x-0.2,y+4.4,3.2,1);}
+function theoSide(g,step){
+  tLegs(g,step);
+  // long coat skirt, back flap trailing, a darned patch and a stain
+  g.fillStyle=TP.coatSh;g.beginPath();g.moveTo(-7,0);g.lineTo(-9.4,8.6);g.lineTo(-6.6,8);g.lineTo(-5.4,0);g.closePath();g.fill();
+  g.fillStyle=TP.coat;g.beginPath();g.moveTo(-7.2,-6.8);g.lineTo(7,-6.8);g.lineTo(7.6,8.2);g.lineTo(4.6,8.8);g.lineTo(2.4,8);g.lineTo(-6.8,8.6);g.closePath();g.fill();
+  g.fillStyle=TP.navy;g.fillRect(2.6,-6.6,3.6,8.6);g.fillStyle=TP.navyHi;g.fillRect(3.6,-6.2,0.8,7.6);
+  g.fillStyle=TP.coatSh;g.fillRect(-7.2,-5,1.8,13);g.fillStyle=TP.coatHi;g.fillRect(-4.8,-6.6,7,0.8);
+  g.fillStyle=TP.patch;g.fillRect(-4.2,5.2,2.4,2);g.fillStyle='rgba(232,240,255,0.6)';g.fillRect(-3.8,5.6,1.6,0.4);
+  g.fillStyle=TP.stain;g.fillRect(0,5.6,1.4,1);g.fillRect(0.6,6.4,0.8,0.8);
+  // coat pocket with pencils
+  g.fillStyle=TP.coatSh;g.fillRect(-1.6,3.4,3.4,3.2);g.fillStyle=TP.coat;g.fillRect(-1.6,3.4,3.4,0.6);g.fillStyle=TP.patch;g.fillRect(-1,2.6,0.6,1.2);g.fillStyle=TP.gold;g.fillRect(0.2,2.8,0.6,1);
+  // satchel strap and belt with vials and his pocket watch
+  g.strokeStyle=TP.belt;g.lineWidth=1;g.beginPath();g.moveTo(5,-6.6);g.lineTo(-5.6,1.4);g.stroke();
+  g.fillStyle=TP.belt;g.fillRect(-7,1.2,14.4,1.7);g.fillStyle=TP.beltHi;g.fillRect(-7,1.2,14.4,0.5);g.fillStyle='#B8B4AC';g.fillRect(-0.8,1,1.8,2);
+  tVials(g,-5.6,2.8,2);tWatch(g,5,4);
+  // rolled sleeve with a navy cuff and a blue arm patch, gloved hand
+  tCoatSleeve(g,6.4,-5.6);g.fillStyle=TP.patch;g.fillRect(6.8,-4.6,2,1.6);
+  g.fillStyle=TP.glove;g.fillRect(6.4,-0.4+step*0.5,3,3);
+  if(!UNARMED)tGadget(g,9.2,1+step*0.5);
+  // the big collar
+  g.fillStyle=TP.coat;g.beginPath();g.moveTo(-6,-8.6);g.lineTo(-2,-8);g.lineTo(-3,-4.6);g.lineTo(-6.6,-5.4);g.closePath();g.fill();g.fillStyle=TP.coatSh;g.fillRect(-5.8,-5.6,3,0.6);
+  figHead(g,TP.skin);tHair(g,'side');tGoggles(g,'side');
+  figEye(g,2.8);g.fillStyle='rgba(60,80,140,0.6)';g.fillRect(2.8,-12.8,1.5,0.7);tFreckles(g,[2,4]);
+  // tired eyes: a faint shadow under them
+  g.fillStyle='rgba(120,80,110,0.3)';g.fillRect(2.4,-10.6,2.4,0.5);}
+function theoFront(g,step){
+  tLegs(g,step);
+  // open coat: navy shirt in the middle, long coat panels either side
+  g.fillStyle=TP.coat;g.beginPath();g.moveTo(-7.4,-7);g.lineTo(7.4,-7);g.lineTo(8.6,8.6);g.lineTo(5.6,8.2);g.lineTo(3.2,8.8);g.lineTo(2.6,1);g.lineTo(-2.6,1);g.lineTo(-3.2,8.8);g.lineTo(-5.6,8.2);g.lineTo(-8.6,8.6);g.closePath();g.fill();
+  g.fillStyle=TP.navy;g.fillRect(-2.8,-6.8,5.6,8.4);g.fillStyle=TP.navyHi;g.fillRect(-0.4,-6.4,0.8,7.6);g.fillStyle=TP.gold;g.fillRect(-0.3,-5,0.6,0.6);g.fillRect(-0.3,-2.6,0.6,0.6);
+  g.fillStyle=TP.coatSh;g.fillRect(-7.4,-5,1.6,13);g.fillRect(2.6,1,0.8,7.6);g.fillRect(-3.4,1,0.8,7.6);
+  g.fillStyle=TP.coatSh;g.fillRect(-7.2,4,3.4,3);g.fillRect(3.8,4,3.4,3);g.fillStyle=TP.patch;g.fillRect(-6.4,3.2,0.6,1.2);g.fillStyle=TP.gold;g.fillRect(4.6,3.4,0.6,1);
+  g.fillStyle=TP.stain;g.fillRect(-6,6.4,1.2,0.8);g.fillStyle=TP.patch;g.fillRect(5,7,1.8,1.4);
+  g.strokeStyle=TP.belt;g.lineWidth=0.9;g.beginPath();g.moveTo(-5.4,-6.6);g.lineTo(5.4,1.2);g.stroke();
+  g.fillStyle=TP.belt;g.fillRect(-7.4,1,14.8,1.7);g.fillStyle=TP.beltHi;g.fillRect(-7.4,1,14.8,0.5);g.fillStyle='#B8B4AC';g.fillRect(-0.9,0.8,1.8,2);
+  tVials(g,-6.4,2.6,2);tWatch(g,4.6,3.6);
+  tCoatSleeve(g,-10,-5.6);tCoatSleeve(g,7.2,-5.6);g.fillStyle=TP.patch;g.fillRect(-9.6,-4.6,2,1.6);g.fillRect(7.6,-4.6,2,1.6);
+  g.fillStyle=TP.glove;g.fillRect(-10,-0.4,3,3);g.fillRect(7.2,-0.4+step*0.3,3,3);
+  if(!UNARMED)tGadget(g,10,1.2);
+  // collar points
+  g.fillStyle=TP.coat;for(const sx of [-1,1]){g.beginPath();g.moveTo(sx*1.6,-8.4);g.lineTo(sx*5.4,-8.6);g.lineTo(sx*3.2,-4.8);g.closePath();g.fill();}
+  g.fillStyle=TP.skin;g.fillRect(-1.8,-8,3.6,2.6);circ(g,0,-13,6.2);g.fill();g.fillStyle='rgba(0,0,0,0.12)';g.beginPath();g.arc(0,-13,6.2,Math.PI*0.15,Math.PI*0.85);g.closePath();g.fill();
+  tHair(g,'front');tGoggles(g,'front');
+  for(const ex of [-3.2,1.8]){g.fillStyle='#14101A';g.fillRect(ex,-12.4,1.4,1.9);g.fillStyle='rgba(60,80,140,0.75)';g.fillRect(ex,-11.1,1.4,0.6);g.fillStyle='#FFFFFF';g.fillRect(ex+0.7,-12.4,0.6,0.6);g.fillStyle='rgba(120,80,110,0.3)';g.fillRect(ex-0.2,-10.2,1.8,0.5);}
+  tFreckles(g,[-4.8,3.4]);g.fillStyle='rgba(120,60,50,0.7)';g.fillRect(-1,-9.4,2,0.5);g.fillRect(0.8,-9.8,0.6,0.5);}
+function theoBack(g,step){
+  tLegs(g,step);
+  g.fillStyle=TP.coat;g.beginPath();g.moveTo(-7.4,-7);g.lineTo(7.4,-7);g.lineTo(8.6,8.6);g.lineTo(0.6,8.4);g.lineTo(0,6);g.lineTo(-0.6,8.4);g.lineTo(-8.6,8.6);g.closePath();g.fill();
+  g.fillStyle=TP.coatSh;g.fillRect(-7.4,-5,1.6,13);g.fillRect(-0.2,2,0.4,6.4);g.fillStyle=TP.coatHi;g.fillRect(-4,-6.8,8,0.8);
+  g.fillStyle=TP.stain;g.fillRect(1.6,-3.4,1.4,1);g.fillRect(2.2,-2.6,0.8,0.8);g.fillStyle=TP.patch;g.fillRect(-5.4,5.4,2.2,1.6);
+  g.strokeStyle=TP.belt;g.lineWidth=1;g.beginPath();g.moveTo(5.4,-6.6);g.lineTo(-4.8,2.4);g.stroke();
+  g.fillStyle=TP.belt;g.fillRect(-7.4,1,14.8,1.7);g.fillStyle=TP.beltHi;g.fillRect(-7.4,1,14.8,0.5);
+  // satchel on his hip with a rolled scroll, vials on the other side
+  g.fillStyle='#24160C';g.fillRect(-5.4,1.8,6.2,5);g.fillStyle=TP.belt;g.fillRect(-5,2.2,5.4,4.2);g.fillStyle=TP.beltHi;g.fillRect(-5,2.2,5.4,1.2);g.fillStyle=TP.gold;g.fillRect(-2.6,3.6,0.8,0.8);
+  g.fillStyle='#E2D6BE';g.fillRect(0.6,1.4,1.6,4.4);g.fillStyle=TP.coatSh;g.fillRect(0.6,1.4,1.6,0.6);tVials(g,3.2,2.6,2);
+  tCoatSleeve(g,-10,-5.6);tCoatSleeve(g,7.2,-5.6);
+  g.fillStyle=TP.glove;g.fillRect(-10,-0.4,3,3);g.fillRect(7.2,-0.4+step*0.3,3,3);
+  if(!UNARMED)tGadget(g,10,1.2);
+  g.fillStyle=TP.coat;rrect(g,-5.6,-9,11.2,3.6,1.6);g.fill();g.fillStyle=TP.coatSh;g.fillRect(-5.2,-6,10.4,0.6);
+  g.fillStyle=TP.skinSh;g.fillRect(-7.2,-13.4,1.2,2);g.fillRect(6,-13.4,1.2,2);
+  tHair(g,'back');tGoggles(g,'back');}
 const LOOKS={
   kairos(g,step){(CHDIR==='down'?kairosFront:CHDIR==='up'?kairosBack:kairosSide)(g,step);},
   ines(g,step){
@@ -5922,13 +6014,7 @@ const LOOKS={
     g.fillStyle='#D2691E';g.beginPath();g.ellipse(0,0,2.4,4,0,0,TAU);g.fill();g.fillStyle='#F09A5A';g.fillRect(-1.2,-2.6,1.2,1.6);
     g.fillStyle='#4A3526';g.fillRect(-5.3,-0.7,10.6,1.4);g.fillStyle='#B8B4AC';for(const yy of [-6.6,6]){g.fillRect(-0.5,yy,1,1);}g.fillStyle='rgba(120,60,20,0.45)';g.fillRect(1.6,3,2,2.4);g.fillRect(-3.6,-5.4,1.6,1.8);g.restore();},
   noemi(g,step){(CHDIR==='down'?naomiFront:CHDIR==='up'?naomiBack:naomiSide)(g,step);},
-  theo(g,step){figLegs(g,step,'#3A3F4E','#2A1A10');
-    g.fillStyle='#4E6E9A';rrect(g,-7,-7,14,12,4);g.fill();g.fillStyle='#7A5230';g.fillRect(-7,-6,4,11);g.fillRect(3,-6,4,11);g.fillStyle='#E9C46A';g.fillRect(-6,-1,2,2);g.fillRect(4,1,2,2);
-    g.save();g.translate(8.5,0.5+step*0.6);g.fillStyle='#3A3F4E';rrect(g,-1,-2.2,9,4.4,1.2);g.fill();g.fillStyle='#59DDEB';g.fillRect(7.5,-1,2.4,2);g.strokeStyle='#59DDEB';g.lineWidth=0.7;g.beginPath();g.arc(3,0,2.4,0,TAU);g.stroke();g.restore();
-    figHead(g,'#F0C9A8');
-    g.fillStyle='#C46A2B';for(const [cx,cy,r] of [[-4.5,-17.5,3],[-1,-19.8,3.2],[2.6,-19.4,3],[5.3,-16.8,2.6],[-6.2,-14,2.4]]){circ(g,cx,cy,r);g.fill();}
-    g.fillStyle='#3A3F4E';g.fillRect(-6.6,-16.4,13.2,2);g.fillStyle='#E9C46A';circ(g,-3,-15.4,2);g.fill();circ(g,2.4,-15.4,2);g.fill();
-    figEye(g,2.8);},
+  theo(g,step){(CHDIR==='down'?theoFront:CHDIR==='up'?theoBack:theoSide)(g,step);},
   lucan(g,step){figLegs(g,step,'#2B2F3A','#0B0C12');
     g.fillStyle='#5C6370';g.beginPath();g.moveTo(-7.5,-6);g.lineTo(7,-6);g.lineTo(7.5,10);g.lineTo(-9,10);g.closePath();g.fill();
     g.fillStyle='#F2EDE4';g.beginPath();g.moveTo(-2,-7);g.lineTo(2,-7);g.lineTo(0,-1);g.closePath();g.fill();g.fillStyle='#3B4150';g.fillRect(-7.5,3,15,1.4);
@@ -5975,11 +6061,7 @@ const LOOKS_X={
     // stitching on the coat
     g.fillStyle='rgba(201,168,130,0.5)';for(let i=0;i<4;i++)g.fillRect(-6+i*1.8,1.6-i*0.2,0.8,0.5);},
   noemi(g,step){},
-  theo(g,step){torsoShade(g,-7,7,-7,5);
-    g.fillStyle='#5A3A20';g.fillRect(-7,3.4,14,1.6);g.fillStyle='#A3A6B4';g.fillRect(-5.6,4,1,3.4);circ(g,-5.1,7.6,1.1);g.fill();
-    g.fillStyle='#E9C46A';g.fillRect(1.6,4.2,2.2,2.2);g.fillStyle='#C46A2B';g.fillRect(-7,-7.5,14,1.6);
-    g.fillStyle='rgba(255,255,255,0.7)';g.fillRect(-3.6,-16,0.8,0.8);g.fillRect(1.8,-16,0.8,0.8);
-    g.fillStyle='rgba(255,200,150,0.35)';g.fillRect(-2,-21.4,3,0.8);},
+  theo(g,step){},
   lucan(g,step){torsoShade(g,-7.5,7.5,-6,10);
     g.fillStyle='#A3A6B4';for(let i=0;i<3;i++)circ(g,1.4,0.4+i*2.8,0.6),g.fill();
     g.strokeStyle='#3B4150';g.lineWidth=0.7;g.beginPath();g.moveTo(-1,4.4);g.lineTo(-2,10);g.stroke();
