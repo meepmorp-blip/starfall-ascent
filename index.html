@@ -924,6 +924,17 @@ body{font-weight:600}
 .mx-rank{display:flex;gap:10px;align-items:center;padding:8px 10px;margin:0 0 6px;background:rgba(20,15,10,.55);border-radius:4px;border-left:3px solid #6E6456}
 .mx-rank.ready{border-left-color:#FFE6A3}.mx-rank.got{opacity:.6;border-left-color:#6E8A74}.mx-rank b{color:#FFE6A3;min-width:58px}.mx-rank span{flex:1;font-size:12.5px;color:#F6EBD2}
 .mx-bar{height:6px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden;margin:6px 0 10px}.mx-bar i{display:block;height:100%;background:#C9A25A}
+.wm{width:min(98vw,1100px);max-height:96dvh;display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,26%);gap:10px;padding:10px;box-sizing:border-box;background:rgba(14,11,18,.94);border:1px solid rgba(201,162,90,.5);border-radius:10px}
+.wm-map{position:relative;min-height:0;aspect-ratio:16/10;max-height:calc(96dvh - 20px);border-radius:6px;overflow:hidden;border:1px solid rgba(201,162,90,.35)}
+.wm-map canvas{display:block;width:100%;height:100%;touch-action:manipulation;cursor:pointer}
+.wm-side{display:flex;flex-direction:column;gap:6px;min-width:0;color:#F6EBD2}
+.wm-side .eyebrow{margin:0}.wm-side h3{margin:0;font-size:18px;color:#FFE6A3;line-height:1.15}
+.wm-st{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:9px;align-self:flex-start;background:#3E4258;color:#F6EBD2}
+.wm-st.open{background:#C9A25A;color:#24160C}.wm-st.here{background:#9BE7B8;color:#163022}.wm-st.lock{background:#5A3A3A;color:#F6D2C8}
+.wm-side p{margin:0;font-size:12.5px;line-height:1.4}.wm-side .wm-need{color:#C9B48A;font-size:12px}
+.wm-side .row{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap}
+.wm-legend{font-size:10.5px;color:#C9B48A;line-height:1.5}
+@media (max-height:520px){.wm{grid-template-columns:minmax(0,1fr) minmax(150px,30%);padding:6px;gap:6px}.wm-side h3{font-size:15px}.wm-side p{font-size:11.5px}.wm-legend{display:none}}
 </style>
 </head>
 <body>
@@ -980,7 +991,7 @@ let dpr=1,sw=0,sh=0,scale=1,ox=0,oy=0;
 let W=800; const H=400;
 let AX0=18,AY0=18,AX1=W-18,AY1=H-18;
 const safe={t:0,r:0,b:0,l:0};
-const btn={atk:{},dodge:{},sun:{},moon:{},ult:{},pause:{}};
+const btn={atk:{},dodge:{},sun:{},moon:{},ult:{},pause:{},wmap:{}};
 for(const k in btn) Object.assign(btn[k],{x:0,y:0,r:30,down:0});
 const ports=[{},{},{}];
 function resize(){
@@ -998,7 +1009,7 @@ function resize(){
   Object.assign(btn.atk,{x:ax,y:ay,r:R});
   const P=(deg,o)=>Object.assign(o,{x:ax+Math.cos(deg*Math.PI/180)*d,y:ay-Math.sin(deg*Math.PI/180)*d,r:sr});
   P(188,btn.dodge); P(150,btn.sun); P(116,btn.moon); P(83,btn.ult);
-  Object.assign(btn.pause,{x:sw-safe.r-26,y:safe.t+22,r:16});
+  Object.assign(btn.pause,{x:sw-safe.r-26,y:safe.t+22,r:16});Object.assign(btn.wmap,{x:sw-safe.r-66,y:safe.t+22,r:16});
   const py0=Math.max(safe.t+110,sh*0.36),pr=clamp(sh*0.045,15,20);
   ports.forEach((p,i)=>Object.assign(p,{x:safe.l+30,y:py0+i*(pr*2+10),r:pr}));
   if(player){player.x=clamp(player.x,AX0+player.r,AX1-player.r);}
@@ -1019,9 +1030,10 @@ addEventListener('keydown',e=>{
   keys[e.code]=true;
   if(e.repeat) return;
   ensureAudio();
-  if(!overlay.hidden){panelKey(e);return;}
+  if(!overlay.hidden){if(wmActive&&wmActive.isConnected&&wmActive._key(e))return;panelKey(e);return;}
   if(state!=='play') return;
   if(e.code==='Escape'||e.code==='KeyP'){sfx('pause');pauseGame();return;}
+  if(e.code==='KeyM'&&run&&run.mode==='explore'){showWorldMap({from:'play'});return;}
   aimByMouse=useMouse&&mouse.inside;
   if(e.code==='KeyJ'||e.code==='KeyF'){atkPress(null);}
   else if(e.code==='Space'||e.code==='ShiftLeft'||e.code==='ShiftRight') actions.push('dodge');
@@ -1047,6 +1059,7 @@ cv.addEventListener('pointerdown',e=>{
   if(state!=='play'||paused) return;
   const x=e.clientX,y=e.clientY;
   if(Math.hypot(x-btn.pause.x,y-btn.pause.y)<btn.pause.r+12){sfx('pause');pauseGame();return;}
+  if(run&&run.mode==='explore'&&Math.hypot(x-btn.wmap.x,y-btn.wmap.y)<btn.wmap.r+10){showWorldMap({from:'play'});return;}
   for(let i=0;i<3;i++){const p=ports[i];if(team&&team.members[i]&&Math.hypot(x-p.x,y-p.y)<p.r+8){actions.push('swap'+i);return;}}
   for(const k of ['atk','dodge','sun','moon','ult']){const b=btn[k];
     if(Math.hypot(x-b.x,y-b.y)<b.r+8){
@@ -4001,11 +4014,11 @@ function mxMet(id){return (save.ch1Clears|0)>0||!!(save.ch1b&&Array.isArray(save
 const mxQ=id=>mxS().q[id]||null,mxF=k=>!!mxS().f[k],mxSet=k=>{mxS().f[k]=1;},mxHas=k=>!!mxS().items[k];
 const mxAct=id=>{const q=mxQ(id);return q&&q.s==='active'?q:null;},mxStepOf=id=>{const q=mxAct(id);return q?MX_QUESTS[id].steps[q.n].id:null;};
 const MX_DISTRICTS={
-  market:{name:'Market Ring',theme:'market',blurb:'All roads of Meridian meet here.',exits:[['w','yard'],['e','plaza'],['n','chapel'],['s','ward']],solids:[[0.5,0.51,28]]},
-  plaza:{name:'Festival Square',theme:'plaza',blurb:'The fountain, and the Festival getting ready around it.',exits:[['w','market']],solids:[[0.5,0.555,34]]},
-  yard:{name:'Garrison Yard',theme:'yard',blurb:'Barracks, drills, and the rooftop guns.',exits:[['e','market']]},
-  chapel:{name:'The Cloister',theme:'chapel',blurb:'The Concord Church’s walled garden.',exits:[['s','market']],solids:[[0.5,0.5,16]]},
-  ward:{name:'St. Lucia’s',theme:'hospital',blurb:'The east ward, between visiting hours.',exits:[['n','market']]},
+  market:{name:'Market Ring',theme:'market',arrive:[0.36,0.6],blurb:'All roads of Meridian meet here.',exits:[['w','yard'],['e','plaza'],['n','chapel'],['s','ward']],solids:[[0.5,0.51,28]]},
+  plaza:{name:'Festival Square',theme:'plaza',arrive:[0.3,0.5],blurb:'The fountain, and the Festival getting ready around it.',exits:[['w','market']],solids:[[0.5,0.555,34]]},
+  yard:{name:'Garrison Yard',theme:'yard',arrive:[0.5,0.7],blurb:'Barracks, drills, and the rooftop guns.',exits:[['e','market']]},
+  chapel:{name:'The Cloister',theme:'chapel',arrive:[0.5,0.82],blurb:'The Concord Church’s walled garden.',exits:[['s','market']],solids:[[0.5,0.5,16]]},
+  ward:{name:'St. Lucia’s',theme:'hospital',arrive:[0.5,0.66],blurb:'The east ward, between visiting hours.',exits:[['n','market']]},
 };
 const MX_ORDER=['market','plaza','yard','chapel','ward'];
 // future activities: where each one will open from (see MERIDIAN_GAMEPLAY_ROADMAP.md)
@@ -4167,7 +4180,7 @@ function mxNpcs(d){
 for(const d of MX_ORDER){const D=MX_DISTRICTS[d];
   addMission('mx_'+d,{type:'walk',hub:1,dist:d,name:D.name,place:'Meridian',theme:D.theme,party:['kairos'],lvl:1,count:false,brief:D.blurb,npcs:()=>mxNpcs(d)});}
 
-let mxFrom=null,mxFade=0;
+let mxFrom=null,mxFade=0,mxFast=false;
 function mxExitPos(side,k){const cx=AX0+(AX1-AX0)*0.5,cy=AY0+(AY1-AY0)*0.55;
   return side==='w'?{x:AX0+k,y:cy}:side==='e'?{x:AX1-k,y:cy}:side==='n'?{x:cx,y:AY0+k}:{x:cx,y:AY1-k};}
 function mxEnter(m){const d=m.M.dist,D=MX_DISTRICTS[d],x=mxS(),p=player,first=!x.seen[d];
@@ -4176,13 +4189,14 @@ function mxEnter(m){const d=m.M.dist,D=MX_DISTRICTS[d],x=mxS(),p=player,first=!x
   mxLivingEnter(m,d);
   const back=mxFrom&&D.exits.find(e=>e[1]===mxFrom);
   if(back){const q=mxExitPos(back[0],58);p.x=q.x;p.y=q.y;p.face=back[0]==='e'?-1:1;}
-  else{p.x=AX0+(AX1-AX0)*0.5;p.y=AY0+(AY1-AY0)*0.86;}
-  mxFrom=null;m.leave=null;m.arrT=0.6;
-  if(!first)setBanner(D.name,'',1.2);
+  else{const a=D.arrive||[0.5,0.86];p.x=AX0+(AX1-AX0)*a[0];p.y=AY0+(AY1-AY0)*a[1];}
+  if(mxFast){mxFast=false;m.arrT=0.9;ring(p.x,p.y,34,C.gold,0.7);burstParts(p.x,p.y-6,'#FFE6A3',18,120);if(ac&&vol.sfx>0){tone(784,0.18,'sine',0.02);tone(1175,0.24,'sine',0.016,0,0.08);}setBanner(D.name,'Fast travel',1.3);}
+  mxFrom=null;m.leave=null;m.arrT=Math.max(m.arrT||0,0.6);
+  if(!first&&!mxFast)setBanner(D.name,'',1.2);
   m.goals=[{talk:1,t:mxGoal()}];mxTick();}
 function mxUpdate(m,dt){const p=player,D=MX_DISTRICTS[m.M.dist];
   if(mxFade>0)mxFade=Math.max(0,mxFade-dt*2.6);
-  if(m.leave){m.leave.t+=dt;if(m.leave.t>=0.22){const to=m.leave.to;mxFrom=m.M.dist;mxFade=1;enterRoom('m_mx_'+to);}return true;}
+  if(m.leave){m.leave.t+=dt;if(m.leave.t>=(m.leave.fast?0.32:0.22)){const to=m.leave.to;mxFrom=m.leave.fast?null:m.M.dist;mxFast=!!m.leave.fast;mxFade=1;enterRoom('m_mx_'+to);}return true;}
   m.arrT=Math.max(0,(m.arrT||0)-dt);
   for(const n of m.npcs)if(n.mkf){n.mk=n.mkf();n.done=!n.mk;}
   m.goals[0].t=mxGoal();
@@ -4202,7 +4216,7 @@ function mxDrawUnder(c,m){const D=MX_DISTRICTS[m.M.dist];mxLivingDraw(c,m);
     wlabel(tx,ty,lab,{px:11,col:'#FFE6A3',align:side==='w'?'left':side==='e'?'right':'center'});}}
 function mxDrawOver(c,m){const f=m.leave?Math.min(1,m.leave.t/0.22):mxFade;if(f>0){c.fillStyle='rgba(10,8,18,'+f+')';c.fillRect(0,0,W,H);}}
 function mxSub(m){if(m.act)return mxActSub(m);return MX_DISTRICTS[m.M.dist].name+' · '+mxChestLine(m.M.dist)+' · '+mxRecordCount()+' / '+MX_RECORDS+' records · '+(isTouch?'walk up and tap ⚔':'walk up and press F')+' · walk off an edge arrow to travel';}
-function mxBegin(){ensureAudio();const x=mxS();persist();newRun('explore',['kairos'],0);mxFrom=null;mxFade=1;enterRoom('m_mx_'+x.at);}
+function mxBegin(fast){ensureAudio();const x=mxS();persist();newRun('explore',['kairos'],0);mxFrom=null;mxFade=1;mxFast=!!fast;enterRoom('m_mx_'+x.at);}
 
 // ═══════════════════════════════════════════ Living maps (Expansion 04)
 // Daily chests, three activities, obstacles, interactables, moving townsfolk and murmurs. See docs/exploration/.
@@ -4499,6 +4513,102 @@ function mxMurmur(type){if(!ac||!sfxBus||vol.sfx<=0)return;const V=MX_VOICES[typ
       for(const [fq,q,g] of [[F[0],5,1],[F[1],7,0.5]]){const bp=ac.createBiquadFilter(),gg=ac.createGain();bp.type='bandpass';bp.frequency.value=fq*(type==='child'?1.18:type==='man'||type==='oldman'?0.88:1);bp.Q.value=q;gg.gain.value=g;o.connect(bp);bp.connect(gg);gg.connect(out);}
       out.connect(sfxBus);o.start(t);lf.start(t);o.stop(t+d+0.03);lf.stop(t+d+0.03);t+=d;}
     window.__mxMurmurs=(window.__mxMurmurs|0)+1;}catch(_){}}
+// ═══════════════════════════════════════════ Regional world map and fast travel (World Expansion 01)
+// Places stay separate single-screen maps; the world map is the connected layer over them.
+// x,y are positions on the map (0..1, 16:10). d = the explorable district id once it exists in MX_DISTRICTS.
+// need: what unlocks it — {ch1:n} Chapter 1 Scene n reached, {clear:1} Chapter 1 complete, {ch:2} a later chapter.
+const WORLD_LOCS=[
+  {id:'market',d:'market',x:0.47,y:0.5,icon:'fountain',name:'Market Ring',blurb:'The round market at the heart of Meridian. All roads meet here.'},
+  {id:'chapel',d:'chapel',x:0.47,y:0.27,icon:'cross',name:'The Cloister',blurb:'The Concord Church’s walled garden: sundial, hedges, vespers.'},
+  {id:'plaza',d:'plaza',x:0.65,y:0.5,icon:'lantern',name:'Festival Square',blurb:'The fountain of the Mercy, lanterns going up for the Festival.'},
+  {id:'yard',d:'yard',x:0.29,y:0.5,icon:'shield',name:'Garrison Yard',blurb:'Barracks, the drill ground and the rooftop guns.'},
+  {id:'ward',d:'ward',x:0.47,y:0.73,icon:'aid',name:'St. Lucia’s',blurb:'The hospital’s east ward, Dr. Lark’s rounds.'},
+  {id:'hesper',d:'hesper',x:0.83,y:0.44,icon:'gate',name:'St. Hesper’s',blurb:'The orphanage where Kairos grew up, at the quiet end of the city.',need:{walk:'plaza',text:'Walk there from Festival Square (east).'}},
+  {id:'office',d:'office',x:0.66,y:0.24,icon:'papers',name:'Concord Office',blurb:'The whole city on paper: the queue, the clerks, the forms.',need:{ch1:7,text:'You first go there in Chapter 1, Scene 7.'}},
+  {id:'ashlane',d:'ashlane',x:0.68,y:0.78,icon:'houses',name:'Ash Lane',blurb:'Terraced houses on the road toward St. Lucia’s.',need:{ch1:10,text:'Opens once Chapter 1 reaches Scene 10.'}},
+  {id:'tower',d:'tower',x:0.9,y:0.22,icon:'clock',name:'St. Hesper’s Clock Tower',blurb:'The old clock tower above the orphanage.',need:{clear:1,text:'Opens after Chapter 1 is complete.'}},
+  {id:'canals',d:'canals',x:0.17,y:0.8,icon:'waves',name:'Drowned Canals',blurb:'Fog over the old channels on the city’s low side.',need:{ch:2,text:'Opens later in the story.'}},
+];
+const WORLD_ROADS=[['market','chapel'],['market','plaza'],['market','yard'],['market','ward'],['plaza','hesper'],['hesper','tower'],['chapel','office'],['ward','ashlane'],['yard','canals']];
+// Chapter 1 progress: the furthest scene reached (0 = cold open), 99 once the chapter is complete
+function ch1Scene(){if((save.ch1Clears|0)>0||(save.ch1b&&save.ch1b.done))return 99;const k=save.ch1b&&save.ch1b.k;const m=k&&/^Scene (\d+)/.exec(k);return m?+m[1]:0;}
+function wmUnlocked(L){const n=L.need;if(!n)return true;if(n.walk)return true;if(n.ch1)return ch1Scene()>=n.ch1;if(n.clear)return ch1Scene()>=99;return false;}
+function wmBuilt(L){return !!(L.d&&MX_DISTRICTS[L.d]);}
+// status: here · open (fast travel) · found (reachable on foot, not visited) · soon (unlocked, not built yet) · locked (story)
+function wmStatus(L){const x=mxS();if(!wmUnlocked(L))return 'locked';if(!wmBuilt(L))return 'soon';if(run&&run.mode==='explore'&&room&&room.m&&room.m.M&&room.m.M.dist===L.d)return 'here';return x.seen[L.d]?'open':'found';}
+const WM_STATUS_TXT={here:'You are here',open:'Discovered',found:'Not discovered',soon:'Not open yet',locked:'Story locked'};
+function showWorldMap(o){o=o||{};const from=o.from||'menu';
+  const inRun=from==='play'||from==='pause';if(inRun){state='panel';atk.down=false;joy.id=null;}
+  let sel=WORLD_LOCS.find(L=>wmStatus(L)==='here')||WORLD_LOCS.find(L=>L.id===mxS().at)||WORLD_LOCS[0];
+  const cv2=h('canvas',{'aria-label':'Regional map of Meridian'}),box=h('div',{class:'wm-map'},cv2),side=h('div',{class:'wm-side'});
+  const close=()=>{if(from==='play'){closeOverlay();state='play';last=performance.now();}else if(from==='pause')showPause();else if(o.back)o.back();else showMeridian();};
+  const travel=()=>{const st=wmStatus(sel);if(st!=='open')return;sfx('page');
+    if(inRun){closeOverlay();if(paused)unpause();state='play';const m=room&&room.m;if(m){m.leave={to:sel.d,t:0,fast:1};}last=performance.now();}
+    else{mxS().at=sel.d;persist();mxBegin(true);}};
+  const drawSide=()=>{const st=wmStatus(sel),known=st!=='locked'||!!(sel.need&&sel.need.ch1&&ch1Scene()>=1);
+    side.replaceChildren(...[h('p',{class:'eyebrow'},'Meridian · world map'),h('h3',null,st==='locked'&&!wmNameKnown(sel)?'Unknown place':sel.name),
+      h('span',{class:'wm-st '+(st==='open'?'open':st==='here'?'here':st==='locked'?'lock':'')},WM_STATUS_TXT[st]),
+      h('p',null,st==='locked'&&!wmNameKnown(sel)?'Somewhere in the city you have not been yet.':sel.blurb),
+      st==='found'?h('p',{class:'wm-need'},sel.need&&sel.need.text?sel.need.text:'Walk there to discover it.'):st==='locked'?h('p',{class:'wm-need'},sel.need.text):st==='soon'?h('p',{class:'wm-need'},'This place is not open for exploring yet.'):null,
+      h('p',{class:'wm-legend'},'Gold: discovered · fast travel. Faded: not discovered. Lock: story. Tap a place, then Travel.'),
+      h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',disabled:st==='open'?null:'disabled',onclick:travel},st==='here'?'You are here':'Travel'),
+        h('button',{class:'btn outline',type:'button','data-back':'1',onclick:close},'Close'))].filter(Boolean));};
+  openOverlay(h('div',{class:'wm'},box,side),'mode-select');drawSide();
+  const pick=(px,py)=>{const r=cv2.getBoundingClientRect(),mx=(px-r.left)/r.width,my=(py-r.top)/r.height;let best=null,bd=0.08;
+    for(const L of WORLD_LOCS){const d=Math.hypot((L.x-mx)*1.6,L.y-my);if(d<bd){bd=d;best=L;}}if(best&&best!==sel){sel=best;sfx('select');drawSide();}};
+  cv2.addEventListener('pointerdown',e=>{e.preventDefault();pick(e.clientX,e.clientY);});
+  cv2._key=e=>{const i=WORLD_LOCS.indexOf(sel);if(e.code==='ArrowRight'||e.code==='ArrowDown'){sel=WORLD_LOCS[(i+1)%WORLD_LOCS.length];drawSide();return true;}
+    if(e.code==='ArrowLeft'||e.code==='ArrowUp'){sel=WORLD_LOCS[(i-1+WORLD_LOCS.length)%WORLD_LOCS.length];drawSide();return true;}
+    if(e.code==='KeyM'){close();return true;}return false;};
+  wmActive=cv2;
+  const loop=()=>{if(!cv2.isConnected){if(wmActive===cv2)wmActive=null;return;}drawWorldMap(cv2,sel);requestAnimationFrame(loop);};requestAnimationFrame(loop);
+  window.__wmSel=id=>{const L=WORLD_LOCS.find(q=>q.id===id);if(L){sel=L;drawSide();}};}
+let wmActive=null;
+function wmNameKnown(L){if(wmStatus(L)!=='locked')return true;if(L.need&&L.need.ch1)return false;if(L.id==='tower')return ch1Scene()>=11;if(L.id==='canals')return true;return false;}
+// the map itself: parchment, the city wall, the canal, roads, and a pixel icon for every place
+function drawWorldMap(c,sel){const r=c.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2),Wd=Math.max(2,Math.round(r.width*d)),Hd=Math.max(2,Math.round(r.height*d));
+  if(c.width!==Wd||c.height!==Hd){c.width=Wd;c.height=Hd;}const g=c.getContext('2d'),W2=Wd,H2=Hd,u=Math.min(W2/16,H2/10),P=(x,y)=>[x*W2,y*H2];
+  g.imageSmoothingEnabled=false;
+  // parchment
+  g.fillStyle='#D9C6A0';g.fillRect(0,0,W2,H2);
+  const R=mulberry(91);for(let i=0;i<260;i++){g.fillStyle=R()<0.5?'rgba(120,90,50,0.07)':'rgba(255,245,220,0.08)';const s=u*(0.05+R()*0.12);g.fillRect(R()*W2,R()*H2,s,s);}
+  const vg=g.createRadialGradient(W2/2,H2/2,Math.min(W2,H2)*0.3,W2/2,H2/2,Math.hypot(W2,H2)*0.62);vg.addColorStop(0,'rgba(60,40,20,0)');vg.addColorStop(1,'rgba(60,40,20,0.5)');g.fillStyle=vg;g.fillRect(0,0,W2,H2);
+  // the canal: a slow band from the west edge down to the south
+  g.strokeStyle='#7E98A6';g.lineWidth=u*0.55;g.lineCap='round';g.beginPath();g.moveTo(0,H2*0.66);g.bezierCurveTo(W2*0.12,H2*0.7,W2*0.16,H2*0.84,W2*0.24,H2*1.02);g.stroke();
+  g.strokeStyle='rgba(220,236,240,0.45)';g.lineWidth=u*0.08;g.setLineDash([u*0.3,u*0.25]);g.stroke();g.setLineDash([]);
+  // the city wall: a dotted ring
+  g.strokeStyle='rgba(70,50,30,0.55)';g.lineWidth=u*0.12;g.setLineDash([u*0.22,u*0.16]);g.beginPath();g.ellipse(W2*0.54,H2*0.5,W2*0.44,H2*0.44,0,0,TAU);g.stroke();g.setLineDash([]);
+  {g.font=`700 ${Math.round(u*0.3)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='middle';const tw=g.measureText('THE CITY WALL').width+u*0.4,ty=H2*0.06;g.fillStyle='#D9C6A0';g.fillRect(W2*0.54-tw/2,ty-u*0.22,tw,u*0.44);g.fillStyle='rgba(70,50,30,0.7)';g.fillText('THE CITY WALL',W2*0.54,ty);}
+  // roads (dashed for routes to places not open yet)
+  for(const [a,b] of WORLD_ROADS){const A=WORLD_LOCS.find(q=>q.id===a),B=WORLD_LOCS.find(q=>q.id===b),[x1,y1]=P(A.x,A.y),[x2,y2]=P(B.x,B.y),sa=wmStatus(A),sb=wmStatus(B),ok=sa!=='locked'&&sb!=='locked'&&sa!=='soon'&&sb!=='soon';
+    g.strokeStyle=ok?'#8A6A3A':'rgba(110,90,60,0.4)';g.lineWidth=u*(ok?0.2:0.12);if(!ok)g.setLineDash([u*0.18,u*0.18]);g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.setLineDash([]);
+    if(ok){g.strokeStyle='rgba(255,240,210,0.5)';g.lineWidth=u*0.05;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();}}
+  // places
+  for(const L of WORLD_LOCS){const [x,y]=P(L.x,L.y),st=wmStatus(L),on=st==='open'||st==='here',k=u*0.42,isSel=L===sel;
+    g.globalAlpha=st==='found'||st==='soon'?0.6:st==='locked'?0.45:1;
+    if(isSel){g.strokeStyle='#FFE6A3';g.lineWidth=u*0.1;g.beginPath();g.arc(x,y,k*1.75+Math.sin(performance.now()/300)*u*0.05,0,TAU);g.stroke();}
+    g.fillStyle=on?'#24160C':'#5A4A3A';g.beginPath();g.arc(x,y,k*1.3,0,TAU);g.fill();g.fillStyle=on?'#C9A25A':'#9A8A70';g.beginPath();g.arc(x,y,k*1.12,0,TAU);g.fill();
+    wmIcon(g,L.icon,x,y,k,on);
+    if(st==='locked'){g.fillStyle='#24160C';g.fillRect(x+k*0.6,y+k*0.4,k*0.9,k*0.75);g.strokeStyle='#24160C';g.lineWidth=k*0.18;g.beginPath();g.arc(x+k*1.05,y+k*0.42,k*0.28,Math.PI,TAU);g.stroke();}
+    if(st==='found'){g.fillStyle='#24160C';g.font=`900 ${Math.round(k*1.2)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='middle';g.fillText('?',x+k*0.95,y-k*0.8);}
+    g.globalAlpha=1;
+    const name=st==='locked'&&!wmNameKnown(L)?'???':L.name;g.font=`800 ${Math.round(u*0.36)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='top';
+    g.lineJoin='round';g.miterLimit=2;g.lineWidth=u*0.12;g.strokeStyle='rgba(240,228,200,0.92)';g.strokeText(name,x,y+k*1.45);g.fillStyle=on?'#24160C':'#5A4A3A';g.fillText(name,x,y+k*1.45);
+    if(st==='here'){const b=Math.sin(performance.now()/220)*u*0.08;g.fillStyle='#B5523A';g.beginPath();g.moveTo(x,y-k*1.4+b);g.lineTo(x-k*0.5,y-k*2.3+b);g.lineTo(x+k*0.5,y-k*2.3+b);g.closePath();g.fill();g.fillStyle='#FFE6A3';g.fillRect(x-k*0.15,y-k*2.1+b,k*0.3,k*0.3);}}
+  // compass
+  const cx=W2*0.93,cy=H2*0.86,cr=u*0.5;g.strokeStyle='#5A4A3A';g.lineWidth=u*0.06;g.beginPath();g.arc(cx,cy,cr,0,TAU);g.stroke();g.fillStyle='#8A6A3A';g.beginPath();g.moveTo(cx,cy-cr*1.1);g.lineTo(cx-cr*0.25,cy);g.lineTo(cx+cr*0.25,cy);g.closePath();g.fill();
+  g.fillStyle='#24160C';g.font=`800 ${Math.round(u*0.3)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='bottom';g.fillText('N',cx,cy-cr*1.12);}
+function wmIcon(g,ic,x,y,k,on){const ink=on?'#24160C':'#4A3A2A',p=k*0.16;g.fillStyle=ink;const R=(a,b,w,h)=>g.fillRect(x+a*p,y+b*p,w*p,h*p);
+  if(ic==='fountain'){R(-4,1,8,2);R(-1,-4,2,5);g.fillStyle='#4A7FB0';R(-3,-1,6,2);}
+  else if(ic==='cross'){R(-1,-5,2,10);R(-4,-2,8,2);}
+  else if(ic==='lantern'){R(-1,-5,2,2);R(-3,-3,6,6);g.fillStyle='#E8A040';R(-2,-2,4,4);}
+  else if(ic==='shield'){R(-4,-4,8,6);R(-3,2,6,2);R(-1,4,2,1);g.fillStyle='#B5523A';R(-1,-3,2,6);}
+  else if(ic==='aid'){g.fillStyle='#F6EBD2';R(-4,-4,8,8);g.fillStyle='#C8323C';R(-1,-3,2,6);R(-3,-1,6,2);}
+  else if(ic==='gate'){R(-4,-3,2,7);R(2,-3,2,7);R(-4,-4,8,2);g.fillStyle='#F6EBD2';R(-1,-5,2,2);}
+  else if(ic==='papers'){g.fillStyle='#F6EBD2';R(-4,-4,6,8);R(-2,-3,6,8);g.fillStyle=ink;R(-1,-1,4,1);R(-1,1,4,1);}
+  else if(ic==='houses'){R(-5,-1,4,5);R(1,-2,4,6);R(-4,-3,2,2);R(2,-4,2,2);}
+  else if(ic==='clock'){R(-3,-5,6,10);g.fillStyle='#F6EBD2';R(-2,-4,4,4);g.fillStyle=ink;R(0,-3,1,2);}
+  else if(ic==='waves'){g.fillStyle='#4A7FB0';R(-5,-2,3,1);R(-2,-3,3,1);R(1,-2,3,1);R(-5,1,3,1);R(-2,0,3,1);R(1,1,3,1);}}
 // ── Meridian Renown: account progress from districts, records and quests. Rank rewards are claimed by hand (keys renown:1..5).
 const MX_RANKS=[{at:20,r:{keep:1,dust:30}},{at:50,r:{keep:2,dust:50}},{at:90,r:{mpAll:2,dust:60}},{at:130,r:{keep:3,dust:80}},{at:175,r:{frag:'star',keep:3,dust:100}}];
 function mxRenown(){const x=mxS();let n=MX_ORDER.filter(d=>x.seen[d]).length*5+mxRecordCount()*5;
@@ -4541,6 +4651,7 @@ function showMeridian(){
         :'Walk the city as Kairos. Talk to people, help where you can, and find what Meridian keeps in its corners.'),mxMapGrid()),
     h('nav',{class:'tm-menu'},
       it(started?'Continue':'Walk the city',started?'At '+MX_DISTRICTS[x.at].name:'Start in the Market Ring',mxBegin,' primary',{'data-primary':'1'}),
+      it('World map','See the region · travel',()=>showWorldMap({from:'menu'})),
       it('Journal','Quests and records',()=>showJournal(showMeridian)),
       it('Renown',mxClaimable()?mxClaimable()+' reward'+(mxClaimable()>1?'s':'')+' to claim':'Rank '+mxRank()+' of '+MX_RANKS.length,()=>showRenown(showMeridian),mxClaimable()?' guide-new':''),
       it('Back','Main menu',()=>goHome(),'',{'data-back':'1'}))),'mode-select');
@@ -4561,7 +4672,7 @@ function showJournal(back,tab){
   const tb=(k,label)=>h('button',{class:'btn'+(tab===k?'':' outline'),type:'button','aria-pressed':String(tab===k),onclick:()=>showJournal(back,k)},label);
   openOverlay(h('div',{class:'form mx'},formHead('Meridian','Journal'),
     h('div',{class:'mx-tabs'},tb('quests','Quests'),tb('records','Records '+mxRecordCount()+' / '+MX_RECORDS),tb('map','Map')),
-    h('div',{class:'mx-list'},...(tab==='quests'?quests:tab==='records'?recs:[mxMapGrid(),h('p',{class:'ss-info'},'Walk off a gold arrow at the edge of a district to travel. The Market Ring connects to everything.')])),
+    h('div',{class:'mx-list'},...(tab==='quests'?quests:tab==='records'?recs:[mxMapGrid(),h('p',{class:'ss-info'},'Walk off a gold arrow at the edge of a district, or open the world map to travel.'),h('button',{class:'btn small',type:'button',onclick:()=>showWorldMap({from:'journal',back:()=>showJournal(back,'map')})},'Open the world map')])),
     h('div',{class:'row'},h('button',{class:'btn',type:'button','data-back':'1','data-primary':'1',onclick:()=>back()},'Back'))),'mode-select');
 }
 
@@ -5436,7 +5547,7 @@ function showPause(){
     return h('div',{class:'setting'},h('span',null,label),b);};
   const party=run.party.slice(),mode=run.mode,stg=run.stage,lvl=run.bless;
   const it=(label,sub,go,cls,attrs)=>h('button',Object.assign({class:'tm-item'+(cls||''),type:'button',onclick:go},attrs||{}),h('span',{class:'tm-l'},label),sub?h('span',{class:'tm-s'},sub):null);
-  const restart=mode==='explore'?it('Journal','Quests and records',()=>showJournal(showPause))
+  const restart=mode==='explore'?it('World map','Travel between places',()=>showWorldMap({from:'pause'}))
     :mode==='battle'?it('Restart','Start this stage over',()=>{unpause();startBattle(party,stg,lvl);})
     :mode==='story2'&&run.retry?it('Restart','Retry this fight',()=>{unpause();const r=run.retry;r();})
     :it('Restart','Start the run over',()=>{unpause();newRun(mode,party,lvl);enterRoom(firstRoom(party[0]));});
@@ -5451,6 +5562,7 @@ function showPause(){
       h('nav',{class:'tm-menu pz-menu'},
         it('Resume',isTouch?'':'Esc / P',()=>{resumeGame();},' primary',{'data-back':'1','data-primary':'1','data-sound':'resume'}),
         restart,
+        mode==='explore'?it('Journal','Quests and records',()=>showJournal(showPause)):null,
         it('Guide','How everything works',()=>showGuide(showPause)),
         it(mode==='story2'?'Main menu':mode==='explore'?'Leave the city':'Quit',mode==='story2'?'Saved at this scene':mode==='explore'?'Your progress is saved':'Back to home',()=>{unpause();if(mode==='story2'&&typeof sq!=='undefined')sq=null;if(mode==='explore')showMeridian();else goHome();}))),
     h('div',{class:'pz-right'},
@@ -8295,6 +8407,11 @@ function drawControls(){
   {const b=btn.pause;ctx.fillStyle='rgba(0,0,0,0.5)';circ(ctx,b.x,b.y,b.r);ctx.fill();ctx.strokeStyle=alpha(C.paper,0.8);ctx.lineWidth=1.5;circ(ctx,b.x,b.y,b.r);ctx.stroke();
     ctx.fillStyle=C.paper;ctx.fillRect(b.x-5,b.y-6,3.5,12);ctx.fillRect(b.x+1.5,b.y-6,3.5,12);
     if(!isTouch){ctx.font=`600 8px ${FONT_UI}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=alpha(C.paper,0.5);ctx.fillText('ESC',b.x,b.y+b.r+8);}}
+  if(run&&run.mode==='explore'){const b=btn.wmap;ctx.fillStyle='rgba(0,0,0,0.5)';circ(ctx,b.x,b.y,b.r);ctx.fill();ctx.strokeStyle=alpha(C.gold,0.85);ctx.lineWidth=1.5;circ(ctx,b.x,b.y,b.r);ctx.stroke();
+    // a folded map
+    ctx.fillStyle='#F6EBD2';ctx.beginPath();ctx.moveTo(b.x-8,b.y-5);ctx.lineTo(b.x-3,b.y-7);ctx.lineTo(b.x+3,b.y-5);ctx.lineTo(b.x+8,b.y-7);ctx.lineTo(b.x+8,b.y+5);ctx.lineTo(b.x+3,b.y+7);ctx.lineTo(b.x-3,b.y+5);ctx.lineTo(b.x-8,b.y+7);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#8A6A3A';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(b.x-3,b.y-7);ctx.lineTo(b.x-3,b.y+5);ctx.moveTo(b.x+3,b.y-5);ctx.lineTo(b.x+3,b.y+7);ctx.stroke();ctx.fillStyle=C.danger;ctx.fillRect(b.x+0.5,b.y-1.5,3,3);
+    if(!isTouch){ctx.font=`600 8px ${FONT_UI}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=alpha(C.paper,0.5);ctx.fillText('M',b.x,b.y+b.r+8);}}
   if(joy.id!==null){ctx.strokeStyle=alpha(C.paper,0.3);ctx.lineWidth=2;circ(ctx,joy.ox,joy.oy,52);ctx.stroke();
     const dx=joy.x-joy.ox,dy=joy.y-joy.oy,d=Math.hypot(dx,dy),s=d>52?52/d:1;ctx.fillStyle=alpha(C.paper,0.25);circ(ctx,joy.ox+dx*s,joy.oy+dy*s,22);ctx.fill();}
   else if(isTouch){const gx=safe.l+130,gy=sh-safe.b-80;ctx.strokeStyle=alpha(C.paper,0.12);ctx.lineWidth=2;circ(ctx,gx,gy,52);ctx.stroke();
@@ -8350,7 +8467,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf={hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf={wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
