@@ -3891,7 +3891,7 @@ function missionExtra(m,dt){
       const res=L=>flagLines(typeof L==='function'?L(F,m):L);
       const lines=res(!isOpen?(near.wait||near.lines):(near.done&&near.again?near.again:near.lines));
       const finish=()=>{state='play';atk.down=false;m.held=false;
-        if(near.talk)near.talk(F,m);
+        if(near.talk)near.talk(F,m,near);
         if(isOpen&&!near.done){near.done=1;if(near.flag)F[near.flag]=true;if(near.on)near.on(F,m);
           if(near.bond){const ups=near.bond.map(id=>[id,bondUp(id)]);setBanner('Bond · '+ups.map(([id])=>nameOf(id)).join(' & '),ups.map(([id,l])=>bondHearts(l)).join('  ')+'  · stronger in story fights',2.2);sfx('bless');}}
         if(!M.hub&&m.npcs.every(n=>!n.need||n.done))finishRoom(true,M.endLabel||'DONE');};
@@ -3945,12 +3945,13 @@ function drawExtra(c,m){
   for(const n of m.npcs){
     if(m.near===n&&state==='play'){c.strokeStyle=alpha(C.gold,0.6+0.3*Math.sin(T*6));c.lineWidth=2;ell(c,n.x,n.y+10,15,6);c.stroke();}
     if(n.hide&&n.hide(m))continue;
+    if(n.draw){n.draw(c,n,m);continue;}
     if(n.spot){const k=0.6+0.4*Math.sin(T*3+n.x);c.fillStyle=alpha(C.gold,0.18*k);ell(c,n.x,n.y+6,16,6);c.fill();
       c.save();c.translate(n.x,n.y-10+Math.sin(T*2.5+n.x)*2);c.rotate(Math.PI/4);c.fillStyle=n.done?alpha('#F6EBD2',0.35):alpha('#FFE6A3',0.9);c.fillRect(-4,-4,8,8);c.restore();
       if(n.mk!==undefined){if(n.mk)talkBubble(c,n.x,n.y-28,n.mk,n.mk==='!'?C.gold:'#F6EBD2',n.mk==='!');}
       else if(!n.done)talkBubble(c,n.x,n.y-28,n.need&&open(n)?'!':'?',n.need&&open(n)?C.gold:'#F6EBD2',!!n.need);continue;}
     if(n.ch)drawChar(c,n.ch,n.x,n.y,{face:n.face||1,t:T});
-    else drawNPC(c,n.x,n.y,{col:n.col,face:n.face||1,hair:n.hair,hat:n.hat,apron:n.apron,small:n.small,long:n.long});
+    else drawNPC(c,n.x,n.y-(n.mv?Math.abs(Math.sin(T*9+n.x*0.1))*1.5:0),{col:n.col,face:n.face||1,hair:n.hair,hat:n.hat,apron:n.apron,small:n.small,long:n.long});
     const top=n.y-(n.small?32:(n.hat?42:38))+Math.sin(T*4+n.x*0.05)*2.5;
     if(n.mk!==undefined){if(n.mk)talkBubble(c,n.x,top,n.mk,n.mk==='!'?C.gold:'#F6EBD2',n.mk==='!');}
     else if(!n.done){if(n.need&&open(n))talkBubble(c,n.x,top,'!',C.gold,true);else talkBubble(c,n.x,top,'…','#F6EBD2',false);}
@@ -3958,7 +3959,7 @@ function drawExtra(c,m){
   }
   const n=m.near;
   if(n&&state==='play'){
-    const vb=n.spot?'look':'talk',txt=isTouch?'Tap ⚔ to '+vb:'Press F to '+vb,y=n.y+24;
+    const vb=n.verb||(n.spot?'look':'talk'),txt=isTouch?'Tap ⚔ to '+vb:'Press F to '+vb,y=n.y+24;
     c.font=`800 10px ${FONT_UI}`;const w=c.measureText(txt).width+16;
     c.fillStyle='rgba(20,15,10,0.85)';rrect(c,n.x-w/2,y-8,w,16,8);c.fill();c.strokeStyle=C.gold;c.lineWidth=1.2;c.stroke();
     c.fillStyle='#FFE6A3';c.textAlign='center';c.textBaseline='middle';c.fillText(txt,n.x,y+0.5);
@@ -4087,17 +4088,17 @@ function mxPeople(d){const L=[];
         if(mxQ('streets')&&!mxQ('glasses'))return {lines:[['mxmat','While you’re out… have you seen my glasses?'],['kairos','On your—'],['mxmat','Not on my head. I checked twice.'],
           ['mxmat','I had them at the fountain in Festival Square this morning, feeding the pigeons. Then I didn’t.']],then:()=>mxStart('glasses')};
         if(mxAct('glasses'))return {lines:[['mxmat','The fountain, Kairos. By the pigeons. Probably.']]};
-        const t=mxTalked('market.matteo');return {lines:[[['mxmat','Twelve loaves, three mackerel. Or was it the other way round.'],['mxmat','Sundays I sit at the back. Best seat for a nap, don’t tell Father Vane.'],['mxmat','You remember everything, they say. Must be heavy.']][t%3]]};}});
+        const t=mxTalked('market.matteo');return {amb:1,lines:[[['mxmat','Twelve loaves, three mackerel. Or was it the other way round.'],['mxmat','Sundays I sit at the back. Best seat for a nap, don’t tell Father Vane.'],['mxmat','You remember everything, they say. Must be heavy.']][t%3]]};}});
     L.push({id:'rosa',fx:0.38,fy:0.78,col:'#A0607A',hair:'#2A1A12',long:1,face:1,label:'Rosa',
       mark:()=>mxStepOf('rounds')==='ask'&&!mxF('bd_rosa')?'!':null,
       say:()=>{if(mxStepOf('rounds')==='ask'&&!mxF('bd_rosa'))return {lines:[['kairos','Rosa, when’s your birthday?'],['mxrosa','Third of Taurus. Six in the morning, my mother said, and she never let me forget the hours she was in labour.'],['mxrosa','Why, are you baking?']],then:()=>mxSet('bd_rosa')};
-        const t=mxTalked('market.rosa');return {lines:[[['mxrosa','There’s my sharp boy. Still eating nothing but the baker’s rolls?'],['mxrosa','My shutter still sticks, if you’re looking for something to do with those hands.'],['mxrosa','No, I don’t go up to the Cloister. Not since the funeral. I can talk to God from my own kitchen.']][t%3]]};}});
+        const t=mxTalked('market.rosa');return {amb:1,lines:[[['mxrosa','There’s my sharp boy. Still eating nothing but the baker’s rolls?'],['mxrosa','My shutter still sticks, if you’re looking for something to do with those hands.'],['mxrosa','No, I don’t go up to the Cloister. Not since the funeral. I can talk to God from my own kitchen.']][t%3]]};}});
     L.push({id:'fish',fx:0.7,fy:0.8,col:'#4A7FA0',hat:'#2E4A6A',apron:1,face:-1,label:'Fish vendor',
       mark:()=>mxStepOf('rounds')==='ask'&&!mxF('bd_fish')?'!':null,
       say:()=>{if(mxStepOf('rounds')==='ask'&&!mxF('bd_fish'))return {lines:[['kairos','When’s your birthday?'],['mxfish','Twenty-first of Pisces, noon tide. Why, you buying me a present?'],['mxfish','Make it something that isn’t fish.']],then:()=>mxSet('bd_fish')};
-        const t=mxTalked('market.fish');return {lines:[[['mxfish','Mackerel’s three today. Don’t look at me like that, it really is three.'],['mxfish','Sundays I work. Best day for selling. Everybody’s in church, nobody haggles after.'],['mxfish','I know every price on this Ring, every day back to spring. Try me.']][t%3]]};}});
+        const t=mxTalked('market.fish');return {amb:1,lines:[[['mxfish','Mackerel’s three today. Don’t look at me like that, it really is three.'],['mxfish','Sundays I work. Best day for selling. Everybody’s in church, nobody haggles after.'],['mxfish','I know every price on this Ring, every day back to spring. Try me.']][t%3]]};}});
     L.push({id:'tessa',fx:0.9,fy:0.5,col:TESSA,hair:'#6A3A1A',long:1,small:1,face:-1,label:'Tessa',
-      say:()=>{const t=mxTalked('market.tessa');return {lines:[[['mxtess','Kairos! Did you see the lanterns in the Square? Mama says I can carry one at the Festival.'],['mxtess','I’m going to remember EVERYTHING about the Festival this year. Like you.'],['mxtess','The pigeons by the fountain are fat. Somebody keeps feeding them bread.']][t%3]]};}});
+      say:()=>{const t=mxTalked('market.tessa');return {amb:1,lines:[[['mxtess','Kairos! Did you see the lanterns in the Square? Mama says I can carry one at the Festival.'],['mxtess','I’m going to remember EVERYTHING about the Festival this year. Like you.'],['mxtess','The pigeons by the fountain are fat. Somebody keeps feeding them bread.']][t%3]]};}});
   }
   if(d==='plaza'){
     L.push({id:'lseller',fx:0.2,fy:0.66,col:'#B5835A',hat:'#6A3A1A',apron:1,face:1,label:'Lantern seller',
@@ -4105,9 +4106,9 @@ function mxPeople(d){const L=[];
       say:()=>{if(!mxQ('lanterns'))return {lines:[['lseller','Kairos, you’ve got young legs. The Cloister ordered a lantern for vespers and I can’t leave the stall, not this close to the Festival.'],
           ['lseller','Take it to the Sister at the gate? She’ll know it’s from me.']],then:()=>mxStart('lanterns')};
         if(mxAct('lanterns'))return {lines:[['lseller','The Cloister, north of the Ring. The Sister at the gate.']]};
-        return {lines:[['lseller','Two hundred lanterns before the Festival. Two hundred and one, if you count the one you carried.']]};}});
+        return {amb:1,lines:[['lseller','Two hundred lanterns before the Festival. Two hundred and one, if you count the one you carried.']]};}});
     L.push({id:'fwoman',fx:0.8,fy:0.3,col:'#7FA36B',hair:'#3A2A1A',long:1,face:-1,label:'Woman with a basket',
-      say:()=>{const t=mxTalked('plaza.fwoman');return {lines:[[['fwoman','Every year I come early to get near the front of the line. It’s the best day of the year.'],['fwoman','What did I wish for last year? Oh… isn’t that funny. I couldn’t tell you.'],['fwoman','My little one wants to try the cup this year. She’s old enough now.']][t%3]]};}});
+      say:()=>{const t=mxTalked('plaza.fwoman');return {amb:1,lines:[[['fwoman','Every year I come early to get near the front of the line. It’s the best day of the year.'],['fwoman','What did I wish for last year? Oh… isn’t that funny. I couldn’t tell you.'],['fwoman','My little one wants to try the cup this year. She’s old enough now.']][t%3]]};}});
   }
   if(d==='yard'){
     L.push({id:'sold',fx:0.3,fy:0.62,col:'#5A6A3A',hat:'#3A4A2A',face:1,label:'Garrison soldier',
@@ -4116,19 +4117,19 @@ function mxPeople(d){const L=[];
           ['mxsold','I’ve done three flights of roof stairs today. My knees have filed a complaint.']],then:()=>mxStart('roster')};
         if(mxStepOf('roster')==='back')return {lines:[['kairos','It’s up. Top of the board.'],['mxsold','Good lad. If anyone asks, I walked it there myself.']],then:()=>mxSet('rosterDone')};
         if(mxAct('roster'))return {lines:[['mxsold','The bounty board, in the Market Ring. Top left, where people actually look.']]};
-        return {lines:[['mxsold','Eleven last night. None in the streets. Say it with me: none in the streets.']]};}});
+        return {amb:1,lines:[['mxsold','Eleven last night. None in the streets. Say it with me: none in the streets.']]};}});
     L.push({id:'agnes',ch:'ines',fx:0.74,fy:0.4,face:-1,label:'Agnes',cond:()=>mxMet('ines'),
-      say:()=>{const t=mxTalked('yard.agnes');return {lines:[[['ines','Rooftop rotation in twenty. You’re not on it.'],['ines','I take the Sunday shifts. Somebody has to, and I prefer the quiet.'],['ines','Eleven last night. I got four of them. Don’t tell Bram, he’ll want a number too.']][t%3]]};}});
+      say:()=>{const t=mxTalked('yard.agnes');return {amb:1,lines:[[['ines','Rooftop rotation in twenty. You’re not on it.'],['ines','I take the Sunday shifts. Somebody has to, and I prefer the quiet.'],['ines','Eleven last night. I got four of them. Don’t tell Bram, he’ll want a number too.']][t%3]]};}});
     L.push({id:'bram',ch:'bram',fx:0.56,fy:0.8,face:-1,label:'Bram',cond:()=>mxMet('bram'),
-      say:()=>{const t=mxTalked('yard.bram');return {lines:[[['bram','I polished the shield. Then I sat on the polish.'],['bram','Mum sends bread for the whole barracks on Tuesdays. You can have a piece. Two pieces.'],['bram','Agnes says I stand like a door. I think doors are good. Nothing gets past a door.']][t%3]]};}});
+      say:()=>{const t=mxTalked('yard.bram');return {amb:1,lines:[[['bram','I polished the shield. Then I sat on the polish.'],['bram','Mum sends bread for the whole barracks on Tuesdays. You can have a piece. Two pieces.'],['bram','Agnes says I stand like a door. I think doors are good. Nothing gets past a door.']][t%3]]};}});
   }
   if(d==='chapel'){
     L.push({id:'sister',fx:0.62,fy:0.34,col:NUNC,hair:'#2A2A3A',face:-1,label:'Sister at the gate',
       mark:()=>mxStepOf('lanterns')==='take'?'!':null,
       say:()=>{if(mxStepOf('lanterns')==='take')return {lines:[['kairos','From the lantern seller. For vespers.'],['gsister','Bless him, and bless your legs. It will hang by the door tonight.'],['gsister','You were one of St. Hesper’s, weren’t you? Every Sunday in the second row, with your spoon. You never once fell asleep.']],then:()=>mxSet('lanternGiven')};
-        const t=mxTalked('chapel.sister');return {lines:[[['gsister','The garden is open to everyone until vespers. Walk softly on the cross path.'],['gsister','The Mercy is offered after every service. People leave lighter. You can see it in their shoulders.'],['gsister','Father Vane is writing his Festival sermon. He has been writing it since spring.']][t%3]]};}});
+        const t=mxTalked('chapel.sister');return {amb:1,lines:[[['gsister','The garden is open to everyone until vespers. Walk softly on the cross path.'],['gsister','The Mercy is offered after every service. People leave lighter. You can see it in their shoulders.'],['gsister','Father Vane is writing his Festival sermon. He has been writing it since spring.']][t%3]]};}});
     L.push({id:'believer',fx:0.24,fy:0.74,col:'#9A7A8A',hair:'#4A3A2A',long:1,face:1,label:'Woman on the bench',
-      say:()=>{const t=mxTalked('chapel.believer');return {lines:[[['believer','Every Sunday since I was a girl. It’s peaceful. You stop carrying things.'],['believer','My husband says I used to worry more. I don’t remember worrying. That must be a good sign.']][t%2]]};}});
+      say:()=>{const t=mxTalked('chapel.believer');return {amb:1,lines:[[['believer','Every Sunday since I was a girl. It’s peaceful. You stop carrying things.'],['believer','My husband says I used to worry more. I don’t remember worrying. That must be a good sign.']][t%2]]};}});
   }
   if(d==='ward'){
     L.push({id:'nurse',fx:0.42,fy:0.48,col:'#E8E2D4',hair:'#4A3A2A',apron:1,face:1,label:'Ward nurse',
@@ -4138,19 +4139,20 @@ function mxPeople(d){const L=[];
         if(mxStepOf('rounds')==='back')return {lines:[['kairos','Rosa: third of Taurus, six in the morning. The fish vendor: twenty-first of Pisces, noon tide. Matteo: spring. He wasn’t sure.'],
           ['nurse','Two exact, one “spring”.'],['nurse','Huh. That’s about what we get in here. I’ll put it in Dr. Lark’s notes.']],then:()=>mxSet('roundsDone')};
         if(mxAct('rounds'))return {lines:[['nurse','Matteo, Rosa and the fish vendor, in the Market Ring. Exact dates if they have them.']]};
-        return {lines:[['nurse','Visiting hours are over at six. You can stay as long as you’re useful.']]};}});
+        return {amb:1,lines:[['nurse','Visiting hours are over at six. You can stay as long as you’re useful.']]};}});
     L.push({id:'naomi',ch:'noemi',fx:0.7,fy:0.56,face:-1,label:'Naomi',cond:()=>mxMet('noemi'),
-      say:()=>{const t=mxTalked('ward.naomi');return {lines:[[['noemi','If you’re here to help, roll bandages. If you’re here to talk, roll bandages while you talk.'],['noemi','I don’t go to the Festival. Somebody has to keep the ward open.'],['noemi','Eat something today. That’s not advice.']][t%3]]};}});
+      say:()=>{const t=mxTalked('ward.naomi');return {amb:1,lines:[[['noemi','If you’re here to help, roll bandages. If you’re here to talk, roll bandages while you talk.'],['noemi','I don’t go to the Festival. Somebody has to keep the ward open.'],['noemi','Eat something today. That’s not advice.']][t%3]]};}});
     L.push({id:'theo',ch:'theo',fx:0.26,fy:0.76,face:1,label:'Theo',cond:()=>mxMet('theo'),
-      say:()=>{const t=mxTalked('ward.theo');return {lines:[[['theo','Don’t touch the box. The needle’s finally sitting still and I’d like to keep it that way.'],['theo','Naomi says I need a hobby that isn’t a hobby. I said that’s just a job.'],['theo','If you hear a pop from the store cupboard, that was not me.']][t%3]]};}});
+      say:()=>{const t=mxTalked('ward.theo');return {amb:1,lines:[[['theo','Don’t touch the box. The needle’s finally sitting still and I’d like to keep it that way.'],['theo','Naomi says I need a hobby that isn’t a hobby. I said that’s just a job.'],['theo','If you hear a pop from the store cupboard, that was not me.']][t%3]]};}});
     L.push({id:'pat',fx:0.86,fy:0.34,col:'#8A8A7A',hair:'#E0E0D8',face:-1,label:'Patient',
-      say:()=>({lines:[['mxpat','Is it Tuesday? They keep telling me it’s Tuesday.'],['kairos','It’s Tuesday.'],['mxpat','Then I believe you. You have an honest face.']]})});
+      say:()=>({amb:1,lines:[['mxpat','Is it Tuesday? They keep telling me it’s Tuesday.'],['kairos','It’s Tuesday.'],['mxpat','Then I believe you. You have an honest face.']]})});
   }
   return L;}
 // turn people and finds into walk-scene NPCs
 function mxNpcs(d){
   const P=mxPeople(d).filter(p=>!p.cond||p.cond()).map(p=>{const key=d+'.'+p.id,n=Object.assign({},p,{cond:null});
-    n.lines=()=>{const r=p.say();n._then=r.then||null;return r.lines;};
+    n.lines=()=>{const r=p.say();n._then=r.then||null;if(r.amb&&!r.then&&!p.ch&&MX_VOICE[key])mxMurmur(MX_VOICE[key]);return r.lines;};
+    n.route=MX_ROUTES[key]||null;n.voice=MX_VOICE[key]||null;
     n.talk=()=>{const x=mxS();x.talk[key]=(x.talk[key]|0)+1;const t=n._then;n._then=null;if(t)t();persist();mxTick();};
     n.mkf=()=>{const k=p.mark&&p.mark();return k||(mxTalked(key)?null:'…');};return n;});
   const Fd=MX_FINDS.filter(f=>f.at===d).map(f=>{const n={id:f.id,fx:f.fx,fy:f.fy,spot:1,find:f};
@@ -4161,7 +4163,7 @@ function mxNpcs(d){
       persist();mxTick();};
     n.hide=()=>(f.vis&&!f.vis())||(f.hidden&&!mxS().found[f.id]&&Math.hypot(player.x-n.x,player.y-n.y)>70);
     n.mkf=()=>{if(f.id==='market.board'&&mxStepOf('roster')==='post')return '!';if(f.quest)return '!';return mxS().found[f.id]?null:'?';};return n;});
-  return P.concat(Fd);}
+  return P.concat(Fd,mxExtras(d));}
 for(const d of MX_ORDER){const D=MX_DISTRICTS[d];
   addMission('mx_'+d,{type:'walk',hub:1,dist:d,name:D.name,place:'Meridian',theme:D.theme,party:['kairos'],lvl:1,count:false,brief:D.blurb,npcs:()=>mxNpcs(d)});}
 
@@ -4171,6 +4173,7 @@ function mxExitPos(side,k){const cx=AX0+(AX1-AX0)*0.5,cy=AY0+(AY1-AY0)*0.55;
 function mxEnter(m){const d=m.M.dist,D=MX_DISTRICTS[d],x=mxS(),p=player,first=!x.seen[d];
   x.at=d;x.seen[d]=1;persist();
   for(const [fx,fy,r] of D.solids||[])m.solids.push({x:AX0+(AX1-AX0)*fx,y:AY0+(AY1-AY0)*fy,r});
+  mxLivingEnter(m,d);
   const back=mxFrom&&D.exits.find(e=>e[1]===mxFrom);
   if(back){const q=mxExitPos(back[0],58);p.x=q.x;p.y=q.y;p.face=back[0]==='e'?-1:1;}
   else{p.x=AX0+(AX1-AX0)*0.5;p.y=AY0+(AY1-AY0)*0.86;}
@@ -4183,11 +4186,12 @@ function mxUpdate(m,dt){const p=player,D=MX_DISTRICTS[m.M.dist];
   m.arrT=Math.max(0,(m.arrT||0)-dt);
   for(const n of m.npcs)if(n.mkf){n.mk=n.mkf();n.done=!n.mk;}
   m.goals[0].t=mxGoal();
+  mxLivingUpdate(m,dt);
   if(m.arrT<=0)for(const [side,to] of D.exits){const e=mxExitPos(side,0),edge=side==='w'?p.x<=AX0+p.r+1:side==='e'?p.x>=AX1-p.r-1:side==='n'?p.y<=AY0+p.r+1:p.y>=AY1-p.r-1;
     const along=side==='w'||side==='e'?Math.abs(p.y-e.y):Math.abs(p.x-e.x);
     if(edge&&along<64){m.leave={to,t:0};sfx('page');return true;}}
   return false;}
-function mxDrawUnder(c,m){const D=MX_DISTRICTS[m.M.dist];
+function mxDrawUnder(c,m){const D=MX_DISTRICTS[m.M.dist];mxLivingDraw(c,m);
   for(const [side,to] of D.exits){const e=mxExitPos(side,12),k=0.55+0.35*Math.sin(T*3),hz=side==='w'||side==='e';
     c.save();c.translate(e.x,e.y);c.rotate({e:0,s:Math.PI/2,w:Math.PI,n:-Math.PI/2}[side]);
     c.fillStyle=alpha(C.gold,0.16*k);ell(c,-2,0,16,hz?26:26);c.fill();
@@ -4197,13 +4201,198 @@ function mxDrawUnder(c,m){const D=MX_DISTRICTS[m.M.dist];
     const tx=side==='w'?AX0+26:side==='e'?AX1-26:lp.x,ty=side==='w'||side==='e'?lp.y+22:lp.y;
     c.lineWidth=3;c.strokeStyle='rgba(20,15,10,0.85)';c.strokeText(lab,tx,ty);c.fillStyle='#FFE6A3';c.fillText(lab,tx,ty);}}
 function mxDrawOver(c,m){const f=m.leave?Math.min(1,m.leave.t/0.22):mxFade;if(f>0){c.fillStyle='rgba(10,8,18,'+f+')';c.fillRect(0,0,W,H);}}
-function mxSub(m){return MX_DISTRICTS[m.M.dist].name+' · '+mxRecordCount()+' / '+MX_RECORDS+' records · '+(isTouch?'walk up and tap ⚔':'walk up and press F')+' · walk off an edge arrow to travel';}
+function mxSub(m){if(m.act)return mxActSub(m);return MX_DISTRICTS[m.M.dist].name+' · '+mxChestLine(m.M.dist)+' · '+mxRecordCount()+' / '+MX_RECORDS+' records · '+(isTouch?'walk up and tap ⚔':'walk up and press F')+' · walk off an edge arrow to travel';}
 function mxBegin(){ensureAudio();const x=mxS();persist();newRun('explore',['kairos'],0);mxFrom=null;mxFade=1;enterRoom('m_mx_'+x.at);}
 
+// ═══════════════════════════════════════════ Living maps (Expansion 04)
+// Daily chests, three activities, obstacles, interactables, moving townsfolk and murmurs. See docs/exploration/.
+const MXP=(fx,fy)=>({x:AX0+(AX1-AX0)*fx,y:AY0+(AY1-AY0)*fy});
+// ── the day: local calendar date, so chests turn over at the player's own midnight
+function mxDay(){if(window.__mxDay)return window.__mxDay;const d=new Date(),z=n=>(n<10?'0':'')+n;return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
+function mxDayState(){const x=mxS(),k=mxDay();
+  if(!x.day||x.day.key!==k){x.day={key:k,opened:{},pages:{}};
+    // drop yesterday's daily claims so the save does not grow every day (one-time claims are untouched)
+    for(const c in save.claims)if(/^(chest|act:drill|act:pages):\d{4}-/.test(c.replace(/^act:(drill|pages):/,'act:$1:'))){const day=(c.match(/\d{4}-\d\d-\d\d/)||[])[0];if(day&&day!==k)delete save.claims[c];}
+    persist();}
+  return x.day;}
+// ── seven hand-picked chest spots per district: reachable, off the paths, clear of exits, NPCs, routes and solids
+const MX_CHEST_SPOTS={
+  market:[[0.04,0.9],[0.96,0.9],[0.2,0.12],[0.84,0.1],[0.96,0.3],[0.62,0.93],[0.03,0.32]],
+  plaza:[[0.05,0.9],[0.95,0.88],[0.3,0.14],[0.66,0.12],[0.06,0.28],[0.95,0.4],[0.42,0.93]],
+  yard:[[0.05,0.92],[0.95,0.1],[0.42,0.95],[0.96,0.92],[0.05,0.15],[0.97,0.3],[0.62,0.1]],
+  chapel:[[0.05,0.9],[0.95,0.9],[0.3,0.1],[0.95,0.12],[0.05,0.12],[0.35,0.92],[0.65,0.9]],
+  ward:[[0.05,0.12],[0.95,0.92],[0.2,0.93],[0.8,0.93],[0.96,0.55],[0.33,0.12],[0.05,0.5]],
+};
+const MX_CHEST_REWARD={common:{dust:6},fine:{dust:12},precious:{dust:20,keep:1}};
+// today's chests for a district: same all day, different tomorrow
+function mxChests(d){const k=mxDayState().key,R=mulberry(hashStr(k+':'+d)),sp=MX_CHEST_SPOTS[d].map((p,i)=>({p,i}));
+  for(let i=sp.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[sp[i],sp[j]]=[sp[j],sp[i]];}
+  const n=R()<0.5?2:3,prec=MX_ORDER[hashStr(k+':precious')%MX_ORDER.length]===d,fine=R()<0.5;
+  return sp.slice(0,n).map((o,i)=>({n:i,spot:o.i,fx:o.p[0],fy:o.p[1],tier:i===0&&prec?'precious':i===0&&fine?'fine':'common',key:'chest:'+k+':'+d+':'+i}));}
+const mxChestOpen=c=>!!claimed(c.key);
+function mxChestLine(d){const L=mxChests(d),o=L.filter(mxChestOpen).length;return 'Chests '+o+' / '+L.length+' today';}
+function mxChestsToday(){let a=0,b=0;for(const d of MX_ORDER){const L=mxChests(d);b+=L.length;a+=L.filter(mxChestOpen).length;}return a+' / '+b;}
+function mxDrawChest(c,n){const x=n.x,y=n.y,o=n.opened(),pr=n.tier==='precious';
+  c.save();c.translate(x,y);c.scale(0.72,0.72);
+  c.fillStyle='rgba(20,12,6,0.4)';ell(c,0,9,15,4);c.fill();
+  const lift=o?Math.min(1,(T-(n.openT||T-1))*5):0;
+  c.fillStyle='#24160C';c.fillRect(-14,-10,28,20);c.fillStyle=pr?'#6A4A8A':'#7A4E26';c.fillRect(-13,-3,26,12);c.fillStyle=pr?'#8A6AAE':'#956238';c.fillRect(-13,-3,26,3);
+  if(o){c.fillStyle='#4A2E16';c.fillRect(-13,-16-lift*2,26,7);c.fillStyle='rgba(255,230,163,'+(0.25+0.2*Math.sin(T*3))+')';c.fillRect(-11,-5,22,3);}
+  else{c.fillStyle=pr?'#7A5A9E':'#8B5A2B';c.fillRect(-13,-9,26,7);c.fillStyle=pr?'#9A7ABE':'#A86F38';c.fillRect(-13,-9,26,2);}
+  c.fillStyle='#C9A25A';c.fillRect(-9,-(o?16:9),3,o?7:18);c.fillRect(6,-(o?16:9),3,o?7:18);c.fillStyle='#E9C46A';c.fillRect(-2,-3,4,5);
+  c.restore();
+  // a glint every few seconds: findable, not obvious
+  if(!o){const g=(T*0.7+n.x*0.013)%3.2;if(g<0.35){const k=1-Math.abs(g-0.175)/0.175;actStar(c,x+6,y-9,1.6+k*2.2,alpha('#FFF6D8',0.9*k));}}}
+function mxOpenChest(n){if(n.opened())return;const L=grantReward(MX_CHEST_REWARD[n.tier],n.key)||[];n.openT=T;
+  burstParts(n.x,n.y-6,n.tier==='precious'?'#C9A8FF':C.gold,n.tier==='common'?16:28,150);ring(n.x,n.y,26,C.gold,0.5);sfx('bless');
+  addText(n.x,n.y-26,(n.tier==='precious'?'PRECIOUS CHEST · ':n.tier==='fine'?'FINE CHEST · ':'CHEST · ')+L.join(' · '),n.tier==='precious'?'#E6D2FF':'#FFE6A3',11,{life:2});}
+
+// ── obstacles (runtime-drawn, with collision) and interactables (world-building, no reward)
+const MX_OBST={
+  market:[['crates',0.08,0.82],['barrels',0.93,0.2]],
+  plaza:[['crates',0.28,0.86],['barrels',0.76,0.2]],
+  yard:[['dummy',0.62,0.55],['dummy',0.7,0.68],['crates',0.84,0.24]],
+  chapel:[],
+  ward:[['cart',0.6,0.84]],
+};
+function mxObstSolids(kind,x,y){return kind==='crates'?[{x:x-2,y:y-13,w:32,h:26}]:kind==='barrels'?[{x,y,r:8},{x:x+15,y:y+2,r:8}]:kind==='dummy'?[{x,y,r:8}]:kind==='cart'?[{x:x-2,y:y-10,w:34,h:18}]:[];}
+function mxDrawObst(c,kind,x,y){
+  if(kind==='crates'){crate2(c,x,y);crate2(c,x+15,y);crate2(c,x+7,y-12);}
+  else if(kind==='barrels'){barrel(c,x,y);barrel(c,x+15,y+2);}
+  else if(kind==='dummy'){c.fillStyle='rgba(0,0,0,0.3)';ell(c,x,y+9,8,3);c.fill();c.fillStyle='#24160C';c.fillRect(x-2,y-14,4,24);c.fillRect(x-8,y-9,16,3);c.fillStyle='#8B5A2B';c.fillRect(x-1,y-13,2,22);c.fillRect(x-7,y-8,14,1.5);
+    c.fillStyle='#24160C';circ(c,x,y-17,6);c.fill();c.fillStyle='#D8C7A0';circ(c,x,y-17,5);c.fill();c.fillStyle='#B5523A';circ(c,x,y-17,2);c.fill();c.fillStyle='#D8C7A0';c.fillRect(x-5,y-11,10,9);c.fillStyle='rgba(0,0,0,0.15)';c.fillRect(x-5,y-6,10,4);}
+  else if(kind==='cart'){c.fillStyle='rgba(0,0,0,0.3)';ell(c,x+15,y+9,17,4);c.fill();c.fillStyle='#24160C';c.fillRect(x-1,y-9,32,14);c.fillStyle='#C7D5E8';c.fillRect(x,y-8,30,12);c.fillStyle='#F2F2F2';c.fillRect(x+2,y-12,10,5);c.fillRect(x+14,y-12,12,5);c.fillStyle='#E84A4A';c.fillRect(x+18,y-11,4,3);
+    c.fillStyle='#24160C';circ(c,x+5,y+6,3);c.fill();circ(c,x+25,y+6,3);c.fill();}}
+const MX_LOOKS=[
+  {id:'look.scarf',at:'market',fx:0.15,fy:0.86,title:'A scarf on the crates',text:[['n','A knitted scarf, folded neatly on the crates. A tag pinned to it: “If found, leave it here. I’ll come back for it.”'],['th','Somebody trusts this square.']]},
+  {id:'look.coins',at:'plaza',fx:0.4,fy:0.66,title:'Coins in the fountain',text:[['n','Coins glint at the bottom of the basin, years of them. Nobody fishes them out.'],['th','Tessa says it’s bad luck. Tessa says a lot of things are bad luck.']]},
+  {id:'look.helmet',at:'yard',fx:0.79,fy:0.3,title:'A dented helmet',text:[['n','A Garrison helmet with a dent the shape of a shield rim. Painted inside: “B. · size LARGE (larger)”.']]},
+  {id:'look.clock',at:'ward',fx:0.9,fy:0.14,title:'The ward clock',text:[['n','The ward clock has stopped at 9:04. Nobody has wound it.'],['n','A note taped under it in Theo’s handwriting: “Please don’t.”']]},
+  {id:'look.rim',at:'chapel',fx:0.5,fy:0.5,title:'The sundial’s rim',text:()=>mxF('sundial')?[['n','All four candles burn. The sundial’s shadow points east, toward the statue.']]:[['n','Carved on the sundial’s rim: FROM FIRST LIGHT TO LAST, THEN THE MOON.'],['n','Four candles stand around it, each with a small engraving of the sun or the moon.']]},
+];
+// ── activities
+const DRILL_PTS=[[0.2,0.4],[0.38,0.84],[0.46,0.45],[0.8,0.84],[0.9,0.42],[0.62,0.3]],DRILL_T=25;
+const CANDLES=[{id:'S',fx:0.5,fy:0.68,g:'rise'},{id:'W',fx:0.39,fy:0.5,g:'high'},{id:'N',fx:0.5,fy:0.32,g:'set'},{id:'E',fx:0.61,fy:0.5,g:'moon'}],CANDLE_ORDER=['S','W','N','E'];
+const PAGE_SPOTS=[[0.1,0.2],[0.15,0.85],[0.35,0.25],[0.6,0.2],[0.3,0.6],[0.7,0.8],[0.86,0.66],[0.46,0.9],[0.08,0.5],[0.62,0.4]];
+function mxPagesToday(){const k=mxDayState().key,R=mulberry(hashStr(k+':pages')),ix=PAGE_SPOTS.map((p,i)=>i);
+  for(let i=ix.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[ix[i],ix[j]]=[ix[j],ix[i]];}return ix.slice(0,6);}
+const mxPagesGot=()=>Object.keys(mxDayState().pages).length;
+function mxExtras(d){const L=[],x=mxS();
+  // today's chests
+  for(const ch of mxChests(d)){const n={id:'chest.'+ch.n,fx:ch.fx,fy:ch.fy,spot:1,verb:'open',tier:ch.tier,key:ch.key};
+    n.opened=()=>mxChestOpen(ch);n.lines=()=>[];n.talk=(F,m,nn)=>mxOpenChest(nn);n.mkf=()=>null;n.draw=(c,nn)=>mxDrawChest(c,nn);L.push(n);}
+  // things to read
+  for(const f of MX_LOOKS.filter(f=>f.at===d)){const n={id:f.id,fx:f.fx,fy:f.fy,spot:1};
+    n.lines=()=>typeof f.text==='function'?f.text():f.text;n.talk=()=>{const y=mxS();y.looked=y.looked||{};y.looked[f.id]=1;persist();};
+    n.mkf=()=>(mxS().looked||{})[f.id]?null:'?';L.push(n);}
+  if(d==='yard'){const n={id:'drill.board',fx:0.22,fy:0.2,spot:1,verb:'read'};
+    n.lines=()=>{const best=(x.act&&x.act.drillBest)?' Best: '+x.act.drillBest.toFixed(1)+'s.':'';return [['n','AGNES’S DRILL COURSE. Six flags, in order, in '+DRILL_T+' seconds. No excuses.'+best],
+      ['n',claimed('act:drill')?(claimed('act:drill:'+mxDay())?'You have run it today. The board still takes your time.':'Run it today for a little Stardust.'):'First clear: 40 Stardust and a Keepsake.']];};
+    n.talk=(F,m)=>mxStartDrill(m);n.mkf=()=>claimed('act:drill:'+mxDay())?null:'!';L.push(n);}
+  if(d==='chapel'){
+    for(const cd of CANDLES){const n={id:'candle.'+cd.id,fx:cd.fx,fy:cd.fy,spot:1,verb:'light',g:cd.g,cid:cd.id};
+      n.lines=()=>[];n.talk=(F,m,nn)=>mxLightCandle(m,nn);n.mkf=()=>null;n.draw=(c,nn,m)=>mxDrawCandle(c,nn,m);L.push(n);}
+    const sx=W/2+108,sy=H/2-52; // tucked behind the east statue
+    const n={id:'chest.sundial',x:sx,y:sy,spot:1,verb:'open',tier:'precious',key:'act:sundial'};
+    n.opened=()=>claimed('act:sundial');n.lines=()=>[];n.mkf=()=>null;n.draw=(c,nn)=>mxDrawChest(c,nn);n.hide=()=>!mxF('sundial');
+    n.talk=(F,m,nn)=>{if(claimed('act:sundial'))return;const L2=grantReward({dust:30,frag:'boss'},'act:sundial')||[];nn.openT=T;burstParts(nn.x,nn.y-6,'#C9A8FF',30,150);sfx('bless');
+      setBanner('The Hour Candles · solved',L2.join(' · '),2.6);};L.push(n);}
+  if(d==='plaza'){const n={id:'pages.stand',fx:0.92,fy:0.24,spot:1,verb:'look'};
+    n.lines=()=>{const g=mxPagesGot(),k='act:pages:'+mxDay();
+      if(claimed(k))return [['n','The programme stand is full again. Somebody will lose them to the wind tomorrow.']];
+      if(g>=6)return [['n','You slot the six pages back into the stand. FESTIVAL OF THE MERCY · ORDER OF THE DAY, complete again.']];
+      return [['n','The festival programme stand is empty. A note: “The wind took the programmes. If you find pages, please bring them back!”'],['n','Pages found today: '+g+' / 6.']];};
+    n.talk=()=>{if(mxPagesGot()<6)return;const k='act:pages:'+mxDay();if(claimed(k))return;
+      const first=grantReward({keep:1},'act:pages')||[],day=grantReward({dust:15},k)||[];setBanner('The Festival Programme',first.concat(day).join(' · '),2.4);sfx('bless');};
+    n.mkf=()=>claimed('act:pages:'+mxDay())?null:mxPagesGot()>=6?'!':'?';L.push(n);}
+  return L;}
+function mxStartDrill(m){if(m.act)return;m.act={kind:'drill',i:0,t:DRILL_T,pts:DRILL_PTS.map(([fx,fy])=>MXP(fx,fy))};setBanner('Drill course','Flag 1 of 6 · go!',1.2);sfx('select');}
+function mxActSub(m){const a=m.act;if(a.kind==='drill')return 'Drill · flag '+(a.i+1)+' of '+a.pts.length+' · '+Math.ceil(a.t)+'s left';return '';}
+function mxLightCandle(m,n){if(mxF('sundial')){addText(n.x,n.y-24,'Already burning',C.ash,10);return;}
+  m.lit=m.lit||[];
+  if(n.cid===CANDLE_ORDER[m.lit.length]){m.lit.push(n.cid);sfx('select');burstParts(n.x,n.y-12,'#FFD38A',8,60);
+    if(m.lit.length===4){mxSet('sundial');persist();sfx('bless');ring(MXP(0.5,0.5).x,MXP(0.5,0.5).y,60,C.gold,0.8);setBanner('The sundial clicks','Something opened by the east statue.',2.6);}}
+  else{for(const id of m.lit){const cd=m.npcs.find(o=>o.cid===id);if(cd)burstParts(cd.x,cd.y-14,'#9A9AA8',6,40);}m.lit=[];sfx('nope');addText(n.x,n.y-26,'The flames gutter out',C.ash,10,{life:1.2});}}
+function mxDrawCandle(c,n,m){const lit=mxF('sundial')||(m.lit||[]).includes(n.cid),x=n.x,y=n.y;
+  c.fillStyle='rgba(0,0,0,0.3)';ell(c,x,y+6,6,2);c.fill();c.fillStyle='#24160C';c.fillRect(x-4,y-1,8,8);c.fillStyle='#8E8A80';c.fillRect(x-3,y,6,6);
+  c.fillStyle='#24160C';c.fillRect(x-2.5,y-11,5,11);c.fillStyle='#EDE6D6';c.fillRect(x-1.5,y-10,3,10);
+  if(lit){lightPool(c,x,y-14,22,'#FFD38A',0.35);const f=Math.sin(T*14+x)*0.6;c.fillStyle='#FFB65C';ell(c,x+f*0.3,y-14,2.2,3.6);c.fill();c.fillStyle='#FFF2C8';ell(c,x,y-13.5,1,1.8);c.fill();}
+  // the engraving on the base plate: the sun on the horizon (rising or setting), high in the sky, or the moon
+  const gx=x,gy=y-24;c.fillStyle='rgba(20,15,10,0.75)';rrect(c,gx-8,gy-7,16,12,3);c.fill();c.fillStyle='#FFE6A3';
+  if(n.g==='moon'){circ(c,gx,gy-1,3.6);c.fill();c.fillStyle='rgba(20,15,10,1)';circ(c,gx+1.8,gy-2,3.2);c.fill();}
+  else{const sy=n.g==='high'?gy-3:gy+1;circ(c,gx,sy,2.6);c.fill();c.fillRect(gx-6,gy+1,12,1);
+    if(n.g!=='high'){c.fillStyle='#24160C';c.fillRect(gx-4,gy+2,8,3);c.fillStyle='#FFE6A3';const up=n.g==='rise';c.beginPath();c.moveTo(gx+5,up?gy-2:gy-4);c.lineTo(gx+7,up?gy-4:gy-2);c.lineTo(gx+3,up?gy-4:gy-2);c.closePath();c.fill();}}}
+// ── townsfolk routes: [fx, fy, pause seconds, face] in a loop; one-point routes stay put and look around
+const MX_ROUTES={
+  'market.rosa':[[0.38,0.78,3],[0.31,0.62,1.5],[0.28,0.36,5,-1],[0.31,0.62,1.5]],
+  'market.tessa':[[0.9,0.5,2],[0.84,0.64,1.5],[0.92,0.7,2],[0.86,0.4,2]],
+  'market.fish':[[0.7,0.8,0]],'market.matteo':[[0.22,0.3,0]],
+  'plaza.fwoman':[[0.8,0.3,3],[0.72,0.44,2],[0.86,0.52,3]],'plaza.lseller':[[0.2,0.66,0]],
+  'yard.sold':[[0.3,0.62,3],[0.3,0.9,2],[0.14,0.9,2],[0.14,0.62,2]],
+  'chapel.sister':[[0.72,0.3,4],[0.86,0.3,3]],'chapel.believer':[[0.24,0.74,0]],
+  'ward.nurse':[[0.42,0.48,3],[0.42,0.32,2],[0.58,0.32,2],[0.58,0.48,2]],'ward.pat':[[0.86,0.34,0]],
+};
+const MX_VOICE={'market.matteo':'oldman','market.rosa':'oldwoman','market.fish':'man','market.tessa':'child','plaza.lseller':'man','plaza.fwoman':'woman',
+  'yard.sold':'man','chapel.sister':'woman','chapel.believer':'woman','ward.nurse':'woman','ward.pat':'oldman'};
+function mxLivingEnter(m,d){mxDayState();
+  for(const [k,fx,fy] of MX_OBST[d]||[]){const p=MXP(fx,fy);for(const so of mxObstSolids(k,p.x,p.y))m.solids.push(so);}
+  if(d==='chapel')for(const cd of CANDLES){const p=MXP(cd.fx,cd.fy);m.solids.push({x:p.x,y:p.y,r:5});}
+  for(const n of m.npcs){n.r=8;if(n.fx!=null&&n.x==null){const p=MXP(n.fx,n.fy);n.x=p.x;n.y=p.y;}
+    if(n.route){n.pts=n.route.map(([fx,fy,w,f])=>Object.assign(MXP(fx,fy),{w,f}));n.ri=0;n.wait=n.pts[0].w*Math.random();n.mv=false;n.lookT=2+Math.random()*3;}}
+  if(d==='plaza'){const got=mxDayState().pages;m.pages=mxPagesToday().filter(i=>!got[i]).map(i=>Object.assign(MXP(PAGE_SPOTS[i][0],PAGE_SPOTS[i][1]),{i}));}
+  m.act=null;m.lit=[];}
+function mxLivingUpdate(m,dt){const p=player;
+  // townsfolk: walk the route, pause, look around; stop and face the player when they come close
+  for(const n of m.npcs){if(!n.pts)continue;const dp=Math.hypot(p.x-n.x,p.y-n.y);
+    if(dp<40){n.mv=false;n.face=p.x<n.x?-1:1;continue;}
+    if(n.pts.length===1){n.lookT-=dt;if(n.lookT<=0){n.face=-(n.face||1);n.lookT=3+Math.random()*4;}continue;}
+    if(n.wait>0){n.wait-=dt;n.mv=false;continue;}
+    const t=n.pts[(n.ri+1)%n.pts.length],dx=t.x-n.x,dy=t.y-n.y,dd=Math.hypot(dx,dy),sp=n.small?34:26;
+    if(dd<2){n.ri=(n.ri+1)%n.pts.length;n.wait=t.w||0;if(t.f)n.face=t.f;n.mv=false;continue;}
+    const st=Math.min(dd,sp*dt);n.x+=dx/dd*st;n.y+=dy/dd*st;n.mv=true;if(Math.abs(dx)>0.5)n.face=dx<0?-1:1;
+    collideSolids(n,m);}
+  // drill course
+  const a=m.act;
+  if(a&&a.kind==='drill'){a.t-=dt;const q=a.pts[a.i];
+    if(Math.hypot(p.x-q.x,p.y-q.y)<20){a.i++;sfx('orb');ring(q.x,q.y,20,C.gold,0.4);
+      if(a.i>=a.pts.length){const tm=DRILL_T-a.t,x=mxS();x.act=x.act||{};const best=!x.act.drillBest||tm<x.act.drillBest;if(best)x.act.drillBest=Math.round(tm*10)/10;
+        const L=(grantReward({dust:40,keep:1},'act:drill')||[]).concat(grantReward({dust:10},'act:drill:'+mxDay())||[]);persist();m.act=null;sfx('bless');
+        setBanner('Drill complete · '+tm.toFixed(1)+'s'+(best?' · best':''),L.length?L.join(' · '):'Already paid today · Agnes nods anyway',2.6);}
+      else addText(p.x,p.y-30,a.i+' / '+a.pts.length,C.gold,11,{life:0.6});}
+    else if(a.t<=0){m.act=null;sfx('nope');setBanner('Out of time','Read the drill board to try again.',2);}}
+  // festival pages: walk over to pick up
+  if(m.pages&&m.pages.length){for(const pg of m.pages){if(Math.hypot(p.x-pg.x,p.y-pg.y)<16){pg.got=1;mxDayState().pages[pg.i]=1;persist();sfx('page');
+      addText(pg.x,pg.y-20,'Programme page · '+mxPagesGot()+' / 6',C.gold,10,{life:1.1});}}
+    m.pages=m.pages.filter(pg=>!pg.got);}}
+function mxLivingDraw(c,m){const d=m.M.dist;
+  for(const [k,fx,fy] of MX_OBST[d]||[]){const p=MXP(fx,fy);mxDrawObst(c,k,p.x,p.y);}
+  if(m.pages)for(const pg of m.pages){const f=Math.sin(T*3+pg.i)*2,r=Math.sin(T*2+pg.i)*0.25;c.save();c.translate(pg.x,pg.y+f*0.4);c.fillStyle='rgba(0,0,0,0.25)';ell(c,0,6,6,2);c.fill();
+    c.rotate(r);c.fillStyle='#24160C';c.fillRect(-5,-7+f,10,12);c.fillStyle='#F6EBD2';c.fillRect(-4,-6+f,8,10);c.fillStyle='rgba(120,90,60,0.6)';for(let i=0;i<3;i++)c.fillRect(-3,-4+f+i*2.5,6,0.8);c.restore();}
+  const a=m.act;if(a&&a.kind==='drill')a.pts.forEach((q,i)=>{const done=i<a.i,cur=i===a.i;
+    if(cur){c.strokeStyle=alpha(C.gold,0.5+0.4*Math.sin(T*8));c.lineWidth=2;ell(c,q.x,q.y+6,16,6);c.stroke();}
+    c.fillStyle='#24160C';c.fillRect(q.x-1.5,q.y-22,3,28);c.fillStyle=done?'#6E8A74':cur?'#E84A4A':'#8A6A5A';c.beginPath();c.moveTo(q.x+1,q.y-22);c.lineTo(q.x+13,q.y-18);c.lineTo(q.x+1,q.y-14);c.closePath();c.fill();
+    c.font=`900 8px ${FONT_UI}`;c.textAlign='center';c.textBaseline='middle';c.fillStyle='#F6EBD2';c.fillText(String(i+1),q.x+6,q.y-18);});}
+// ── murmurs: one short wordless voice sound for small talk. Synthesized like the rest of the game's audio:
+// a voiced source through two vowel formants with a pitch contour. Swap for recorded takes in this one function later.
+const MX_VOICES={child:{f:300,sh:0},woman:{f:215,sh:0},oldwoman:{f:190,sh:1},man:{f:118,sh:0},oldman:{f:100,sh:1}};
+const MX_VOWEL={m:[300,900,0.35],o:[480,860,1],a:[720,1180,1],u:[350,700,0.8]};
+const MX_PAT=[[['m',0.2,1,1.2,0]],[['o',0.24,1.18,0.9,0]],[['m',0.12,1.02,0.98,0],['m',0.17,0.96,1.14,0.05]],[['a',0.2,1.08,1.0,0]],[['u',0.16,1,1.22,0],['a',0.14,1.1,0.95,0.03]]];
+let mxLastPat=-1;
+function mxMurmur(type){if(!ac||!sfxBus||vol.sfx<=0)return;const V=MX_VOICES[type];if(!V)return;
+  let pi;do{pi=Math.floor(Math.random()*MX_PAT.length);}while(pi===mxLastPat&&MX_PAT.length>1);mxLastPat=pi;
+  const base=V.f*(0.96+Math.random()*0.08);let t=ac.currentTime+0.02;
+  try{for(const [vw,d,c0,c1,gap] of MX_PAT[pi]){t+=gap;const F=MX_VOWEL[vw],o=ac.createOscillator(),lf=ac.createOscillator(),lg=ac.createGain(),out=ac.createGain();
+      o.type='sawtooth';o.frequency.setValueAtTime(base*c0,t);o.frequency.exponentialRampToValueAtTime(base*c1,t+d);
+      lf.frequency.value=V.sh?8.5:5.5;lg.gain.value=base*(V.sh?0.035:0.015);lf.connect(lg);lg.connect(o.frequency);
+      const amp=0.055*F[2];out.gain.setValueAtTime(0.0001,t);out.gain.exponentialRampToValueAtTime(amp,t+0.03);out.gain.setValueAtTime(amp,t+d*0.6);out.gain.exponentialRampToValueAtTime(0.0001,t+d);
+      for(const [fq,q,g] of [[F[0],5,1],[F[1],7,0.5]]){const bp=ac.createBiquadFilter(),gg=ac.createGain();bp.type='bandpass';bp.frequency.value=fq*(type==='child'?1.18:type==='man'||type==='oldman'?0.88:1);bp.Q.value=q;gg.gain.value=g;o.connect(bp);bp.connect(gg);gg.connect(out);}
+      out.connect(sfxBus);o.start(t);lf.start(t);o.stop(t+d+0.03);lf.stop(t+d+0.03);t+=d;}
+    window.__mxMurmurs=(window.__mxMurmurs|0)+1;}catch(_){}}
 // ── Meridian Renown: account progress from districts, records and quests. Rank rewards are claimed by hand (keys renown:1..5).
 const MX_RANKS=[{at:20,r:{keep:1,dust:30}},{at:50,r:{keep:2,dust:50}},{at:90,r:{mpAll:2,dust:60}},{at:130,r:{keep:3,dust:80}},{at:175,r:{frag:'star',keep:3,dust:100}}];
 function mxRenown(){const x=mxS();let n=MX_ORDER.filter(d=>x.seen[d]).length*5+mxRecordCount()*5;
-  for(const id in MX_QUESTS){const q=x.q[id];if(q&&q.s==='done')n+=MX_QUESTS[id].kind==='main'?30:15;}return n;}
+  for(const id in MX_QUESTS){const q=x.q[id];if(q&&q.s==='done')n+=MX_QUESTS[id].kind==='main'?30:15;}
+  for(const k of ['act:drill','act:sundial','act:pages'])if(claimed(k))n+=10;return n;}
 const mxRank=()=>{const n=mxRenown();return MX_RANKS.filter(k=>n>=k.at).length;};
 const mxClaimable=()=>MX_RANKS.filter((k,i)=>mxRenown()>=k.at&&!claimed('renown:'+(i+1))).length;
 function showRenown(back){const n=mxRenown(),rk=mxRank(),nx=MX_RANKS[rk];let note='';
@@ -4236,7 +4425,7 @@ function showMeridian(){
   const started=seen>0;
   openOverlay(h('div',{class:'ss mx',style:thumbOf('market')?'--bg:url('+thumbOf('market')+')':null},
     h('div',{class:'ss-hero'},h('p',{class:'eyebrow'},'Meridian · before the Festival'),h('h2',{class:'ss-title'},'The last free city'),
-      h('p',{class:'ss-info'},started?'Renown rank '+mxRank()+' · Districts '+seen+' / '+MX_ORDER.length+' · Quests '+qd+' / '+Object.keys(MX_QUESTS).length+' · Records '+mxRecordCount()+' / '+MX_RECORDS+' · ✦ '+save.dust+' · Keepsakes '+(save.keep|0)
+      h('p',{class:'ss-info'},started?'Renown rank '+mxRank()+' · Districts '+seen+' / '+MX_ORDER.length+' · Quests '+qd+' / '+Object.keys(MX_QUESTS).length+' · Records '+mxRecordCount()+' / '+MX_RECORDS+' · Chests today '+mxChestsToday()+' · ✦ '+save.dust+' · Keepsakes '+(save.keep|0)
         :'Walk the city as Kairos. Talk to people, help where you can, and find what Meridian keeps in its corners.'),mxMapGrid()),
     h('nav',{class:'tm-menu'},
       it(started?'Continue':'Walk the city',started?'At '+MX_DISTRICTS[x.at].name:'Start in the Market Ring',mxBegin,' primary',{'data-primary':'1'}),
@@ -8038,7 +8227,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf={grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf={mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,

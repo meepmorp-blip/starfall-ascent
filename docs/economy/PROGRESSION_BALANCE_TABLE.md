@@ -68,3 +68,16 @@ Points available today: 5 districts × 5 + 11 records × 5 + 30 + 5 optional que
 ## Currency loop check
 - Salvage returns at most 120 Stardust for a Lv 5 Star-born fragment that cost 250 to Attune: no profit.
 - Renown, Meridian quests and records, star ratings and the Chapter 1 first-clear Keepsakes are all keyed claims. Each pays once, including after a reload, after restoring a backup of the same save, or on a second visit.
+
+## Expansion 04: exploration rewards
+| Source | Reward | Repeat | Claim key |
+|---|---|---|---|
+| Daily chest, common | 6 Stardust | daily | `chest:<day>:<district>:<n>` |
+| Daily chest, fine (about half the districts each day) | 12 Stardust | daily | same |
+| Daily chest, precious (one in the city) | 20 Stardust · 1 Keepsake | daily | same |
+| Agnes's Drill Course | first clear 40 Stardust · 1 Keepsake, then 10 Stardust a day | daily | `act:drill`, `act:drill:<day>` |
+| The Hour Candles | 30 Stardust · 1 Star Fragment | once | `act:sundial` |
+| The Festival Programme | first time 1 Keepsake, then 15 Stardust a day | daily | `act:pages`, `act:pages:<day>` |
+
+A full day in Meridian (about 13 chests, the drill and the pages) pays about 125 Stardust and 1 Keepsake, roughly four Battle stages. This also gives Keepsakes the repeatable source they were missing: one a day.
+Each activity's first clear adds 10 Renown (total available: 215).

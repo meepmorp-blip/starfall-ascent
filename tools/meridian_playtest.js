@@ -33,8 +33,9 @@ async function walkTo(tx,ty,maxMs=8000){const t0=Date.now();let last=null,side=0
     if(last&&Math.hypot(q.x-last.x,q.y-last.y)<2){side=(side+1)%2;const k=Math.abs(dx)>Math.abs(dy)?(side?'KeyW':'KeyS'):(side?'KeyA':'KeyD');await p.keyboard.down(k);await p.waitForTimeout(320);await p.keyboard.up(k);}
     last=q;const k=keyFor(dx,dy);await p.keyboard.down(k);await p.waitForTimeout(Math.min(220,Math.max(40,Math.max(Math.abs(dx),Math.abs(dy))*2)));await p.keyboard.up(k);}}
 async function npcPos(id){return p.evaluate(id=>{const m=__sf.m();const n=m.npcs.find(o=>o.id===id);return n?{x:n.x,y:n.y,mk:n.mk}:null;},id);}
-async function talk(id){const n=await npcPos(id);if(!n)return false;
-  await walkTo(n.x+(n.x>400?-26:26),n.y+4);await p.keyboard.down('KeyF');await p.waitForTimeout(60);await p.keyboard.up('KeyF');await p.waitForTimeout(250);
+async function talk(id){let n=await npcPos(id);if(!n)return false;
+  // townsfolk walk their routes now: keep following until close (they stop and wait once Kairos is near)
+  for(let k=0;k<5;k++){n=await npcPos(id);await walkTo(n.x+(n.x>400?-26:26),n.y+4);const q=await p.evaluate(()=>__sf.p());const n2=await npcPos(id);if(Math.hypot(q.x-n2.x,q.y-n2.y)<36)break;}await p.keyboard.down('KeyF');await p.waitForTimeout(60);await p.keyboard.up('KeyF');await p.waitForTimeout(250);
   for(let i=0;i<20;i++){const s=await p.evaluate(()=>__sf.st());if(s==='dialog'){await p.keyboard.press('Space');await p.waitForTimeout(90);}else break;}
   await p.waitForTimeout(200);return true;}
 async function exitTo(side){const B=await p.evaluate(()=>__sf.bounds()),cx=(B[0]+B[2])/2,cy=B[1]+(B[3]-B[1])*0.55;const pos={w:[B[0]+40,cy],e:[B[2]-40,cy],n:[cx,B[1]+40],s:[cx,B[3]-40]}[side];await walkTo(pos[0],pos[1],9000);

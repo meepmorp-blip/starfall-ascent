@@ -10,7 +10,7 @@
 |---|---|---|---|---|
 | **Stardust** ✦ | General currency | Account | Kills, story missions, Chapter 1, Starlight Rifts, star ratings, salvage, Meridian quests and records, Renown ranks | Milestones, skill upgrades, Attune, Retrograde, Transit |
 | **Memories** | Character EXP | Per character | Fights (split across the party), story missions, Chapter 1, Memory Well Rifts, Keepsakes | Levels (automatic) |
-| **Keepsakes** (new) | EXP material | Account, used on any one character | Meridian quests, Renown ranks, first Chapter 1 clear | +120 Memories to the character you choose, in Builds › Level & milestones |
+| **Keepsakes** (new) | EXP material | Account, used on any one character | Meridian quests, Renown ranks, first Chapter 1 clear, the daily precious chest, first clears of the drill and the programme | +120 Memories to the character you choose, in Builds › Level & milestones |
 | **Mastery** | Character material | Per character | Story missions, Battle, Clocktower Drills, Chapter 1, Renown rank 3 | Skills, milestones |
 | **Star Fragments** | Equipment | Account | Fights, chests, elemental Rifts, Trials, Horaios weekly, Meridian Records, Renown rank 5 | Equipped; upgraded with Stardust; salvaged into Stardust |
 
