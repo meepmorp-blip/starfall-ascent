@@ -5670,6 +5670,19 @@ function figHead(g,skin,r){r=r||6.2;
   g.fillStyle=skin;circ(g,0,-13,r);g.fill();
   g.fillStyle='rgba(0,0,0,0.13)';g.beginPath();g.arc(0,-13,r,Math.PI*0.15,Math.PI*0.85);g.closePath();g.fill();
   g.fillStyle=skin;circ(g,-r*0.72,-12.4,1.5);g.fill();g.fillStyle='rgba(0,0,0,0.2)';circ(g,-r*0.72,-12.2,0.7);g.fill();}
+// softer face for the female cast: skin-tone jawline instead of a grey crescent, small rosy mouth
+function femJaw(g,cy,r,sh){g.save();g.globalAlpha=0.6;g.strokeStyle=sh;g.lineWidth=0.7;g.beginPath();g.arc(0,cy,r-0.35,Math.PI*0.28,Math.PI*0.72);g.stroke();g.restore();}
+function femMouth(g,x,y){g.fillStyle='rgba(196,104,108,0.85)';g.fillRect(x,y,1.1,0.45);}
+function femHead(g,skin,sh,r){r=r||6.2;
+  g.fillStyle=skin;g.fillRect(-1.8,-8,3.6,2.6);g.fillStyle=sh;g.fillRect(-1.8,-8,3.6,1);
+  g.fillStyle=skin;circ(g,0,-13,r);g.fill();femJaw(g,-13,r,sh);
+  g.fillStyle=skin;circ(g,-r*0.72,-12.4,1.5);g.fill();g.fillStyle=sh;circ(g,-r*0.72,-12.2,0.7);g.fill();}
+function femEye(g,x){x=x||2.7;const x2=x-3.4;
+  g.fillStyle='rgba(225,120,110,0.38)';g.fillRect(x+0.2,-10.4,1.8,1);g.fillRect(x2-0.6,-10.4,1.6,1);
+  g.fillStyle='#14101A';g.fillRect(x,-12.8,1.5,2);g.fillRect(x2,-12.8,1.3,2);
+  g.fillStyle='#FFFFFF';g.fillRect(x+0.7,-12.8,0.6,0.6);g.fillRect(x2+0.6,-12.8,0.5,0.5);
+  g.fillStyle='rgba(20,16,26,0.75)';g.fillRect(x-0.2,-14.1,1.9,0.6);g.fillRect(x2-0.3,-14.1,1.7,0.6);
+  femMouth(g,x2+1.6,-9.5);}
 function figEye(g,x){x=x||2.7;const x2=x-3.4;
   g.fillStyle='rgba(225,120,110,0.38)';g.fillRect(x+0.2,-10.4,1.8,1);g.fillRect(x2-0.6,-10.4,1.6,1);
   g.fillStyle='#14101A';g.fillRect(x,-12.8,1.5,2);g.fillRect(x2,-12.8,1.3,2);
@@ -5817,8 +5830,8 @@ function naomiSide(g,step){
   // capelet over the shoulders, gold trim, a cross on the near shoulder
   g.fillStyle=NP.green;rrect(g,-7.4,-8.6,15,6.2,3);g.fill();g.fillStyle=NP.greenHi;g.fillRect(-5,-8.4,9,0.8);g.fillStyle=NP.trim;g.fillRect(-7,-2.8,14.2,0.7);
   nCross(g,4.4,-5.6);g.fillStyle=NP.trim;circ(g,-1,-6.4,1.1);g.fill();
-  figHead(g,NP.skin);nHair(g,'side');nBow(g,-5.6,-16.6);
-  figEye(g,2.8);g.fillStyle='rgba(40,70,55,0.7)';g.fillRect(2.8,-12.8,1.5,0.7);}
+  femHead(g,NP.skin,NP.skinSh);nHair(g,'side');nBow(g,-5.6,-16.6);
+  femEye(g,2.8);g.fillStyle='rgba(40,70,55,0.7)';g.fillRect(2.8,-12.8,1.5,0.7);}
 function naomiFront(g,step){
   nLegs(g,step);
   // skirt: ivory apron front with green side panels and a gold leaf motif
@@ -5837,11 +5850,11 @@ function naomiFront(g,step){
   g.fillStyle=NP.ivory;g.beginPath();g.moveTo(-1.8,-8.4);g.lineTo(1.8,-8.4);g.lineTo(0,-5.6);g.closePath();g.fill();
   g.fillStyle='#24160C';circ(g,0,-5.6,1.5);g.fill();g.fillStyle=NP.trim;circ(g,0,-5.6,1.1);g.fill();g.fillStyle=NP.vialDk;g.fillRect(-0.4,-6,0.8,0.8);
   // head straight on
-  g.fillStyle=NP.skin;g.fillRect(-1.8,-8,3.6,2.6);circ(g,0,-13,6.2);g.fill();g.fillStyle='rgba(0,0,0,0.12)';g.beginPath();g.arc(0,-13,6.2,Math.PI*0.15,Math.PI*0.85);g.closePath();g.fill();
+  g.fillStyle=NP.skin;g.fillRect(-1.8,-8,3.6,2.6);circ(g,0,-13,6.2);g.fill();femJaw(g,-13,6.2,NP.skinSh);
   nHair(g,'front');nBow(g,5.4,-16.6);
   for(const ex of [-3.2,1.8]){g.fillStyle='#14101A';g.fillRect(ex,-12.4,1.4,1.9);g.fillStyle='rgba(40,70,55,0.75)';g.fillRect(ex,-11.1,1.4,0.6);g.fillStyle='#FFFFFF';g.fillRect(ex+0.7,-12.4,0.6,0.6);g.fillStyle='rgba(20,16,26,0.7)';g.fillRect(ex-0.2,-13.6,1.8,0.5);}
   g.fillStyle='rgba(225,120,110,0.4)';g.fillRect(-4.6,-10.2,1.6,0.9);g.fillRect(3.2,-10.2,1.6,0.9);
-  g.fillStyle='rgba(120,60,50,0.7)';g.fillRect(-0.8,-9.4,1.6,0.5);}
+  femMouth(g,-0.55,-9.3);}
 function naomiBack(g,step){
   nLegs(g,step);
   g.fillStyle=NP.ivory;g.beginPath();g.moveTo(-6.8,1.6);g.lineTo(6.8,1.6);g.lineTo(8.6,8.2);g.lineTo(-8.6,8.2);g.closePath();g.fill();
@@ -6078,14 +6091,14 @@ function cassSide(g,step){
   // ivory collar
   g.fillStyle=CSP.ivory;rrect(g,-3.6,-9.2,8,3.2,1.4);g.fill();g.fillStyle=CSP.ivorySh;g.fillRect(-3.2,-6.6,7,0.6);
   // face, hair, coif, veil top
-  figHead(g,CSP.skin,5.8);
+  femHead(g,CSP.skin,CSP.skinSh,5.8);
   g.fillStyle=CSP.hair;g.beginPath();g.moveTo(-5.6,-14);g.lineTo(1,-15.4);g.lineTo(2,-12.6);g.lineTo(3.4,-14.6);g.lineTo(5,-12.8);g.lineTo(5.8,-15);g.lineTo(-5.6,-16.4);g.closePath();g.fill();g.fillRect(-6.2,-14,2.4,7.6);
   // black veil over the crown, the ivory coif band only across the forehead
   g.fillStyle=CSP.black;g.beginPath();g.arc(-0.4,-14.6,7.4,Math.PI*0.98,Math.PI*2.02);g.lineTo(6.6,-14.4);g.lineTo(5.4,-15.6);g.lineTo(-6.4,-15.6);g.lineTo(-7.6,-13.4);g.closePath();g.fill();
   g.fillStyle=CSP.charHi;g.fillRect(-3.6,-21,5,0.7);
   g.fillStyle=CSP.ivory;g.beginPath();g.moveTo(-3,-17.4);g.lineTo(6.2,-16.8);g.lineTo(6.4,-14.8);g.lineTo(-3,-15.6);g.closePath();g.fill();
   g.fillStyle=CSP.ivorySh;g.fillRect(-3,-15.8,9.2,0.5);cMark(g,2.6,-16.2,0.5);
-  figEye(g,2.5);}
+  femEye(g,2.5);}
 function cassFront(g,step){
   cLegs(g,step);
   // habit with an ivory apron panel down the front, crimson at the side slits
@@ -6104,12 +6117,12 @@ function cassFront(g,step){
   // face straight on, veil framing it, crimson lining showing at the sides
   g.fillStyle=CSP.black;g.beginPath();g.arc(0,-14,7.6,Math.PI,Math.PI*2);g.lineTo(7.6,-6.4);g.lineTo(5.4,-6.4);g.lineTo(5.2,-13);g.lineTo(-5.2,-13);g.lineTo(-5.4,-6.4);g.lineTo(-7.6,-6.4);g.closePath();g.fill();
   g.fillStyle=CSP.red;g.fillRect(-6.8,-12,1.2,5.4);g.fillRect(5.6,-12,1.2,5.4);
-  g.fillStyle=CSP.skin;g.fillRect(-1.8,-8,3.6,1.6);circ(g,0,-12.6,5.4);g.fill();g.fillStyle='rgba(0,0,0,0.12)';g.beginPath();g.arc(0,-12.6,5.4,Math.PI*0.15,Math.PI*0.85);g.closePath();g.fill();
+  g.fillStyle=CSP.skin;g.fillRect(-1.8,-8,3.6,1.6);circ(g,0,-12.6,5.4);g.fill();femJaw(g,-12.6,5.4,CSP.skinSh);
   g.fillStyle=CSP.hair;g.beginPath();g.moveTo(-5.4,-13.8);g.lineTo(-3.6,-11.8);g.lineTo(-2.2,-13.6);g.lineTo(-0.2,-12);g.lineTo(1.6,-13.6);g.lineTo(3.6,-11.8);g.lineTo(5.4,-13.8);g.lineTo(5.4,-15.4);g.lineTo(-5.4,-15.4);g.closePath();g.fill();
   g.fillRect(-5.4,-13.8,1.2,5);g.fillRect(4.2,-13.8,1.2,5);
   g.fillStyle=CSP.ivory;rrect(g,-5.8,-18,11.6,2.8,1);g.fill();g.fillStyle=CSP.ivorySh;g.fillRect(-5.6,-15.6,11.2,0.5);cMark(g,0,-17,0.7);
   for(const ex of [-3,1.6]){g.fillStyle='#14101A';g.fillRect(ex,-12.2,1.4,1.8);g.fillStyle='#FFFFFF';g.fillRect(ex+0.7,-12.2,0.6,0.6);g.fillStyle='rgba(20,16,26,0.7)';g.fillRect(ex-0.2,-13.2,1.8,0.5);}
-  g.fillStyle='rgba(225,120,110,0.35)';g.fillRect(-4.2,-10.2,1.4,0.8);g.fillRect(2.8,-10.2,1.4,0.8);g.fillStyle='rgba(120,60,50,0.6)';g.fillRect(-0.7,-9.4,1.4,0.5);}
+  g.fillStyle='rgba(225,120,110,0.35)';g.fillRect(-4.2,-10.2,1.4,0.8);g.fillRect(2.8,-10.2,1.4,0.8);femMouth(g,-0.55,-9.3);}
 function cassBack(g,step){
   cLegs(g,step);
   g.fillStyle=CSP.char;g.beginPath();g.moveTo(-6.8,-7);g.lineTo(6.8,-7);g.lineTo(8.4,9.4);g.lineTo(-8.4,9.4);g.closePath();g.fill();
@@ -6123,8 +6136,8 @@ function cassBack(g,step){
   g.fillStyle=CSP.gold;g.beginPath();g.moveTo(-6.6,-1.4);g.lineTo(0,3.4);g.lineTo(6.6,-1.4);g.lineTo(6.6,-0.6);g.lineTo(0,4.2);g.lineTo(-6.6,-0.6);g.closePath();g.fill();
   cMark(g,0,-3.4,1.1);g.fillStyle=CSP.charHi;g.fillRect(-4,-19.6,6,0.7);g.fillStyle='rgba(0,0,0,0.25)';g.fillRect(4.6,-12,1.6,10);
   g.fillStyle=CSP.ivory;g.fillRect(-5.6,-18.4,11.2,1.2);}
-// ═══ Dess: shy researcher. Sage hair, small round glasses, ivory lab coat with dusty-pink cuffs, dark green dress, notebook, satchel and vials.
-const DP={hair:'#8FAE96',hairHi:'#C4DCC4',hairSh:'#5E7C66',skin:'#F0D2B6',skinSh:'#D2B096',coat:'#E6DCC8',coatSh:'#BEB298',coatHi:'#F6F0E2',
+// ═══ Dess: shy researcher. Dusty-pink hair, small round glasses, ivory lab coat with dusty-pink cuffs, dark green dress, notebook, satchel and vials.
+const DP={hair:'#C98E9C',hairHi:'#EEC6CE',hairSh:'#9A5C70',skin:'#F0D2B6',skinSh:'#D2B096',coat:'#E6DCC8',coatSh:'#BEB298',coatHi:'#F6F0E2',
   pink:'#C46A80',pinkHi:'#E0909E',green:'#2A4030',greenHi:'#3C5A44',leather:'#5A3A24',leatherHi:'#7A5236',frame:'#3A2E2A',lens:'rgba(200,230,240,0.35)',
   tights:'#26222A',boot:'#4A3024',bootHi:'#6A4834',gold:'#C9A25A',book:'#6A4A7A',bookHi:'#8E6CA0',page:'#F2EAD6',core:'155,212,255'};
 function dLegs(g,step){figLegs(g,step,DP.tights,DP.boot);g.fillStyle=DP.bootHi;g.fillRect(-4.9,8.8+step,4.6,0.7);g.fillRect(0.6,8.8-step,4.6,0.7);
@@ -6176,11 +6189,11 @@ function dessSide(g,step){
   dCore(g,9.6,2+step*0.5);
   // collar
   g.fillStyle=DP.coat;g.beginPath();g.moveTo(-5.6,-8.6);g.lineTo(-1.4,-8.2);g.lineTo(-2.6,-4.8);g.lineTo(-6.2,-5.6);g.closePath();g.fill();g.fillStyle=DP.pink;g.fillRect(1.4,-8.4,2.4,0.8);
-  figHead(g,DP.skin);dHair(g,'side');dBow(g,-5.4,-11);
+  femHead(g,DP.skin,DP.skinSh);dHair(g,'side');dBow(g,-5.4,-11);
   // single round lens over the eye, a freckle below
-  figEye(g,2.8);g.fillStyle='rgba(60,100,80,0.7)';g.fillRect(2.8,-12.8,1.5,0.7);
+  femEye(g,2.8);g.fillStyle='rgba(60,100,80,0.7)';g.fillRect(2.8,-12.8,1.5,0.7);
   g.strokeStyle=DP.frame;g.lineWidth=0.55;circ(g,3.5,-12.2,1.9);g.stroke();g.fillStyle=DP.lens;circ(g,3.5,-12.2,1.6);g.fill();g.fillStyle=DP.frame;g.fillRect(-1,-12.6,2.6,0.4);
-  g.fillStyle='rgba(225,120,120,0.4)';g.fillRect(2.4,-9.8,1.8,0.7);g.fillStyle='rgba(120,70,50,0.75)';g.fillRect(4.4,-9.8,0.5,0.5);}
+  g.fillStyle='rgba(225,120,120,0.4)';g.fillRect(2.4,-9.8,1.8,0.7);g.fillStyle='rgba(150,80,70,0.7)';g.fillRect(3.9,-10.3,0.5,0.5);}
 function dessFront(g,step){
   dLegs(g,step);
   dDress(g,-4.2,4.2,1.4);
@@ -6200,14 +6213,14 @@ function dessFront(g,step){
   g.fillStyle=DP.coat;for(const sx of [-1,1]){g.beginPath();g.moveTo(sx*1.4,-8.6);g.lineTo(sx*5.4,-8.6);g.lineTo(sx*3,-4.8);g.closePath();g.fill();}
   dBow(g,0,-7.4);
   // head straight on
-  g.fillStyle=DP.skin;g.fillRect(-1.8,-8.4,3.6,1.2);circ(g,0,-13,6.2);g.fill();g.fillStyle='rgba(0,0,0,0.1)';g.beginPath();g.arc(0,-13,6.2,Math.PI*0.15,Math.PI*0.85);g.closePath();g.fill();
+  g.fillStyle=DP.skin;g.fillRect(-1.8,-8.4,3.6,1.2);circ(g,0,-13,6.2);g.fill();femJaw(g,-13,6.2,DP.skinSh);
   dHair(g,'front');dBow(g,5.6,-16.4);
   for(const ex of [-3.2,1.8]){g.fillStyle='#14101A';g.fillRect(ex,-12.4,1.4,1.8);g.fillStyle='rgba(60,100,80,0.8)';g.fillRect(ex,-11.2,1.4,0.6);g.fillStyle='#FFFFFF';g.fillRect(ex+0.7,-12.4,0.6,0.6);
     g.strokeStyle=DP.frame;g.lineWidth=0.5;circ(g,ex+0.7,-11.6,1.85);g.stroke();g.fillStyle=DP.lens;circ(g,ex+0.7,-11.6,1.6);g.fill();}
   g.fillStyle=DP.frame;g.fillRect(-0.6,-11.9,1.2,0.4);
   g.fillStyle='rgba(225,120,120,0.42)';g.fillRect(-4.8,-9.6,1.6,0.8);g.fillRect(3.2,-9.6,1.6,0.8);
-  g.fillStyle='rgba(120,70,50,0.8)';g.fillRect(-2.2,-9.2,0.5,0.5);
-  g.fillStyle='rgba(120,60,50,0.6)';g.fillRect(-0.6,-9,1.2,0.4);}
+  g.fillStyle='rgba(150,80,70,0.7)';g.fillRect(2.9,-10.6,0.5,0.5);
+  femMouth(g,-0.55,-9.2);}
 function dessBack(g,step){
   dLegs(g,step);
   g.fillStyle=DP.coat;g.beginPath();g.moveTo(-7.4,-7);g.lineTo(7.4,-7);g.lineTo(8.6,8.8);g.lineTo(0.7,8.8);g.lineTo(0,5);g.lineTo(-0.7,8.8);g.lineTo(-8.6,8.8);g.closePath();g.fill();
@@ -6250,14 +6263,14 @@ const LOOKS={
     // the rifle, long and dark, held low across her body
     g.save();g.translate(-2,0.4+step*0.4);g.rotate(-0.14);g.fillStyle='#1A1A1E';g.fillRect(-4,-1.3,23,2.6);g.fillStyle='#3A3236';g.fillRect(-7.4,-1.8,6.4,3.6);
     g.fillStyle='#0E0E12';g.fillRect(5.6,-3.6,6.4,2.2);g.fillStyle='#5A6A8A';g.fillRect(6,-3.4,1.4,1.2);g.fillStyle='#2A2A30';g.fillRect(17,-1.6,3,3.2);g.restore();
-    figHead(g,'#E2B898',6);
+    femHead(g,'#E2B898','#C49478',6);
     // navy scarf, wrapped high
     g.fillStyle='#2A3A6A';rrect(g,-6.8,-9.6,13.6,4,2);g.fill();g.fillStyle='#1C2A50';g.fillRect(-6.4,-7,12.8,0.8);g.fillStyle='#3E5290';g.fillRect(-5.4,-9.2,8,0.7);
     // black bob with a side-swept fringe
     g.fillStyle='#16141E';g.beginPath();g.arc(0,-14,6.8,Math.PI*0.92,Math.PI*2.08);g.lineTo(6.4,-9.6);g.lineTo(5,-11.4);g.lineTo(4.4,-9.8);g.quadraticCurveTo(2.4,-14.6,-3.6,-13.4);g.lineTo(-6,-11);g.lineTo(-7.2,-8.8);g.closePath();g.fill();
     g.beginPath();g.moveTo(-7.2,-14);g.lineTo(-8.4,-8.6);g.lineTo(-6,-10.2);g.closePath();g.fill();
     g.fillStyle='#2E2C3E';g.fillRect(-3,-19.6,4,0.8);g.fillRect(1.6,-18.4,3,0.7);
-    figEye(g,2.6);
+    femEye(g,2.6);
     g.fillStyle='rgba(60,70,110,0.55)';g.fillRect(2.6,-12.8,1.5,0.7);},
   bram(g,step){figLegs(g,step,'#3A2E28','#5A3A22',1.3);
     // knee plates and steel toe caps
