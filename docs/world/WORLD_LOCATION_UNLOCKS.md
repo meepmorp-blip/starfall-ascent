@@ -23,7 +23,7 @@ A locked place shows "???" until the story has shown it:
 | Place | Stage | Built? |
 |---|---|---|
 | 5 districts | — | Yes |
-| St. Hesper's | 2 | Stage 2 |
+| St. Hesper's | 2 | **Yes** |
 | Concord Office | 3 | Not yet: map shows "Not open yet" once unlocked |
 | Ash Lane | 4 | Not yet |
 | Clock Tower | 5 | Not yet |

@@ -33,7 +33,7 @@ await p.evaluate(()=>__sf.mxBegin());await p.waitForTimeout(800);
 let bad=[];
 for(const d of D){await go(d);
   const r=await p.evaluate(d=>{const m=__sf.m(),B=__sf.bounds(),out=[],X=(fx)=>B[0]+(B[2]-B[0])*fx,Y=(fy)=>B[1]+(B[3]-B[1])*fy;
-    const exits={market:['w','e','n','s'],plaza:['w'],yard:['e'],chapel:['s'],ward:['n']}[d];
+    const exits=window.__sf_exits[d];
     const people=m.npcs.filter(n=>!n.spot&&!n.draw);
     for(const [fx,fy] of window.__sf_spots[d]){const x=X(fx),y=Y(fy);
       if(x<B[0]+12||x>B[2]-12||y<B[1]+12||y>B[3]-10)out.push(d+' '+fx+','+fy+' bounds');

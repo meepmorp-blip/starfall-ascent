@@ -68,7 +68,7 @@ await talk('sister');I=await info();ok(I.q.lanterns.s==='done','giving the lante
 await talk('chapel.hymn');await talk('chapel.cups');
 await exitTo('s');await exitTo('w');I=await info();ok(I.at==='yard','west to the Garrison Yard');await shot('yard');
 const agnes=await npcPos('agnes');ok(!!agnes,'Agnes is in the Yard (met in Chapter 1)');
-await talk('sold');I=await info();ok(I.q.roster&&I.q.roster.s==='active','soldier starts "The Duty Roster"');
+await talk('sold');I=await info();ok(I.q.roster&&I.q.roster.s==='active','soldier starts "The Duty Roster"'+(I.q.roster?'':' [at '+I.at+', p '+Math.round(I.x)+','+Math.round(I.y)+']'));
 await talk('yard.tally');
 await exitTo('e');await talk('market.board');I=await info();ok(I.q.roster.n===1,'pinning the roster advances the quest');
 await exitTo('s');I=await info();ok(I.at==='ward','south to St. Lucia’s');await shot('ward');

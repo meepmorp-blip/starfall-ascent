@@ -10,11 +10,12 @@ for(const [w,h,touch] of VIEWS){
   await p.goto(url);await p.evaluate(()=>{localStorage.clear();localStorage.setItem('starfall-ascent-prefs',JSON.stringify({music:0,sfx:0,tutDone:1,guideSeen:1,tipsSeen:['move','attack']}));
     localStorage.setItem('starfall-ascent-save',JSON.stringify({v:2,chars:{},frags:[],dust:0,nextId:1,keep:0,claims:{},ch1Clears:1,mx:{v:1,at:'market',seen:{market:1},talk:{},found:{},q:{streets:{s:'active',n:0,at:1}},items:{},f:{}}}));});
   await p.goto(url);await p.waitForTimeout(500);await p.evaluate(()=>__sf.mxBegin());await p.waitForTimeout(700);
-  for(const d of ['market','plaza','yard','chapel','ward']){
+  for(const d of await p.evaluate(()=>Object.keys(window.__sf_exits))){
     await p.evaluate(d=>__sf.mxGo(d),d);await p.waitForTimeout(900);
     const r=await p.evaluate(([d,check])=>{const m=__sf.m(),B=__sf.bounds(),H=__sf.hud(),X=f=>B[0]+(B[2]-B[0])*f,Y=f=>B[1]+(B[3]-B[1])*f;
-      const exits={market:['w','e','n','s'],plaza:['w'],yard:['e'],chapel:['s'],ward:['n']}[d];
+      const exits=window.__sf_exits[d];
       const avoid=[];for(const n of m.npcs){if(n.tier)continue;for(const q of (n.pts||[{x:n.x,y:n.y}]))avoid.push([q.x,q.y,n.spot?30:34]);}
+      if(d==='hesper')for(const [fx,fy] of window.__sf_hide)avoid.push([X(fx),Y(fy),40]);
       for(const o of m.objs||[])avoid.push([o.x+(o.w||0)/2,o.y+(o.h||0)/2,(o.w?Math.max(o.w,o.h)/2:o.r||8)+26]);
       // the market corner (crate wall) is off limits for daily chests
       const inCorner=(x,y)=>d==='market'&&x<B[0]+110&&y>B[3]-110;
@@ -26,6 +27,8 @@ for(const [w,h,touch] of VIEWS){
         if(x<B[0]+14||x>B[2]-14||y<B[1]+16||y>B[3]-10)why.push('bounds');
         for(const s of m.solids){if(s.w){if(x>s.x-14&&x<s.x+s.w+14&&y>s.y-14&&y<s.y+s.h+14)why.push('box');}else if(Math.hypot(x-s.x,y-s.y)<s.r+16)why.push('solid');}
         for(const [ax,ay,r] of avoid)if(Math.hypot(x-ax,y-ay)<r)why.push('near');
+        // whole walking routes, not just their stops: a chest beside a path steals the talk prompt from a passing NPC
+        for(const n of m.npcs){if(!n.pts||n.pts.length<2)continue;for(let i=0;i<n.pts.length;i++){const A=n.pts[i],Bq=n.pts[(i+1)%n.pts.length],vx=Bq.x-A.x,vy=Bq.y-A.y,L2=vx*vx+vy*vy||1,t=Math.max(0,Math.min(1,((x-A.x)*vx+(y-A.y)*vy)/L2));if(Math.hypot(x-(A.x+vx*t),y-(A.y+vy*t))<56)why.push('route '+n.id);}}
         for(const e of exits){const ex=e==='w'?B[0]:e==='e'?B[2]:X(0.5),ey=e==='n'?B[1]:e==='s'?B[3]:Y(0.55);if(Math.hypot(x-ex,y-ey)<80)why.push('exit '+e);}
         if(inCorner(x,y))why.push('corner');
         const sx0=H.ox+(x-14)*H.scale,sx1=H.ox+(x+14)*H.scale,sy0=H.oy+(y-18)*H.scale,sy1=H.oy+(y+10)*H.scale;
@@ -36,7 +39,8 @@ for(const [w,h,touch] of VIEWS){
     if(check)bad.push(...r.map(x=>x+' @'+w+'x'+h));else{const k=d;res[k]=res[k]?res[k].filter(x=>r.includes(x)):r;}}
   await ctx.close();}
 if(check){console.log(bad.length?'BAD\n'+bad.join('\n'):'ALL SPOTS OK');}
-else for(const d in res){const pts=res[d].map(s=>s.split(',').map(Number));
+else{require('fs').writeFileSync('out/spots_valid.json',JSON.stringify(res));}
+if(!check)for(const d in res){const pts=res[d].map(s=>s.split(',').map(Number));
   // greedy farthest-point picks, starting from the point nearest a corner
   const pick=[];if(pts.length){pts.sort((a,b)=>Math.min(a[0],1-a[0])+Math.min(a[1],1-a[1])-(Math.min(b[0],1-b[0])+Math.min(b[1],1-b[1])));pick.push(pts[0]);
     while(pick.length<7&&pick.length<pts.length){let best=null,bd=-1;for(const q of pts){const dm=Math.min(...pick.map(r=>Math.hypot((q[0]-r[0])*1.9,q[1]-r[1])));if(dm>bd){bd=dm;best=q;}}pick.push(best);}}

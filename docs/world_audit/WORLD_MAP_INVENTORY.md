@@ -10,6 +10,8 @@ Audit of `index.html` at commit `4875c06`, compared against `Starfall_Lore_Bible
 
 **There are 14 painted themes plus 1 cutscene skyline, so 15 unique environments.** Several locations share a theme; those are counted once.
 
+> **Update (World Expansion 01):** St. Hesper's Orphanage is now freely explorable (Stage 2); there is a regional world map with fast travel (Stage 1). See `docs/world/`.
+
 ## Inventory
 
 Legend for the Contains columns: **N** NPCs · **I** interactables · **C** combat.

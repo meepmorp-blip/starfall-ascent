@@ -81,3 +81,12 @@ Points available today: 5 districts × 5 + 11 records × 5 + 30 + 5 optional que
 
 A full day in Meridian (about 13 chests, the drill and the pages) pays about 125 Stardust and 1 Keepsake, roughly four Battle stages. This also gives Keepsakes the repeatable source they were missing: one a day.
 Each activity's first clear adds 10 Renown, and each of the two secrets (Expansion 05) adds 5: total available 225. Expansion 05 also adds an old barrel (10 Stardust once), a daily supply crate (4 Stardust a day) and two secrets (25 and 15 Stardust once).
+
+## World Expansion 01 · St. Hesper's
+| Source | Reward | Repeat | Claim key |
+|---|---|---|---|
+| St. Hesper's daily chests (2–3) | as other districts | daily | `chest:<day>:hesper:<n>` |
+| Hide-and-Seek | first find 1 Keepsake, then 10 Stardust a day | daily | `act:hideseek`, `act:hideseek:<day>` |
+| Three marbles (hidden record) | 10 Stardust | once | `mxf:hesper.marbles` |
+
+Renown available rises from 225 to 260: +5 for the new district, +20 for four new records, +10 for Hide-and-Seek.
