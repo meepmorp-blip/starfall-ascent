@@ -917,7 +917,13 @@ body{font-weight:600}
 .mx-r{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline;padding:7px 10px;margin:0 0 6px;background:rgba(20,15,10,.5);border-radius:4px}
 .mx-r b{color:#FFE6A3;font-size:13px}.mx-r span{font-size:11px;color:#C9B48A}.mx-r p{grid-column:1/-1;margin:0;font-size:12.5px;color:#F6EBD2;line-height:1.4}
 .mx-r.lock b,.mx-r.lock p{color:#7A7068}
-@media (max-height:520px){.ss.mx .mx-n i{display:none}.ss.mx .mx-n{padding:5px 4px;font-size:11px}.ss.mx .mx-map{margin:4px 0;gap:4px;max-width:340px}.ss.mx .ss-title{font-size:20px}.ss.mx .ss-info{font-size:11.5px;margin:2px 0}.mx-list{max-height:52vh}}
+@media (max-height:520px){.ss.mx .mx-n i{display:none}.ss.mx .mx-n{padding:5px 4px;font-size:11px}.ss.mx .mx-map{margin:4px 0;gap:4px;max-width:340px}.ss.mx .ss-title{font-size:20px}.ss.mx .ss-info{font-size:11.5px;margin:2px 0}.mx-list{max-height:52vh}.mx-list.mx-rn{max-height:38vh}.form.mx h2{font-size:20px}.form.mx .mx-bar{margin:4px 0 6px}}
+.keepbox{border:1px solid rgba(201,162,90,.45);background:rgba(201,162,90,.08);border-radius:6px;padding:8px 10px;margin:8px 0 4px}
+.keepbox .kb-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.keepbox .kb-top b{color:var(--star-ink,#C9A25A)}.keepbox .kb-top span{font-size:12px;opacity:.85}
+.keepbox .kb-pv{margin:4px 0 0;font-size:12px;opacity:.9}
+.mx-rank{display:flex;gap:10px;align-items:center;padding:8px 10px;margin:0 0 6px;background:rgba(20,15,10,.55);border-radius:4px;border-left:3px solid #6E6456}
+.mx-rank.ready{border-left-color:#FFE6A3}.mx-rank.got{opacity:.6;border-left-color:#6E8A74}.mx-rank b{color:#FFE6A3;min-width:58px}.mx-rank span{flex:1;font-size:12.5px;color:#F6EBD2}
+.mx-bar{height:6px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden;margin:6px 0 10px}.mx-bar i{display:block;height:100%;background:#C9A25A}
 </style>
 </head>
 <body>
@@ -1408,8 +1414,9 @@ function loadSave(){
       try{localStorage.setItem(SAVE_KEY+'-broken-'+Date.now(),raw);}catch(_){}
       saveWarn='Your save could not be read, so a new one was started. A copy of the old one was kept on this device.';s=null;}}
   if(!s)s={chars:{},frags:[],dust:0,nextId:1};
-  s.v=1;
+  s.v=2; // v2 (Expansion 02): keep = Keepsakes, claims = one-time rewards already given
   s.frags=Array.isArray(s.frags)?s.frags:[];s.dust=s.dust|0;s.nextId=s.nextId||1;
+  s.keep=Math.max(0,s.keep|0);if(!s.claims||typeof s.claims!=='object'||Array.isArray(s.claims))s.claims={};
   for(const id of CH_ORDER)if(!s.chars[id])s.chars[id]={xp:0,lvl:1,slots:{sun:null,moon:null,rising:null}};
   return s;
 }
@@ -1639,6 +1646,24 @@ function skLv(id,k){const c=save.chars[id];return (c&&c.sk&&c.sk[k])||1;}
 function skMul(id,k){return 1+0.05*(skLv(id,k)-1);}
 function skCost(lv){return {mp:lv,dust:15*lv};}
 function giveMp(ids,n){if(n<=0)return;for(const id of ids){const c=save.chars[id];c.mp=(c.mp|0)+n;}}
+// ═══ Reward architecture (Expansion 02). Every one-time reward goes through grantReward(reward,key):
+// a key that was already claimed pays nothing. reward = {dust, keep, mpAll, frag:'boss'|'star'|'chest'}
+// Keys in use: mxq:<quest>, mxf:<record>, renown:<rank>, ch1:first. Future: rift:<id>:<tier>, wboss:<boss>:<week>, trial:<sign>:<rung>, memx:<char>:<n>
+const KEEP_XP=120; // one Keepsake = 120 Memories to one character
+function rewardLines(r){const L=[];if(!r)return L;
+  if(r.dust)L.push('+'+r.dust+' Stardust');if(r.keep)L.push('+'+r.keep+' Keepsake'+(r.keep>1?'s':''));
+  if(r.mpAll)L.push('Mastery +'+r.mpAll+' for all eight');if(r.frag)L.push(r.frag==='star'?'a Star-born Fragment':'a Star Fragment');return L;}
+function grantReward(r,key){
+  if(key&&save.claims[key])return null;
+  if(r.dust)save.dust+=r.dust;if(r.keep)save.keep=(save.keep|0)+r.keep;if(r.mpAll)giveMp(CH_ORDER,r.mpAll);
+  if(r.frag){const was=save.frags.length;gainFrag(r.frag);if(save.frags.length===was&&r.frag==='star')save.dust+=80;}
+  if(key)save.claims[key]=Date.now();persist();return rewardLines(r);}
+const claimed=key=>!!save.claims[key];
+// use n Keepsakes on one character; returns {used, from, to}
+function useKeepsakes(id,n){const c=save.chars[id],from=c.lvl;let used=0;
+  while(used<n&&(save.keep|0)>0&&c.lvl<MAX_LVL){save.keep--;giveXp([id],KEEP_XP);used++;}
+  if(used)persist();return {used,from,to:c.lvl};}
+function keepPreview(id,n){const c=save.chars[id];let lvl=c.lvl,xp=c.xp+KEEP_XP*n;while(lvl<MAX_LVL&&xp>=xpNeed(lvl)){xp-=xpNeed(lvl);lvl++;}if(lvl>=MAX_LVL)xp=0;return {lvl,xp};}
 // Memories drop from Vices; the total is split between the party at the end of the stage
 function memDrop(e){if(!run||run.practice)return;const v=e.type==='champion'?30:e.elite?12:e.gen?1.5:4.5;run.mem=(run.mem||0)+v;
   if(rand()<0.6)part(e.x,e.y-6,rr(-30,30),-rr(40,90),0.7,'#B9A6FF',2.6);}
@@ -3992,19 +4017,19 @@ const MX_ACTIVITIES={
 };
 // ── quests: steps are checked in order; ok() true moves to the next step
 const MX_QUESTS={
-  streets:{title:'Know the Streets',kind:'main',giver:'Old Matteo · Market Ring',desc:'Matteo wants you to walk the whole city today and tell him it is all still there.',reward:{dust:40},
+  streets:{title:'Know the Streets',kind:'main',giver:'Old Matteo · Market Ring',desc:'Matteo wants you to walk the whole city today and tell him it is all still there.',reward:{dust:40,keep:2},
     steps:[{id:'walk',t:'Visit every district',prog:()=>MX_ORDER.filter(d=>mxS().seen[d]).length+' / '+MX_ORDER.length,ok:()=>MX_ORDER.every(d=>mxS().seen[d])},
       {id:'tell',t:'Tell Matteo what you saw (Market Ring)',ok:()=>mxF('streetsTold')}]},
-  glasses:{title:'Matteo’s Glasses',kind:'optional',giver:'Old Matteo · Market Ring',desc:'Not on his head this time. He last had them feeding the pigeons by the fountain in Festival Square.',reward:{dust:30},
+  glasses:{title:'Matteo’s Glasses',kind:'optional',giver:'Old Matteo · Market Ring',desc:'Not on his head this time. He last had them feeding the pigeons by the fountain in Festival Square.',reward:{dust:30,keep:1},
     steps:[{id:'find',t:'Look by the fountain in Festival Square',ok:()=>mxHas('glasses')},{id:'back',t:'Bring the glasses to Matteo (Market Ring)',ok:()=>mxF('glassesBack')}]},
-  roster:{title:'The Duty Roster',kind:'optional',giver:'Garrison soldier · Garrison Yard',desc:'The evening rooftop roster has to go up on the Market Ring board before the shift changes.',reward:{dust:30},
+  roster:{title:'The Duty Roster',kind:'optional',giver:'Garrison soldier · Garrison Yard',desc:'The evening rooftop roster has to go up on the Market Ring board before the shift changes.',reward:{dust:30,keep:1},
     steps:[{id:'post',t:'Pin the roster to the board in the Market Ring',ok:()=>mxF('rosterPosted')},{id:'back',t:'Report back to the soldier (Garrison Yard)',ok:()=>mxF('rosterDone')}]},
-  lanterns:{title:'Lanterns for Vespers',kind:'optional',giver:'Lantern seller · Festival Square',desc:'The Cloister ordered a lantern for evening prayers, and the seller cannot leave the stall.',reward:{dust:25},
+  lanterns:{title:'Lanterns for Vespers',kind:'optional',giver:'Lantern seller · Festival Square',desc:'The Cloister ordered a lantern for evening prayers, and the seller cannot leave the stall.',reward:{dust:25,keep:1},
     steps:[{id:'take',t:'Take the lantern to the Sister at the Cloister gate',ok:()=>mxF('lanternGiven')}]},
-  rounds:{title:'Rounds',kind:'optional',giver:'Ward nurse · St. Lucia’s',desc:'Dr. Lark’s ward is asking people their birthdays. The nurse wants a few answers from people who are not patients.',reward:{dust:40},
+  rounds:{title:'Rounds',kind:'optional',giver:'Ward nurse · St. Lucia’s',desc:'Dr. Lark’s ward is asking people their birthdays. The nurse wants a few answers from people who are not patients.',reward:{dust:40,keep:1},
     steps:[{id:'ask',t:'Ask Matteo, Rosa and the fish vendor their birthdays',prog:()=>['bd_matteo','bd_rosa','bd_fish'].filter(mxF).length+' / 3',ok:()=>['bd_matteo','bd_rosa','bd_fish'].every(mxF)},
       {id:'back',t:'Tell the nurse at St. Lucia’s',ok:()=>mxF('roundsDone')}]},
-  records:{title:'Meridian Records',kind:'optional',giver:'Found on your own',desc:'Notices, plaques and odd corners. The city keeps more than it says.',reward:{dust:50,frag:1},
+  records:{title:'Meridian Records',kind:'optional',giver:'Found on your own',desc:'Notices, plaques and odd corners. The city keeps more than it says.',reward:{dust:50,frag:'boss'},
     steps:[{id:'find',t:'Find 8 records around Meridian',prog:()=>mxRecordCount()+' / 8',ok:()=>mxRecordCount()>=8}]},
 };
 function mxStart(id){const x=mxS();if(x.q[id])return;x.q[id]={s:'active',n:0,at:Date.now()};persist();
@@ -4012,9 +4037,7 @@ function mxStart(id){const x=mxS();if(x.q[id])return;x.q[id]={s:'active',n:0,at:
 function mxTick(){const x=mxS();let ch=false;
   for(const id in MX_QUESTS){const q=x.q[id];if(!q||q.s!=='active')continue;const Q=MX_QUESTS[id];
     while(q.n<Q.steps.length&&Q.steps[q.n].ok()){q.n++;ch=true;}
-    if(q.n>=Q.steps.length){q.s='done';q.end=Date.now();const r=Q.reward,got=[];
-      if(r.dust){save.dust+=r.dust;got.push('+'+r.dust+' Stardust');}
-      if(r.frag){gainFrag('boss');got.push('a Star Fragment');}
+    if(q.n>=Q.steps.length){q.s='done';q.end=Date.now();const got=grantReward(Q.reward,'mxq:'+id)||[];
       if(room)setBanner('Quest complete · '+Q.title,got.join(' · '),2.8);sfx('bless');}
     else if(ch&&room)setBanner(Q.title,Q.steps[q.n].t,2);}
   if(ch)persist();}
@@ -4133,7 +4156,7 @@ function mxNpcs(d){
   const Fd=MX_FINDS.filter(f=>f.at===d).map(f=>{const n={id:f.id,fx:f.fx,fy:f.fy,spot:1,find:f};
     n.lines=()=>typeof f.text==='function'?f.text():f.text;
     n.talk=()=>{const x=mxS(),first=!x.found[f.id];x.found[f.id]=1;if(f.on)f.on();
-      if(first&&f.reward&&f.reward.dust)save.dust+=f.reward.dust;
+      if(first&&f.reward)grantReward(f.reward,'mxf:'+f.id);
       if(first&&!f.act&&!f.quest){if(!x.q.records)mxStart('records');setBanner('Record found · '+f.title,(f.reward?'+'+f.reward.dust+' Stardust · ':'')+mxRecordCount()+' of '+MX_RECORDS+' records',2.2);sfx('bless');}
       persist();mxTick();};
     n.hide=()=>(f.vis&&!f.vis())||(f.hidden&&!mxS().found[f.id]&&Math.hypot(player.x-n.x,player.y-n.y)>70);
@@ -4177,6 +4200,32 @@ function mxDrawOver(c,m){const f=m.leave?Math.min(1,m.leave.t/0.22):mxFade;if(f>
 function mxSub(m){return MX_DISTRICTS[m.M.dist].name+' · '+mxRecordCount()+' / '+MX_RECORDS+' records · '+(isTouch?'walk up and tap ⚔':'walk up and press F')+' · walk off an edge arrow to travel';}
 function mxBegin(){ensureAudio();const x=mxS();persist();newRun('explore',['kairos'],0);mxFrom=null;mxFade=1;enterRoom('m_mx_'+x.at);}
 
+// ── Meridian Renown: account progress from districts, records and quests. Rank rewards are claimed by hand (keys renown:1..5).
+const MX_RANKS=[{at:20,r:{keep:1,dust:30}},{at:50,r:{keep:2,dust:50}},{at:90,r:{mpAll:2,dust:60}},{at:130,r:{keep:3,dust:80}},{at:175,r:{frag:'star',keep:3,dust:100}}];
+function mxRenown(){const x=mxS();let n=MX_ORDER.filter(d=>x.seen[d]).length*5+mxRecordCount()*5;
+  for(const id in MX_QUESTS){const q=x.q[id];if(q&&q.s==='done')n+=MX_QUESTS[id].kind==='main'?30:15;}return n;}
+const mxRank=()=>{const n=mxRenown();return MX_RANKS.filter(k=>n>=k.at).length;};
+const mxClaimable=()=>MX_RANKS.filter((k,i)=>mxRenown()>=k.at&&!claimed('renown:'+(i+1))).length;
+function showRenown(back){const n=mxRenown(),rk=mxRank(),nx=MX_RANKS[rk];let note='';
+  const draw=()=>{const n2=mxRenown();
+    openOverlay(h('div',{class:'form mx'},formHead('Meridian','Renown'),
+      h('h2',{style:'margin:2px 0 0'},'Rank '+mxRank()+(mxRank()>=MX_RANKS.length?' · max':'')),
+      h('p',{class:'ss-info',style:'margin:2px 0'},n2+' Renown'+(MX_RANKS[mxRank()]?' · next rank at '+MX_RANKS[mxRank()].at:'')+' · ✦ '+save.dust+' · Keepsakes '+(save.keep|0)),
+      h('div',{class:'mx-bar'},h('i',{style:'width:'+Math.min(100,Math.round(n2/MX_RANKS[MX_RANKS.length-1].at*100))+'%'})),
+      h('div',{class:'mx-list mx-rn'},...MX_RANKS.map((k,i)=>{const key='renown:'+(i+1),got=claimed(key),ready=n2>=k.at&&!got;
+        return h('div',{class:'mx-rank'+(got?' got':ready?' ready':'')},h('b',null,'Rank '+(i+1)),h('span',null,rewardLines(k.r).join(' · ')+(got?'':' · at '+k.at)),
+          got?h('span',{style:'flex:0;color:#9BE7B8;font-weight:700'},'Claimed'):h('button',{class:'btn small'+(ready?'':' ghost'),type:'button',disabled:ready?null:'disabled',
+            onclick:()=>{const L=grantReward(k.r,key);if(L){note='Rank '+(i+1)+': '+L.join(' · ');sfx('bless');}draw();}},ready?'Claim':'Locked'));}),
+        h('p',{class:'ss-info',style:'margin:6px 0 0'},'Renown comes from exploring: a new district 5, a record 5, a quest 15 (the main quest 30). Use Keepsakes in Builds › Level & milestones.')),
+      note?h('p',{class:'note',style:'color:#9BE7B8;margin:6px 0 0'},note):null,
+      h('div',{class:'row'},h('button',{class:'btn',type:'button','data-back':'1','data-primary':'1',onclick:()=>back()},'Back'))),'mode-select');};
+  draw();}
+// players who finished Meridian quests before Expansion 02 get those quests' Keepsakes once (Stardust was already paid)
+function mxMigrate(){const x=save.mx;if(!x||!x.q)return;let ch=false;
+  for(const id in MX_QUESTS){const q=x.q[id],key='mxq:'+id;if(q&&q.s==='done'&&!save.claims[key]){const k=MX_QUESTS[id].reward.keep;if(k)save.keep=(save.keep|0)+k;save.claims[key]=Date.now();ch=true;}}
+  for(const f of MX_FINDS){const key='mxf:'+f.id;if(f.reward&&x.found&&x.found[f.id]&&!save.claims[key]){save.claims[key]=Date.now();ch=true;}}
+  if(ch)persist();}
+mxMigrate();
 // ── Meridian menu and Journal
 function mxMapGrid(){const x=mxS(),cell=d=>d?h('div',{class:'mx-n'+(x.seen[d]?'':' off')+(x.at===d?' here':'')},x.seen[d]?MX_DISTRICTS[d].name:'Not visited',h('i',null,x.at===d?'You are here':(x.seen[d]?MX_DISTRICTS[d].blurb.split('.')[0]:'?'))):h('div',{class:'mx-n mx-gap'});
   return h('div',{class:'mx-map','aria-label':'Map of Meridian'},cell(null),cell('chapel'),cell(null),cell('yard'),cell('market'),cell('plaza'),cell(null),cell('ward'),cell(null));}
@@ -4187,17 +4236,18 @@ function showMeridian(){
   const started=seen>0;
   openOverlay(h('div',{class:'ss mx',style:thumbOf('market')?'--bg:url('+thumbOf('market')+')':null},
     h('div',{class:'ss-hero'},h('p',{class:'eyebrow'},'Meridian · before the Festival'),h('h2',{class:'ss-title'},'The last free city'),
-      h('p',{class:'ss-info'},started?'Districts '+seen+' / '+MX_ORDER.length+' · Quests done '+qd+' / '+Object.keys(MX_QUESTS).length+' · Records '+mxRecordCount()+' / '+MX_RECORDS
+      h('p',{class:'ss-info'},started?'Renown rank '+mxRank()+' · Districts '+seen+' / '+MX_ORDER.length+' · Quests '+qd+' / '+Object.keys(MX_QUESTS).length+' · Records '+mxRecordCount()+' / '+MX_RECORDS+' · ✦ '+save.dust+' · Keepsakes '+(save.keep|0)
         :'Walk the city as Kairos. Talk to people, help where you can, and find what Meridian keeps in its corners.'),mxMapGrid()),
     h('nav',{class:'tm-menu'},
       it(started?'Continue':'Walk the city',started?'At '+MX_DISTRICTS[x.at].name:'Start in the Market Ring',mxBegin,' primary',{'data-primary':'1'}),
       it('Journal','Quests and records',()=>showJournal(showMeridian)),
+      it('Renown',mxClaimable()?mxClaimable()+' reward'+(mxClaimable()>1?'s':'')+' to claim':'Rank '+mxRank()+' of '+MX_RANKS.length,()=>showRenown(showMeridian),mxClaimable()?' guide-new':''),
       it('Back','Main menu',()=>goHome(),'',{'data-back':'1'}))),'mode-select');
 }
 function showJournal(back,tab){
   tab=tab||'quests';const x=mxS();
   const qCard=id=>{const Q=MX_QUESTS[id],q=x.q[id],done=q.s==='done',st=!done&&Q.steps[q.n];
-    const rw=[Q.reward.dust?Q.reward.dust+' Stardust':null,Q.reward.frag?'a Star Fragment':null].filter(Boolean).join(' · ');
+    const rw=rewardLines(Q.reward).map(t=>t.replace(/^\+/,'')).join(' · ');
     return h('div',{class:'mx-q'+(done?' done':'')},h('h4',null,Q.title,h('em',{class:Q.kind==='main'?'':'opt'},Q.kind==='main'?'Main':'Optional'),done?h('em',{class:'opt'},'Done'):null),
       h('p',null,Q.desc),st?h('p',{class:'ob'},'→ '+st.t+(st.prog?' ('+st.prog()+')':'')):null,
       Object.keys(x.items).length&&!done&&id==='glasses'&&x.items.glasses?h('p',{class:'rw'},'Carrying: Matteo’s glasses'):null,
@@ -4985,9 +5035,10 @@ function showCh1End(){
   const xp=first?200:60,dust=first?100:30,ups=giveXp(CH_ORDER,xp);save.dust+=dust;giveMp(CH_ORDER,first?5:2);
   const found=[];if(first)for(let i=0;i<2;i++){gainFrag('boss');found.push(save.frags[save.frags.length-1]);}
   save.ch1b=Object.assign(save.ch1b||{},{done:true,i:0,k:null});persist();
+  const kp=first?grantReward({keep:3},'ch1:first'):null;
   const rw=h('div',{class:'mech rw'},h('div',{class:'rwh'},ico('memory'),'Memories +'+xp+' for all eight'+(first?' (first clear)':'')),
     h('div',{class:'row1'},...ups.map(u=>h('span',{class:'lvchip'+(u.up?' up':'')},nameOf(u.id)+' Lv '+u.lvl+(u.up?' ↑':'')))),
-    h('div',null,h('span',{class:'dustpill'},ico('star'),'+'+dust+' Stardust')),
+    h('div',null,h('span',{class:'dustpill'},ico('star'),'+'+dust+' Stardust'),kp?h('span',{class:'dustpill',style:'margin-left:6px'},ico('memory'),'+3 Keepsakes'):null),
     found.length?h('div',{class:'rwh'},ico('gem'),found.length+' Star Fragments added to Builds'):null);
   openOverlay(h('div',{class:'form',style:'max-width:600px'},formHead('Story','Chapter 1 complete'),h('div',{class:'stamp'},'Chapter 1'),
     h('h2',null,'Then come get me'),
@@ -5553,6 +5604,16 @@ function showBuilds(back){
         h('span',{class:'bd'},head,h('span',{class:'bv-nm'},f.sign+' '+f.deg+'° ',pips(f.lvl)),
           h('span',{class:'chips'},h('span',{class:'chip'},'+'+Math.round(r.slotV*100)+'%'),a?h('span',{class:'chip '+(a.exact?'asp-ex':'asp-on')},ASP_GLYPH[a.name]+' '+a.name):null,fitChip(fitOf(f,cid)))));};
     const fxl=fxLines(fx),need=xpNeed(cs.lvl);
+    // Keepsakes: carry Memories to any character, including ones on the bench
+    function keepBox(){const k=save.keep|0,max=cs.lvl>=MAX_LVL,toNext=max?0:Math.ceil((need-cs.xp)/KEEP_XP),pv=keepPreview(cid,1);
+      const use=n=>{const r=useKeepsakes(cid,n);if(!r.used)return;msg=r.used+' Keepsake'+(r.used>1?'s':'')+' used · +'+r.used*KEEP_XP+' Memories'+(r.to>r.from?' · Lv '+r.from+' → '+r.to:'');sfx(r.to>r.from?'bless':'select');render();};
+      return h('div',{class:'keepbox'},
+        h('div',{class:'kb-top'},ico('memory'),h('b',null,'Keepsakes × '+k),h('span',null,'Each one gives '+nameOf(cid)+' '+KEEP_XP+' Memories.')),
+        max?h('p',{class:'kb-pv'},'Max level.'):k?h('p',{class:'kb-pv'},'Use 1 → Lv '+pv.lvl+(pv.lvl<MAX_LVL?' · '+pv.xp+' / '+xpNeed(pv.lvl):'')+(toNext>1&&toNext<=k?' · '+toNext+' reach Lv '+(cs.lvl+1):'')):h('p',{class:'kb-pv'},'Earn Keepsakes from Meridian quests, Renown ranks and the first Chapter 1 clear.'),
+        max||!k?null:h('div',{class:'row',style:'gap:6px;margin-top:4px'},
+          h('button',{class:'btn small',type:'button',onclick:()=>use(1)},'Use 1'),
+          toNext>1&&toNext<=k?h('button',{class:'btn small outline',type:'button',onclick:()=>use(toNext)},'Use '+toNext+' · to Lv '+(cs.lvl+1)):null),
+        msg&&/Keepsake/.test(msg)?h('p',{class:'note',style:'color:var(--res-ink);margin:4px 0 0'},msg):null);}
     const setBox=(()=>{const c2=setCount(cid),act=Object.entries(c2).filter(([el,n])=>n>=2);return h('div',{class:'setbox'},h('b',null,'Element set'),
         act.length?h('span',null,...act.map(([el,n])=>h('span',{class:'chip el-'+el},ico(el),el+' ×'+n+': '+SET_TXT[el][0]+(n>=3?' + '+SET_TXT[el][1]:'')))):h('span',null,'Equip 2 or 3 fragments of the same element for a bonus.'));})();
     const bonusBox=h('details',{class:'bv-bonus'},h('summary',null,ico('up'),'Total bonuses ('+fxl.length+')'),
@@ -5565,6 +5626,7 @@ function showBuilds(back){
       formHead('Recollection · '+c.name,c.role),
       h('div',{class:'bigstat'},h('b',null,'Lv '+cs.lvl),h('span',null,cs.lvl>=MAX_LVL?'max level':cs.xp+' / '+need+' Memories')),
       h('div',{class:'xpbar',style:'height:6px;background:var(--ink-line)'},h('i',{style:'background:var(--star-ink);width:'+(cs.lvl<MAX_LVL?Math.round(cs.xp/need*100):100)+'%'})),
+      keepBox(),
       h('div',{class:'sect'},ico('star'),'Milestones'),
       h('p',{class:'bv-tip'},'Reach the level, then awaken each milestone with Mastery and Stardust.'),
       h('ul',{class:'miles'},...MILESTONES.map(([lv,t])=>{const on=msOn(cid,lv),reach=cs.lvl>=lv,cost=msCost(lv),can=reach&&!on&&(cs.mp|0)>=cost.mp&&save.dust>=cost.dust;
@@ -7976,7 +8038,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf={bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf={grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
