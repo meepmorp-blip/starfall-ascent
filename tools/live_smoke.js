@@ -12,7 +12,7 @@ await p.goto(URL,{waitUntil:'load'});await p.waitForTimeout(1200);
 ok(await p.locator('.tm-item',{hasText:'Meridian'}).count()===1,'live: home menu loads with Meridian');
 await p.locator('.tm-item',{hasText:'Meridian'}).click();await p.waitForTimeout(500);
 await p.locator('.tm-item',{hasText:'Walk the city'}).click();await p.waitForTimeout(1500);
-for(const d of ['market','plaza','yard','chapel','ward','hesper']){await p.evaluate(d=>__sf.mxGo(d),d);await p.waitForTimeout(1300);
+for(const d of ['market','plaza','yard','chapel','ward','hesper','office']){await p.evaluate(d=>__sf.mxGo(d),d);await p.waitForTimeout(1300);
   const r=await p.evaluate(()=>({at:__sf.mx().at,st:__sf.st(),objs:(__sf.m().objs||[]).length,chests:__sf.m().npcs.filter(n=>n.tier).length}));
   ok(r.at===d&&r.st==='play'&&r.chests>=2,'live: '+d+' loads ('+r.chests+' chests, '+r.objs+' objects)');await p.screenshot({path:`out/live_${tag}_${d}.png`});}
 await p.evaluate(()=>__sf.mxGo('market'));await p.waitForTimeout(1000);
