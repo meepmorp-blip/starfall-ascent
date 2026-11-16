@@ -153,6 +153,29 @@ ok(!f9.ch1b.roster.includes('lucan')&&f9.ch1b.roster.includes('dess')&&f9.ch1b.m
 s=await advance();ok(s&&s.m==='walk'&&await E(()=>__sf.m().M.name)==='The Crane House','R12: the Crane house walk');await completeWalk();
 s=await advance({choose:[/Why me/],until:/^Scene 1[01]/});ok(!!(await S()).ch1b.flags.c_crane_why,'the Crane choice is saved (c_crane_why)');
 }
+if(!only||only==='5'){
+// ═══ Stage 5b · R13 the Clock Tower → R14 Naomi's warning
+await at('Scene 11#0',['kairos','ines','bram','theo','dess'],{c_lucas_door:1,c_cores_free:1,c_joke:1},['kairos','ines','bram','noemi','theo','lucan','dess']);
+let s=await advance({choose:[/breakfast/]});ok(s&&s.m==='walk'&&await E(()=>__sf.m().M.name)==='The Clock Tower','R13: the tower walk (evening, no Lucas yet)');
+ok(!(await E(()=>__sf.m().npcs.map(n=>n.id))).includes('lucan'),'Lucas is not at the tower yet');
+await shot('r13_tower');
+let r=await talk('tallies');ok(r.lines&&/one mark/.test(r.lines.join(' ')),'the chalk tallies are the clue');
+const b0=await E(()=>({n:__sf.bond('noemi'),t:__sf.bond('theo')}));r=await talk('ticker');await p.waitForTimeout(300);const b1=await E(()=>({n:__sf.bond('noemi'),t:__sf.bond('theo')}));
+ok(b1.n===b0.n+1&&b1.t===b0.t+1,'Naomi’s Bond moment happens by ticker, for both Naomi and Theo ('+JSON.stringify(b0)+' → '+JSON.stringify(b1)+')');
+r=await talk('dess');ok(r.lines&&/lanterns/.test(r.lines.join(' ')),'Dess remembers the cores you freed (c_cores_free)');
+r=await talk('gears');ok(r.pzl,'the clock room opens the gear puzzle');
+const no=await pzlPick(0);ok(/grind back/.test(no),'turning the wrong gear first: the train grinds back');
+for(const a of [2,1,1,0])await pzlPick(a);await drainDialog();ok(!!(await F()).clock_hatch,'turning them in tally order lifts the hatch (clock_hatch)');
+await p.waitForTimeout(1700);
+s=await advance({choose:[/really up here/]});ok(s&&s.m==='walk'&&await E(()=>__sf.m().M.name)==='Two in the Morning','Cassie in the bell loft, then Lucas arrives: the night walk');
+const c5=await S();ok(c5.ch1b.roster.includes('lucan')&&!c5.ch1b.roster.includes('cass'),'Lucas rejoins the party; Cassie does not join yet ('+c5.ch1b.roster.join(',')+')');
+ok(c5.ch1b.flags.c_cass_ask,'the Cassie choice is saved (c_cass_ask)');
+const f0=(await S()).frags.length;r=await talk('page');await p.waitForTimeout(300);ok((await F()).cass_page&&(await S()).frags.length>f0,'the hymnal page she dropped: cass_page and a Star Fragment');
+await completeWalk();
+s=await advance({choose:[/For Tessa/],until:/^Scene 12/});const c6=await S();
+ok(c6.ch1b.flags.c_fest_tessa&&/^Scene 12/.test(c6.ch1b.k),'Naomi’s warning and the debate end in the Festival choice (c_fest_tessa), then the Festival');
+ok(JSON.stringify(c6.ch1b.roster.slice().sort())===JSON.stringify(['bram','dess','ines','kairos','lucan','theo']),'party entering the Festival: Kairos, Agnes, Bram, Theo, Lucas, Dess ('+c6.ch1b.roster.join(',')+')');
+}
 }catch(e){log.push('CRASH '+String(e.stack).split('\n').slice(0,3).join(' '));}
 ok(errs.length===0,'no page errors'+(errs.length?': '+errs.join(' | '):''));
 console.log(log.join('\n'));fs.writeFileSync(`out/ch1r_${mode}_log.txt`,log.join('\n'));await b.close();server.close();})();

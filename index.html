@@ -4018,21 +4018,9 @@ addMission('longway',{type:'walk',name:'The Long Way Home',place:'St. Hesper’s
     {id:'gate',spot:1,fx:0.9,fy:0.45,need:1,last:1,wait:[['n','The orphanage gate. Not yet. Something else first.']],lines:[['n','The clock above the gate. 11:59. It has said 11:59 his whole life.'],['n','He has never looked at it before. He has looked at it a thousand times.']]}]});
 
 addMission('tower',{type:'walk',name:'The Clock Tower',place:'St. Hesper’s clock tower',theme:'roof',party:['kairos'],lvl:4,count:false,
-  brief:'Evening. Nobody is chasing you for once. Talk to whoever you like. Lucas is at the clock face.',goal:'Evening at the clock tower',start:[0.12,0.6],
-  hint:m=>{const l=m.npcs.find(n=>n.id==='lucan');return l&&!l.done?'Lucas is waiting at the clock face':'The dead clock';},
+  brief:'Somewhere nobody checks. Talk to whoever you like. Something above the clock room is wired shut.',goal:'Evening at the clock tower',start:[0.12,0.6],
+  hint:m=>{const g=m.npcs.find(n=>n.id==='gears');return g&&!g.done?'The clock room. The gears won’t turn.':'The bell-loft hatch';},
   npcs:()=>[
-    {id:'lucan',fx:0.5,fy:0.22,ch:'lucan',need:1,face:-1,bond:['lucan'],label:'Lucas',lines:[
-      ['lucan','You’d make me count the seconds up here, so we knew when inspection was over.'],
-      ['kairos','You made ME count. I hated it.'],['lucan','You did it anyway.'],['kairos','Because you asked.'],
-      ['lucan','The kitchen fire. It stopped, didn’t it. I didn’t dream that.'],
-      ['kairos','It stopped. I heard the ticking, and I pulled you out. I still don’t know why I could.'],
-      ['lucan','My father says I’ll feel differently tomorrow.'],['kairos','Will you?'],
-      ['lucan','I keep waiting to feel like the boy who stole bread. I don’t. I feel like a clerk who’s very good at forms.'],
-      ['kairos','You don’t have to be him.'],
-      ['lucan','No. I don’t think I need to be who I was.'],
-      ['lucan','I just need to be someone who doesn’t leave.'],
-      ['lucan','So. Whatever comes out of those rifts. The Church. My father. I’m not losing you twice.'],
-      ['kairos','That sounds like a vow.'],['lucan','It is one. Don’t make it weird.']]},
     {id:'ines',fx:0.25,fy:0.3,ch:'ines',face:1,bond:['ines'],label:'Agnes',lines:[
       ['kairos','What are you writing?'],['ines','Incident report. The Garrison wants one for every rift.'],['ines','You remember everything. Check my times.']],
       puzzle:{head:'Agnes’s report',title:'Tuesday, in order',exit:1,rounds:[
@@ -4050,22 +4038,59 @@ addMission('tower',{type:'walk',name:'The Clock Tower',place:'St. Hesper’s clo
       puzzle:{head:'Theo’s drone',title:'Hand me the thing',exit:1,rounds:[
         {q:'Theo holds his hand out without looking. “The thing. With the spring.”',opts:['The coiled spring','The brass lens','A spoon'],a:0,no:'Theo: That’s not a spring. That’s… why do I have that?'},
         {q:'“Now the other thing.” He mimes something small and round you look through.',opts:['The brass lens','Another spoon','His sandwich'],a:0,no:'Theo: Round and you look THROUGH it.'}]},
-      solved:[['theo','You hand me the right thing before I know what I want. Do you know how rare that is?'],['noemi','I do.'],['theo','…Naomi does that too.'],['theo','Where’s my— '],['noemi','Left pocket.'],['theo','Thank you.']]},
-    {id:'noemi',fx:0.82,fy:0.45,ch:'noemi',face:-1,bond:['noemi'],label:'Naomi',lines:[
-      ['noemi','Hand.'],['n','She turns his palm to the lantern. The old burn scars, pale and shiny.'],['noemi','How old were you?'],['kairos','Nine.'],
-      ['noemi','You remember the pain?'],['kairos','I remember everything.'],['noemi','That’s not the same as being fine.'],
-      ['kairos','Why do you really write on your arm?'],
-      ['noemi','Because people in this city talk themselves out of the scary things. I don’t want to be one of them.'],
-      ['noemi','You made a concussion joke to the doctor checking you for a concussion. Bold.',{if:'c_noemi_joke'}],
-      ['noemi','You noticed my shoes. Nobody notices my shoes.',{if:'c_noemi_sharp'}],
-      ['noemi','If this gets worse, and it will, I’m not leaving him behind. Or you. That isn’t kindness. I’m just stubborn.']]},
+      solved:[['theo','You hand me the right thing before I know what I want. Do you know how rare that is?'],['theo','Naomi does that. Every time. Left pocket, before I ask.']]},
+    {id:'ticker',spot:1,fx:0.8,fy:0.45,bond:['noemi','theo'],label:'The ticker',lines:[
+      ['n','Theo’s brass ticker sits on a crate, tapping in the dark. Theo reads it aloud without looking up from his drone.'],
+      ['theo','“BED SEVEN DREW THE FOUNTAIN AGAIN. SAME LADY ON TOP.”'],
+      ['theo','“ASK KAIROS HOW HIS HANDS ARE.”'],
+      ['kairos','Tell her they’re fine.'],
+      ['theo','She says that’s not the same as being fine. She says she can hear you lying through the wire.'],
+      ['n','Tap. Tap-tap.'],
+      ['theo','“IF THIS GETS WORSE IM NOT LEAVING ANY OF YOU BEHIND. THATS NOT KINDNESS. IM STUBBORN.”'],
+      ['theo','…She means it. She always means it.'],
+      ['th','A doctor across the city, keeping a ward alive, and still counting us.']]},
     {id:'dess',fx:0.1,fy:0.25,ch:'dess',face:1,bond:['dess'],label:'Dess',lines:[
       ['kairos','You left your father tonight. Are you okay?'],['dess','Ask me tomorrow. Or n-next year.'],
-      ['n','She has the cores lined up by colour, then by size, then by colour again.'],
+      ['dess','The cores went up the stairwell like lanterns. I keep thinking about where they went.',{if:'c_cores_free'}],
+      ['dess','I wrote down every shelf number. Forty-one. I can see them when I close my eyes.',{if:'c_cores_keep'}],
       ['dess','I can hear them a little. Somebody’s bad day. A song. Rain on a roof I’ve never seen.'],
       ['dess','The little one who helped us. She has my laugh. I’ve been trying not to think about why.'],
       ['kairos','Dess…'],['dess','Don’t. Please. I’m smart enough to guess. I’m not brave enough to know. Not yet.']]},
-    {id:'clock',spot:1,fx:0.5,fy:0.55,need:1,last:1,flag:'vision',wait:[['th','The dead clock. Later. Lucas is still up there by the face.']],lines:[
+    {id:'beam',spot:1,fx:0.42,fy:0.2,lines:[['n','Low on a roof beam, cut with a kitchen knife: K and L. The L is neater.'],['th','He taught me the K. I did it backwards twice.'],['th','We got up here on the third try. The first two, Agathe caught us on the stairs.']]},
+    {id:'tin',spot:1,fx:0.58,fy:0.85,lines:[['n','A bread tin wedged behind a crate. Empty, except for crumbs gone to stone and one marble.'],['th','He always kept one marble back. “For emergencies.”'],['th','I never found out what kind of emergency needs a marble.']],on:()=>{ch1Find('r13tin',{dust:25},'An emergency marble');}},
+    {id:'tallies',spot:1,fx:0.86,fy:0.18,label:'Chalk marks',lines:[['n','On the wall of the clock room, next to each of the four big gears, children’s chalk tally marks. Faded, but someone pressed hard.'],
+      ['n','By the stair gear: one mark. By the little gear: two. By the window gear: three. By the great wheel: four.'],
+      ['th','We counted the order we turned them. Lucas’s idea. My counting.']]},
+    {id:'gears',spot:1,fx:0.5,fy:0.42,need:1,label:'The clock room',lines:[['n','The clock’s train of gears, frozen at 11:59. A wire runs from the great wheel up through the ceiling, to the bell-loft hatch.'],['n','Four gears you can turn by hand. Turn them in the wrong order and the whole train grinds back.']],
+      puzzle:{head:'The stopped clock',title:'Turn the gears',rounds:[
+        {q:'Which gear first?',opts:['The great wheel','The little gear','The stair gear','The window gear'],a:2,ok:'Click. The stair gear holds.',no:'The gears grind back with a clunk. Somewhere, children kept count of this.'},
+        {q:'Then?',opts:['The window gear','The little gear','The great wheel'],a:1,ok:'Click.',no:'Clunk. Back to the start of the turn.'},
+        {q:'Then?',opts:['The great wheel','The window gear'],a:1,ok:'Click. The wire tightens.',no:'Clunk.'},
+        {q:'And last?',opts:['The great wheel'],a:0,ok:'The great wheel turns. Above, the hatch lifts.'}]},
+      solved:[['n','The wire draws tight. Somewhere above the ceiling, a bolt slides back and the bell-loft hatch lifts an inch.'],['th','Someone up there. A lamp.']],on:F=>{F.clock_hatch=true;}}]});
+addMission('tower2',{type:'walk',name:'Two in the Morning',place:'St. Hesper’s clock tower',theme:'roof',party:['kairos'],lvl:4,count:false,
+  brief:'Everyone’s asleep except Lucas, at the clock face.',goal:'Lucas, at the clock face',start:[0.2,0.7],
+  hint:m=>{const l=m.npcs.find(n=>n.id==='lucan');return l&&!l.done?'Lucas is waiting at the clock face':'The dead clock';},
+  npcs:()=>[
+    {id:'lucan',fx:0.5,fy:0.22,ch:'lucan',need:1,face:-1,bond:['lucan'],label:'Lucas',lines:[
+      ['lucan','You’d make me count the seconds up here, so we knew when inspection was over.'],
+      ['kairos','You made ME count. I hated it.'],['lucan','You did it anyway.'],['kairos','Because you asked.'],
+      ['lucan','The kitchen fire. It stopped, didn’t it. I didn’t dream that.'],
+      ['kairos','It stopped. I heard the ticking, and I pulled you out. I still don’t know why I could.'],
+      ['lucan','My father says I’ll feel differently tomorrow.'],['kairos','Will you?'],
+      ['lucan','I keep waiting to feel like the boy who stole bread. I don’t. I feel like a clerk who’s very good at forms.'],
+      ['kairos','You don’t have to be him.'],
+      ['lucan','No. I don’t think I need to be who I was.'],
+      ['lucan','I just need to be someone who doesn’t leave.'],
+      ['lucan','So. Whatever comes out of those rifts. The Church. My father. I’m not losing you twice.'],
+      ['kairos','That sounds like a vow.'],['lucan','It is one. Don’t make it weird.']]},
+    {id:'page',spot:1,fx:0.78,fy:0.3,label:'A loose page',lines:[
+      ['n','By the loft hatch, a page that fell out of the Sister’s ledger. Not a ledger page: a page torn from an old hymnal, folded small.'],
+      ['n','Someone has underlined one verse, and pressed so hard the pencil went through.'],
+      ['n','“The seven who were set to keep the gates have forgotten their keeping.”'],
+      ['th','Seven. Who keeps gates?'],
+      ['th','She carried this folded in her prayer book. She must read it every night.']],on:F=>{F.cass_page=true;ch1Find('r13page',{frag:'star'},'A page from a hymnal');}},
+    {id:'clock',spot:1,fx:0.5,fy:0.55,need:1,last:1,flag:'vision',after:'lucan',wait:[['th','The dead clock. Later. Lucas is still up there by the face.']],lines:[
       ['th','I put my hand on the dead clock.'],
       ['th','Some mornings I wake up with my hand already reaching for something. Like I put it down yesterday.'],
       ['th','Now I know the shape of it. A pen. A man’s hand, writing by candlelight. My handwriting. But older.'],
@@ -6528,76 +6553,99 @@ const CH1_SEQ=[
       ['n','There is a silver cup on the shelf behind the desk. Lucas looks at it for a long time.'],
       ['n','He doesn’t answer. He takes his coat. He doesn’t take anything else.']],{...NIGHT,mus:'sorrow'})]},
 
-  // ───────── SCENE 10: the Inquisitor
-  {sc:'Scene 10 · The Inquisitor',cut:[pn('rooftop',[['cass',0.68,0.66,-1],['kairos',0.4,0.7,1],['ines',0.3,0.7,1]],[
-      ['n','Church bells all over the city. On the rooftops of Ash Lane, a figure in grey and red blocks the way, swinging a chained censer that drips fire.'],
-      ['cass','Sister Cassie Vire, Office of Correction. The Unwritten comes with me. The rest of you go home.'],
-      ['?',[
-        {t:'I have a name. It’s Kairos.',f:'c_cass_name',r:[['cass','Not according to the Registry.']]},
-        {t:'Do I get a say in this?',r:[['cass','No. That’s rather the point of the Office.']]},
-        {t:'Can I at least finish my bread first?',f:'c_cass_joke',r:[['cass','…You don’t have any bread.'],['kairos','Then this is already a terrible night.'],['bram','Ha!'],['cass','Do not laugh, Corporal.']]}],'An Inquisitor. Great.'],
-      ['cass','A person with no birth record has no stars. A person with no stars was never meant to exist. The Church corrects mistakes.'],
-      ['ines','Generous of you, letting the rest of us go.'],
-      ['cass','It isn’t an offer, Sergeant.']],{...NIGHT,mus:'tense'})]},
-  {mission:'cass',pick:3,prefer:['kairos','lucan','noemi'],title:'The Inquisitor',sub:'Sister Cassie punishes standing still. Keep moving.'},
-  {cut:[pn('rooftop',[['cass',0.62,0.66,-1],['npc',0.82,0.78,-1,{col:VANEC}],['kairos',0.4,0.7,1]],[
-      ['vane','Sister. The building beneath them is a lodging house.'],
-      ['cass','Yes, Father.'],
-      ['vane','Burn it. If they won’t come down, bring the roof down with them.'],
-      ['cass','Father, there are families inside.'],
-      ['vane','Faithful people. They will be forgiven.'],
-      ['n','Cassie hesitates. Too long. Vane sighs, and throws the flask himself.'],
-      ['kairos','No— no, no, no!'],
-      ['th','The minute. I can’t do this one alone. I know that now.'],
-      ['kairos','Please. Whoever you are. Hold it for me.'],
-      ['th','Something answers. The fire stops mid-lick. Twenty seconds. Maybe.'],
-      ['th','Above the roofs the Seam twitches, like a cut pulled open by a thumb.']],{...NIGHT,fire:1,fx:'shake',mus:'disaster'})]},
-  {mission:'rescue'},
-  {fn:nx=>playCutscene([pn('street',[['kairos',0.4,0.7,1],['cass',0.6,0.66,-1],['npc',0.25,0.78,1,{col:TESSA}]],[
-      ['n','Time snaps back.'],
-      sq.flags.rescue_partial?['th','Most of them are out, coughing on the cobbles. Not all. I ran out of seconds.']:['th','Everyone’s out. Coughing, crying, alive. All of them.'],
-      ['cass',sq.flags.rescue_partial?'You went back in. Even when you knew you couldn’t save them all.':'You had a clear way out. You went into the fire instead.'],
-      ['kairos','You didn’t throw that flask. You hesitated.'],
-      ['cass','Hesitation is a sin, in my Office.'],
-      ['kairos','Then your Office is wrong about something.'],
-      ['cass','…Go. Before I remember my orders.'],
-      ['n','She doesn’t leave. Not right away. She stands on the cobbles and counts the families, twice, until Father Vane says her name a second time.']],{...NIGHT,mus:'sorrow'})],nx)},
-
   // ═════════ ACT IV · THE THINGS WE KEEP
-  // ───────── SCENE 11: the clock tower
+  // ───────── SCENE 11: the clock tower (Scene 10, the rooftop ambush, is retired; its fight is kept for a later Cassie trial)
   {sc:'Scene 11 · The Clock Tower',cut:[
-    pn(CAMPB,[['kairos',0.3,0.7,1],['lucan',0.42,0.68,-1],['ines',0.56,0.7,1],['bram',0.64,0.7,-1],['noemi',0.76,0.68,1],['theo',0.84,0.7,-1],['dess',0.18,0.66,1]],[
-      ['lucan','The old clock tower over St. Hesper’s. We used to hide up here. Nobody climbs it anymore.'],
+    pn(CAMPB,[['kairos',0.3,0.7,1],['ines',0.56,0.7,1],['bram',0.64,0.7,-1],['theo',0.84,0.7,-1],['dess',0.18,0.66,1]],[
+      ['kairos','The old clock tower over St. Hesper’s. Lucas and I used to hide up here. Nobody climbs it anymore.'],
       ['th','Same dead clock. Still 11:59. I used to think it was waiting for me.'],
-      ['n','Bram makes toast over a lantern. Theo takes a drone apart on his knees. Naomi works her way round the room with a tin of salve.'],
+      ['n','Bram makes toast over a lantern. Theo takes a drone apart on his knees. Dess lines up the cores she carried out, by colour, then by size.'],
       ['theo','Okay. I need to say this out loud or I’ll explode.'],
       ['theo','You stopped time, a floating clock gave you swords, and now the sky is angry about it.'],
       ['?',[
-        {t:'When you say it like that it sounds bad.',r:[['theo','I was going for interesting. Bad is a bonus.'],['noemi','Theo.']]},
+        {t:'When you say it like that it sounds bad.',r:[['theo','I was going for interesting. Bad is a bonus.'],['ines','Theo.']]},
         {t:'Honestly I just want breakfast.',f:'c_breakfast',r:[['bram','I have toast!'],['kairos','Bram. You’re my favourite person.'],['theo','Hey!']]},
-        {t:'You forgot “and he has a job now.”',f:'c_job',r:[['theo','Mostly-real-money job. Yes. Welcome aboard, assistant.'],['noemi','Oh no. There are two of them now.']]}],'That’s… a lot, said out loud.'],
+        {t:'You forgot “and he has a job now.”',f:'c_job',r:[['theo','Mostly-real-money job. Yes. Welcome aboard, assistant.'],['dess','Oh no. There are two of them now.']]}],'That’s… a lot, said out loud.'],
       ['kairos','Agnes. At the hospital you said “not inside the walls.” What about outside?'],
       ['ines','Outside, it happened all the time. That’s why there’s nothing out there anymore.'],
       ['theo','Meridian is the last free city on Aster. Everything past the Wall fell before any of us were born.'],
       ['kairos','I’ve read every map in the orphanage library. Twice. They all stop at the same line.'],
-      ['ines','Then you know as much as the Council does. Tomorrow we figure out what’s next. Tonight everyone sleeps.'],
       ['bram','Wait. Kairos. Tessa told her mom you collect favours. Do I owe you one?',{if:'c_joke'}],
       ['kairos','Three. One for the crate, one for carrying me, one for the toast.',{if:'c_joke'}],
       ['bram','That’s fair.',{if:'c_joke'}],
-      ['ines','Kairos. Go talk to people. You look like you need it.']],{...NIGHT,fx:'rain',cap:'The clock tower of St. Hesper’s.',mus:'warm'})]},
+      ['ines','Tomorrow we figure out what’s next. Tonight, go talk to people. You look like you need it.']],{...NIGHT,fx:'rain',cap:'The clock tower of St. Hesper’s. Quarter past midnight.',mus:'warm'})]},
   {mission:'tower'},
+  {cut:[
+    pn(CAMPB,[['kairos',0.36,0.72,1],['cass',0.62,0.66,-1]],[
+      ['n','Up the ladder. The bell loft. A lamp on the floor, and a woman in the grey-and-red habit of the Office of Correction, kneeling over an open ledger.'],
+      ['n','She finishes her prayer before she looks up. Kairos waits.'],
+      ['cass','You’re the Unwritten. They posted you at midnight.'],
+      ['kairos','Are you going to arrest me?'],
+      ['cass','You’re not my assignment. And I’m busy.'],
+      ['n','The ledger is old: St. Hesper’s, Sunday spoons. Names, dates, a tick for every child who took the water.'],
+      ['?',[
+        {t:'Why are you really up here?',f:'c_cass_ask',r:[['cass','Children brought in the week of the fountain night. Twenty years ago.'],['cass','There’s a page missing. Someone cut it out with a knife.'],['cass','I would like to know who, and why, and whether God asked them to.']]},
+        {t:'We’ll go, if you want.',f:'c_cass_leave',r:[['cass','No. I was leaving. You can have the roof.'],['cass','It’s a good roof. Nobody checks it.']]}],'Sister Cassie Vire.'],
+      ['n','She closes the ledger. From her sleeve she takes a little glass vial, and drinks it in one swallow.'],
+      ['kairos','What’s that?'],
+      ['cass','Mercy. For bad nights.'],
+      ['cass','The Office searches St. Hesper’s in two days. Be gone by then.'],
+      ['n','She goes down the ladder without a sound. Something small and white slips from her prayer book as she goes, and settles by the hatch.']],{...NIGHT,mus:'tense'}),
+    pn(CAMPB,[['kairos',0.36,0.72,1],['lucan',0.64,0.7,-1,{moving:1}]],[
+      ['n','Two in the morning. Everyone asleep. A scrape on the stairs. Kairos is up before he’s awake.'],
+      ['n','Lucas Crane, coat over his arm, out of breath from eleven flights.'],
+      ['kairos','How did you find us?'],
+      ['lucan','I didn’t. I remembered. “Inspection’s over at nine. Meet at the tower.”'],
+      ['lucan','I said I’d come back. I knocked on your window, the morning they took me. You were asleep.',{if:'c_lucas_door'}],
+      ['lucan','I walked past your window, the morning they took me. I didn’t even knock.',{if:'lucas_walked'}],
+      ['lucan','I’m here now. That has to count for something.'],
+      ['kairos','It counts.'],
+      ['lucan','My father’s house isn’t mine anymore. I took my coat. Nothing else.'],
+      ['kairos','Bram will want to hug you.'],
+      ['lucan','I’m aware.']],{...NIGHT,mus:'warm'})]},
+  {rejoin:'lucan'},
+  {mission:'tower2'},
   {cut:[pn(CAMPB,[['kairos',0.4,0.74,1],['npc',0.62,0.34,-1,{col:LYRAC}]],[
       ['th','Everyone’s asleep. Except me. And the girl sitting on the beam above us.'],
       ['lyra','Go back to sleep.'],
       ['kairos','Who are you?'],
       ['lyra','Someone who’s supposed to be watching. Not talking.'],
       ['kairos','You’re bad at it.'],
-      ['lyra','…Tomorrow is the Festival of the Mercy. They hand out cups of water to everyone. Don’t drink anything they give you.'],
+      ['lyra','Don’t drink anything they give you.'],
       ['kairos','Someone else told me that once.'],
       ['lyra','Then you should’ve listened the first time.'],
       ['th','She drops out the window. Gone.'],
       ['th','Sister Agathe gave every orphan a spoon of that water on Sundays. The others always looked so peaceful after.'],
       ['th','I never felt anything. I figured God skipped me. He skips me a lot.']],{...NIGHT,focus:[0.5,0.45],mus:'tense'})]},
+
+  // ───────── SCENE 11.5: Naomi's warning
+  {sc:'Scene 11.5 · Naomi’s Warning',cut:[
+    pn(CAMPB,[['theo',0.5,0.7,1],['kairos',0.36,0.7,1],['lucan',0.64,0.7,-1],['ines',0.24,0.7,1]],[
+      ['n','Morning. The ticker on the crate starts tapping before anyone is properly awake. Theo reads it out, letter by letter.'],
+      ['theo','“OFFICE AND GARRISON AT LUCIA. ASKED FOR K. ASKED FOR ME.”'],
+      ['theo','“CHURCH TOOK ALL WATER CARTS. ALL CLEAN CUPS. FESTIVAL OF ONE CUP. EVERYONE DRINKS.”'],
+      ['theo','“MY BIRTHDAY PATIENTS ALL GO SUNDAYS. DONT KNOW WHAT IT MEANS. WRITING IT DOWN.”'],
+      ['theo','“THEY ARE CUTTING THE HOSPITAL WIRE. LAST MSG. BE CAREFUL. N.”'],
+      ['n','The ticker stops. Theo taps it twice. Nothing.'],
+      ['theo','…She’s fine. She’s a doctor on shift. They search wards, not doctors.'],
+      ['th','He says it twice. The second time to himself.']],{cap:'The next morning.',mus:'tense'}),
+    pn(CAMPB,[['ines',0.24,0.7,1],['bram',0.34,0.7,1],['kairos',0.46,0.7,1],['theo',0.58,0.7,-1],['lucan',0.7,0.7,-1],['dess',0.82,0.7,-1]],[
+      ['ines','No. We’re fugitives. We’d be walking into a square full of stewards.'],
+      ['theo','There’s an eclipse at noon. Seam stress, at the same hour the whole city drinks the same cup. That isn’t a coincidence I like.'],
+      ['lucan','Every attendee is filed by cup number. I’ve stamped those forms for years. I never asked why.'],
+      ['dess','The cores sang louder when I carried them past the fountain. All of them. At once.'],
+      ['bram','My mam goes every year. Front of the line.'],
+      ['ines','And if they see us?'],
+      ['th','They’re all looking at me.'],
+      ['?',[
+        {t:'For Tessa. Her mother will be in that line.',f:'c_fest_tessa',r:[['bram','Tessa. The crate girl.'],['kairos','She’s six. She shouldn’t have to remember for both of them.']]},
+        {t:'For answers. Everything started at that fountain.',f:'c_fest_answers',r:[['kairos','Twenty years ago, at that fountain, something broke. I want to see it with my own eyes.'],['theo','So do I. For science. Mostly.']]}],'We go.'],
+      ['ines','Fine. On one condition.'],
+      ['ines','Bram and I wear steward armbands. Festival duty, my squad knows the posts. The rest of you go veiled, like mourners. In pairs. Nobody drinks.'],
+      ['lucan','Nobody drinks.'],
+      ['dess','Nobody drinks.'],
+      ['bram','…Can I eat?'],
+      ['ines','You can eat, Bram.']],{mus:'tense'})]},
 
   // ───────── SCENE 12: Festival of the Mercy
   {sc:'Scene 12 · Festival of the Mercy',cut:[
