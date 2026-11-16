@@ -35,6 +35,8 @@ Total to Lv 20: **12,920** Memories.
 | Meridian: optional quests (4) | · | 25 to 40 | · | · | **1 each** | once |
 | Meridian: Records (8 of 11) | · | 50 | · | 1 (Rare or Star-born) | · | once |
 | Meridian: hidden records (2 pay) | · | 15 / 20 | · | · | · | once |
+| Bond Story: Agnes · A Little Something Handmade | · | 40 | · | 1 (chest) | 1 | once · +1 Bond (Agnes) |
+| Bond Story: Bram · The Smell of Fresh Bread | · | 40 | · | 1 (boss) | · | once · +1 Bond (Bram) |
 
 ## Meridian Renown (new)
 Points available today: 5 districts × 5 + 11 records × 5 + 30 + 5 optional quests × 15 = **185**.

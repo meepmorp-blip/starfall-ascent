@@ -8,3 +8,7 @@ New facts that the game states and that are not yet in `Starfall_Lore_Bible_v2.p
 | A | The party hides in the old clock tower above St. Hesper's, with a bedroll for each, plus one still tied up for Lucas. | `look.bedrolls`, tower dialogue | New detail |
 | A | Dess keeps notes on which cores hum louder at night. | Dess's hideout line | New detail, a hint only |
 | A | Naomi has written something new on her arm and won't say what yet. | Naomi's hideout line | Hint only; no Mercy explanation |
+| 3 | Agnes enjoys making things by hand, privately. Her rifle sling had been held together with wire since the Eastern Rift; she makes a new one with a small stitched star under the pad. "Sergeants don't embroider. They maintain." | `agnes_handmade` | New characterisation (spec 3.1) |
+| 3 | A cobbler's scrap bin behind the Market Ring stalls; the fish vendor keeps brass rings in his tackle; the Ash Lane laundress waxes her own thread | `agnes_handmade` | New detail |
+| 3 | Bram's grandmother ("Gran") baked cardamom bread. Her kitchen had blue tiles and a dented pot. Her saying: "a wall keeps the rain off, but a kitchen is what makes people stay." His mother and Tomas are unchanged | `bram_bread` | New character history (spec 3.2) |
+| 3 | The Ash Lane shop leaves a cardamom tin on its step ("take a pinch, leave a coin"); Sister Agathe keeps honey on the top shelf and helps the wanted Kairos | `bram_bread` | New detail |

@@ -18,7 +18,8 @@
 |---|---|---|
 | `narrative_foundation_test.js` | `nar` | Era switch, Clock Tower hideout, wanted notices, first quest states, fight and scene glue |
 | `quest_system_test.js` | `qsys` | The Quest System Foundation, using temporary `tq_*` quests (§ 2) |
-| *(per content stage)* `bond_agnes_bram_test.js` and others | — | Each story: discovery, steps, rewards, canon regex (§ 3) |
+| `bond_agnes_bram_test.js` | `ab` | Agnes and Bram, played together and interleaved: story lock, world discovery, "!" markers, gathering, reload mid-story, puzzle (wrong answer, leave, finish), bake order (reset), two fights, endings, rewards once, Journal, HUD overlap, canon regex. 45 checks ×3 |
+| *(next stages)* | — | Each story: discovery, steps, rewards, canon regex (§ 3) |
 
 ## 2. Foundation cases (`quest_system_test.js`, all automated)
 | # | Area | Case | Status |
@@ -100,3 +101,13 @@ for m in desk phone: exploration_test, meridian_playtest, economy_test
 - Play one story end-to-end on a real phone (touch).
 - Check that the "!" next to exit labels is readable at the smallest supported size.
 - Load a real pre-expansion save from a Builds → Backup code.
+
+### Results, 2026-11-16 (Stage 3: Agnes and Bram)
+All passing:
+- `bond_agnes_bram_test.js`: 45/45 at desk, phone and small.
+- `quest_system_test.js`: 49/49 ×3.
+- `narrative_foundation_test.js`: 33/33 ×3. One assertion was narrowed: Bram's real story now also marks the tower.
+- `ashlane`, `office`, `hesper`, `worldmap`: ×3.
+- `exploration_polish`: 33/33 ×3, now including the tower.
+- `exploration_test`, `meridian_playtest`, `economy_test`: desk and phone.
+- `chest_spots.js check`: OK.

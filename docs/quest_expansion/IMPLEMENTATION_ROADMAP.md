@@ -36,7 +36,7 @@
   - Hub fight and scene glue.
 - **Test:** `narrative_foundation_test.js`, 33 checks ×3, passing.
 
-## Stage 1+2 · Quest System Foundation and discovery (Implemented, tested · not committed)
+## Stage 1+2 · Quest System Foundation and discovery (done, `132b346`)
 - **Scope:**
   - A data model for every story quest.
   - The six states, saved.
@@ -62,7 +62,7 @@
   - `mxMigrate`: now limited to `main`/`optional` quests with a reward.
 - **Done when:** the tests pass (see § Results below) and the owner approves.
 
-## Stage 3 · Agnes and Bram
+## Stage 3 · Agnes and Bram (Implemented, tested · not committed)
 - **Scope:** `agnes_handmade`, `bram_bread` (tracker § 4).
 - **Features:**
   - Discovery: the workbench, then Agnes; the bakery smell at Hesper.
@@ -180,3 +180,25 @@
 - The NPC "!" for an offer needs `npc` **and** `offer` on the quest. Content that needs custom branching keeps using `say()`.
 - No cosmetic or accessory system exists, so cosmetic rewards are not supported (tracker § 6.4).
 - `lucasState()` can only reach `rescued` through `setStoryFlag('ch2.lucasRescued')`. Nothing in the game sets it until Chapter 2 is built.
+
+## Results · Stage 3 (2026-11-16)
+**Built** (details in the tracker § 4)
+- Both stories, playable from start to finish.
+- New quest objects: the leather offcut and the cardamom tin.
+- Four drawn bake stations on the roof.
+- The workbench assembly puzzle.
+- Two roof fights and two ending scenes.
+- The post-Chapter 1 bakery-window readable.
+
+**Changes outside the stories**
+- A giver with a `found` condition only offers its story after the story has been discovered (`mxOfferAt`).
+- `tower.view` moved to (0.6, 0.26): it sat under the objective bar on small phones.
+- `exploration_polish_test.js` now includes the tower.
+
+| Test | desk | phone | small |
+|---|---|---|---|
+| `bond_agnes_bram_test.js` | 45/45 | 45/45 | 45/45 |
+| Full regression (`QUEST_TEST_PLAN.md` § 4) | pass | pass | pass |
+
+**Not covered**
+- A fight *loss* during the stories. There is no test hook to lose a fight. `mxFight` returns to the district and keeps the step either way.

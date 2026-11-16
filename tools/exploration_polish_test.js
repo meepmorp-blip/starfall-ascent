@@ -23,7 +23,7 @@ await p.goto(url);await p.waitForTimeout(600);await p.evaluate(()=>__sf.mxBegin(
 const H=await p.evaluate(()=>__sf.hud());ok(H.wl>=11,'world labels draw at '+H.wl+' CSS px or more, at any scale (scale '+H.scale.toFixed(2)+')');
 // ── every interactable added in 04/05 stays clear of the HUD and touch controls
 const hudBad=[];
-for(const d of ['market','plaza','yard','chapel','ward','hesper','office','ashlane']){await go(d);
+for(const d of ['market','plaza','yard','chapel','ward','hesper','office','ashlane','tower']){await go(d);
   hudBad.push(...await p.evaluate(d=>{const m=__sf.m(),H=__sf.hud(),out=[],sw=H.sw;const scr=[[sw*0.1,0,sw*0.9,H.safe.t+70],[0,0,H.safe.l+14+Math.min(190,Math.max(130,sw*0.2))+6,H.safe.t+74]];
     if(H.touch)for(const k of ['atk','dodge','sun','moon','ult']){const c=H.btn[k];if(c&&c.r)scr.push([c.x-c.r-6,c.y-c.r-6,c.x+c.r+6,c.y+c.r+6]);}
     for(const c of H.ports)if(c&&c.r)scr.push([c.x-c.r-4,c.y-c.r-4,c.x+c.r+40,c.y+c.r+4]);

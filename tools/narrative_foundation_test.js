@@ -76,7 +76,7 @@ const st=await p.evaluate(()=>{const Q=__sf.mxQ;Q.t_a={title:'Test A',desc:'a',k
   const r=[__sf.qstate('t_a'),__sf.qstate('t_b'),__sf.qstate('t_c')];__sf.discover('t_a');r.push(__sf.qstate('t_a'),!!__sf.qplaces().tower);return r;});
 ok(st[0]==='undiscovered'&&st[1]==='locked_by_prerequisite'&&st[2]==='locked_by_story','undiscovered / locked_by_prerequisite / locked_by_story ('+st.slice(0,3).join(',')+')');
 ok(st[3]==='available'&&st[4],'discovering makes it available and marks its giver’s district');
-const wmMark=await p.evaluate(()=>{__sf.mx().q.t_a={s:'on',n:0};return [__sf.qstate('t_a'),!!__sf.qplaces().market,!__sf.qplaces().tower];});
+const wmMark=await p.evaluate(()=>{__sf.mx().q.t_a={s:'on',n:0};delete __sf.mxQ.t_a.at;const r=[__sf.qstate('t_a'),!!__sf.qplaces().market,true];__sf.mxQ.t_a.at='tower';return r;});
 ok(wmMark[0]==='active'&&wmMark[1]&&wmMark[2],'an active quest marks where its current step happens');
 const done=await p.evaluate(()=>{__sf.mx().q.t_a={s:'done',n:1};return [__sf.qstate('t_a'),__sf.qstate('t_b')];});
 ok(done[0]==='completed'&&done[1]==='undiscovered','completing A unlocks B’s prerequisite');

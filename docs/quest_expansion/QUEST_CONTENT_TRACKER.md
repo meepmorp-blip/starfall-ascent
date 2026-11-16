@@ -34,8 +34,8 @@
 
 | Quest ID | Quest | Category | Unlock Condition | Location | Est. Time | Status | Tested |
 |---|---|---|---|---|---|---|---|
-| `agnes_handmade` | A Little Something Handmade | bond (Agnes) | Chapter 1 cleared | Clock Tower → Market Ring, Ash Lane | 12–15 min | Planned | No |
-| `bram_bread` | The Smell of Fresh Bread | bond (Bram) | Chapter 1 cleared | St. Hesper's (bakery smell) → Market, Ash Lane | 12–18 min | Planned | No |
+| `agnes_handmade` | A Little Something Handmade | bond (Agnes) | Chapter 1 cleared; use the hideout workbench | Clock Tower → Market Ring, Ash Lane | 10–14 min | Implemented | Yes |
+| `bram_bread` | The Smell of Fresh Bread | bond (Bram) | Chapter 1 cleared; the bakery window or Bram | St. Hesper's → Clock Tower, Market, Ash Lane | 10–14 min | Implemented | Yes |
 | `lark_couldnt_save` | The Things We Couldn't Save | bond (Naomi & Theo) | Chapter 1 cleared | St. Lucia's | 15–20 min | Planned | No |
 | `cass_prayer` | A Prayer of Her Own | bond (Cassie) | Chapter 1 cleared | Old chapel *(new district, needs approval)* | 15–20 min | Planned | No |
 | `lucas_mem_bread` | The Things We Remember A·1 · The Bread Incident | memory (Lucas) | Chapter 1 cleared; Lucas captured | St. Hesper's (memory object) | 6–8 min | Planned | No |
@@ -116,57 +116,65 @@
 
 ## 4. Individual entries
 
-### `agnes_handmade` · A Little Something Handmade
+### `agnes_handmade` · A Little Something Handmade · **Implemented, tested**
 - **Category:** bond · **Character:** Agnes Calder (`ines`)
-- **Story:** Kairos catches Agnes at the hideout workbench fixing something that isn't kit: a strap, stitched with care. She calls it maintenance, then admits she likes making things. The party gathers what she needs, and she finishes it and tests it.
-- **Start:** Clock Tower · **Giver:** Agnes (after the workbench has been used once)
-- **Prerequisites:** none · **Unlock:** `when:['fugitive']`
+- **Story:** Kairos catches Agnes at the hideout workbench with something that is not Garrison issue. She calls it maintenance: a new sling for her rifle, held together with wire since the Eastern Rift, with a small stitched star where nobody will see it.
+- **Start / giver:** Clock Tower, Agnes (`npc:'tower.h_agnes'`)
+- **Discovery:** use the workbench once (`found: mxF('bench.used')`). Until then Agnes only has her small talk.
+- **Unlock:** `when:['fugitive']`; no prerequisites
 - **Objectives:**
-  1. Talk to Agnes.
-  2. Collect three materials in any order: leather offcut from the Market Ring, thread from the laundress on Ash Lane, brass rings from the fish vendor's tackle. This is a multi-objective step.
-  3. Assembly minigame: an order puzzle built on `showPuzzle`.
-  4. Test it with Agnes in a short target drill on the roof. This reuses the Drill activity's flag logic.
-  5. A scene at the bench.
-- **NPCs:** Agnes, the fish vendor, the laundress, Rosa
+  1. Gather, in any order:
+     - a leather offcut (quest object, Market Ring scrap bin)
+     - brass rings (the fish vendor)
+     - waxed thread (the laundress, Ash Lane)
+  2. The workbench assembly puzzle (3 rounds of `showPuzzle`). You can leave and retry; wrong answers get Agnes's correction.
+  3. Test the sling: a hub fight on the roof with Agnes and Kairos (`mxf_roof_agnes`, 8 Vices).
+  4. Talk to Agnes: the ending scene (camp art).
+- **NPCs:** Agnes, the fish vendor, the laundress
 - **Environments:** tower, market, ashlane
-- **Activities:** collection, puzzle, timed drill
-- **Combat:** none (the drill is the challenge)
+- **Activities:** collection, puzzle, fight, scene
 - **Rewards:**
   - Bond +1 · Agnes
   - 40 Stardust
   - 1 Keepsake
-  - Journal collectible "Agnes's strap"
-  - Optional: a Star Fragment as the "equipment" reward
-- **Story flags:** `agnes.crafted`
-- **Spoilers:** none. **Canon:** her crafting is a *new characterisation* (logged in LORE_ADDITIONS). She stays dry, competent and in control.
-- **Status:** Planned · **Tested:** No
+  - 1 Fragment (chest grade)
+  - Journal: "Agnes's practice piece"
+- **Story flags:** `agnes.crafted`; items `ag_leather`, `ag_rings`, `ag_thread`; flags `ag_made`, `ag_end`, `bench.used`
+- **Canon:** her crafting is new (logged). She stays dry and in control. The Eastern Rift is only referenced, not retold.
+- **Test:** `tools/bond_agnes_bram_test.js`
 
-### `bram_bread` · The Smell of Fresh Bread
+### `bram_bread` · The Smell of Fresh Bread · **Implemented, tested**
 - **Category:** bond · **Character:** Bram (`bram`)
-- **Story:** Near St. Hesper's the smell from the bakery stops Bram mid-sentence: his grandmother's bread. He can't remember the whole recipe. The party gathers ingredients, he bakes, and Vices come for the warm kitchen.
-- **Start:** St. Hesper's · **Giver:** a discovery spot (the smell), or Bram at the tower
-- **Prerequisites:** none · **Unlock:** `when:['fugitive']`
+- **Story:**
+  - The bakery by St. Hesper's smells like Bram's gran's kitchen. He remembers the blue tiles and the dented pot, but not the recipe.
+  - The party gathers the ingredients and bakes in a little brick oven on the tower roof.
+  - The warmth draws Vices.
+  - In the end, protecting people can also mean somewhere warm to stay.
+- **Start / giver:** Clock Tower, Bram (`npc:'tower.h_bram'`)
+- **Discovery:** the bakery window at St. Hesper's (a post-Chapter 1 version, `look.bakery.after`), or any talk with Bram at the hideout
+- **Unlock:** `when:['fugitive']`; no prerequisites
 - **Objectives:**
-  1. Follow the smell.
-  2. Collect ingredients from Rosa, the market and the Ash Lane shopkeeper (multi-objective).
-  3. Baking minigame: an `mxSeqStep`-style ordered sequence.
-  4. Defend the bakery, a hub fight (`mxFight`, theme `street`, Gossip and Hothead).
-  5. A scene.
-- **NPCs:** Bram, Rosa, the Ash Lane shopkeeper, the baker (new townsperson)
-- **Environments:** hesper, market, ashlane
-- **Activities:** collection, sequence minigame, fight
-- **Combat:** one small fight (8 kills)
+  1. Ingredients, in any order:
+     - flour (Rosa, Market Ring)
+     - honey (Sister Agathe, St. Hesper's)
+     - cardamom (a tin on the Ash Lane shop step, quest object)
+  2. Bake in Gran's order at 4 roof stations: flour sack → mixing bowl → resting bowl by the lantern → brick oven (`mxSeqStep`). A wrong order resets.
+  3. Defend the roof: a hub fight with Bram and Kairos (`mxf_roof_bread`, 8 Vices).
+  4. Share the bread: the ending scene.
+- **NPCs:** Bram, Rosa, Sister Agathe; Agnes, Naomi and Theo in the scene
+- **Environments:** hesper, tower, market, ashlane
+- **Activities:** collection, ordered-sequence minigame, fight, scene
 - **Rewards:**
   - Bond +1 · Bram
   - 40 Stardust
-  - a Star Fragment (defensive)
-  - Journal collectible "Grandmother's recipe"
-- **Story flags:** `bram.recipe`
+  - 1 Fragment (boss grade, "defensive equipment")
+  - Journal: "Gran's recipe"
+- **Story flags:** `bram.recipe`; items `br_flour`, `br_honey`, `br_spice`; flags `br_baked`, `br_end`
 - **Canon:**
-  - The grandmother is a *new addition* and does not replace his mother or Tomas.
-  - The "Tomas" line and his mother's decline are untouched.
+  - The grandmother is an addition.
+  - His mother, Tomas and the Mercy are not mentioned (tested by regex).
   - Nothing is said about how his grandmother died.
-- **Status:** Planned · **Tested:** No
+- **Test:** `tools/bond_agnes_bram_test.js`
 
 ### `lark_couldnt_save` · The Things We Couldn't Save
 - **Category:** bond · **Characters:** Naomi (`noemi`) and Theo (`theo`)
