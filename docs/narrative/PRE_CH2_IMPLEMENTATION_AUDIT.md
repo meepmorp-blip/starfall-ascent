@@ -79,3 +79,6 @@ Audited against `index.html` at `fcd37fc` (World Expansion Stages 1–3; Stage 4
 | Glue | `mxFightTheme(theme,opts)` builds a hub fight; `mxFight(id,party,cb)` and `mxScene(panels,cb)` return to the same district afterwards |
 
 Test: `tools/narrative_foundation_test.js` (33 checks, desk/phone/small).
+
+## 7. Implementation Phase 2 · Quest System Foundation
+Built on top of § 6, with no story content. See `docs/quest_expansion/` (tracker, roadmap, canon checklist, test plan). Test: `tools/quest_system_test.js` (49 checks ×3 viewports).

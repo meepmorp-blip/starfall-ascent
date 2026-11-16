@@ -1665,10 +1665,10 @@ function giveMp(ids,n){if(n<=0)return;for(const id of ids){const c=save.chars[id
 const KEEP_XP=120; // one Keepsake = 120 Memories to one character
 function rewardLines(r){const L=[];if(!r)return L;
   if(r.dust)L.push('+'+r.dust+' Stardust');if(r.keep)L.push('+'+r.keep+' Keepsake'+(r.keep>1?'s':''));
-  if(r.mpAll)L.push('Mastery +'+r.mpAll+' for all eight');if(r.bond)for(const b of r.bond)L.push('Bond +1 · '+nameOf(b));if(r.frag)L.push(r.frag==='star'?'a Star-born Fragment':'a Star Fragment');return L;}
+  if(r.mpAll)L.push('Mastery +'+r.mpAll+' for all eight');if(r.bond)for(const b of r.bond)L.push('Bond +1 · '+nameOf(b));if(r.xp)for(const b in r.xp)L.push('+'+r.xp[b]+' Memories · '+nameOf(b));if(r.rec)L.push('Journal · '+r.rec.title);if(r.frag)L.push(r.frag==='star'?'a Star-born Fragment':'a Star Fragment');return L;}
 function grantReward(r,key){
   if(key&&save.claims[key])return null;
-  if(r.dust)save.dust+=r.dust;if(r.keep)save.keep=(save.keep|0)+r.keep;if(r.mpAll)giveMp(CH_ORDER,r.mpAll);if(r.bond)for(const b of r.bond)bondUp(b);
+  if(r.dust)save.dust+=r.dust;if(r.keep)save.keep=(save.keep|0)+r.keep;if(r.mpAll)giveMp(CH_ORDER,r.mpAll);if(r.bond)for(const b of r.bond)bondUp(b);if(r.xp)for(const b in r.xp)giveXp([b],r.xp[b]);if(r.rec)mxS().mem[r.rec.id]=Date.now();
   if(r.frag){const was=save.frags.length;gainFrag(r.frag);if(save.frags.length===was&&r.frag==='star')save.dust+=80;}
   if(key)save.claims[key]=Date.now();persist();return rewardLines(r);}
 const claimed=key=>!!save.claims[key];
@@ -4008,7 +4008,15 @@ Object.assign(SPK,{mxlaund:{name:'Laundress',col:'paper'},mxlamp:{name:'Lampligh
   lseller:{name:'Lantern seller',col:'paper'},gsister:{name:'Sister at the gate',col:'paper'},mxsold:{name:'Garrison soldier',col:'earth'},
   mxrosa:{name:'Rosa',col:'paper'},mxmat:{name:'Old Matteo',col:'paper'},mxfish:{name:'Fish vendor',col:'paper'},mxtess:{name:'Tessa',col:'paper'}});
 function mxS(){const x=save.mx||(save.mx={v:1,at:'market',seen:{},talk:{},found:{},q:{},items:{},f:{}});
-  for(const k of ['seen','talk','found','q','items','f'])if(!x[k]||typeof x[k]!=='object')x[k]={};if(!MX_DISTRICTS[x.at])x.at='market';return x;}
+  for(const k of ['seen','talk','found','q','items','f','qseen','mem'])if(!x[k]||typeof x[k]!=='object'||Array.isArray(x[k]))x[k]={};if(!MX_DISTRICTS[x.at])x.at='market';return x;}
+// story flags that outlive the hub (set by quests' `sets`, and later by Chapter 2, e.g. 'ch2.lucasRescued'). save.story, created on first use
+function storyFlags(){if(!save.story||typeof save.story!=='object'||Array.isArray(save.story))save.story={};return save.story;}
+const storyFlag=k=>!!storyFlags()[k];
+function setStoryFlag(k){storyFlags()[k]=Date.now();persist();}
+// Lucas: 'free' (Chapter 1 not cleared) · 'captured' (taken by Horaios; only memories of him) · 'rescued' (Chapter 2 rescue, not built yet)
+function lucasState(){if(ch1Scene()<99)return 'free';return storyFlag('ch2.lucasRescued')?'rescued':'captured';}
+// story gates a quest can name in `when`
+const MX_GATES={before:()=>mxEra()==='before',fugitive:()=>mxEra()==='fugitive',lucasCaptured:()=>lucasState()==='captured',lucasRescued:()=>lucasState()==='rescued'};
 // story era of the hub: 'before' the Festival (Chapter 1 in progress) or 'fugitive' (Chapter 1 cleared: the party is wanted, Lucas is gone)
 function mxEra(){return ch1Scene()>=99?'fugitive':'before';}
 // has the player met this character in Chapter 1 yet?
@@ -4056,28 +4064,63 @@ const MX_QUESTS={
 };
 // quest states: completed · active · locked_by_story · locked_by_prerequisite · undiscovered · available
 // a quest may carry story:()=>bool (story condition), pre:[ids] (quests that must be completed), at:'district' (where it starts)
-function mxQState(id){const x=mxS(),q=x.q[id],Q=MX_QUESTS[id];if(q&&q.s==='done')return 'completed';if(q)return 'active';
-  if(Q.story&&!Q.story())return 'locked_by_story';if(Q.pre&&!Q.pre.every(p=>x.q[p]&&x.q[p].s==='done'))return 'locked_by_prerequisite';
-  return (x.qseen||{})[id]?'available':'undiscovered';}
-function mxDiscover(id){const x=mxS();x.qseen=x.qseen||{};if(x.qseen[id])return;x.qseen[id]=1;persist();if(room)setBanner('New story · '+MX_QUESTS[id].title,MX_QUESTS[id].giver||'',2.2);}
+// Quest definition (all fields but title/desc/steps optional):
+//   kind 'main'|'optional'|'bond'|'memory'|'hangout'|'side' · char (character id) · at (district it starts in) · giver (text) · npc ('district.id' of the giver)
+//   when:['fugitive',…] story gates (MX_GATES) · story:()=>bool · pre:[quest ids that must be COMPLETED] · found:()=>bool (discovery) · autoFind:1 (discovered as soon as unlocked)
+//   offer: lines the giver says when the player can start it · steps:[{id,t,at,npc,ok} or {id,t,objs:[{id,t,at,npc,ok}]} (all objs, any order)]
+//   reward (grantReward, once) · first (extra, first clear of a repeatable) · repeat:'daily' · sets:[story flags] · onDone(id) (character events)
+const mxDoneQ=id=>{const q=mxS().q[id];return !!q&&q.s==='done';};
+function mxGateOk(Q){
+  if(Q.kind==='hangout'&&Q.char==='lucan'&&lucasState()!=='rescued')return false; // present-day Lucas only after the rescue, whatever the quest says
+  if(Q.when&&!Q.when.every(g=>MX_GATES[g]&&MX_GATES[g]()))return false;if(Q.story&&!Q.story())return false;return true;}
+const mxPreOk=Q=>!Q.pre||Q.pre.every(mxDoneQ);
+const mxRepeatReady=id=>{const q=mxS().q[id],Q=MX_QUESTS[id];return !!(q&&q.s==='done'&&Q.repeat==='daily'&&q.day!==mxDay());};
+function mxQState(id){const x=mxS(),q=x.q[id],Q=MX_QUESTS[id];if(!Q)return null;
+  if(q&&q.s==='done'&&!mxRepeatReady(id))return 'completed';if(q&&q.s!=='done')return 'active';
+  if(!mxGateOk(Q))return 'locked_by_story';if(!mxPreOk(Q))return 'locked_by_prerequisite';
+  return x.qseen[id]||q?'available':'undiscovered';}
+function mxDiscover(id){const x=mxS();if(x.qseen[id])return;x.qseen[id]=1;persist();if(room&&mxGateOk(MX_QUESTS[id])&&mxPreOk(MX_QUESTS[id])){setBanner('New story · '+MX_QUESTS[id].title,MX_QUESTS[id].giver||'',2.2);sfx('select');}}
+// discovery pass: quests whose found() fired, or autoFind ones that just unlocked (Dess's story after its prerequisites)
+function mxDiscoverPass(){for(const id in MX_QUESTS){const Q=MX_QUESTS[id];if(mxS().qseen[id]||mxS().q[id])continue;
+    if(!mxGateOk(Q)||!mxPreOk(Q))continue;if(Q.autoFind||(Q.found&&Q.found()))mxDiscover(id);}}
+// the quest an NPC can offer right now (talking to the giver also discovers it)
+function mxOfferAt(key){for(const id in MX_QUESTS){const Q=MX_QUESTS[id];if(Q.npc!==key||!Q.offer)continue;const st=mxQState(id);
+    if(st==='available'||st==='undiscovered')return id;}return null;}
+// what an NPC is wanted for: giving a quest, or the current step/objective of an active one
+function mxNpcWanted(key){if(mxOfferAt(key))return true;const x=mxS();
+  for(const id in MX_QUESTS){const q=x.q[id];if(!q||q.s==='done')continue;const sp=MX_QUESTS[id].steps[q.n];if(!sp)continue;
+    if(sp.npc===key&&!mxStepOk(sp))return true;if(sp.objs&&sp.objs.some(o=>o.npc===key&&!o.ok()))return true;}return false;}
+const mxStepOk=sp=>sp.objs?sp.objs.every(o=>o.ok()):!!(sp.ok&&sp.ok());
+const mxStepProg=sp=>sp.prog?sp.prog():sp.objs?sp.objs.filter(o=>o.ok()).length+' / '+sp.objs.length:null;
+// objective builders for content: flags, carried items, records, readables, being in a district, winning a hub fight
+const MXO={flag:(k,t,o)=>Object.assign({id:k,t,ok:()=>mxF(k)},o||{}),item:(k,t,o)=>Object.assign({id:'item:'+k,t,ok:()=>mxHas(k)},o||{}),
+  find:(f,t,o)=>Object.assign({id:'find:'+f,t,ok:()=>!!mxS().found[f]},o||{}),look:(f,t,o)=>Object.assign({id:'look:'+f,t,ok:()=>!!(mxS().looked||{})[f]},o||{}),
+  visit:(d,t,o)=>Object.assign({id:'visit:'+d,t,at:d,ok:()=>mxS().at===d},o||{}),won:(mid,t,o)=>Object.assign({id:'won:'+mid,t,ok:()=>mxF('won:'+mid)},o||{}),
+  quest:(qid,t,o)=>Object.assign({id:'quest:'+qid,t,ok:()=>mxDoneQ(qid)},o||{})};
 const mxQuestsAvailable=()=>Object.keys(MX_QUESTS).filter(id=>mxQState(id)==='available');
 // places with something to do: the giver of an available quest, or where an active quest's current step happens
 function mxQuestPlaces(){const x=mxS(),P={};for(const id in MX_QUESTS){const st=mxQState(id),Q=MX_QUESTS[id];
-    if(st==='available'&&Q.at)P[Q.at]=1;if(st==='active'){const sp=Q.steps[x.q[id].n];if(sp&&sp.at)P[sp.at]=1;}}return P;}
-function mxStart(id){const x=mxS();if(x.q[id])return;x.qseen=x.qseen||{};x.qseen[id]=1;x.q[id]={s:'active',n:0,at:Date.now()};persist();
+    if(st==='available'&&Q.at)P[Q.at]=1;if(st==='active'){const sp=Q.steps[x.q[id].n];if(sp&&sp.at&&!mxStepOk(sp))P[sp.at]=1;if(sp&&sp.objs)for(const o of sp.objs)if(o.at&&!o.ok())P[o.at]=1;}}return P;}
+function mxStart(id){const x=mxS(),Q=MX_QUESTS[id];if(!Q||(x.q[id]&&!mxRepeatReady(id)))return;if(!mxGateOk(Q)||!mxPreOk(Q))return;
+  const runs=x.q[id]?(x.q[id].runs|0):0;x.qseen[id]=1;x.q[id]={s:'active',n:0,at:Date.now(),runs};persist();
   if(room)setBanner('New quest · '+MX_QUESTS[id].title,MX_QUESTS[id].steps[0].t,2.4);sfx('select');mxTick();}
 function mxTick(){const x=mxS();let ch=false;
   for(const id in MX_QUESTS){const q=x.q[id];if(!q||q.s!=='active')continue;const Q=MX_QUESTS[id];
-    while(q.n<Q.steps.length&&Q.steps[q.n].ok()){q.n++;ch=true;}
-    if(q.n>=Q.steps.length){q.s='done';q.end=Date.now();const got=grantReward(Q.reward,'mxq:'+id)||[];
-      if(room)setBanner('Quest complete · '+Q.title,got.join(' · '),2.8);sfx('bless');}
+    while(q.n<Q.steps.length&&mxStepOk(Q.steps[q.n])){q.n++;ch=true;}
+    if(q.n>=Q.steps.length){q.s='done';q.end=Date.now();q.runs=(q.runs|0)+1;
+      let got;if(Q.repeat==='daily'){q.day=mxDay();got=(Q.first&&grantReward(Q.first,'mxq:'+id))||[];got=got.concat(Q.reward?grantReward(Q.reward,'mxq:'+id+':'+q.day)||[]:[]);}
+      else got=Q.reward?grantReward(Q.reward,'mxq:'+id)||[]:[];
+      if(Q.sets)for(const k of Q.sets)storyFlags()[k]=storyFlags()[k]||Date.now();
+      if(room)setBanner((MX_STORY_KINDS.includes(Q.kind)?'Story complete · ':'Quest complete · ')+Q.title,got.join(' · '),2.8);sfx('bless');
+      if(Q.onDone)try{Q.onDone(id);}catch(e){console.error(e);}}
     else if(ch&&room)setBanner(Q.title,Q.steps[q.n].t,2);}
-  if(ch)persist();}
+  mxDiscoverPass();if(ch)persist();}
+const MX_STORY_KINDS=['bond','memory','hangout','side'];
 // the quest shown in the objective bar: the main quest first, then the newest optional one
 function mxTracked(){const x=mxS();let best=null;
   for(const id in MX_QUESTS){const q=x.q[id];if(!q||q.s!=='active')continue;const k=(MX_QUESTS[id].kind==='main'?1e15:0)+(q.at||0);if(!best||k>best.k)best={id,k};}
   return best&&best.id;}
-function mxGoal(){const id=mxTracked();if(!id)return 'Explore Meridian';const Q=MX_QUESTS[id],st=Q.steps[mxS().q[id].n];return Q.title+': '+st.t+(st.prog?' ('+st.prog()+')':'');}
+function mxGoal(){const id=mxTracked();if(!id)return 'Explore Meridian';const Q=MX_QUESTS[id],st=Q.steps[mxS().q[id].n],pg=mxStepProg(st);return Q.title+': '+st.t+(pg?' ('+pg+')':'');}
 
 // ── discoveries: records (counted), activity slots (not counted), quest objects (only while relevant)
 const MX_FINDS=[
@@ -4258,10 +4301,11 @@ function mxPeople(d){const L=[];
 // turn people and finds into walk-scene NPCs
 function mxNpcs(d){
   const P=mxPeople(d).filter(p=>!p.cond||p.cond()).map(p=>{const key=d+'.'+p.id,n=Object.assign({},p,{cond:null});
-    n.lines=()=>{const r=p.say();n._then=r.then||null;if(r.amb&&!r.then&&!p.ch&&MX_VOICE[key])mxMurmur(MX_VOICE[key]);return r.lines;};
+    n.lines=()=>{const off=mxOfferAt(key);if(off){const Q=MX_QUESTS[off];n._then=()=>{mxDiscover(off);mxStart(off);};return typeof Q.offer==='function'?Q.offer():Q.offer;}
+      const r=p.say();n._then=r.then||null;if(r.amb&&!r.then&&!p.ch&&MX_VOICE[key])mxMurmur(MX_VOICE[key]);return r.lines;};
     n.route=MX_ROUTES[key]||null;n.voice=MX_VOICE[key]||null;if(p.hide)n.hide=p.hide;
     n.talk=()=>{const x=mxS();x.talk[key]=(x.talk[key]|0)+1;const t=n._then;n._then=null;if(t)t();persist();mxTick();};
-    n.mkf=()=>{const k=p.mark&&p.mark();return k||(mxTalked(key)?null:'…');};return n;});
+    n.mkf=()=>{if(mxNpcWanted(key))return '!';const k=p.mark&&p.mark();return k||(mxTalked(key)?null:'…');};return n;});
   const Fd=MX_FINDS.filter(f=>f.at===d).map(f=>{const n={id:f.id,fx:f.fx,fy:f.fy,spot:1,find:f};
     n.lines=()=>typeof f.text==='function'?f.text():f.text;
     n.talk=()=>{const x=mxS(),first=!x.found[f.id];x.found[f.id]=1;if(f.on)f.on();
@@ -4316,7 +4360,7 @@ function mxSub(m){if(m.act)return mxActSub(m);return MX_DISTRICTS[m.M.dist].name
 // a fight from the hub: plays a normal fight mission, then returns to the same district and calls back with the result
 function mxFightTheme(theme,o){const id='mxf_'+theme+(o&&o.tag?'_'+o.tag:'');if(!MISSIONS[id])addMission(id,Object.assign({type:'fight',name:'Vices',place:'Meridian',theme,party:['kairos'],lvl:2,kills:8,max:3,pool:['gossip','hothead'],brief:'Vices spill out of a crack in the air.'},o||{}));return id;}
 function mxFight(missionId,party,cb){const d=room&&room.m&&room.m.M&&room.m.M.dist||mxS().at;
-  startMission(missionId,party||['kairos'],ok=>{mxS().at=d;persist();mxBegin();if(cb)cb(ok);});}
+  startMission(missionId,party||['kairos'],ok=>{if(ok)mxSet('won:'+missionId);mxS().at=d;persist();mxBegin();if(cb)cb(ok);});}
 // a scene from the hub: cutscene panels (pn(...)) played through the story sequencer, then back to the same district
 function mxScene(panels,cb,roster){const d=room&&room.m&&room.m.M&&room.m.M.dist||mxS().at;
   runSeq([{cut:panels}],{roster:roster||['kairos'],end:()=>{mxS().at=d;persist();mxBegin();if(cb)cb();}});}
@@ -4428,7 +4472,7 @@ function mxExtras(d){const L=[],x=mxS();
     n.opened=()=>mxChestOpen(ch);n.lines=()=>[];n.talk=(F,m,nn)=>mxOpenChest(nn);n.mkf=()=>null;n.draw=(c,nn)=>mxDrawChest(c,nn);L.push(n);}
   // things to read
   for(const f of MX_LOOKS.filter(f=>f.at===d&&(!f.era||f.era===mxEra()))){const n={id:f.id,fx:f.fx,fy:f.fy,spot:1};
-    n.lines=()=>typeof f.text==='function'?f.text():f.text;n.talk=()=>{const y=mxS();y.looked=y.looked||{};y.looked[f.id]=1;persist();};
+    n.lines=()=>typeof f.text==='function'?f.text():f.text;n.talk=()=>{const y=mxS();y.looked=y.looked||{};y.looked[f.id]=1;persist();mxTick();};
     n.mkf=()=>(mxS().looked||{})[f.id]?null:'?';L.push(n);}
   if(d==='yard'){const n={id:'drill.board',fx:0.32,fy:0.28,spot:1,verb:'read'};
     n.lines=()=>{const best=(x.act&&x.act.drillBest)?' Best: '+x.act.drillBest.toFixed(1)+'s.':'';return [['n','AGNES’S DRILL COURSE. Six flags, in order, in '+DRILL_T+' seconds. No excuses.'+best],
@@ -4859,7 +4903,7 @@ function showRenown(back){const n=mxRenown(),rk=mxRank(),nx=MX_RANKS[rk];let not
   draw();}
 // players who finished Meridian quests before Expansion 02 get those quests' Keepsakes once (Stardust was already paid)
 function mxMigrate(){const x=save.mx;if(!x||!x.q)return;let ch=false;
-  for(const id in MX_QUESTS){const q=x.q[id],key='mxq:'+id;if(q&&q.s==='done'&&!save.claims[key]){const k=MX_QUESTS[id].reward.keep;if(k)save.keep=(save.keep|0)+k;save.claims[key]=Date.now();ch=true;}}
+  for(const id in MX_QUESTS){const q=x.q[id],key='mxq:'+id,Q=MX_QUESTS[id];if(!['main','optional'].includes(Q.kind)||!Q.reward)continue;if(q&&q.s==='done'&&!save.claims[key]){const k=Q.reward.keep;if(k)save.keep=(save.keep|0)+k;save.claims[key]=Date.now();ch=true;}}
   for(const f of MX_FINDS){const key='mxf:'+f.id;if(f.reward&&x.found&&x.found[f.id]&&!save.claims[key]){save.claims[key]=Date.now();ch=true;}}
   if(ch)persist();}
 mxMigrate();
@@ -4882,10 +4926,12 @@ function showMeridian(){
       it('Renown',mxClaimable()?mxClaimable()+' reward'+(mxClaimable()>1?'s':'')+' to claim':'Rank '+mxRank()+' of '+MX_RANKS.length,()=>showRenown(showMeridian),mxClaimable()?' guide-new':''),
       it('Back','Main menu',()=>goHome(),'',{'data-back':'1'}))),'mode-select');
 }
-function mxStoriesList(){const ids=Object.keys(MX_QUESTS).filter(id=>MX_QUESTS[id].kind==='bond'||MX_QUESTS[id].kind==='side');
+const MX_KIND_LABEL={bond:'Bond story',memory:'Memory',hangout:'Hangout',side:'World story'};
+function mxStoriesList(){const ids=Object.keys(MX_QUESTS).filter(id=>MX_STORY_KINDS.includes(MX_QUESTS[id].kind));
   const vis=ids.filter(id=>['available','active','completed'].includes(mxQState(id))),locked=ids.length-vis.length;
-  const out=vis.map(id=>{const Q=MX_QUESTS[id],st=mxQState(id);return h('div',{class:'mx-q'+(st==='completed'?' done':'')},h('h4',null,Q.title,h('em',{class:'opt'},Q.kind==='bond'?'Bond story':'World story'),st==='completed'?h('em',{class:'opt'},'Done'):null),
-    h('p',null,Q.desc),st==='available'?h('p',{class:'ob'},'→ '+(Q.giver||'Find out more')):st==='active'?h('p',{class:'ob'},'→ '+Q.steps[mxS().q[id].n].t):null);});
+  const out=vis.map(id=>{const Q=MX_QUESTS[id],st=mxQState(id);return h('div',{class:'mx-q'+(st==='completed'?' done':'')},h('h4',null,Q.title,h('em',{class:'opt'},MX_KIND_LABEL[Q.kind]),st==='completed'?h('em',{class:'opt'},'Done'):null),
+    h('p',null,Q.desc),st==='available'?h('p',{class:'ob'},'→ '+(Q.giver||'Find out more')):st==='active'?(()=>{const sp=Q.steps[mxS().q[id].n],pg=mxStepProg(sp);return h('p',{class:'ob'},'→ '+sp.t+(pg?' ('+pg+')':''));})():null,
+    st==='completed'&&Q.reward&&Q.reward.rec&&mxS().mem[Q.reward.rec.id]?h('p',{class:'rw'},'Kept in the Journal: '+Q.reward.rec.title):null);});
   if(!out.length)out.push(h('p',{class:'ss-info'},mxEra()==='fugitive'?'No stories found yet. Listen to the people around you, and to the party at the hideout.':'Stories open up after Chapter 1.'));
   if(locked)out.push(h('p',{class:'ss-info'},locked+' more '+(locked>1?'stories are':'story is')+' still hidden or locked.'));return out;}
 function showJournal(back,tab){
@@ -4896,7 +4942,7 @@ function showJournal(back,tab){
       h('p',null,Q.desc),st?h('p',{class:'ob'},'→ '+st.t+(st.prog?' ('+st.prog()+')':'')):null,
       Object.keys(x.items).length&&!done&&id==='glasses'&&x.items.glasses?h('p',{class:'rw'},'Carrying: Matteo’s glasses'):null,
       h('p',{class:'rw'},Q.giver+' · Reward: '+rw));};
-  const ids=Object.keys(MX_QUESTS).filter(id=>x.q[id]).sort((a,b)=>(x.q[a].s==='done')-(x.q[b].s==='done')||(MX_QUESTS[a].kind==='main'?-1:1));
+  const ids=Object.keys(MX_QUESTS).filter(id=>x.q[id]&&!MX_STORY_KINDS.includes(MX_QUESTS[id].kind)).sort((a,b)=>(x.q[a].s==='done')-(x.q[b].s==='done')||(MX_QUESTS[a].kind==='main'?-1:1));
   const quests=ids.length?ids.map(qCard):[h('p',{class:'ss-info'},'No quests yet. People in Meridian will ask for help when you talk to them.')];
   const recs=MX_FINDS.filter(f=>!f.quest).map(f=>{const got=x.found[f.id],D=MX_DISTRICTS[f.at];
     const txt=got?(typeof f.text==='function'?[]:f.text).filter(l=>l[0]==='n').map(l=>l[1]).join(' '):'';
@@ -8699,7 +8745,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
