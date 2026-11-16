@@ -127,7 +127,7 @@
   - The chain is ordered (`pre`).
 - **Possible regressions:** Chapter 1 sequence data (read-only use); hide-and-seek.
 
-## Stage 7a · World side quests, batch 1 (Implemented, tested · not committed)
+## Stage 7a · World side quests, batch 1 (done, `6ad3b14`)
 - **Scope:** `side_morning_after`, `side_names_paper`, `side_sunday_cups`, `side_festival_forgot`, `side_missing_page`, `side_beyond_wall`.
 - **Features:** new townsfolk (old woman, clerk, traveller, archivist) as `mxPeople` entries; investigation via `objs`; Folders and puzzle reuse.
 - **Acceptance:**
@@ -137,7 +137,7 @@
   - The traveller stays unreliable (row 12).
   - Sketches, not photographs (row 15).
 
-## Stage 7b · World side quests, batch 2
+## Stage 7b · World side quests, batch 2 (Implemented, tested · not committed)
 - **Scope:** `side_empty_chapel`, `side_unofficial_prayer`.
 - **Depends on:** Stage 5 (the old chapel district).
 - **Acceptance:** `side_unofficial_prayer` stays `locked_by_prerequisite` until `side_empty_chapel` is done. The factions appear as rumour only.
@@ -275,3 +275,11 @@ The test now checks this.
 |---|---|---|---|
 | `side_quests_test.js` | 41/41 | 41/41 | 41/41 |
 | Full regression (all tests, chest spots) | pass | pass | pass |
+
+## Results · Stage 7b (2026-11-16)
+**Built:** two quests at St. Maren's, the reading lamp prop, three visitors in grey, and a cutscene choice whose answer is saved as a story flag.
+
+| Test | desk | phone | small |
+|---|---|---|---|
+| `chapel_quests_test.js` | 36/36 | 36/36 | 36/36 |
+| `run_tests.js quick` (28 runs, 1,042 checks) | pass | pass | pass (5 min) |

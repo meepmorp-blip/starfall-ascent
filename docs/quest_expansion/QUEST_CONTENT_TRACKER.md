@@ -49,8 +49,8 @@
 | `side_names_paper` | Names on Paper | side | Chapter 1 cleared; talk to Pim | Concord Office → the Cloister | 5–7 min | Implemented | Yes |
 | `side_sunday_cups` | Sunday Cups | side | Chapter 1 cleared; talk to Rosa | Market Ring, Ash Lane, the Cloister | 5–7 min | Implemented | Yes |
 | `side_festival_forgot` | The Festival We Forgot | side | Chapter 1 cleared; the old decorations box, then Sister Agathe | St. Hesper’s → Festival Square, St. Lucia’s | 6–8 min | Implemented | Yes |
-| `side_empty_chapel` | The Empty Chapel | side | Chapter 1 cleared | St. Maren's (built in Stage 5) | 8–10 min | Planned | No |
-| `side_unofficial_prayer` | The Unofficial Prayer | side | after `side_empty_chapel` | Ash Lane (after dark) | 8–10 min | Planned | No |
+| `side_empty_chapel` | The Empty Chapel | side | Chapter 1 cleared; St. Maren's known; talk to Ottilie | St. Maren's | 6–8 min | Implemented | Yes |
+| `side_unofficial_prayer` | The Unofficial Prayer | side | after `side_empty_chapel`; talk to the lamplighter | Ash Lane → St. Lucia's → St. Maren's | 6–8 min | Implemented | Yes |
 | `side_missing_page` | The Missing Page | side | Chapter 1 cleared; talk to Mr. Ambrose | Office → Cloister → St. Hesper’s → Festival Square | 6–8 min | Implemented | Yes |
 | `side_beyond_wall` | Beyond the Wall | side | Chapter 1 cleared; talk to Ivo | Ash Lane → Clock Tower, Market Ring | 5–7 min | Implemented | Yes |
 
@@ -378,11 +378,18 @@
 
 **Test:** `tools/side_quests_test.js` (41 checks ×3)
 
-### Batch 7b (not started)
-| ID | Giver / discovery | Notes |
-|---|---|---|
-| `side_empty_chapel` | Ottilie at St. Maren's (built in Stage 5) | Recover and shelve 4 writings; light the reading lamp. Rumour-level Gnosis |
-| `side_unofficial_prayer` | **Pre:** `side_empty_chapel`. A whisper on Ash Lane | Follow chalk signs at dusk; witness the prayer; nobody all good or all bad |
+### World side quests (batch 7b) · **Implemented, tested**
+| ID | Giver | What you do | Ends with | Reward | Flags |
+|---|---|---|---|---|---|
+| `side_empty_chapel` | Ottilie, St. Maren's. Needs `story: oldchapel.found`, so St. Maren's must be known (from Cassie's story) | Pick up 4 loose writings (a recopied psalter, an old hymn page, a catechism with older answers pasted in, an unsigned letter); help Fen shelve them (a 4-round puzzle); light the reading lamp, which is drawn and stays lit afterwards | Ottilie: the Office closed the chapels "because of what was on the shelves"; the Old Heresy; "people who go looking come back with stories, and nothing else" | 35 Stardust, Keepsake, "The keepers' shelf list" | `side.chapel` |
+| `side_unofficial_prayer` | The lamplighter, Ash Lane. **Pre:** `side_empty_chapel` | Follow a chalk sign (a circle with a line through it), in order: under lamp seven on Ash Lane → behind St. Lucia's → the back wall of St. Maren's. Three visitors in grey appear at once. A scene: they pray **to forget** (grief: "My son died in the spring"; "some of us think forgetting is a door"), then a **choice**: keep their secret or tell Ottilie | The choice is remembered (`prayer.kept` / `prayer.told`). If told, Ottilie gets a new line: "I'll leave the door open anyway. Everyone needs somewhere." | 35, Keepsake, "A chalk circle with a line through" | `side.prayer` + the choice flag |
+
+**Canon (tested)**
+- The visitors are a hint at the proposed Hollow Choir, never named. Nobody is a villain ("He thinks they are tired").
+- Gnosis appears only as "the Old Heresy" (canon term) and as rumour.
+- No Mercy, water, Sundays or drinking.
+
+**Test:** `tools/chapel_quests_test.js` (36 checks ×3), covering both choices.
 
 ## 5. System checklist (Implementation Phase 2: Quest System Foundation)
 

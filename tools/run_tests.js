@@ -7,11 +7,11 @@ const {spawn}=require('child_process'),fs=require('fs'),path=require('path');
 const ALL=['desk','phone','small'],DP=['desk','phone'];
 // [name, file, screen sizes]
 const SUITE=[
-  ['side_quests','side_quests_test.js',ALL],['bond_lucas','bond_lucas_test.js',ALL],['bond_cass','bond_cass_test.js',ALL],['bond_lark','bond_lark_test.js',ALL],
+  ['chapel_quests','chapel_quests_test.js',ALL],['side_quests','side_quests_test.js',ALL],['bond_lucas','bond_lucas_test.js',ALL],['bond_cass','bond_cass_test.js',ALL],['bond_lark','bond_lark_test.js',ALL],
   ['bond_agnes_bram','bond_agnes_bram_test.js',ALL],['quest_system','quest_system_test.js',ALL],['narrative_foundation','narrative_foundation_test.js',ALL],
   ['ashlane','ashlane_test.js',ALL],['office','office_test.js',ALL],['hesper','hesper_test.js',ALL],['worldmap','worldmap_test.js',ALL],['polish','exploration_polish_test.js',ALL],
   ['exploration','exploration_test.js',DP],['meridian','meridian_playtest.js',DP],['economy','economy_test.js',DP]];
-const QUICK=['side_quests','bond_lucas','bond_cass','bond_lark','bond_agnes_bram','quest_system','narrative_foundation','polish'];
+const QUICK=['chapel_quests','side_quests','bond_lucas','bond_cass','bond_lark','bond_agnes_bram','quest_system','narrative_foundation','polish'];
 const args=process.argv.slice(2);let jobs=6,modes=null;const names=[];
 for(let i=0;i<args.length;i++){if(args[i]==='--jobs')jobs=+args[++i];else if(args[i]==='--modes')modes=args[++i].split(',');else names.push(args[i]);}
 const pick=names.length===0?SUITE.map(s=>s[0]):names[0]==='quick'?QUICK.concat(names.slice(1)):names;
