@@ -38,6 +38,8 @@ Total to Lv 20: **12,920** Memories.
 | Bond Story: Agnes · A Little Something Handmade | · | 40 | · | 1 (chest) | 1 | once · +1 Bond (Agnes) |
 | Bond Story: Bram · The Smell of Fresh Bread | · | 40 | · | 1 (boss) | · | once · +1 Bond (Bram) |
 | Bond Story: Naomi & Theo · The Things We Couldn’t Save | · | 40 | · | 1 (chest) | 1 | once · +1 Bond (Naomi and Theo) |
+| Bond Story: Cassie · A Prayer of Her Own | · | 40 | · | 1 (chest) | 1 | once · +1 Bond (Cassie) |
+| Meridian: St. Maren’s (district, 2 records) | · | · | · | · | · | Renown +5 on discovery, +5 per record |
 
 ## Meridian Renown (new)
 Points available today: 5 districts × 5 + 11 records × 5 + 30 + 5 optional quests × 15 = **185**.

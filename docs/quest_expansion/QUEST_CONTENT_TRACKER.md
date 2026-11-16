@@ -37,7 +37,7 @@
 | `agnes_handmade` | A Little Something Handmade | bond (Agnes) | Chapter 1 cleared; use the hideout workbench | Clock Tower → Market Ring, Ash Lane | 10–14 min | Implemented | Yes |
 | `bram_bread` | The Smell of Fresh Bread | bond (Bram) | Chapter 1 cleared; the bakery window or Bram | St. Hesper's → Clock Tower, Market, Ash Lane | 10–14 min | Implemented | Yes |
 | `lark_couldnt_save` | The Things We Couldn't Save | bond (Naomi & Theo) | Chapter 1 cleared; the folder at St. Lucia's or Naomi | Clock Tower → St. Lucia's | 10–14 min | Implemented | Yes |
-| `cass_prayer` | A Prayer of Her Own | bond (Cassie) | Chapter 1 cleared | Old chapel *(new district, needs approval)* | 15–20 min | Planned | No |
+| `cass_prayer` | A Prayer of Her Own | bond (Cassie) | Chapter 1 cleared; the prayer book at the Cloister or Cassie | Clock Tower → St. Maren's (new district, approved) | 12–16 min | Implemented | Yes |
 | `lucas_mem_bread` | The Things We Remember A·1 · The Bread Incident | memory (Lucas) | Chapter 1 cleared; Lucas captured | St. Hesper's (memory object) | 6–8 min | Planned | No |
 | `lucas_mem_plan` | The Things We Remember A·2 · The Worst Plan | memory (Lucas) | after `lucas_mem_bread` | St. Hesper's / Clock Tower | 6–8 min | Planned | No |
 | `lucas_mem_room` | The Things We Remember A·3 · Old Roommates | memory (Lucas) | after `lucas_mem_plan` | St. Hesper's (their old room, a memory walk) | 8–10 min | Planned | No |
@@ -49,7 +49,7 @@
 | `side_names_paper` | Names on Paper | side | Chapter 1 cleared | Concord Office | 8–12 min | Planned | No |
 | `side_sunday_cups` | Sunday Cups | side | Chapter 1 cleared | Market Ring, Cloister, Ash Lane | 8–10 min | Planned | No |
 | `side_festival_forgot` | The Festival We Forgot | side | Chapter 1 cleared | Festival Square, St. Hesper's | 8–10 min | Planned | No |
-| `side_empty_chapel` | The Empty Chapel | side | Chapter 1 cleared | Old chapel | 8–10 min | Planned | No |
+| `side_empty_chapel` | The Empty Chapel | side | Chapter 1 cleared | St. Maren's (built in Stage 5) | 8–10 min | Planned | No |
 | `side_unofficial_prayer` | The Unofficial Prayer | side | after `side_empty_chapel` | Ash Lane (after dark) | 8–10 min | Planned | No |
 | `side_missing_page` | The Missing Page | side | Chapter 1 cleared | Office → Cloister → Hesper → Plaza | 10–12 min | Planned | No |
 | `side_beyond_wall` | Beyond the Wall | side | Chapter 1 cleared | Ash Lane / Market Ring | 6–8 min | Planned | No |
@@ -208,36 +208,53 @@
   - Naomi's arm line follows the Lore Bible.
 - **Test:** `tools/bond_lark_test.js`
 
-### `cass_prayer` · A Prayer of Her Own
+### `cass_prayer` · A Prayer of Her Own · **Implemented, tested**
 - **Category:** bond · **Character:** Cassie (`cass`)
 - **Story:**
-  - A prayer book reminds Cassie of her mother. She knows the words but not the face of the woman who taught them.
-  - It leads to an old chapel where people keep writings the Church no longer recognises.
-  - She keeps her faith and her right to question.
-- **Start:** Cloister wall → old chapel · **Giver:** the prayer book (discovery), or Cassie at the tower
-- **Prerequisites:** none · **Unlock:** `when:['fugitive']`
+  - A rain-swollen prayer book by the Cloister wall is stamped ST. MAREN'S · ASH LANE.
+  - Cassie knows its prayer by heart: "Light before the lamps. Door before the wall. Name before the paper. Keep me." She hears her mother's voice saying it, but not her face (canon).
+  - At St. Maren's, a chapel the Office closed seventeen years ago, two people still keep the books: Ottilie, the old sacristan, and Fen, a copyist.
+  - Cassie decides God is still there, and that she is allowed to ask questions in it.
+- **Start / giver:** Clock Tower, Cassie (`npc:'tower.h_cass'`)
+- **Discovery:** the prayer book at the Cloister (post-Chapter 1), or a second talk with Cassie
+- **Unlock:** `when:['fugitive']`
+- **Starting the story** sets the story flag `oldchapel.found`, which opens St. Maren's on the world map and the east exit from Ash Lane.
 - **Objectives:**
-  1. Read the book.
-  2. Find the old chapel.
-  3. Recover three damaged writings (multi-objective).
-  4. Symbol puzzle (`showPuzzle`).
-  5. Talk to the keepers.
-  6. Defend the chapel (hub fight, chapel theme).
-  7. A scene.
-- **NPCs:** Cassie, two text-keepers (new)
-- **Environments:** chapel, **old chapel (new district, chapel art)**
-- **Activities:** collection, puzzle, dialogue, fight
-- **Combat:** one fight
+  1. Find St. Maren's (Ash Lane, east end).
+  2. Talk to Ottilie and recover three wet writings, in any order.
+  3. Altar symbol puzzle: star, open door, open hand (3-round `showPuzzle`; can leave and retry).
+  4. Defend the chapel: a fight with Cassie and Kairos in the chapel's own art (`mxf_oldchapel_cass`).
+  5. The ending scene.
+- **NPCs:** Cassie (in the chapel while the story is on), Ottilie, Fen
+- **Environments:** chapel (the Cloister), tower, ashlane, **oldchapel**
+- **Activities:** discovery, collection, symbol puzzle, fight, scene
 - **Rewards:**
   - Bond +1 · Cassie
   - 40 Stardust
-  - a Star Fragment (support)
-  - Journal collectible "Cassie's prayer book"
-- **Story flags:** `cass.prayer`, `oldchapel.found` (shared with `side_empty_chapel`)
-- **Spoilers / canon:**
-  - Her faith stays sincere, and the story criticises the institution, not faith.
-  - Gnosis and the Buried Books ([DRAFT]) appear only as rumour.
-- **Status:** Planned · **Tested:** No · **Needs approval:** the old chapel district (§ 6)
+  - 1 Keepsake
+  - 1 Fragment (chest grade)
+  - Journal: "Cassie's prayer book"
+- **Story flags:** `cass.prayer`, `oldchapel.found`; flags `cp_ottilie`, `cp_altar`, `cp_end`; items `cp_w1`–`cp_w3`
+- **Canon:**
+  - Her faith stays sincere, and the institution is criticised, not faith.
+  - "The Old Heresy" and libraries under old chapels appear only as rumour or margin notes.
+  - No faction names (tested by regex).
+- **Test:** `tools/bond_cass_test.js`
+
+#### St. Maren's (new district, `oldchapel`)
+- **Art:** a new painted theme, `oldchapel`:
+  - flagstones with moss and cracks, and a faded aisle runner
+  - four rows of pews, one broken
+  - a stripped altar with candles, under a broken stained-glass window
+  - boarded side windows and the keepers' bookshelves
+  - moonlight and rubble under a hole in the roof
+  - the west door
+- **Collision:** one shared list (`oldChapelGeo`) drives both the painting and the solids, so they always match.
+- **People:** Ottilie and Fen, with three lines each; Fen walks the right aisle.
+- **Records:** the door plaque and the hymn board, so the Journal now has 26 records. **Readable:** the hole in the roof.
+- **No daily chests.** The precious-chest pool skips it.
+- **Map:** world map place (cross icon, south-east of Ash Lane), a road from Ash Lane, and a Meridian-menu cell. It needs Chapter 1 cleared **and** the `oldchapel.found` story flag (new `need.flag` support).
+- **Also reused by:** `side_empty_chapel` and `side_unofficial_prayer` (Stage 7b).
 
 ### `lucas_mem_bread` · A·1 The Bread Incident
 - **Category:** memory · **Character:** Lucas (`lucan`), as a child · **Start:** St. Hesper's kitchen window

@@ -83,7 +83,7 @@
   - Chest spots still valid around any new NPC.
 - **Possible regressions:** chest spots near new NPCs; the Hesper hide-and-seek spots; Ash Lane's Odd Things.
 
-## Stage 4 · Naomi and Theo (Implemented, tested · not committed)
+## Stage 4 · Naomi and Theo (done, `1977914`)
 - **Scope:** `lark_couldnt_save`.
 - **Features:**
   - The misfiled chart readable.
@@ -97,7 +97,7 @@
   - Bond +1 for Naomi and Theo.
 - **Possible regressions:** the Rounds quest at the ward; ward chest spots.
 
-## Stage 5 · Cassie (+ the old chapel district)
+## Stage 5 · Cassie (+ the old chapel district) (Implemented, tested · not committed)
 - **Needs approval first:** a new district (tracker § 6.2).
 - **Scope:** `cass_prayer`; the old chapel walk district (chapel theme, painted props, collision, chest spots or none).
 - **Features:**
@@ -222,3 +222,19 @@
 |---|---|---|---|
 | `bond_lark_test.js` | 35/35 | 35/35 | 35/35 |
 | Full regression | pass | pass | pass |
+
+## Results · Stage 5 (2026-11-16)
+**Built**
+- The St. Maren's district: new art, shared painting and collision geometry, two keepers, 2 records, 1 readable, a map place and the Ash Lane east exit.
+- Cassie's story, start to finish.
+
+**System additions**
+- `onStart` on quests.
+- `need.flag` for world-map places.
+
+**Other changes:** one Ash Lane chest spot moved, (0.96, 0.34) → (0.84, 0.58), off the new exit.
+
+| Test | desk | phone | small |
+|---|---|---|---|
+| `bond_cass_test.js` | 38/38 | 38/38 | 38/38 |
+| Full regression (all tests, chest spots) | pass | pass | pass |
