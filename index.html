@@ -4125,6 +4125,38 @@ Object.assign(MX_QUESTS,{
       {id:'end',at:'tower',npc:'tower.h_bram',t:'Share the bread',ok:()=>mxF('br_end')}],
     reward:{bond:['bram'],dust:40,frag:'boss',rec:{id:'rec.bram',title:'Gran’s recipe'}},sets:['bram.recipe']}});
 const BAKE_ORDER=['flour','knead','rest','oven'];
+Object.assign(MX_QUESTS,{
+  lark_couldnt_save:{title:'The Things We Couldn’t Save',kind:'bond',char:'noemi',when:['fugitive'],at:'tower',npc:'tower.h_noemi',giver:'Naomi · the Clock Tower',
+    desc:'Before the Festival, Naomi and Theo had a patient they could not help. Four pages are missing from his folder, and Naomi wants them back in order.',
+    found:()=>mxF('lt_chart')||mxTalked('tower.h_noemi')>=2,
+    offer:[['noemi','Kairos. Can I borrow you for a night? Not a fight. Paperwork. Worse.'],
+      ['noemi','Before the Festival I had a patient. Mr. Odell. Retired teacher. He forgot his street, then his daughter, then the ward he was lying in.'],
+      ['noemi','Theo measured him every two weeks. We did everything right, and it didn’t matter.'],
+      ['noemi','His folder is still on the desk at St. Lucia’s. Four pages are missing. I want them back. I want it in order.'],
+      ['kairos','Then we go tonight.'],['noemi','Theo’s coming. He says the hospital still owes him a mop bucket.']],
+    steps:[{id:'pages',t:'Find the four missing pages (St. Lucia’s)',objs:[MXO.item('lt_p1','Admission note',{at:'ward'}),MXO.item('lt_p2','Week two',{at:'ward'}),MXO.item('lt_p3','Week four',{at:'ward'}),MXO.item('lt_p4','Week eight',{at:'ward'})]},
+      {id:'order',at:'ward',t:'Put the folder in order at the nurses’ desk',ok:()=>mxF('lt_order')},
+      {id:'read',at:'ward',t:'Walk Theo’s box to Mr. Odell’s old bed',ok:()=>mxF('lt_reading')},
+      {id:'defend',at:'ward',npc:'ward.q_naomi',t:'Something moved behind the curtains. Talk to Naomi',ok:()=>mxF('won:mxf_hospital_lark')},
+      {id:'end',at:'ward',npc:'ward.q_theo',t:'Talk to Theo',ok:()=>mxF('lt_end')}],
+    reward:{bond:['noemi','theo'],dust:40,keep:1,frag:'chest',rec:{id:'rec.lark',title:'Naomi’s notebook'}},sets:['lark.casefile']}});
+const LT_BED=[0.86,0.5];
+function larkOrder(){showPuzzle({head:'The Things We Couldn’t Save',title:'Mr. Odell’s folder',exit:1,rounds:[
+    {q:'Four pages on the desk. Which comes first?',opts:['“Calls the nurses by his pupils’ names.”','“Could not find his way home from the bakery.”','“Asks his daughter’s name. Twice.”'],a:1,no:'Naomi: No. Earlier than that. The day his daughter brought him in.'},
+    {q:'And after the bakery?',opts:['“Asks his daughter’s name. Twice.”','“Does not recognise the ward.”','“Calls the nurses by his pupils’ names.”'],a:0,no:'Naomi: That was later. Week two was his daughter.'},
+    {q:'Theo lines up his readings: 41, 38, then a gap, then 12. Why is there a gap?',hint:'Week 6: no page. No reading. Nothing in anyone’s hand.',opts:['Somebody took the page','Nobody measured him that week','The box was broken'],a:1,ok:'Naomi: I was on nights. Theo was in the Rift. Nobody measured week six.',no:'Theo: Nobody took it. There’s no page because there was nobody there to write it.'}]},
+  ok=>{state='play';atk.down=false;last=performance.now();if(ok){mxSet('lt_order');persist();setBanner('The folder is in order','Week six is still empty. Theo hands you his box.',2.6);mxTick();}});}
+function larkEnding(){mxScene([pn('hospital',[['kairos',0.3,0.72,1],['noemi',0.5,0.7,-1],['theo',0.64,0.7,-1]],[
+    ['n','The four pages, in order, back in Mr. Odell’s folder. Week six is still empty.'],
+    ['noemi','I keep thinking, if I’d been on days that week. If I’d written it down.'],
+    ['theo','You wrote down everything else. That’s the only reason we can see the gap at all.'],
+    ['noemi','He taught Year Four for thirty years. By the end he couldn’t tell me what a year was.'],
+    ['theo','And you sat with him anyway. Every shift.'],
+    ['noemi','I write things on my arm because by tonight I’ll have talked myself out of them.'],
+    ['noemi','Some things you can’t save. You can still refuse to forget them.'],
+    ['n','She writes ODELL on her wrist, small, under everything else.'],
+    ['theo','For the record, the box says that bed is the emptiest thing it has ever measured. I don’t know what that means yet.'],
+    ['noemi','Then we find out. Together. After you sleep.'],['theo','After I sleep.']])],()=>{mxSet('lt_end');persist();mxTick();},['kairos','noemi','theo']);}
 // the endings: short scenes in the hideout (Scene 11's camp art), then back to the tower
 function agnesEnding(){mxScene([pn(CAMPB,[['kairos',0.36,0.7,1],['ines',0.56,0.7,-1]],[
     ['n','Agnes turns the new sling over in her hands. Under the shoulder pad, where nobody would ever look, there is a small stitched star.'],
@@ -4182,6 +4214,14 @@ const MX_FINDS=[
     text:[['n','A curl of good leather in the cobbler’s scrap bin behind the stalls. Thick, even, the right length for a sling.'],['th','Nobody will miss it. Agnes will notice if it’s the wrong kind.']],on:()=>{mxS().items.ag_leather=1;}},
   {id:'ashlane.spice',at:'ashlane',fx:0.64,fy:0.32,quest:'bram_bread',title:'A tin by the shop step',vis:()=>mxStepOf('bram_bread')==='gather'&&!mxHas('br_spice'),
     text:[['n','A dented tin on the shop step: CARDAMOM · TAKE A PINCH · LEAVE A COIN.'],['th','Sweet, warm, a bit like pine. That’s the smell from the bakery.'],['n','You leave a coin.']],on:()=>{mxS().items.br_spice=1;}},
+  {id:'ward.lt_p1',at:'ward',fx:0.38,fy:0.34,quest:'lark_couldnt_save',title:'A page from the folder · Admission note',vis:()=>mxStepOf('lark_couldnt_save')==='pages'&&!mxHas('lt_p1'),
+    text:[['n','ADMISSION · ODELL, H. · 71 · RETIRED TEACHER. “Brought in by his daughter. Could not find his way home from the bakery.”']],on:()=>{mxS().items.lt_p1=1;}},
+  {id:'ward.lt_p2',at:'ward',fx:0.6,fy:0.46,quest:'lark_couldnt_save',title:'A page from the folder · Week two',vis:()=>mxStepOf('lark_couldnt_save')==='pages'&&!mxHas('lt_p2'),
+    text:[['n','WEEK 2. “Asks his daughter’s name. Twice. Embarrassed the second time.” Theo’s reading, pinned to the corner: 41.']],on:()=>{mxS().items.lt_p2=1;}},
+  {id:'ward.lt_p3',at:'ward',fx:0.46,fy:0.26,quest:'lark_couldnt_save',title:'A page from the folder · Week four',vis:()=>mxStepOf('lark_couldnt_save')==='pages'&&!mxHas('lt_p3'),
+    text:[['n','WEEK 4. “Calls the nurses by his pupils’ names. Kind about it.” Reading: 38.']],on:()=>{mxS().items.lt_p3=1;}},
+  {id:'ward.lt_p4',at:'ward',fx:0.3,fy:0.6,quest:'lark_couldnt_save',title:'A page from the folder · Week eight',vis:()=>mxStepOf('lark_couldnt_save')==='pages'&&!mxHas('lt_p4'),
+    text:[['n','WEEK 8. “Does not recognise the ward. Asks what a year is.” Reading: 12. In Naomi’s hand, smaller: “I’m sorry.”']],on:()=>{mxS().items.lt_p4=1;}},
   {id:'plaza.glasses',at:'plaza',fx:0.62,fy:0.66,quest:'glasses',title:'Matteo’s glasses',vis:()=>mxStepOf('glasses')==='find'&&!mxHas('glasses'),
     text:[['n','Folded on the fountain rim between two silver cups, with a bread crust beside them: Matteo’s glasses.'],['th','The pigeons got the bread. The glasses survived.']],on:()=>{mxS().items.glasses=1;}},
   {id:'yard.tally',at:'yard',fx:0.13,fy:0.3,title:'The starfall tally',text:[['n','A chalk tally on the barracks wall, one column a night. Last night: eleven.'],['n','At the bottom of every column, the same line: “none past the rooftops”.']]},
@@ -4352,6 +4392,20 @@ function mxPeople(d){const L=[];
       say:()=>{const t=mxTalked('ward.naomi');return {amb:1,lines:[[['noemi','If you’re here to help, roll bandages. If you’re here to talk, roll bandages while you talk.'],['noemi','I don’t go to the Festival. Somebody has to keep the ward open.'],['noemi','Eat something today. That’s not advice.']][t%3]]};}});
     L.push({id:'theo',ch:'theo',fx:0.26,fy:0.76,face:1,label:'Theo',cond:()=>mxMet('theo')&&mxEra()==='before',
       say:()=>{const t=mxTalked('ward.theo');return {amb:1,lines:[[['theo','Don’t touch the box. The needle’s finally sitting still and I’d like to keep it that way.'],['theo','Naomi says I need a hobby that isn’t a hobby. I said that’s just a job.'],['theo','If you hear a pop from the store cupboard, that was not me.']][t%3]]};}});
+    const lt=()=>mxEra()==='fugitive'&&!!mxAct('lark_couldnt_save');
+    L.push({id:'q_naomi',ch:'noemi',fx:0.7,fy:0.56,face:-1,label:'Naomi',cond:lt,
+      say:()=>{const sp=mxStepOf('lark_couldnt_save');
+        if(sp==='defend')return {lines:[['noemi','Kairos. Behind the curtains. Something is moving, and it isn’t a patient.'],['theo','Lamps up. Naomi, stay behind me. …Behind Kairos, then.']],then:()=>mxFight(mxFightTheme('hospital',{tag:'lark',party:['noemi','theo','kairos'],kills:8,brief:'Vices in the ward. Keep them off Naomi.'}),['noemi','theo','kairos'])};
+        if(sp==='end')return {lines:[['noemi','Sit with me a minute.']],then:larkEnding};
+        if(sp==='order')return {amb:1,lines:[['noemi','The desk. Admission first, then the weeks. I know the order. I just can’t look at it on my own.']]};
+        if(sp==='read')return {amb:1,lines:[['noemi','His bed was by the right-hand wall, next to the man who asks if it’s Tuesday. Theo’s box will tell you when you’re close. Loudly.']]};
+        return {amb:1,lines:[['noemi','Four pages. Nurses file things wherever there’s a flat surface. Look on the flat surfaces.']]};}});
+    L.push({id:'q_theo',ch:'theo',fx:0.26,fy:0.76,face:1,label:'Theo',cond:lt,
+      say:()=>{const sp=mxStepOf('lark_couldnt_save');
+        if(sp==='end')return {lines:[['theo','Go on. She won’t say it, but she wants you there.']],then:larkEnding};
+        if(sp==='read')return {amb:1,lines:[['theo','Walk slowly. When it beeps faster, you’re closer to his old bed. Don’t shake it. It sulks.']]};
+        if(sp==='defend')return {amb:1,lines:[['theo','I am a scientist. I am also standing very close to the door.']]};
+        return {amb:1,lines:[['theo','Desk. Folder. Order. I’m told this is the boring part. I find it thrilling.']]};}});
     L.push({id:'pat',fx:0.86,fy:0.34,col:'#8A8A7A',hair:'#E0E0D8',face:-1,label:'Patient',
       say:()=>({amb:1,lines:[['mxpat','Is it Tuesday? They keep telling me it’s Tuesday.'],['kairos','It’s Tuesday.'],['mxpat','Then I believe you. You have an honest face.']]})});
   }
@@ -4559,6 +4613,14 @@ function mxExtras(d){const L=[],x=mxS();
     n.talk=(F,m,nn)=>{if(claimed('act:sundial'))return;const L2=grantReward({dust:30,frag:'boss'},'act:sundial')||[];nn.openT=T;burstParts(nn.x,nn.y-6,'#C9A8FF',30,150);sfx('bless');
       setBanner('The Hour Candles · solved',L2.join(' · '),2.6);};L.push(n);}
   if(d==='ashlane')for(const n of mxOddNpcs())L.push(n);
+  if(d==='ward'&&mxEra()==='fugitive'&&!mxDoneQ('lark_couldnt_save')){
+    const ch={id:'ward.chart',fx:0.6,fy:0.24,spot:1,verb:'read',ptitle:'a patient folder',
+      lines:()=>mxStepOf('lark_couldnt_save')==='order'?[]:[['n','A patient folder on the nurses’ desk: ODELL, H. · RETIRED TEACHER. Half the pages are gone.'],['th','Dr. Lark’s handwriting on the cover: “Don’t file this yet.”']],
+      mkf:()=>mxStepOf('lark_couldnt_save')==='order'?'!':mxF('lt_chart')?null:'?'};
+    ch.talk=()=>{if(mxStepOf('lark_couldnt_save')==='order'){larkOrder();return;}mxSet('lt_chart');persist();mxTick();};L.push(ch);
+    if(mxAct('lark_couldnt_save')&&!mxF('lt_reading')){const bed={id:'ward.bed',fx:LT_BED[0],fy:LT_BED[1],spot:1,verb:'look',ptitle:'Mr. Odell’s old bed',mkf:()=>'!',
+        lines:()=>[['n','Theo’s box screams, then goes quiet. The needle doesn’t drop to zero. It drops below it.'],['th','An empty bed should read like an empty room. This reads like nothing was ever here at all.']]};
+      bed.hide=function(){return mxStepOf('lark_couldnt_save')!=='read'||!(Math.hypot(player.x-this.x,player.y-this.y)<=66);};bed.talk=()=>{mxSet('lt_reading');persist();sfx('bless');mxTick();};L.push(bed);}}
   if(d==='tower'){
     const wb={id:'tower.bench',fx:0.62,fy:0.66,spot:1,verb:'use',ptitle:'workbench',lines:()=>[],mkf:()=>mxStepOf('agnes_handmade')==='make'?'!':'?'};
     wb.talk=()=>{if(mxStepOf('agnes_handmade')==='make'){agnesAssemble();return;}mxSet('bench.used');persist();state='panel';showBuilds(()=>{mxS().at='tower';persist();mxBegin();});};L.push(wb);
@@ -4823,6 +4885,9 @@ function mxLivingUpdate(m,dt){const p=player;mxChestNotice(m);mxObjUpdate(m,dt);
     if(dd<2){n.ri=(n.ri+1)%n.pts.length;n.wait=(t.w||0)*(0.7+Math.random()*0.6);n.lookT=0.6+Math.random()*1.5;if(t.f)n.face=t.f;n.mv=false;continue;}
     const st=Math.min(dd,sp*dt);n.x+=dx/dd*st;n.y+=dy/dd*st;n.mv=true;if(Math.abs(dx)>0.5)n.face=dx<0?-1:1;
     collideSolids(n,m);}
+  // Theo's box (The Things We Couldn't Save): hot and cold toward Mr. Odell's bed
+  if(m.M.dist==='ward'&&mxStepOf('lark_couldnt_save')==='read'){const q=MXP(LT_BED[0],LT_BED[1]),dd=Math.hypot(p.x-q.x,p.y-q.y);m.beepT=(m.beepT||0)-dt;
+    if(m.beepT<=0){m.beepT=0.16+Math.min(1.3,dd/200);if(ac&&vol.sfx>0)tone(520+Math.max(0,420-dd),0.05,'square',0.01);addText(p.x+12,p.y-34,dd<60?'· · ·':dd<170?'· ·':'·',C.gold,10,{life:0.45});}}
   // drill course
   const a=m.act;
   if(a&&a.kind==='drill'){a.t-=dt;const q=a.pts[a.i];
@@ -8823,7 +8888,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,

@@ -36,7 +36,7 @@
 |---|---|---|---|---|---|---|---|
 | `agnes_handmade` | A Little Something Handmade | bond (Agnes) | Chapter 1 cleared; use the hideout workbench | Clock Tower → Market Ring, Ash Lane | 10–14 min | Implemented | Yes |
 | `bram_bread` | The Smell of Fresh Bread | bond (Bram) | Chapter 1 cleared; the bakery window or Bram | St. Hesper's → Clock Tower, Market, Ash Lane | 10–14 min | Implemented | Yes |
-| `lark_couldnt_save` | The Things We Couldn't Save | bond (Naomi & Theo) | Chapter 1 cleared | St. Lucia's | 15–20 min | Planned | No |
+| `lark_couldnt_save` | The Things We Couldn't Save | bond (Naomi & Theo) | Chapter 1 cleared; the folder at St. Lucia's or Naomi | Clock Tower → St. Lucia's | 10–14 min | Implemented | Yes |
 | `cass_prayer` | A Prayer of Her Own | bond (Cassie) | Chapter 1 cleared | Old chapel *(new district, needs approval)* | 15–20 min | Planned | No |
 | `lucas_mem_bread` | The Things We Remember A·1 · The Bread Incident | memory (Lucas) | Chapter 1 cleared; Lucas captured | St. Hesper's (memory object) | 6–8 min | Planned | No |
 | `lucas_mem_plan` | The Things We Remember A·2 · The Worst Plan | memory (Lucas) | after `lucas_mem_bread` | St. Hesper's / Clock Tower | 6–8 min | Planned | No |
@@ -176,32 +176,37 @@
   - Nothing is said about how his grandmother died.
 - **Test:** `tools/bond_agnes_bram_test.js`
 
-### `lark_couldnt_save` · The Things We Couldn't Save
+### `lark_couldnt_save` · The Things We Couldn't Save · **Implemented, tested**
 - **Category:** bond · **Characters:** Naomi (`noemi`) and Theo (`theo`)
-- **Story:** An old chart at St. Lucia's is missing dates and doesn't add up. Naomi and Theo rebuild the timeline of a patient they couldn't help before Chapter 1.
-- **Start:** St. Lucia's · **Giver:** the misfiled chart (discovery), or Naomi at the tower
-- **Prerequisites:** none · **Unlock:** `when:['fugitive']`
+- **Story:**
+  - Before the Festival, Naomi had a patient, Mr. H. Odell, a retired teacher. He forgot his street, then his daughter, then the ward.
+  - Theo measured him every two weeks. They did everything right and still couldn't help him.
+  - Four pages are missing from his folder. Put back in order, they show that week six was never measured: Naomi was on nights and Theo was in the Rift.
+  - Theo's box reads his old bed as "emptier than empty". This stays **unexplained**.
+- **Start / giver:** Clock Tower, Naomi (`npc:'tower.h_noemi'`)
+- **Discovery:** the patient folder on the St. Lucia's nurses' desk (post-Chapter 1), or a second talk with Naomi at the hideout
+- **Unlock:** `when:['fugitive']`; no prerequisites
 - **Objectives:**
-  1. Read the chart.
-  2. Collect four pages of notes around the ward (multi-objective).
-  3. Timeline puzzle: put the pages in order (`showPuzzle`).
-  4. Use Theo's box to find the odd reading.
-  5. Defend Naomi while she works (hub fight, hospital theme).
-  6. A scene.
-- **NPCs:** Naomi, Theo, the ward nurse
-- **Environments:** ward
-- **Activities:** collection, ordering puzzle, find-the-reading, fight
-- **Combat:** one fight
+  1. Find 4 pages around the ward, in any order (quest objects): the admission note and weeks 2, 4 and 8.
+  2. Put the folder in order at the nurses' desk (3-round `showPuzzle`; can leave and retry).
+  3. Theo's box, a hot-and-cold search: it beeps faster near Mr. Odell's old bed, which only shows a "!" when you are close.
+  4. Defend Naomi: a ward fight with Naomi, Theo and Kairos (`mxf_hospital_lark`).
+  5. Talk to Theo or Naomi: the ending scene (hospital art).
+- **NPCs:** Naomi and Theo come to the ward while the story is active, then leave.
+- **Environments:** tower, ward
+- **Activities:** collection, ordering puzzle, hot-and-cold search, fight, scene
 - **Rewards:**
   - Bond +1 · Naomi and Bond +1 · Theo
   - 40 Stardust
   - 1 Keepsake
-  - Journal collectible "Naomi's notebook"
-- **Story flags:** `lark.casefile`
-- **Spoilers / canon:**
-  - The patient's decline is **unexplained**: no link to the water or the Mercy (Chapter 2 Scene 3 keeps that reveal).
-  - Their marriage stays warm and supportive.
-- **Status:** Planned · **Tested:** No
+  - 1 Fragment (chest grade)
+  - Journal: "Naomi's notebook"
+- **Story flags:** `lark.casefile`; items `lt_p1`–`lt_p4`; flags `lt_chart`, `lt_order`, `lt_reading`, `lt_end`
+- **Canon:**
+  - No water, Mercy, cups or Sundays (tested by regex): Chapter 2 Scene 3 keeps the reveal.
+  - The marriage stays warm: Theo supports her and never dismisses her.
+  - Naomi's arm line follows the Lore Bible.
+- **Test:** `tools/bond_lark_test.js`
 
 ### `cass_prayer` · A Prayer of Her Own
 - **Category:** bond · **Character:** Cassie (`cass`)

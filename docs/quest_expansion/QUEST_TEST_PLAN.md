@@ -19,6 +19,7 @@
 | `narrative_foundation_test.js` | `nar` | Era switch, Clock Tower hideout, wanted notices, first quest states, fight and scene glue |
 | `quest_system_test.js` | `qsys` | The Quest System Foundation, using temporary `tq_*` quests (§ 2) |
 | `bond_agnes_bram_test.js` | `ab` | Agnes and Bram, played together and interleaved: story lock, world discovery, "!" markers, gathering, reload mid-story, puzzle (wrong answer, leave, finish), bake order (reset), two fights, endings, rewards once, Journal, HUD overlap, canon regex. 45 checks ×3 |
+| `bond_lark_test.js` | `lark` | Naomi and Theo: story lock, both discovery routes, "!" markers, the pair at the ward, reachability flood fill, HUD overlap, pages with reload, ordering puzzle (wrong, leave, finish), hot-and-cold beep rate, hidden bed, fight, ending, rewards once, they leave afterwards, Journal, no-Mercy regex. 35 checks ×3 |
 | *(next stages)* | — | Each story: discovery, steps, rewards, canon regex (§ 3) |
 
 ## 2. Foundation cases (`quest_system_test.js`, all automated)
@@ -109,5 +110,16 @@ All passing:
 - `narrative_foundation_test.js`: 33/33 ×3. One assertion was narrowed: Bram's real story now also marks the tower.
 - `ashlane`, `office`, `hesper`, `worldmap`: ×3.
 - `exploration_polish`: 33/33 ×3, now including the tower.
+- `exploration_test`, `meridian_playtest`, `economy_test`: desk and phone.
+- `chest_spots.js check`: OK.
+
+### Results, 2026-11-16 (Stage 4: Naomi and Theo)
+All passing:
+- `bond_lark_test.js`: 35/35 at desk, phone and small.
+- `bond_agnes_bram_test.js`: 45/45 ×3, with the corrected `mother` regex.
+- `quest_system_test.js`: 49/49 ×3.
+- `narrative_foundation_test.js`: 33/33 ×3.
+- `ashlane`, `office`, `hesper`, `worldmap`: ×3.
+- `exploration_polish`: 33/33 ×3.
 - `exploration_test`, `meridian_playtest`, `economy_test`: desk and phone.
 - `chest_spots.js check`: OK.

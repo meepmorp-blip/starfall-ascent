@@ -37,6 +37,7 @@ Total to Lv 20: **12,920** Memories.
 | Meridian: hidden records (2 pay) | · | 15 / 20 | · | · | · | once |
 | Bond Story: Agnes · A Little Something Handmade | · | 40 | · | 1 (chest) | 1 | once · +1 Bond (Agnes) |
 | Bond Story: Bram · The Smell of Fresh Bread | · | 40 | · | 1 (boss) | · | once · +1 Bond (Bram) |
+| Bond Story: Naomi & Theo · The Things We Couldn’t Save | · | 40 | · | 1 (chest) | 1 | once · +1 Bond (Naomi and Theo) |
 
 ## Meridian Renown (new)
 Points available today: 5 districts × 5 + 11 records × 5 + 30 + 5 optional quests × 15 = **185**.

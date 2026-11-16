@@ -62,7 +62,7 @@
   - `mxMigrate`: now limited to `main`/`optional` quests with a reward.
 - **Done when:** the tests pass (see § Results below) and the owner approves.
 
-## Stage 3 · Agnes and Bram (Implemented, tested · not committed)
+## Stage 3 · Agnes and Bram (done, `d3ee5a0`)
 - **Scope:** `agnes_handmade`, `bram_bread` (tracker § 4).
 - **Features:**
   - Discovery: the workbench, then Agnes; the bakery smell at Hesper.
@@ -83,7 +83,7 @@
   - Chest spots still valid around any new NPC.
 - **Possible regressions:** chest spots near new NPCs; the Hesper hide-and-seek spots; Ash Lane's Odd Things.
 
-## Stage 4 · Naomi and Theo
+## Stage 4 · Naomi and Theo (Implemented, tested · not committed)
 - **Scope:** `lark_couldnt_save`.
 - **Features:**
   - The misfiled chart readable.
@@ -202,3 +202,23 @@
 
 **Not covered**
 - A fight *loss* during the stories. There is no test hook to lose a fight. `mxFight` returns to the district and keeps the step either way.
+
+## Results · Stage 4 (2026-11-16)
+**Built** (details in the tracker § 4)
+- 4 page quest objects.
+- The patient folder, as discovery and then as the ordering puzzle.
+- Naomi and Theo at the ward while the story is on.
+- Theo's box: a hot-and-cold beep toward a bed that only shows its "!" when you are close.
+- The ward fight and the ending scene.
+
+**Fixes found while building**
+- An interactable created on district entry for a later step did not appear when the step changed in the same district. The bed is now always created and hidden until its step.
+- A hide check used the list entry's own coordinates, which are unset on the copy. It now uses `this`.
+- The Stage 3 test's spoiler regex had lost its `\b`, so "mother" was not being checked. Fixed and re-run: it passes.
+
+**Placement:** the bed and one page moved so nothing sits under the party portraits on small phones.
+
+| Test | desk | phone | small |
+|---|---|---|---|
+| `bond_lark_test.js` | 35/35 | 35/35 | 35/35 |
+| Full regression | pass | pass | pass |
