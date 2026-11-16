@@ -3364,7 +3364,7 @@ function initMission(def){
     p.x=m.obj.x+40;p.y=m.obj.y-10;
     m.goals=[{esc:1,t:'Get Kairos to St. Lucia’s'}];
   } else if(M.type==='defense'){
-    m.obj={x:W/2,y:AY0+44,r:34,hp:100,max:100,ward:1,label:M.wardLabel||'Patients’ wing'};
+    m.obj={x:W/2,y:AY0+84,r:34,hp:100,max:100,ward:1,label:M.wardLabel||'Patients’ wing'}; // below the goal panel, so it's never hidden on phones
     p.x=W/2;p.y=H*0.55;m.timer=M.dur;
     m.goals=[{def:1,t:M.goalText||(M.crowd?'Protect the crowd':M.wardLabel?'Protect '+M.wardLabel.toLowerCase():'Protect the patients’ wing')}];
   } else if(M.type==='walk'||M.type==='fight'){initExtra(m);
@@ -3669,7 +3669,7 @@ function initSplit(m){
 function laneMaxX(m,lane){let mx=AX1-20;for(const g of m.gates)if(!g.open&&(lane?g.y>H*0.5:g.y<H*0.5))mx=Math.min(mx,g.x-14);return mx;}
 function ch1Keepers(m,dt){if(!m.M.keepers||!m.laneY)return;
   m.keepT=(m.keepT==null?6:m.keepT)-dt;const lane=player.y<H*0.5?0:1;
-  if(m.keepT<=0&&enemies.filter(e=>e.runner&&!e.dead).length<1){m.keepT=rr(8,11);const e=spawnEdge('collector');e.x=AX0+30;e.y=m.laneY[lane];e.runner=1;e.lane=lane;enemies.push(e);addText(e.x,e.y-30,'A RECORD!',C.gold,11,{life:1});}
+  if(m.keepT<=0&&enemies.filter(e=>e.runner&&!e.dead).length<1){m.keepT=rr(8,11);const e=spawnEdge('collector');e.x=AX0+(AX1-AX0)*0.3;e.y=m.laneY[lane];e.runner=1;e.lane=lane;enemies.push(e);addText(e.x,e.y-30,'A RECORD!',C.gold,11,{life:1});}
   m.seals=m.seals||[0,0];
   for(const e of enemies){if(!e.runner)continue;
     if(e.dead){if(!e.saved){e.saved=1;addText(e.x,e.y-30,'RECORD SAVED',C.hp,11,{life:1});}continue;}
@@ -4039,7 +4039,7 @@ addMission('longway',{type:'walk',name:'The Long Way Home',place:'St. Hesper’s
     {id:'gate',spot:1,fx:0.9,fy:0.45,need:1,last:1,wait:[['n','The orphanage gate. Not yet. Something else first.']],lines:[['n','The clock above the gate. 11:59. It has said 11:59 his whole life.'],['n','He has never looked at it before. He has looked at it a thousand times.']]}]});
 
 addMission('tower',{type:'walk',name:'The Clock Tower',place:'St. Hesper’s clock tower',theme:'roof',party:['kairos'],lvl:4,count:false,
-  brief:'Somewhere nobody checks. Talk to whoever you like. Something above the clock room is wired shut.',goal:'Evening at the clock tower',start:[0.12,0.6],
+  brief:'Somewhere nobody checks. Talk to whoever you like. Something above the clock room is wired shut.',goal:'Evening at the clock tower',start:[0.22,0.82],
   hint:m=>{const g=m.npcs.find(n=>n.id==='gears');return g&&!g.done?'The clock room. The gears won’t turn.':'The bell-loft hatch';},
   npcs:()=>[
     {id:'ines',fx:0.25,fy:0.3,ch:'ines',face:1,bond:['ines'],label:'Agnes',lines:[
@@ -4123,12 +4123,12 @@ addMission('fest',{type:'walk',name:'Festival of the Mercy',place:'Festival Squa
   npcs:()=>[
     {id:'theo',fx:0.2,fy:0.3,ch:'theo',face:1,label:'Theo',lines:[['theo','Fried dough. Don’t tell Naomi.'],['theo','…I keep saying that. Habit. She isn’t here to tell.'],['theo','The eclipse is at noon. My reader’s already twitching.']]},
     {id:'lucan',fx:0.44,fy:0.86,ch:'lucan',face:1,label:'Lucas',lines:[['lucan','Nobody looks twice at a mourner. It’s the only thing this city is polite about.'],['lucan','The clerks by the fountain have my forms. I could fill them in asleep.']]},
-    {id:'dess',fx:0.92,fy:0.86,ch:'dess',face:-1,label:'Dess',lines:[['dess','The cores in my bag are humming. All of them. Louder near the fountain.'],['dess','Like they recognise the water.']]},
+    {id:'dess',fx:0.92,fy:0.42,ch:'dess',face:-1,label:'Dess',lines:[['dess','The cores in my bag are humming. All of them. Louder near the fountain.'],['dess','Like they recognise the water.']]},
     {id:'carter',fx:0.7,fy:0.18,col:'#7A6A4A',hat:'#4A3A2A',face:-1,label:'Water carter',lines:[['carter','Wells? No, love. Every cart today came up from the Church cistern under the square.'],['carter','Six in the morning, full. Blessed in the cellar. Sealed with wax.'],['carter','Never seen the inside myself. Not my business to.']],on:F=>{F.mercy_clues=(F.mercy_clues|0)+1;ch1MercyClue(F);}},
     {id:'fclerk',fx:0.57,fy:0.73,col:'#4A4A5A',face:1,label:'Registry clerk',lines:[['fclerk','Name. House. Cup number forty-four thousand and six. Next.'],['th','Every cup has a number. Every number gets a name next to it.'],['lucan','That’s an intake form. Registry stock. I’ve stamped ten thousand of them.'],['lucan','I always thought it was for the Church’s charity lists.']],on:F=>{F.mercy_clues=(F.mercy_clues|0)+1;ch1MercyClue(F);}},
     {id:'oldman',fx:0.12,fy:0.45,col:'#8A8A7A',hair:'#E0E0D8',face:1,label:'By the fountain',lines:[['kairos','Did you come last year too?'],['oldman','Every year. Last year I came for… something heavy. I put it down here.'],['oldman','I don’t know what it was. That’s the blessing, I suppose.'],['th','He’s smiling. He keeps touching his empty ring finger.']],on:F=>{F.mercy_clues=(F.mercy_clues|0)+1;ch1MercyClue(F);}},
     {id:'stew1',fx:0.4,fy:0.48,col:'#E8E2D4',hat:'#8A2A2A',steward:1,face:1,label:'Steward',lines:[['steward','Move along. The line is that way.']]},
-    {id:'stew2',fx:0.74,fy:0.62,col:'#E8E2D4',hat:'#8A2A2A',steward:1,face:-1,label:'Steward',lines:[['steward','Mourners to the left, please. Move along.']]},
+    {id:'stew2',fx:0.72,fy:0.5,col:'#E8E2D4',hat:'#8A2A2A',steward:1,face:-1,label:'Steward',lines:[['steward','Mourners to the left, please. Move along.']]},
     {id:'cistern',spot:1,fx:0.66,fy:0.34,need:1,after:'cass',label:'A gated stair',wait:[['th','A stair behind the fountain, gated. Later. Find Cassie first, before she finds us.']],
       lines:[['n','Behind the fountain, half hidden by the choir’s banners: a gated stair going down. Wet steps. A smell of candle wax.'],['n','And on the stair, something that isn’t a steward. A pale shape, holding a lantern that doesn’t flicker.']]},
     {id:'bram',fx:0.32,fy:0.78,ch:'bram',face:1,label:'Bram',lines:[['bram','My mom’s in the cup line. I promised her sweet bread from the baker’s stall.'],['bram','Could you get it? If I leave my post she’ll forget where I went.'],['th','He says it like a joke. It isn’t one.']],

@@ -38,7 +38,7 @@ await sec('chapter 1',async()=>{await E(()=>__sf.ch1(true));await p.waitForTimeo
   await E(()=>__sf.ch1(false));await p.waitForTimeout(500);ok(await E(()=>__sf.seq().i)===before.i,'Continue resumes at the same scene');
   const t0=Date.now();const b2=await drive(1e9);const sv=await E(()=>__sf.save());
   ok(sv.ch1b&&sv.ch1b.done&&sv.ch1Clears>=1,'Chapter 1 plays to the end and is marked cleared ('+Math.round((Date.now()-t0)/1000)+' s)');
-  const roster=sv.ch1b.roster||[];ok(['kairos','ines','bram','noemi','theo','cass','dess'].every(id=>roster.includes(id)),'everyone recruited by the end ('+roster.join(',')+')');
+  const roster=sv.ch1b.roster||[],met=sv.ch1b.met||roster;ok(['kairos','ines','bram','noemi','theo','lucan','cass','dess'].every(id=>met.includes(id))&&['kairos','ines','bram','theo','cass','dess'].every(id=>roster.includes(id))&&!roster.includes('noemi'),'everyone met by the end; Naomi met but at St. Lucia’s (party: '+roster.join(',')+')');
   ok(await E(()=>__sf.st())!=='play'||true,'(end screen reached)');
   await p.reload();await p.waitForTimeout(800);ok(await E(()=>__sf.save().ch1b.done&&__sf.save().ch1Clears>=1),'the clear survives a reload');});
 

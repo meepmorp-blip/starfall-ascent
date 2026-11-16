@@ -44,7 +44,7 @@ ok(await E(()=>__sf.lucas())==='free'&&await E(()=>__sf.qstate('tq_a'))==='locke
 await load(OLD);s=await S();
 const keep=['dust','keep','nextId','ch1Clears'].every(k=>s[k]===OLD[k])&&JSON.stringify(s.chars.kairos)===JSON.stringify(OLD.chars.kairos)&&s.chars.bram.lvl===3&&s.bonds.bram===2;
 ok(keep,'existing save: Stardust, Keepsakes, levels, Mastery and Bond are unchanged'+(keep?'':' '+JSON.stringify({nc:Object.keys(s.claims).filter(k=>!OLD.claims[k]),d:s.dust,k:s.keep,n:s.nextId,c:s.ch1Clears,ka:s.chars.kairos,b:s.chars.bram.lvl,bo:s.bonds})));
-ok(Object.keys(OLD.claims).every(k=>s.claims[k])&&JSON.stringify(s.ch1b)===JSON.stringify(OLD.ch1b),'existing save: claims (quests, Renown, opened chests, activities) and Chapter 1 progress are unchanged');
+ok(Object.keys(OLD.claims).every(k=>s.claims[k])&&['i','k','roster','flags','done'].every(f=>JSON.stringify(s.ch1b[f])===JSON.stringify(OLD.ch1b[f]))&&(s.ch1Clears|0)===(OLD.ch1Clears|0),'existing save: claims (quests, Renown, opened chests, activities) and Chapter 1 progress are unchanged (the revision only adds its met list)');
 ok(JSON.stringify(s.mx.seen)===JSON.stringify(OLD.mx.seen)&&s.mx.q.streets.s==='done'&&s.mx.found['market.plaque']&&s.mx.talk['market.matteo']===3,'existing save: Meridian discoveries, quests, records and talks are unchanged');
 ok(s.mx.qseen&&s.mx.mem&&!s.story,'existing save: new fields are added empty (story flags only on first use)');
 // a corrupted new field is repaired, not trusted

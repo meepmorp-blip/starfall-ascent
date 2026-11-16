@@ -21,7 +21,7 @@ const idxAfter=id=>q.findIndex(s=>s.join===id)+1;
 const r1=await E(i=>__sf.ch1RosterAt(i),idxAfter('theo'));ok(['kairos','ines','bram','noemi','theo'].every(x=>r1.roster.includes(x)),'party rebuilt from the sequence after Theo joins ('+r1.roster.join(',')+')');
 const r0=await E(()=>__sf.ch1RosterAt(0));ok(r0.roster.join()==='kairos','at the start only Kairos');
 // 3. playing writes met and the chapter version; met only grows
-const sv=base();sv.ch1b={i:0,k:'Scene 6#3',roster:['kairos','ines','bram'],flags:{}};await setSave(sv);
+const sv=base();sv.ch1b={i:0,k:'Scene 6#3',roster:['kairos','ines','bram'],flags:{},rev:2};await setSave(sv);
 await E(()=>__sf.ch1(false));await p.waitForTimeout(600);
 for(let i=0;i<400;i++){const s=await E(()=>({cut:!!__sf.cut(),st:__sf.st(),k:__sf.save().ch1b&&__sf.save().ch1b.k}));if(/^Scene 6#[5-9]/.test(s.k||''))break;if(i>60)break;
   const ch=await p.$$('.cchoice, .pzl-o');let did=false;for(const c of ch)if(await c.isVisible()){await c.click().catch(()=>{});did=true;break;}if(did){await p.waitForTimeout(60);continue;}
@@ -39,7 +39,7 @@ ok(await E(()=>__sf.mxMet('dess'))===false,'Dess, not met yet, is not');
 // 5. old saves without met still work (roster fallback)
 const sv3=base();sv3.ch1b={i:30,k:'Scene 9#1',roster:['kairos','ines','bram','noemi','theo'],flags:{}};await setSave(sv3);
 ok(await E(()=>__sf.mxMet('noemi'))===true,'an old save without a met list falls back to the roster');
-await E(()=>__sf.ch1(false));await p.waitForTimeout(800);ok(await E(()=>__sf.seq()&&__sf.seq().i)===await E(()=>__sf.ch1seq().findIndex((s,i,a)=>s.sc&&s.sc.startsWith('Scene 9')))+1,'an old mid-chapter save still resumes where it was (migration stays off until the revised chapter is complete)');
+ok(await E(()=>__sf.save().ch1b.rev)===2&&await E(()=>__sf.save().ch1b.k)==='Scene 9#0','with the revision live, an old mid-chapter save (Scene 9#1) is migrated on load to the start of Lucas’s thread');
 }catch(e){log.push('CRASH '+String(e.stack).split('\n').slice(0,3).join(' '));}
 ok(errs.length===0,'no page errors'+(errs.length?': '+errs.join(' | '):''));
 console.log(log.join('\n'));fs.writeFileSync('out/ch1mig_log.txt',log.join('\n'));await b.close();server.close();})();
