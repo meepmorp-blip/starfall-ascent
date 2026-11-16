@@ -176,6 +176,62 @@ s=await advance({choose:[/For Tessa/],until:/^Scene 12/});const c6=await S();
 ok(c6.ch1b.flags.c_fest_tessa&&/^Scene 12/.test(c6.ch1b.k),'Naomi’s warning and the debate end in the Festival choice (c_fest_tessa), then the Festival');
 ok(JSON.stringify(c6.ch1b.roster.slice().sort())===JSON.stringify(['bram','dess','ines','kairos','lucan','theo']),'party entering the Festival: Kairos, Agnes, Bram, Theo, Lucas, Dess ('+c6.ch1b.roster.join(',')+')');
 }
+if(!only||only==='6'){
+// ═══ Stage 6 · R15 the Festival
+await at('Scene 12#0',['kairos','ines','bram','theo','lucan','dess'],{c_cass_ask:1,cass_page:1,c_fest_tessa:1},['kairos','ines','bram','noemi','theo','lucan','dess']);
+let s=await advance();ok(s&&s.m==='walk'&&await E(()=>__sf.m().M.name)==='Festival of the Mercy','R15: the Festival walk');
+const ids=await E(()=>__sf.m().npcs.map(n=>n.id));ok(!ids.includes('noemi')&&ids.includes('lucan')&&ids.includes('dess'),'Naomi isn’t at the Festival; Lucas and Dess are');
+await p.waitForTimeout(800);await shot('r15_fest');
+let r=await talk('cistern');ok(r.lines&&/Find Cassie first/.test(r.lines.join(' ')),'the cistern stair waits until you have found Cassie');
+const d0=(await S()).dust;for(const id of ['carter','fclerk','oldman'])await talk(id);await p.waitForTimeout(300);
+ok((await F()).mercy_clues===3&&(await S()).dust===d0+40,'three clues about the water → mercy_clues 3 and 40 Stardust');
+const st=await E(()=>{const n=__sf.m().npcs.find(o=>o.id==='stew1');return {x:n.x,y:n.y};});await E(n=>{const pl=__sf.p();pl.x=n.x+10;pl.y=n.y+8;},st);await p.waitForTimeout(400);
+const after=await E(()=>{const n=__sf.m().npcs.find(o=>o.id==='stew1');const pl=__sf.p();return Math.hypot(pl.x-n.x,pl.y-n.y);});ok(after>40,'a steward turns you back (“move along”) without failing anything ('+Math.round(after)+'px away now)');
+r=await talk('cass');await completeWalk();
+s=await advance({choose:[/Write something/]});ok(s&&s.pick,'Cassie covers for them; then the cistern pick');
+const pool=await E(()=>[...document.querySelectorAll('#overlay .pick3 .slot .nm')].map(e=>e.textContent).join(','));
+ok(!/Cassie|Naomi/.test(pool)&&/Dess/.test(pool)&&/Lucas/.test(pool),'cistern pick: the six present, no Cassie yet, no Naomi ('+pool+')');
+await pickGo();ok(await E(()=>__sf.m()&&__sf.m().M.name)==='The Cistern Stair','the cistern fight (waxers first)');await p.waitForTimeout(1000);await shot('r15_cistern');await winFight();
+s=await advance({choose:[/Write something/]});ok(s&&s.m==='frozen'&&await E(()=>__sf.m().M.name)==='The Lantern Rig','the Unburdening, Tessa’s mother, Cassie’s badge, the eclipse: then the held minute under the lantern rig');
+ok(!!(await F()).c_unburden_write,'the Unburdening choice is saved (c_unburden_write)');
+await p.waitForTimeout(800);await shot('r15_rescue');await winFight();
+s=await advance();ok(s&&s.pick,'Cassie joins; the crowd defense pick');
+const pool2=await E(()=>[...document.querySelectorAll('#overlay .pick3 .slot .nm')].map(e=>e.textContent).join(','));ok(/Cassie/.test(pool2)&&!/Naomi/.test(pool2)&&(pool2.split(',').length===7),'Festival pick: all seven, Cassie included, no Naomi ('+pool2+')');
+await pickGo();await winFight();
+s=await advance({until:/^Scene 13/});const c7=await S();ok(/^Scene 13/.test(c7.ch1b.k)&&c7.ch1b.roster.includes('cass'),'the dusk bridge leads into the Registry with Cassie in the party');
+}
+if(!only||only==='7'){
+// ═══ Stage 7 · R16 the Registry → Intake Window 1 → dawn
+const R7=['kairos','ines','bram','theo','lucan','dess','cass'];
+await at('Scene 13#0',R7,{mercy_clues:3,c_lucas_door:1,c_breakfast:1,c_job:1},R7.concat(['noemi']));
+let s=await advance();ok(s&&s.m==='walk'&&await E(()=>__sf.m().M.name)==='The Registry of Births','R16: the Registry hall walk');
+await shot('r16_hall');
+let r=await talk('theo');ok(r.lines&&/Same timetable/.test(r.lines.join(' ')),'with all three Festival clues, Theo connects the cup carts to the Registry');
+const k0=(await S()).keep;for(const id of ['houses','warm','twin','stamp'])await talk(id);await p.waitForTimeout(300);
+ok((await F()).registry_reads===4&&(await S()).keep===k0+1,'four Registry reads → registry_reads 4 and a Keepsake');
+r=await talk('stamp');ok(r.lines&&/FORWARD: ARCHIVE/.test(r.lines.join(' ')),'the Mercury “FORWARD: ARCHIVE” stamp is there to find');
+await completeWalk();
+s=await advance();ok(s&&s.pzl,'the House gates puzzle (kept)');for(const a of [0,1,2])await pzlPick(a);
+for(let i=0;i<60;i++){if(await p.$('#overlay .pick3')||await E(()=>__sf.st())==='play')break;const bt=await p.$('#overlay:not([hidden]) [data-primary]');if(bt&&await bt.isVisible())await bt.click().catch(()=>{});await E(()=>__sf.cutNext&&__sf.cut()&&__sf.cutNext());await p.waitForTimeout(120);}
+for(let i=0;i<4&&await p.$('#overlay .pick3');i++){await p.locator('#overlay [data-primary]').click();await p.waitForTimeout(800);}
+await p.waitForTimeout(1500);ok(await E(()=>__sf.m()&&__sf.m().M.type)==='split','the Stacks: two teams');
+let runner=false;for(let i=0;i<30&&!runner;i++){await p.waitForTimeout(500);runner=await E(()=>__sf.en().some(e=>e.runner&&!e.dead));}
+ok(runner,'the Record Keepers: a glowing Collector runs for the far wall with a record');await shot('r16_stacks');
+await winFight();
+s=await advance();for(let i=0;i<5&&await p.$('#overlay .pick3');i++){await p.locator('#overlay [data-primary]').click();await p.waitForTimeout(1500);}
+let lines=[];for(let i=0;i<900;i++){const st=await E(()=>({cut:!!__sf.cut(),st:__sf.st(),done:__sf.save().ch1b&&__sf.save().ch1b.done,boss:!!__sf.boss()}));
+  if(st.done)break;{const ch=await p.$$('.cchoice');let did=false;for(const c of ch)if(await c.isVisible()){await c.click();did=true;break;}if(did){await p.waitForTimeout(80);continue;}}
+  if(st.cut){lines.push(await E(()=>(document.querySelector('.cut-dlg .say, .cut-dlg')||{}).textContent||''));await E(()=>__sf.cutNext());await p.waitForTimeout(15);continue;}
+  if(st.st==='play'&&st.boss){await E(()=>{const b=__sf.boss();if(b&&b.hp>b.maxHp*0.3)b.hp=b.maxHp*0.3;});await p.waitForTimeout(300);continue;}
+  const ch=await p.$$('.cchoice');let did=false;for(const c of ch)if(await c.isVisible()){await c.click();did=true;break;}if(did)continue;
+  const bt=await p.$('#overlay:not([hidden]) [data-primary]');if(bt&&await bt.isVisible()){await bt.click().catch(()=>{});await p.waitForTimeout(100);continue;}
+  await p.waitForTimeout(100);}
+const all=lines.join(' ');
+ok(/I came back/.test(all),'before the Gate, Lucas: “I came back” (c_lucas_door)');
+ok(/Where’s Lucas/.test(all)&&/Seven of us/.test(all),'Naomi arrives at dawn: seven on the roof, one empty space');
+const fin=await S();if(!(fin.ch1b.done&&fin.ch1Clears>=1)){log.push('NOTE end state '+JSON.stringify(await E(()=>({st:__sf.st(),k:__sf.save().ch1b.k,seq:__sf.seq()&&__sf.seq().i,n:__sf.ch1seq().length,ov:document.getElementById('overlay').hidden?'':document.getElementById('overlay').textContent.slice(0,160)}))));await shot('r16_end');}
+ok(fin.ch1b.done&&fin.ch1Clears>=1,'Chapter 1 ends and is marked cleared');
+}
 }catch(e){log.push('CRASH '+String(e.stack).split('\n').slice(0,3).join(' '));}
 ok(errs.length===0,'no page errors'+(errs.length?': '+errs.join(' | '):''));
 console.log(log.join('\n'));fs.writeFileSync(`out/ch1r_${mode}_log.txt`,log.join('\n'));await b.close();server.close();})();

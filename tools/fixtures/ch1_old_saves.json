@@ -84,30 +84,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -150,16 +165,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -260,30 +273,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -326,16 +354,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -439,30 +465,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -505,16 +546,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -620,30 +659,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -686,16 +740,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -802,30 +854,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -868,16 +935,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -982,30 +1047,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -1048,16 +1128,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -1164,30 +1242,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -1230,16 +1323,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -1348,30 +1439,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -1414,16 +1520,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -1531,30 +1635,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -1597,16 +1716,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -1713,30 +1830,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -1779,16 +1911,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -1897,30 +2027,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -1963,16 +2108,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -2081,30 +2224,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -2147,16 +2305,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -2265,30 +2421,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -2331,16 +2502,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -2450,30 +2619,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -2516,16 +2700,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -2633,30 +2815,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -2699,16 +2896,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -2818,30 +3013,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -2884,16 +3094,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -3005,30 +3213,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -3071,16 +3294,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -3183,30 +3404,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -3249,16 +3485,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {
@@ -3352,30 +3586,45 @@
    "frags": [
     {
      "id": 3,
-     "el": "Fire",
-     "rar": 2,
      "sign": "Aries",
-     "deg": 4,
+     "rar": 2,
      "slot": "sun",
-     "lvl": 1
+     "deg": 4,
+     "traits": [
+      "burn",
+      "fury",
+      "spark"
+     ],
+     "lvl": 1,
+     "transits": 0
     },
     {
      "id": 4,
-     "el": "Water",
-     "rar": 1,
      "sign": "Cancer",
-     "deg": 9,
+     "rar": 1,
      "slot": "moon",
-     "lvl": 0
+     "deg": 9,
+     "traits": [
+      "soak",
+      "mirror",
+      "tide"
+     ],
+     "lvl": 0,
+     "transits": 0
     },
     {
      "id": 5,
-     "el": "Air",
-     "rar": 3,
      "sign": "Gemini",
-     "deg": 12,
+     "rar": 3,
      "slot": "sun",
-     "lvl": 2
+     "deg": 12,
+     "traits": [
+      "quick",
+      "swift",
+      "gust"
+     ],
+     "lvl": 2,
+     "transits": 1
     }
    ],
    "claims": {
@@ -3418,16 +3667,14 @@
       "n": 2
      },
      "glasses": {
-      "s": "active",
-      "n": 1,
-      "at": 1
+      "s": "done",
+      "n": 2
      }
     },
-    "items": {
-     "glasses": 1
-    },
+    "items": {},
     "f": {
-     "streetsTold": 1
+     "streetsTold": 1,
+     "glassesBack": 1
     }
    },
    "story": {

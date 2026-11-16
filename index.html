@@ -3330,8 +3330,8 @@ const MISSIONS={
     brief:'Hold the ward. Do not let the Vices reach the patients’ beds.',pool:['hothead','gossip','waxer','gossip','devourer','deadline']},
   sneak:{type:'stealth',name:'Breakout',place:'Institute sub-level',theme:'lab',party:['kairos'],lvl:4,
     brief:'Slip past the guards and cameras. Stop time to walk through their sight lines.'},
-  rescue:{type:'frozen',name:'The Frozen Fire',place:'Ash Lane lodging house',theme:'street',party:['kairos'],lvl:4,timer:20,noFail:true,civ:3,
-    brief:'Time is stopped for 20 seconds. Carry three people out of the fire.'},
+  rescue:{type:'frozen',name:'The Lantern Rig',place:'Festival Square · stopped minute',theme:'plaza',party:['kairos'],lvl:4,timer:24,noFail:true,civ:3,
+    brief:'Time is stopped. The lantern rig is coming down on the cup line. Carry three people out from under it before the minute runs out.'},
 };
 for(const id in MISSIONS){const M=MISSIONS[id];ROOMS['m_'+id]={id:'m_'+id,kind:'mission',mission:id,num:M.name,name:M.name,place:M.place,theme:M.theme,rule:'none',ruleText:M.brief,pool:M.pool||['gossip','hothead']};}
 function startMission(id,party,done,opt){
@@ -3459,7 +3459,7 @@ function updateMission(dt){
 function drawMission(c){
   const m=mis();if(!m)return;
   const fz=m.frozen;
-  if(m.split)drawSplit(c,m);
+  if(m.split){drawSplit(c,m);ch1RunnerGlow(c);}
   drawExtra(c,m);
   for(const f of m.fires){for(let i=0;i<10;i++){const a=i*0.63,rr2=(i*13%f.r),px=f.x+Math.cos(a)*rr2,py=f.y+Math.sin(a)*rr2*0.8,hh=6+(i%3)*3;c.fillStyle=i%2?'#B9C6E6':'#E3ECFF';c.fillRect(px-2,py-hh,4,hh);}
     c.strokeStyle='rgba(200,215,255,0.35)';c.lineWidth=1;circ(c,f.x,f.y,f.r);c.stroke();}
@@ -3643,8 +3643,8 @@ function bondToast(list,done){
 }
 
 // ── split teams: two squads, two routes, switch at the levers
-MISSIONS.stacks={type:'split',name:'The Stacks',place:'Registry of Births',theme:'office',lvl:5,
-  brief:'Two teams, two routes. Each lever opens the other team’s gate.',pool:['gossip','hothead','waxer','gossip','deadline']};
+MISSIONS.stacks={type:'split',name:'The Stacks',place:'Registry of Births',theme:'office',lvl:5,keepers:1,
+  brief:'Two teams, two routes. Each lever opens the other team’s gate. Glowing Collectors carry records to the far wall: catch them, or a shelf seals and your aisle narrows.',pool:['gossip','hothead','gossip','deadline']};
 ROOMS.m_stacks={id:'m_stacks',kind:'mission',mission:'stacks',num:'The Stacks',name:'The Stacks',place:'Registry of Births',theme:'office',rule:'none',ruleText:MISSIONS.stacks.brief,pool:MISSIONS.stacks.pool};
 function showSplitPick(roster,o,done){
   showPick3(roster,{n:3,must:o.must||['kairos'],prefer:o.preferA,head:'Team A',title:'Team A: the upper stacks',sub:'Pick three. A second team takes the lower route, and you switch between them at the levers.'},a=>{
@@ -3667,8 +3667,17 @@ function initSplit(m){
   m.cur=0;p.x=m.pos[0].x;p.y=m.pos[0].y;m.vault={x:AX1-16,y:mid};m.spawnCd=1.5;
 }
 function laneMaxX(m,lane){let mx=AX1-20;for(const g of m.gates)if(!g.open&&(lane?g.y>H*0.5:g.y<H*0.5))mx=Math.min(mx,g.x-14);return mx;}
+function ch1Keepers(m,dt){if(!m.M.keepers||!m.laneY)return;
+  m.keepT=(m.keepT==null?6:m.keepT)-dt;const lane=player.y<H*0.5?0:1;
+  if(m.keepT<=0&&enemies.filter(e=>e.runner&&!e.dead).length<1){m.keepT=rr(8,11);const e=spawnEdge('collector');e.x=AX0+30;e.y=m.laneY[lane];e.runner=1;e.lane=lane;enemies.push(e);addText(e.x,e.y-30,'A RECORD!',C.gold,11,{life:1});}
+  m.seals=m.seals||[0,0];
+  for(const e of enemies){if(!e.runner)continue;
+    if(e.dead){if(!e.saved){e.saved=1;addText(e.x,e.y-30,'RECORD SAVED',C.hp,11,{life:1});}continue;}
+    e.x+=70*dt;e.y+=(m.laneY[e.lane]-e.y)*dt*2;
+    if(e.x>AX1-24){e.dead=true;e.hp=0;e.saved=1;const L=e.lane;if(m.seals[L]<2){m.seals[L]++;const top=L?H*0.5+8:AY0,bot=L?AY1:H*0.5-8,h=(bot-top)*0.22;
+      m.solids.push({x:W*(0.22+0.2*m.seals[L]),y:m.seals[L]%2?top:bot-h,w:46,h});setBanner('A shelf seals','A record reached the wall. The aisle narrows.',2);shake(5,0.3);sfx('break');}}}}
 function updateSplit(m,dt){
-  const p=player,L=m.goals[m.gi];if(!L)return;
+  const p=player,L=m.goals[m.gi];if(!L)return;ch1Keepers(m,dt);
   for(const e of enemies)if(!e.dead)collideSolids(e,m);
   if(m.swT>0){m.swT-=dt;return;}
   m.spawnCd-=dt;
@@ -3835,7 +3844,9 @@ addMission('assault',{type:'fight',name:'Breakout · Outside',place:'Institute s
 addMission('escape',{type:'defense',name:'Escape',place:'Institute sub-levels',theme:'lab',lvl:3,dur:36,doors:3,ward:'dess',wardLabel:'Dess at the seal door',goalText:'Protect Dess while she opens the seal doors',max:5,pool:['hothead','waxer','gossip','hothead','deadline'],brief:'Dess has to work three seal doors. Keep them off her: the healers first.',
   tips:[[5,'The Vow','If Kairos would go down, Lucas takes the hit. Once per fight.']]});
 addMission('cass',{type:'fight',name:'The Inquisitor',place:'Ash Lane rooftops',theme:'rooftop',lvl:4,cass:1,pool:['gossip'],brief:'Sister Cassie punishes standing still. Keep moving.'});
-addMission('festival',{type:'defense',name:'Festival of the Mercy',place:'Festival Square',theme:'plaza',lvl:5,dur:100,crowd:1,fore:1,
+addMission('cistern',{type:'fight',name:'The Cistern Stair',place:'Under Festival Square',theme:'chapel',lvl:4,kills:12,max:5,pool:['waxer','gossip','hothead','waxer','gossip','waxer'],
+  brief:'Waxers at the back keep the others alive. Take the healers down first, or this doesn’t end.'});
+addMission('festival',{type:'defense',name:'Festival of the Mercy',place:'Festival Square',theme:'plaza',lvl:5,dur:90,crowd:1,fore:1,
   brief:'Five rifts at once. Keep the Vices off the crowd.',pool:['hothead','gossip','waxer','devourer','deadline','gossip']});
 
 // ── walk scenes: who can be talked to yet, flag-aware lines
@@ -4008,6 +4019,16 @@ addMission('crane_study',{type:'walk',name:'The Crane House',place:'The Chancell
     {id:'medal',spot:1,fx:0.45,fy:0.18,lines:[['n','A framed commendation: “Lucas Crane · Registry Service · Eleven years without an error.”'],['lucan','Without an error.']]},
     {id:'cup',spot:1,fx:0.72,fy:0.2,need:1,label:'A silver cup',lines:[['n','On the shelf behind the desk, a small silver cup. He has walked past it every day for eleven years.'],['n','Engraved on the base: “So the new life may begin clean.”']]},
     {id:'crane',fx:0.6,fy:0.55,col:CRANEC,hat:'#1A1A28',face:-1,need:1,after:'cup',wait:[['crane','Not now, Lucas. Sit down. I’m finishing a letter.']],label:'The Chancellor',lines:[['crane','You’re late. And you smell of smoke.']]}]});
+addMission('registry_hall',{type:'walk',name:'The Registry of Births',place:'Registry of Births · the public hall',theme:'office',party:['kairos'],lvl:5,count:false,
+  brief:'The Registry after dark. Every record in Meridian. The archive stair leads down to the Stacks.',goal:'The gate to the Stacks',start:[0.1,0.7],
+  hint:m=>{const k=(cutFlags().registry_reads|0);return 'The gate to the Stacks'+(k<4?' · '+k+'/4 things read':'');},
+  npcs:()=>[
+    {id:'houses',spot:1,fx:0.22,fy:0.22,lines:[['n','The aisles are filed by House. A planet’s sign over every aisle, cast in brass.'],['n','Moon. Mercury. Venus. The Sun. Mars. Jupiter. Saturn. Seven aisles. Every person in the city belongs to one.'],['th','Seven. Like the page Cassie carried.']],on:F=>{F.registry_reads=(F.registry_reads|0)+1;ch1RegRead(F);}},
+    {id:'warm',spot:1,fx:0.4,fy:0.78,lines:[['n','A drawer marked TODAY. The folders in it are warm, like bread.'],['n','Each one a name, a cup number, and a stamp: “Unburdened.”'],['lucan','I’ve filed thousands of these. I never once touched one that was warm.']],on:F=>{F.registry_reads=(F.registry_reads|0)+1;ch1RegRead(F);}},
+    {id:'twin',spot:1,fx:0.62,fy:0.24,lines:[['n','Two charts in one folder. The same woman. The same name.'],['n','Two different birthdays, three years apart. Both stamped, both signed, both true according to the Registry.'],['th','Which one is her?']],on:F=>{F.registry_reads=(F.registry_reads|0)+1;ch1RegRead(F);}},
+    {id:'stamp',spot:1,fx:0.8,fy:0.74,lines:[['n','The outgoing tray. A stack of forms ready to go somewhere else.'],['n','Every one stamped with a small winged sign, Mercury’s, and two words: “FORWARD: ARCHIVE.”'],['lucan','There’s no archive on the Registry plans. I’ve read every plan.']],on:F=>{F.registry_reads=(F.registry_reads|0)+1;ch1RegRead(F);}},
+    {id:'theo',fx:0.3,fy:0.5,ch:'theo',face:1,label:'Theo',lines:(F)=>(F.mercy_clues|0)>=3?[['theo','The cup carts came here. Same timetable. Six in the morning, full, out to the square; dusk, empty, back here.'],['theo','The water goes out. The names come back in.']]:[['theo','My reader hasn’t settled since the eclipse. Everything points down.']]},
+    {id:'gate',spot:1,fx:0.92,fy:0.5,need:1,label:'The archive stair',lines:[['n','The archive stair. A locked gate, and below it, shelves that go down further than the lamps reach.'],['lucan','My father’s keys.']]}]});
 addMission('longway',{type:'walk',name:'The Long Way Home',place:'St. Hesper’s, after dark',theme:'orphanage',party:['lucan'],lvl:2,count:false,
   brief:'Lucas walks home the long way. Something keeps pulling him toward the orphanage.',goal:'Walk the long way home',start:[0.06,0.7],
   hint:m=>{const n=m.npcs.filter(x=>x.need&&!x.last&&!x.done).length;return n?n+' things here you shouldn’t recognize':'The gate clock';},
@@ -4097,11 +4118,20 @@ addMission('tower2',{type:'walk',name:'Two in the Morning',place:'St. Hesper’s
       ['th','A voice. Mine. “And this time, finish it.”'],['th','Finish what?']]}]});
 
 addMission('fest',{type:'walk',name:'Festival of the Mercy',place:'Festival Square',theme:'plaza',party:['kairos'],lvl:5,count:false,
-  brief:'The whole city in one square. Banners, fried dough, and a line for the fountain that goes around twice.',goal:'Festival · find Cassie, then Tessa',start:[0.08,0.65],
-  hint:m=>{const c=m.npcs.find(n=>n.id==='cass');return c&&!c.done?'Cassie is at the fountain':'Tessa is in the line with her mother';},
+  brief:'The whole city in one square. Veiled, in pairs, nobody drinks. Find out where the water comes from. Stay clear of the stewards.',goal:'Festival · Cassie at the fountain, then the cistern stair',start:[0.08,0.65],
+  hint:m=>{const c=m.npcs.find(n=>n.id==='cass');if(c&&!c.done)return 'Cassie is at the fountain';const k=(cutFlags().mercy_clues|0);return k<3?'The cistern stair, behind the fountain · '+k+'/3 clues about the water':'The cistern stair, behind the fountain';},
   npcs:()=>[
-    {id:'theo',fx:0.2,fy:0.3,ch:'theo',face:1,label:'Theo',lines:[['theo','Fried dough. Don’t tell Naomi.'],['noemi','I can see you, Theo.'],['theo','She’ll check I didn’t drink anything. I didn’t drink anything.'],['noemi','I know. I checked.']]},
-    {id:'bram',fx:0.32,fy:0.78,ch:'bram',face:1,label:'Bram',lines:[['bram','My mom’s in the cup line. I promised her sweet bread from the baker’s stall.'],['bram','Could you get it? If I leave the line she’ll forget where I went.'],['th','He says it like a joke. It isn’t one.']],
+    {id:'theo',fx:0.2,fy:0.3,ch:'theo',face:1,label:'Theo',lines:[['theo','Fried dough. Don’t tell Naomi.'],['theo','…I keep saying that. Habit. She isn’t here to tell.'],['theo','The eclipse is at noon. My reader’s already twitching.']]},
+    {id:'lucan',fx:0.44,fy:0.86,ch:'lucan',face:1,label:'Lucas',lines:[['lucan','Nobody looks twice at a mourner. It’s the only thing this city is polite about.'],['lucan','The clerks by the fountain have my forms. I could fill them in asleep.']]},
+    {id:'dess',fx:0.92,fy:0.86,ch:'dess',face:-1,label:'Dess',lines:[['dess','The cores in my bag are humming. All of them. Louder near the fountain.'],['dess','Like they recognise the water.']]},
+    {id:'carter',fx:0.7,fy:0.18,col:'#7A6A4A',hat:'#4A3A2A',face:-1,label:'Water carter',lines:[['carter','Wells? No, love. Every cart today came up from the Church cistern under the square.'],['carter','Six in the morning, full. Blessed in the cellar. Sealed with wax.'],['carter','Never seen the inside myself. Not my business to.']],on:F=>{F.mercy_clues=(F.mercy_clues|0)+1;ch1MercyClue(F);}},
+    {id:'fclerk',fx:0.57,fy:0.73,col:'#4A4A5A',face:1,label:'Registry clerk',lines:[['fclerk','Name. House. Cup number forty-four thousand and six. Next.'],['th','Every cup has a number. Every number gets a name next to it.'],['lucan','That’s an intake form. Registry stock. I’ve stamped ten thousand of them.'],['lucan','I always thought it was for the Church’s charity lists.']],on:F=>{F.mercy_clues=(F.mercy_clues|0)+1;ch1MercyClue(F);}},
+    {id:'oldman',fx:0.12,fy:0.45,col:'#8A8A7A',hair:'#E0E0D8',face:1,label:'By the fountain',lines:[['kairos','Did you come last year too?'],['oldman','Every year. Last year I came for… something heavy. I put it down here.'],['oldman','I don’t know what it was. That’s the blessing, I suppose.'],['th','He’s smiling. He keeps touching his empty ring finger.']],on:F=>{F.mercy_clues=(F.mercy_clues|0)+1;ch1MercyClue(F);}},
+    {id:'stew1',fx:0.4,fy:0.48,col:'#E8E2D4',hat:'#8A2A2A',steward:1,face:1,label:'Steward',lines:[['steward','Move along. The line is that way.']]},
+    {id:'stew2',fx:0.74,fy:0.62,col:'#E8E2D4',hat:'#8A2A2A',steward:1,face:-1,label:'Steward',lines:[['steward','Mourners to the left, please. Move along.']]},
+    {id:'cistern',spot:1,fx:0.66,fy:0.34,need:1,after:'cass',label:'A gated stair',wait:[['th','A stair behind the fountain, gated. Later. Find Cassie first, before she finds us.']],
+      lines:[['n','Behind the fountain, half hidden by the choir’s banners: a gated stair going down. Wet steps. A smell of candle wax.'],['n','And on the stair, something that isn’t a steward. A pale shape, holding a lantern that doesn’t flicker.']]},
+    {id:'bram',fx:0.32,fy:0.78,ch:'bram',face:1,label:'Bram',lines:[['bram','My mom’s in the cup line. I promised her sweet bread from the baker’s stall.'],['bram','Could you get it? If I leave my post she’ll forget where I went.'],['th','He says it like a joke. It isn’t one.']],
       again:[['bram','The baker’s stall is the one with the striped roof!']]},
     {id:'stall',fx:0.48,fy:0.2,col:'#E8DCC0',hair:'#3A2A1A',apron:1,face:-1,after:'bram',label:'Baker’s stall',wait:[['baker','Kairos! Sweet bread’s for customers with a reason. Find yourself one.']],
       lines:[['baker','Sweet bread for Bram’s mother? On the house. She’s been coming to this stall for thirty years.'],['baker','She used to know my name.']]},
@@ -4118,11 +4148,13 @@ addMission('fest',{type:'walk',name:'Festival of the Mercy',place:'Festival Squa
       solved:[['n','The blank lantern is plain paper. Kairos holds it a long time before he lights it.']]},
     {id:'cass',fx:0.58,fy:0.42,ch:'cass',need:1,face:-1,label:'Sister Cassie',lines:[
       ['cass','Unwritten.'],['kairos','Kairos.'],
-      ['cass','…Kairos. You wrote it on that roof. I remember.',{if:'c_cass_name'}],
+      ['cass','The roof boy. You’re supposed to be gone from St. Hesper’s.',{if:'c_cass_ask'}],
+      ['cass','You kept the roof. Good.',{if:'c_cass_leave'}],
       ['cass','You shouldn’t be here. Father Vane is ten steps away.'],['kairos','You’re handing out cups?'],
       ['cass','I keep order in the line. People come here carrying things they can’t put down. They leave lighter.'],
-      ['kairos','And the things?'],['cass','God keeps them.'],['cass','I believe that. I have to. I’ve believed it since I was six.']]},
-    {id:'tessa',fx:0.86,fy:0.62,col:'#C96F4A',hair:'#6A3A1A',long:1,small:1,need:1,last:1,face:-1,label:'Tessa',wait:[['tessa','Kairos! Go see the fountain first. Mama’s still in line.']],
+      ['kairos','And the things?'],['cass','God keeps them.'],['cass','I believe that. I have to. I’ve believed it since I was six.'],
+      ['kairos','You dropped something at the tower. A page.',{if:'cass_page'}],['cass','…Keep it. I know it by heart.',{if:'cass_page'}]]},
+    {id:'tessa',fx:0.86,fy:0.62,col:'#C96F4A',hair:'#6A3A1A',long:1,small:1,face:-1,label:'Tessa',wait:[['tessa','Kairos! Go see the fountain first. Mama’s still in line.']],
       lines:[['tessa','Kairos! Mama’s almost at the front.'],['tessa','She’s been crying all week. Since the minute when nobody could breathe.']]}]});
 function initExtra(m){
   const M=m.M,p=player;
@@ -4148,6 +4180,9 @@ function missionExtra(m,dt){
   if(M.type==='walk'){
     if(state!=='play')return true;
     if(M.hub&&mxUpdate(m,dt))return true;
+    for(const n of m.npcs)if(n.steward){if(n.x0==null){n.x0=n.x;n.ph=n.x*0.01;}n.x=n.x0+Math.sin(T*0.55+n.ph)*W*0.07;n.face=Math.cos(T*0.55+n.ph)>0?1:-1;
+      const d=Math.hypot(n.x-p.x,n.y-p.y);if(d<44&&!(m.shoo>0)){const dx=p.x-n.x,dy=p.y-n.y,l=Math.hypot(dx,dy)||1;p.x=clamp(p.x+dx/l*48,AX0+20,AX1-20);p.y=clamp(p.y+dy/l*48,AY0+20,AY1-20);m.shoo=1.2;addText(n.x,n.y-40,'MOVE ALONG',C.danger,11,{life:1});sfx('nope');}}
+    if(m.shoo>0)m.shoo-=dt;
     const open=walkOpen(m);
     let near=null,bd=50;for(const n of m.npcs){if(n.hide&&n.hide(m))continue;const d=Math.hypot(n.x-p.x,n.y-p.y);if(d<bd){bd=d;near=n;}}
     m.near=near;
@@ -5875,9 +5910,12 @@ function showJournal(back,tab){
 const MATTEO='#7A6A5A',TESSA='#C96F4A',COAT='#2A2A3A',CLERK='#4A4A5A',MARRC='#E7E3DA',VANEC='#D8D2C4',LYRAC='#2A2A3A',NUNC='#E8E2D4',CRANEC='#3A3A52';
 const pn=(bg,cast,lines,o)=>Object.assign({bg,cast,lines},o||{});
 // a one-time find in a Chapter 1 scene: pays once per save (claims), shows what it gave
+function ch1RunnerGlow(c){for(const e of enemies)if(e.runner&&!e.dead){lightPool(c,e.x,e.y,26+Math.sin(T*8)*3,'#FFD36B',0.5);c.fillStyle='#F3E6C8';c.fillRect(e.x-5,e.y-26,10,7);c.fillStyle='#8A6A44';c.fillRect(e.x-4,e.y-24,8,1);}}
+function ch1RegRead(F){if((F.registry_reads|0)>=4)ch1Find('r16reads',{keep:1},'Everything on file');}
+function ch1MercyClue(F){if((F.mercy_clues|0)>=3)ch1Find('r15clues',{dust:40},'Where the water comes from');}
 function ch1HesperFrag(F){if((F.lucas_frag|0)>=3)ch1Find('r9frags',{keep:1},'All three · a Keepsake');}
 function ch1Find(key,r,title){const L=grantReward(r,'ch1x:'+key);if(L){setBanner(title||'Found',L.join(' · '),2.4);sfx('bless');}return !!L;}
-Object.assign(SPK,{ticker:{name:'Ticker · Naomi',col:'water'},watchman:{name:'Man in bed four',col:'paper'},pgirl:{name:'Girl in bed seven',col:'paper'},
+Object.assign(SPK,{carter:{name:'Water carter',col:'paper'},fclerk:{name:'Registry clerk',col:'ash'},oldman:{name:'Old man by the fountain',col:'paper'},steward:{name:'Church steward',col:'ash'},ticker:{name:'Ticker · Naomi',col:'water'},watchman:{name:'Man in bed four',col:'paper'},pgirl:{name:'Girl in bed seven',col:'paper'},
   iporter:{name:'Institute porter',col:'ash'}});
 const NIGHT={tint:'night'},FROZEN={tint:'frozen'};
 const CAMPB='roof';
@@ -6652,10 +6690,35 @@ const CH1_SEQ=[
     pn('plaza',[['npc',0.5,0.66,1,{col:VANEC}],['kairos',0.3,0.72,1],['npc',0.66,0.7,-1,{col:'#5A7FB0'}]],[
       ['th','Banners. Music. Fried dough. The whole city in one square.'],
       ['th','After the week we had, it’s almost too much. Everyone’s laughing.'],
+      ['n','Agnes and Bram wear steward armbands. The rest go veiled, like mourners, in pairs.'],
       ['priest','Drink, and be forgiven. Drink, and let it go.'],
-      ['priest','Twenty years ago Heaven wept on this city, and this fountain rose out of the stones. The Church keeps it. The Church shares it.']],{cap:'The next day. Festival Square.',mus:'plaza'})]},
+      ['priest','Twenty years ago Heaven wept on this city, and this fountain rose out of the stones. The Church keeps it. The Church shares it.']],{cap:'The next day. Festival Square. Eleven in the morning.',mus:'plaza'})]},
   {mission:'fest'},
   {cut:[
+    pn('plaza',[['kairos',0.36,0.72,1],['lucan',0.46,0.72,1],['npc',0.6,0.68,-1,{col:'#E8E2D4',hat:'#8A2A2A'}],['cass',0.74,0.68,-1]],[
+      ['n','A steward steps in front of the stair. “Mourners don’t go below.” He looks at Kairos’s face a moment too long.'],
+      ['cass','These two are mine. Penitents. I’m taking them down to pray.'],
+      ['steward','Sister.'],
+      ['n','She doesn’t look at them. She walks away before anyone can thank her.'],
+      ['lucan','Why would she do that?'],
+      ['kairos','I don’t think she knows yet.']],{mus:'tense'}),
+    pn('chapel',[['kairos',0.4,0.72,1],['lucan',0.52,0.72,1]],[
+      ['n','The stair goes down to a cellar under the square. Pale shapes in the dark, holding lanterns that don’t flicker.'],
+      ['n','Vices. Guarding a door.']],{...NIGHT,fx:'shake',mus:'disaster'})]},
+  {mission:'cistern',pick:3,from:['kairos','ines','bram','theo','lucan','dess'],prefer:['kairos','lucan','ines'],title:'The Cistern Stair',sub:'Waxers heal the others. Pick three.'},
+  {cut:[
+    pn('chapel',[['kairos',0.36,0.72,1],['lucan',0.48,0.72,1],['theo',0.6,0.72,-1]],[
+      ['n','The cistern. Great stone vats of still water under the square, lit by candles. Racks of silver cups, every one stamped with a number.'],
+      ['n','Nothing else. No machine. No poison. Water, cups, and numbers.'],
+      ['theo','My reader says the water is just water. Then it says something it’s never said before, and then it says water again.'],
+      ['lucan','Forty thousand cups. Forty thousand names.'],
+      ['th','There’s nothing here we could show anyone. That’s the worst part.']],{...NIGHT,mus:'sorrow'}),
+    pn('plaza',[['kairos',0.4,0.72,1],['npc',0.58,0.66,-1,{col:'#5A7FB0'}]],[
+      ['n','Back in the square, the Unburdening. People write a grief on a paper slip and burn it in a lantern, then go to the line to drink.'],
+      ['n','A woman hands Kairos a slip and a pencil. “For whatever you’re carrying, love.”'],
+      ['?',[
+        {t:'Write something.',f:'c_unburden_write',r:[['n','He holds the pencil for a long time.'],['th','I don’t have anything to put down. Nothing I’ve lost that I remember losing.'],['th','Is that lucky? Or is that the worst one?'],['n','He folds the empty slip and keeps it.']]},
+        {t:'Give it back.',f:'c_unburden_skip',r:[['kairos','Keep it for someone who needs it.'],['n','She smiles like he’s said something sweet, and hands it to the next person in line.']]}],'The Unburdening.']],{mus:'plaza'}),
     pn('plaza',[['npc',0.5,0.66,1,{col:VANEC}],['npc',0.62,0.7,-1,{col:'#A0607A'}],['npc',0.67,0.74,-1,{col:TESSA,small:1}],['kairos',0.3,0.72,1]],[
       ['n','A mother in black reaches the front of the line, eyes red. Tessa holds onto her skirt.'],
       ['priest','Drink, and be forgiven.'],
@@ -6680,39 +6743,57 @@ const CH1_SEQ=[
       ['vane','Cassie.'],
       ['cass','I’ve kept my vows my whole life, Father. That’s exactly why I can’t stay.'],
       ['n','She unpins the Office badge from her collar and sets it on the rim of the fountain. Carefully. As if it might still be holy.']],{mus:'tense'}),
-    pn('plaza',[['cass',0.6,0.7,-1],['kairos',0.42,0.7,1],['theo',0.3,0.7,1],['noemi',0.22,0.7,1]],[
-      ['cass','I don’t want to hear “told you so.”'],
-      ['kairos','I wasn’t going to.'],
-      ['theo','I was.'],
-      ['noemi','Theo.'],
-      ['cass','You said you had no bread. I brought you some. Don’t make it strange.',{if:'c_cass_joke'}],
-      ['cass','I hesitated on a roof. I don’t know what I believe now. I know I’m done hesitating.'],
-      ['cass','If you’ll have me.'],
-      ['cass','You told me your name on that roof. I wrote it down. The Office never writes down names.',{if:'c_cass_name'}],
-      ['kairos','You tried to burn me.'],
-      ['cass','I tried to arrest you. Father Vane tried to burn you. Details matter.'],
-      ['ines','She’s got a point.']],{mus:'warm'}),
     pn('plaza',[['kairos',0.45,0.72,1],['cass',0.58,0.72,-1]],[
       ['th','The moon slides over the sun. Every clock in the square stops for one second.'],
       ['th','I feel it in my teeth.'],
-      ['n','The Seam splits open above the festival. Five rifts at once.']],{...NIGHT,fx:'shake',crack:1,focus:[0.5,0.4],mus:'disaster'})]},
+      ['n','The Seam splits open above the festival. Five rifts at once. A lantern rig over the cup line lurches, and its ropes start to go.'],
+      ['n','Under it: Tessa, and her mother, and an old man who won’t let go of his cup.'],
+      ['th','The minute. I can’t do this one alone. I know that now.'],
+      ['kairos','Please. Whoever you are. Hold it for me.'],
+      ['th','Something answers.']],{...NIGHT,fx:'shake',crack:1,focus:[0.5,0.4],mus:'disaster'})]},
+  {mission:'rescue'},
+  {fn:nx=>playCutscene([pn('plaza',[['kairos',0.4,0.7,1],['cass',0.6,0.66,-1],['npc',0.25,0.78,1,{col:TESSA,small:1}]],[
+      ['n','Time snaps back. The rig hits the stones where the line was standing.'],
+      sq.flags.rescue_partial?['th','Most of them are clear. Not all. I ran out of seconds.']:['th','Everyone’s clear. Tessa is holding her mother’s hand, staring at the rig.'],
+      ['cass','You moved. Everyone else stood still, and you moved.'],
+      ['cass','I don’t want to hear “told you so.”'],
+      ['kairos','I wasn’t going to.'],
+      ['cass','You were on my roof two nights ago. I let you stay. I’m still not sure why.',{if:'c_cass_ask'}],
+      ['cass','I don’t know what I believe now. I know I’m done standing still.'],
+      ['cass','If you’ll have me.'],
+      ['ines','Good. We’re short a healer.'],
+      ['cass','Don’t make it strange.']],{...NIGHT,mus:'warm'})],nx)},
   {join:'cass'},
-  {mission:'festival',pick:3,prefer:['kairos','cass','noemi'],title:'Festival of the Mercy',sub:'All eight of you, for the first time. Choose your three.'},
+  {mission:'festival',pick:3,from:['kairos','ines','bram','theo','lucan','dess','cass'],prefer:['kairos','cass','ines'],title:'Festival of the Mercy',sub:'All seven of you. Choose your three. The crowd can’t run.'},
   {cut:[pn('plaza',[['theo',0.4,0.7,1],['ines',0.55,0.7,-1],['lucan',0.68,0.7,-1],['kairos',0.28,0.7,1]],[
       ['kairos','During the fight, I saw it again. Every Vice turned the same way at once.'],
-      ['theo','They’re not attacking anymore. They’re migrating. All toward one place.'],
+      ['theo','They’re not attacking anymore. They’re migrating. All toward one place. The same way the cup carts went.',{if:'mercy_clues'}],
+      ['theo','They’re not attacking anymore. They’re migrating. All toward one place.',{not:'mercy_clues'}],
       ['ines','Where?'],
       ['theo','The Registry of Births.'],
       ['lucan','Every birth record in Meridian.'],
-      ['lucan','And one blank one.']],{...NIGHT,mus:'tense'})]},
+      ['lucan','And one blank one.']],{...NIGHT,mus:'tense'}),
+    pn('plaza',[['npc',0.86,0.56,-1,{col:MARRC}]],[
+      ['n','At the far edge of the square, a man with reading glasses on a chain holds a brass instrument up to the dark sun, and writes down what it says.'],
+      ['n','Nobody looks at him. He prefers it that way.']],{...NIGHT,mus:'tense'}),
+    pn('office',[['ines',0.35,0.7,1],['lucan',0.5,0.7,1],['kairos',0.64,0.7,-1],['cass',0.76,0.7,-1]],[
+      ['n','The Registry shuts its bronze shutters before the last rift closes. Stewards at every door. Above it, the Vices circle all afternoon, like birds over a field.'],
+      ['n','The party waits it out in the empty cistern stair, under the square, while the city goes home.'],
+      ['ines','They lock the doors. They don’t lock the night staff out.'],
+      ['lucan','The night clerks come in through the archive stair after dark. My father’s keys open it.'],
+      ['lucan','I took them from his desk last night. I didn’t know why at the time.'],
+      ['kairos','You did.'],
+      ['lucan','…I did.']],{...NIGHT,cap:'Dusk.',mus:'tense'})]},
 
   // ═════════ ACT V · INTAKE WINDOW 1
   // ───────── SCENE 13: the Registry
   {sc:'Scene 13 · The Registry',cut:[
     pn('office',[['lucan',0.42,0.7,1],['kairos',0.56,0.7,-1],['dess',0.7,0.7,-1]],[
-      ['lucan','My father’s keys. He doesn’t know I took them.'],
-      ['kairos','He will.'],
-      ['lucan','Then I’d better make it worth it.']],{...NIGHT,cap:'Night. The Registry of Births.',mus:'tense'}),
+      ['lucan','My father’s keys. He’ll know by now I took them.'],
+      ['kairos','Does that bother you?'],
+      ['lucan','Then I’d better make it worth it.']],{...NIGHT,cap:'Night. The Registry of Births.',mus:'tense'})]},
+  {mission:'registry_hall'},
+  {cut:[
     pn('office',[['lucan',0.36,0.7,1],['kairos',0.5,0.7,1],['dess',0.64,0.7,-1],['ines',0.76,0.7,-1]],[
       ['n','The Stacks. Shelves that go down further than the lamps reach. Every drawer is a person.'],
       ['dess','It smells like old paper. And… cold. Can a smell be cold?'],
@@ -6724,7 +6805,7 @@ const CH1_SEQ=[
       {q:'The first gate has a brass plaque: “The Tenth Door opens to the Goat.”',opts:['Capricorn','Aries','Taurus'],a:0,ok:'Lucas: Capricorn. The Office’s own sign. Of course.',no:'Lucas: The Goat. Think of the sign with horns and a fish tail.'},
       {q:'The second plaque: “The Third Door opens to the Twins.”',opts:['Libra','Gemini','Pisces'],a:1,ok:'The gate grinds open.',no:'Dess: Twins. Two of something.'},
       {q:'The last plaque is worn almost smooth: “The Twelfth Door opens to the Fish.”',opts:['Cancer','Scorpio','Pisces'],a:2,ok:'Kairos: Pisces. My sun sign, if I had a chart.',no:'Agnes: Fish. Not crabs. Not scorpions.'}]},()=>nx())},
-  {split:'stacks',preferA:['kairos','lucan','ines'],preferB:['bram','noemi','theo']},
+  {split:'stacks',preferA:['kairos','lucan','ines'],preferB:['bram','cass','theo']},
   {cut:[pn('office',[['kairos',0.5,0.7,1,{glow:1}],['dess',0.66,0.7,-1]],[
       ['n','At the bottom: a vault door. INTAKE WINDOW 1.'],
       ['th','I touch it. And I see myself. Older. Standing at this window, a long line of people behind me, shouting at someone I can’t see.'],
@@ -6741,9 +6822,9 @@ const CH1_SEQ=[
       ['dess','A Kosmokrator. One of the powers behind the birth charts. I’ve only ever seen the word in my father’s notes.'],
       ['horaios','Name. Hour of birth. Sign here. Next.'],
       ['horaios','…No number. That one has no number. That isn’t allowed.']],{z:1.1,focus:[0.5,0.42],mus:'tense'})]},
-  {loss:1,must:['kairos'],prefer:['kairos','lucan','noemi'],title:'Intake Window 1',sub:'Three of you face Horaios. Kairos has to be one of them.'},
+  {loss:1,must:['kairos'],prefer:['kairos','lucan','cass'],title:'Intake Window 1',sub:'Three of you face Horaios. Kairos has to be one of them.'},
   {cut:[
-    pn('lobby',[['horaios',0.5,0.3,1,{phase:3}],['kairos',0.44,0.72,1,{moving:1}],['lucan',0.3,0.74,1,{grey:1}],['noemi',0.66,0.74,-1,{grey:1}]],[
+    pn('lobby',[['horaios',0.5,0.3,1,{phase:3}],['kairos',0.44,0.72,1,{moving:1}],['lucan',0.3,0.74,1,{grey:1}],['cass',0.66,0.74,-1,{grey:1}]],[
       ['th','Everyone else is stamped. Processed. Grey.'],
       ['kairos','Please. Hold it one more time.']],{...FROZEN,fx:'flash',z:1.1,focus:[0.5,0.42]}),
     pn('lobby',[['horaios',0.5,0.3,1,{phase:3,pat:2}],['kairos',0.48,0.62,1]],[
@@ -6753,7 +6834,8 @@ const CH1_SEQ=[
       ['horaios','Processing.']],{...FROZEN,fx:'shake',z:1.1,focus:[0.5,0.42],mus:'tense'}),
     pn('lobby',[['horaios',0.52,0.3,1,{phase:3}],['kairos',0.36,0.74,1,{fall:1}],['lucan',0.5,0.66,-1],['hand',0.58,0.56,-1,{closed:1,scale:0.75}]],[
       ['th','Lucas breaks through the grey. I don’t know how. I think it’s the vow.'],
-      ['lucan','Not him. Not again.']],{...FROZEN,fx:'flash',z:1.1,focus:[0.5,0.42],mus:'disaster'}),
+      ['lucan','Not him. Not again.'],
+      ['lucan','I said I’d come back for you. I came back.',{if:'c_lucas_door'}]],{...FROZEN,fx:'flash',z:1.1,focus:[0.5,0.42],mus:'disaster'}),
     pn('black',[['gate',0.62,0.62,1,{scale:1.2}],['lucan',0.6,0.62,-1,{scale:1.4}],['kairos',0.4,0.66,1]],[
       ['n','The hand closes around Lucas instead. Behind Horaios, a gate of white light opens.'],
       ['kairos','LUCAS—'],
@@ -6773,7 +6855,12 @@ const CH1_SEQ=[
       ['ines','Kairos. Up. Now.'],
       ['n','He doesn’t move. Bram picks him up for the second time this week, and runs.'],
       ['n','The Registry collapses behind them, with every birth record in Meridian inside it.']],{...NIGHT,fx:'shake',mus:'disaster'}),
-    pn('rooftop',[['kairos',0.4,0.7,1],['ines',0.52,0.7,-1],['bram',0.62,0.7,-1],['noemi',0.3,0.7,1]],[
+    pn('rooftop',[['kairos',0.4,0.7,1],['ines',0.52,0.7,-1],['bram',0.62,0.7,-1],['noemi',0.3,0.7,1,{moving:1}]],[
+      ['n','Dawn. Someone comes up the fire stairs with a medical bag, still in a ward coat.'],
+      ['noemi','They cut the hospital wire. Then the Registry fell, and half the city came in. I treated who I could, and walked here.'],
+      ['noemi','Who’s hurt?'],
+      ['noemi','…Where’s Lucas?'],
+      ['n','Nobody answers. Naomi sets her bag down, and sits with Kairos, and doesn’t ask again.'],
       ['th','Dawn. A rooftop. Seven of us. One empty space.'],
       ['n','Below, the Chancellor’s voice from every speaking-horn in the city.'],
       ['crane','Last night, heretics attacked the Registry of Births and destroyed it. My son Lucas was taken by them.'],
@@ -6818,7 +6905,7 @@ function ch1Seq(){return CH1_SEQ;}
 // ── Chapter 1 revision (v2 blueprint): save migration. CH1_REV is the chapter version written into ch1b.
 // Old mid-chapter keys resume at the START of the first revised scene not fully passed; the party is rebuilt by replaying
 // the revised sequence's join/leave/rejoin steps up to that point. The old ch1b is copied once to ch1b_pre_rev.
-const CH1_REV=1, CH1_REV_LIVE=false;
+const CH1_REV=2, CH1_REV_LIVE=true;
 function ch1MigKey(k){const m=/^(start|Cold open|Scene (\d+))#(\d+)$/.exec(String(k||''));if(!m)return null;const n=m[2]==null?-1:+m[2],off=+m[3];
   if(n<6)return k;                          // Act I and the cold open are unchanged
   if(n>=6&&n<=8)return 'Scene '+n+'#0';     // hospital, Office, Institute are revised: replay the scene
