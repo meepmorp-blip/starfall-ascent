@@ -113,7 +113,7 @@
   - Reachability flood fill and painted-collision checks, as in `ashlane_test.js`.
 - **Possible regressions:** the world-map layout; the precious-chest pool (district list); Renown totals.
 
-## Stage 6 · Lucas Part A (memories) (Implemented, tested · not committed)
+## Stage 6 · Lucas Part A (memories) (done, `a5eaa35`)
 - **Scope:** `lucas_mem_bread`, `lucas_mem_plan`, `lucas_mem_room`.
 - **Features:**
   - Memory objects at Hesper.
@@ -127,7 +127,7 @@
   - The chain is ordered (`pre`).
 - **Possible regressions:** Chapter 1 sequence data (read-only use); hide-and-seek.
 
-## Stage 7a · World side quests, batch 1
+## Stage 7a · World side quests, batch 1 (Implemented, tested · not committed)
 - **Scope:** `side_morning_after`, `side_names_paper`, `side_sunday_cups`, `side_festival_forgot`, `side_missing_page`, `side_beyond_wall`.
 - **Features:** new townsfolk (old woman, clerk, traveller, archivist) as `mxPeople` entries; investigation via `objs`; Folders and puzzle reuse.
 - **Acceptance:**
@@ -254,4 +254,24 @@
 | Test | desk | phone | small |
 |---|---|---|---|
 | `bond_lucas_test.js` | 37/37 | 37/37 | 37/37 |
+| Full regression (all tests, chest spots) | pass | pass | pass |
+
+## Results · Stage 7a (2026-11-16)
+**Built:** six side quests and four new townsfolk (Old Hanne, Pim, Mr. Ambrose, Ivo).
+
+**System addition:** `MX_QLINES`. A person says per-step quest lines, which set a flag or open a puzzle. Their "!" comes from the existing objective markers.
+
+**Placement:** two objects moved off the phone touch controls.
+
+**Fix: who says what.** The regression caught Rosa offering Sunday Cups before giving Bram his flour, and the nurse starting her own "Rounds" quest instead of answering a Festival question. A person's lines now follow this order:
+1. A step of an active side quest they are part of (`MX_QLINES`).
+2. Their own quest lines (`say()` without `amb`).
+3. A new quest they can offer.
+4. Small talk.
+
+The test now checks this.
+
+| Test | desk | phone | small |
+|---|---|---|---|
+| `side_quests_test.js` | 41/41 | 41/41 | 41/41 |
 | Full regression (all tests, chest spots) | pass | pass | pass |

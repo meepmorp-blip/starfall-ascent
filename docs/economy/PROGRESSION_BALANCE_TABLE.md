@@ -39,6 +39,7 @@ Total to Lv 20: **12,920** Memories.
 | Bond Story: Bram · The Smell of Fresh Bread | · | 40 | · | 1 (boss) | · | once · +1 Bond (Bram) |
 | Bond Story: Naomi & Theo · The Things We Couldn’t Save | · | 40 | · | 1 (chest) | 1 | once · +1 Bond (Naomi and Theo) |
 | Bond Story: Cassie · A Prayer of Her Own | · | 40 | · | 1 (chest) | 1 | once · +1 Bond (Cassie) |
+| World side quests (6) · Morning After 35 · Names on Paper 35 · Sunday Cups 30 · Festival 30 · Missing Page 40 · Beyond the Wall 30 | · | 200 total | · | · | 5 | once each · Renown +15 each |
 | Lucas memories (3) · The Things We Remember A | · | 20 / 20 / 30 | · | · | 0 / 1 / 0 | once each · +1 Bond (Lucas) for memories 1 and 3 |
 | Meridian: St. Maren’s (district, 2 records) | · | · | · | · | · | Renown +5 on discovery, +5 per record |
 

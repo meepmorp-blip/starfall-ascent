@@ -45,14 +45,14 @@
 | `lucas_hang_route` | The Things We Remember B·4 · A Familiar Route | hangout (Lucas) | **Chapter 2 rescue** | Hesper, Market, Plaza | 8–10 min | Blocked (needs Chapter 2) | No |
 | `lucas_hang_remember` | The Things We Remember B·5 · The Things We Remember | hangout (Lucas) | after B·4 | Clock Tower | 6–8 min | Blocked (needs Chapter 2) | No |
 | `lucas_hang_promise` | The Things We Remember B·6 · A Promise Kept | hangout (Lucas) | after B·5 | St. Hesper's / Clock Tower | 6–8 min | Blocked (needs Chapter 2) | No |
-| `side_morning_after` | The Morning After | side | Chapter 1 cleared | Festival Square (fountain) | 8–10 min | Planned | No |
-| `side_names_paper` | Names on Paper | side | Chapter 1 cleared | Concord Office | 8–12 min | Planned | No |
-| `side_sunday_cups` | Sunday Cups | side | Chapter 1 cleared | Market Ring, Cloister, Ash Lane | 8–10 min | Planned | No |
-| `side_festival_forgot` | The Festival We Forgot | side | Chapter 1 cleared | Festival Square, St. Hesper's | 8–10 min | Planned | No |
+| `side_morning_after` | The Morning After | side | Chapter 1 cleared; talk to Old Hanne | Festival Square → Market Ring, Garrison Yard | 6–8 min | Implemented | Yes |
+| `side_names_paper` | Names on Paper | side | Chapter 1 cleared; talk to Pim | Concord Office → the Cloister | 5–7 min | Implemented | Yes |
+| `side_sunday_cups` | Sunday Cups | side | Chapter 1 cleared; talk to Rosa | Market Ring, Ash Lane, the Cloister | 5–7 min | Implemented | Yes |
+| `side_festival_forgot` | The Festival We Forgot | side | Chapter 1 cleared; the old decorations box, then Sister Agathe | St. Hesper’s → Festival Square, St. Lucia’s | 6–8 min | Implemented | Yes |
 | `side_empty_chapel` | The Empty Chapel | side | Chapter 1 cleared | St. Maren's (built in Stage 5) | 8–10 min | Planned | No |
 | `side_unofficial_prayer` | The Unofficial Prayer | side | after `side_empty_chapel` | Ash Lane (after dark) | 8–10 min | Planned | No |
-| `side_missing_page` | The Missing Page | side | Chapter 1 cleared | Office → Cloister → Hesper → Plaza | 10–12 min | Planned | No |
-| `side_beyond_wall` | Beyond the Wall | side | Chapter 1 cleared | Ash Lane / Market Ring | 6–8 min | Planned | No |
+| `side_missing_page` | The Missing Page | side | Chapter 1 cleared; talk to Mr. Ambrose | Office → Cloister → St. Hesper’s → Festival Square | 6–8 min | Implemented | Yes |
+| `side_beyond_wall` | Beyond the Wall | side | Chapter 1 cleared; talk to Ivo | Ash Lane → Clock Tower, Market Ring | 5–7 min | Implemented | Yes |
 
 **19 quests in total:** 5 character stories, 3 Lucas memories, 3 Lucas hangouts and 8 world quests. The quest **system** they use is tracked in § 5.
 
@@ -353,22 +353,36 @@
   - B·6 is the "not losing you twice" promise.
 - **Status:** Blocked (needs Chapter 2's rescue and the `ch2.lucasRescued` flag) · **Tested:** No (only the lock is tested)
 
-### World side quests
-For every side quest:
-- **Unlock:** `when:['fugitive']`, plus a `pre` where one is listed.
-- **Default reward:** 30–40 Stardust, 1 Keepsake, and a Journal record.
-- **Combat:** none unless noted.
+### World side quests (batch 7a) · **Implemented, tested**
+**Common to all six**
+- `kind:'side'`, `when:['fugitive']`.
+- Found by talking to the giver, whose "!" shows over their head. Festival is the exception: its box must be found first.
+- No combat.
+- One-time rewards, plus a Journal keepsake and a story flag.
+- Townsfolk join in through `MX_QLINES`: per-step lines on existing people, without rewriting their dialogue.
 
-| ID | Giver / discovery | Objectives (summary) | Activities | NPCs | Environments | Story flags | Spoiler guard |
-|---|---|---|---|---|---|---|---|
-| `side_morning_after` | An old woman by the fountain (new) | Hear her account; find 3 objects from that night (a sodden hymnal, a tile, a stopped watch); put her memories in order | dialogue, collection, ordering puzzle | old woman, Rosa | plaza, market | `side.morning` | The night of the rain and the fountain, **not** a "rift". Nothing explains why people forget |
-| `side_names_paper` | A junior clerk at the Concord Office | Compare 3 conflicting birth entries; find the missing ledger page in the folders | investigation, Misfiled Folders variant | clerk | office | `side.names` | Hints at the Registry; Kairos's blank record is not re-explained |
-| `side_sunday_cups` | Rosa ("tastes like pennies") | Ask 4 residents what they forgot after Sunday; note the pattern | dialogue, clue board | Rosa, Matteo, fish vendor, laundress | market, ashlane, chapel | `side.cups` | Pattern only. **No** conclusion that the water causes it (Chapter 2) |
-| `side_festival_forgot` | A box of old Festival decorations at St. Hesper's | Find 3 old decorations and sketches; ask 3 people how the Festival used to be | collection, dialogue | Sister Agathe, Matteo, a lantern seller | hesper, plaza | `side.festival` | Sketches and paintings, not photographs. The Festival before the fountain is told differently by each person |
-| `side_empty_chapel` | The keepers' sign on the old chapel door | Recover and shelve 4 writings; light the reading lamp | collection, sequence | 2 keepers | old chapel | `side.chapel`, `oldchapel.found` | Gnosis as "the Old Heresy" rumour; Buried Books as rumour |
-| `side_unofficial_prayer` | **Pre:** `side_empty_chapel`. A whisper on Ash Lane | Follow chalk signs at dusk; witness the prayer; choose to keep their secret or not | follow-the-clues, choice | 3 pray-ers | ashlane | `side.prayer` | Keepers / Unbound / Hollow Choir appear only as names and rumours; nobody is all good or all bad |
-| `side_missing_page` | A torn index in the Office's history shelf | Trail across 4 districts: the Office, the Cloister sundial, the Hesper archive box, the plaza plaque | multi-location trail | archivist | office, chapel, hesper, plaza | `side.page` | The official history is incomplete; no answers |
-| `side_beyond_wall` | A traveller (new) near the Ash Lane cart | Hear the story; check 3 details (a map, a stone, a coin); decide whether to believe it | dialogue, inspection | traveller | ashlane, market | `side.wall` | The traveller is unreliable. Nothing is confirmed past the Wall |
+| ID | Giver (new?) | What you do | Ends with | Reward | Flag |
+|---|---|---|---|---|---|
+| `side_morning_after` | **Old Hanne** (new), Festival Square | Find her stopped watch (11:52, the Square), her roof tile (the Market Ring) and a Garrison whistle (the Yard), then put the night in order: cracks in the sky → shapes in the streets → rain → the fountain in the morning | "Everybody said it was a gift." | 35 Stardust, Keepsake, "Hanne's stopped watch" | `side.morning` |
+| `side_names_paper` | **Pim** (new), junior clerk, Concord Office | Find a torn ledger page in the Office, get the baptism copy from the Sister at the Cloister gate, then compare: Ada Venn's Moon was "revised" two years after her birth | "The original went to the Registry. And the Registry is gone." | 35, Keepsake, "Three versions of Ada Venn" | `side.names` |
+| `side_sunday_cups` | Rosa, Market Ring | Ask Matteo, the fish vendor, the laundress and the woman at the Cloister what they forgot last Monday, then tell Rosa who remembered everything | "The fish man. He's the only one who works on Sundays." (a hint, never stated) | 30, Keepsake, "Rosa's Monday list" | `side.cups` |
+| `side_festival_forgot` | Sister Agathe (after the old decorations box at St. Hesper's is found) | Ask the lantern seller, the woman in the Square and the ward nurse how the Festival used to be; find an old programme (a sketch: a bandstand and a well, no fountain) | The Festival of Names. "I had forgotten that I sang." | 30, Keepsake, "An old Festival programme" | `side.festival` |
+| `side_missing_page` | **Mr. Ambrose** (new), Concord Office | Follow the trail for page 212 ("The Founding Compact"), one step at a time: the Cloister sundial → the tin box behind St. Hesper's step → behind the plaque in Festival Square | Only the heading survives, cut off on purpose | 40, Keepsake, "The heading of page 212" | `side.page` |
+| `side_beyond_wall` | **Ivo** (new), traveller, Ash Lane | Show his map to Agnes ("traced, the rest in a different ink"), his stone to Theo ("no granite in Meridian") and his coin to the fish vendor ("a star with no rays") | "Either a liar or a traveller. Most travellers are both." | 30, "A coin from nowhere" | `side.wall` |
+
+**Canon checks (tested)**
+- No Mercy, water, drinking, cups or Chapter 2 material.
+- No faction names; no photographs.
+- The traveller stays unreliable.
+- The night twenty years ago follows the Chapter 1 cold open (rifts at 11:52) and the Lore Bible (the rain, then the fountain).
+
+**Test:** `tools/side_quests_test.js` (41 checks ×3)
+
+### Batch 7b (not started)
+| ID | Giver / discovery | Notes |
+|---|---|---|
+| `side_empty_chapel` | Ottilie at St. Maren's (built in Stage 5) | Recover and shelve 4 writings; light the reading lamp. Rumour-level Gnosis |
+| `side_unofficial_prayer` | **Pre:** `side_empty_chapel`. A whisper on Ash Lane | Follow chalk signs at dusk; witness the prayer; nobody all good or all bad |
 
 ## 5. System checklist (Implementation Phase 2: Quest System Foundation)
 
