@@ -337,3 +337,27 @@ No known critical or high bugs remain open. The two serious ones found (QA-01 fi
 - performance numbers come from headless desktop-class hardware, not a phone
 
 This verdict is based on the targeted probes and the full suite together, not on green automated tests alone.
+
+---
+
+## Visual & UX pass (2026-11-16)
+
+Full details are in `docs/VISUAL_UX_QA_REPORT.md`.
+
+**Issues found:** 25 in total.
+- 19 fixed and verified on the rendered page:
+  - **High (3):** invisible names on the Chapter 1 team pick; the Meridian menu header cut off on short screens; the fragment sheet's header and × out of reach.
+  - **Medium (13)**
+  - **Low (3)**
+- 6 left for your decision (UX-R1–R6).
+- Two of the fixes caused small regressions of their own (Rift card tags wrapping, the volume % pushed off-screen). Both were caught by the new checks and fixed.
+
+**Coverage:**
+- `tools/ux_tour.js`: 45 screens × 5 sizes (1280×720, 1920×1080, 844×390, 667×375, 1180×820), screenshots before and after, plus automated layout checks.
+- `tools/ux_walk_test.js` (new, in the suite): real-input walkthroughs. 26/26 desk, 26/26 phone, 25/25 small.
+
+**Full regression run:**
+- First run: 82 runs, 61 passed, 21 failed. The machine was overloaded: 13 failures were pages that never loaded within 30 s, and the phone Chapter 1 run took 15 minutes instead of about 2.
+- Rerun of every failed group: 30 of 34 passed.
+- The last 4, run one at a time: all passed (bond_lark small 35/35, meridian_playtest desk 41/41, core_probe desk 20/20, exploration_polish small 33/33).
+- No failure was reproducible, so there are no regressions.

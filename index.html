@@ -275,6 +275,7 @@ html{background:var(--void);min-height:100lvh}
 .bv-slot.on{border-color:var(--ink);background:rgba(201,162,90,0.18);box-shadow:0 0 0 2px #C9A25A}
 .bv-slot .bd{display:flex;flex-direction:column;gap:2px;min-width:0}
 .bv-sk{display:flex;gap:5px;align-items:center;font:800 10px var(--f-ui);letter-spacing:.1em;text-transform:uppercase}
+.bv-sk>*{white-space:nowrap}.fsort,.elchip{white-space:nowrap}.bv-sk{flex-wrap:wrap;row-gap:2px}
 .bv-on{margin-left:auto;background:#3B2617;color:#F6EBD2;border-radius:10px;padding:1px 7px;font-size:9px}
 .bv-sp{font:600 10px var(--f-ui);color:var(--ink-soft)}
 .bv-nm{font:700 14px var(--f-display)}
@@ -422,10 +423,10 @@ html{background:var(--void);min-height:100lvh}
 .fitbox.t3{background:linear-gradient(90deg,rgba(122,79,181,.16),rgba(201,162,90,.16));border-left:4px solid #7A4FB5}.fitbox.t3 .ic,.fitbox.t3 b{color:#5A3A8A}
 .tfit.t3{background:linear-gradient(135deg,#7A4FB5,#C9A25A)!important;color:#fff!important}
 .ftile.best{box-shadow:0 0 0 2px #E9C46A,0 0 14px 3px rgba(255,214,102,.75);animation:bestGlow 1.8s ease-in-out infinite}
-@keyframes bestGlow{0%,100%{box-shadow:0 0 0 3px #F0A818,0 0 12px 4px rgba(240,150,20,.75)}50%{box-shadow:0 0 0 3px #FFD45A,0 0 26px 10px rgba(255,170,30,1)}}
+@keyframes bestGlow{0%,100%{box-shadow:0 0 0 3px #F0A818,0 0 9px 3px rgba(240,150,20,.75)}50%{box-shadow:0 0 0 3px #FFD45A,0 0 12px 4px rgba(255,170,30,1)}}
 .ftile.best{overflow:visible;background:linear-gradient(115deg,#FFF6D8 30%,#FFFFFF 45%,#FFF6D8 60%) 0 0/250% 100%!important;animation:bestGlow 1.8s ease-in-out infinite,bestSweep 2.6s linear infinite}
 @keyframes bestSweep{0%{background-position:120% 0}100%{background-position:-120% 0}}
-.bv-scroll{padding:10px 8px!important}
+.bv-scroll{padding:18px 17px!important}
 .tshine{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .tshine i{position:absolute;width:10px;height:10px;background:#FFC93C;z-index:2;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);filter:drop-shadow(0 0 3px #FFD166);animation:twinkle 1.6s ease-in-out infinite}
 .tshine i:nth-child(1){top:-8px;right:-7px;width:20px;height:20px}
@@ -724,6 +725,9 @@ body{font-weight:600}
 #tut .tut-d{font:600 12px/1.3 var(--f-form);color:#F6EBD2}
 
 /* ───────── Night theme layer: every remaining paper panel goes dark to match the title / party / battle / pause screens ───────── */
+.form .slot,.vault .slot,.gwrap .slot{color:var(--ink)}
+.pick3 .slot .nm{white-space:normal;line-height:1.1;font-size:15px}
+.file-pick{position:relative;display:inline-block;margin:6px 0 2px;cursor:pointer}.file-pick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:0}
 .form,.vault,.gwrap{--ink:#F6EBD2;--ink-soft:rgba(246,235,210,.62);--ink-line:rgba(246,235,210,.16);--paper:#15111b;--paper-2:#211b28;--res-ink:#7FD3EE;--star-ink:#F2D27A;--seal-ok:#7BD88F;--seal:#FF8A7A}
 .form{background:rgba(15,12,20,.94)!important;color:var(--ink);border:0!important;border-radius:14px!important;
   box-shadow:inset 0 0 0 1.5px rgba(246,235,210,.1),0 14px 40px rgba(0,0,0,.55)!important}
@@ -935,6 +939,39 @@ body{font-weight:600}
 .wm-side .row{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap}
 .wm-legend{font-size:10.5px;color:#C9B48A;line-height:1.5}
 @media (max-height:520px){.wm{grid-template-columns:minmax(0,1fr) minmax(150px,30%);padding:6px;gap:6px}.wm-side h3{font-size:15px}.wm-side p{font-size:11.5px}.wm-legend{display:none}}
+
+/* ── Visual/UX QA refinements (2026-11) ─────────────────────────────────────────── */
+/* V10: bottom-aligned menu panels (.ss) taller than a short phone spilled out of their TOP edge, over the border and out of reach.
+   An auto top margin keeps them bottom-aligned while they fit and lets them start at the top (and scroll) when they don't. */
+.ss{justify-content:flex-start;overflow-y:auto;scrollbar-width:none}.ss::-webkit-scrollbar{display:none}.ss>:first-child{margin-top:auto}
+@media (max-height:520px){.ss.mx .tm-item{padding-top:5px;padding-bottom:5px}.ss.mx{gap:8px}}
+@media (max-height:400px){.ss.mx{padding-top:10px;padding-bottom:10px;gap:5px}.ss.mx .tm-item{padding-top:3px;padding-bottom:3px}.ss.mx .tm-menu{gap:1px}.ss.mx .ss-info{margin:0}}
+/* V19: forms are width:100% plus padding (content-box): on screens narrower than their max-width they stuck out 28px past the right edge
+   (Backup, Journal, Renown, team pick on a 667px phone) and the page scrolled sideways. Count the padding inside on narrow screens. */
+@media (max-width:720px){.form,.vault,.gwrap{box-sizing:border-box;max-width:100%}}
+/* V11: scrolling lists (Renown ranks, Journal) hide their scrollbar, so a cut-off row was the only hint there was more: fade the bottom edge */
+.mx-list{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent);padding-bottom:22px}
+/* V12: Rift rules were cut to 3 lines (1 line on phones), hiding the mechanic you need before you start */
+.bm-rule{-webkit-line-clamp:5!important}
+@media (max-height:520px){.bm-rule{-webkit-line-clamp:3!important}}
+/* V13: the fragment filter bar scrolled sideways with no scrollbar on phones, hiding "Good fits" and the sort menu: let it wrap */
+.sc-frags .bv-right .fbar{flex-wrap:wrap!important;overflow-x:visible!important;row-gap:5px}
+/* V15: the smallest labels were 8–9px on short phones (Rift/Trial card tags 8px): lift them to 9.5–10.5px, same style */
+.slot .rl{font-size:10px}
+@media (max-height:520px){.bm-card .tag{font-size:9px!important;letter-spacing:.03em!important;white-space:nowrap;max-width:calc(100% - 14px);overflow:hidden;text-overflow:ellipsis}.bm-card .reward{font-size:10.5px!important}
+  .sc-role,.bv-sk,.pz-sect{font-size:10px!important}.cut-btns .skip{font-size:10px}}
+/* V17: the fragment detail sheet centred its content with flexbox; when taller than the screen its top (name, rarity and the × close
+   button) was pushed above the visible area where scrolling can't reach. Auto margins centre it while it fits and never cut the top. */
+.bv-detail{align-items:flex-start!important;justify-content:flex-start!important}.bv-detail>*{margin:auto}
+/* V14: on touch screens, small pill controls get a taller invisible tap area (same look): tabs, tier picker, toggles, Skip/Auto/Menu */
+@media (pointer:coarse){
+  .seg{overflow:visible!important}
+  .seg button,.toggle,.skip{position:relative}
+  .seg button::after,.toggle::after,.skip::after{content:'';position:absolute;left:0;right:0;top:-9px;bottom:-9px}
+  .setting input[type=range]{height:30px}
+}
+/* V20: the world map panel was 98vw wide inside the overlay's 16px padding: it stuck out ~20px and scrolled sideways on phones */
+.wm{max-width:100%}
 </style>
 </head>
 <body>
@@ -1519,7 +1556,7 @@ function showBackup(back){
     const pr=loadPrefs(),snaps=snapshots(),prev=prevSave();
     const out=h('textarea',{class:'codebox',readonly:'readonly',rows:'4','aria-label':'Your backup code'});out.value=code;
     const inp=h('textarea',{class:'codebox',rows:'3',placeholder:'Paste a code that starts with SFA1-','aria-label':'Paste a backup code'});
-    const file=h('input',{type:'file',accept:'.json,.txt,application/json,text/plain','aria-label':'Choose a backup file',style:'max-width:100%;font:inherit'});
+    const file=h('input',{type:'file',accept:'.json,.txt,application/json,text/plain','aria-label':'Choose a backup file'});
     file.onchange=()=>{const f=file.files&&file.files[0];if(!f)return;f.text().then(t=>{try{doRestore(parseBackup(t),'the backup file “'+f.name+'”');}catch(e){say(e.message,false);}});};
     const protect=storageState==='granted'?'This browser has agreed to keep Starfall’s storage. That helps, but it is not a guarantee.':
       storageState==='denied'?'This browser may clear Starfall’s storage if the device needs space or the game goes unused for a while.':
@@ -1544,7 +1581,7 @@ function showBackup(back){
       h('p',{class:'note',style:'margin:4px 0'},snaps.length?snaps.length+' kept, newest '+when(snaps[0].at)+'. They live in the same browser storage as your save, so they help with a damaged save, not with a cleared browser.':'None yet. One is made every 10 minutes while you play.'),
       snaps.length?h('div',{class:'row'},...snaps.map((sn,i)=>h('button',{class:'btn outline',type:'button',onclick:()=>{try{doRestore(sn,'the automatic backup from '+when(sn.at));}catch(e){say(e.message,false);}}},(i?'Older':'Newest')+' · '+when(sn.at)))):null,
       h('div',{class:'sect'},ico('retro'),'Restore from a code or file'),
-      inp,file,
+      inp,h('label',{class:'btn outline file-pick'},'Choose a backup file…',file),
       h('p',{class:'note',style:'margin:4px 0'},'Restoring replaces the progress on this device: levels, fragments, Stardust and Story. Your current progress is kept so you can undo it.'),
       msg?h('p',{class:'note',role:'status',style:'margin:4px 0;color:'+(ok?'var(--seal-ok)':'var(--seal)')},msg):'',
       h('div',{class:'row'},
@@ -3456,6 +3493,7 @@ function drawMission(c){
       if(o.hide)addTextOnce(o,'!');}
     const bw=46,k=clamp(o.hp/o.max,0,1),bx=o.x-bw/2,by=o.y-(o.ward?52:44);
     c.fillStyle='rgba(0,0,0,0.6)';c.fillRect(bx-1,by-1,bw+2,6);c.fillStyle=k>0.35?C.hp:C.danger;c.fillRect(bx,by,bw*k,4);}
+  flushBubbles(c);
 }
 function addTextOnce(o,t){if(!(o.bangT>0)){o.bangT=1.5;addText(o.x,o.y-58,t,C.gold,12,{life:0.8});}o.bangT-=1/60;}
 function drawMissionTop(c){
@@ -3508,7 +3546,8 @@ function showPick3(roster,o,done){
           if(on)sel=sel.filter(x=>x!==id);else if(sel.length<n)sel.push(id);else{sel.pop();sel.push(id);}sfx('tick');render();}},
           portrait(id,44),h('span',{class:'nm'},nameOf(id)+(lock?' · must go':on?' · #'+(sel.indexOf(id)+1):'')),h('span',{class:'rl '+ROLE_COL[c.roleKey]},c.role));})),
       h('p',{class:'serpent'},'The first pick starts on the field. Bench characters still help: Agnes snipes, Theo’s machines keep working, Bram blocks bullets.'),
-      h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',disabled:sel.length<Math.min(n,roster.length)?true:null,onclick:()=>{closeOverlay();done(sel.slice());}},'Go · '+sel.map(nameOf).join(', '))));
+      h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',disabled:sel.length<Math.min(n,roster.length)?true:null,onclick:()=>{closeOverlay();done(sel.slice());}},'Go · '+sel.map(nameOf).join(', ')),
+        typeof sq!=='undefined'&&sq&&sq.save?h('button',{class:'btn ghost',type:'button',title:'Your place in the chapter is saved',onclick:()=>leaveStory()},'Main menu'):null));
   };
   render();openOverlay(root,'mode-select');
 }
@@ -4038,6 +4077,8 @@ function missionExtra(m,dt){
   }
   return false;
 }
+// markers are queued while people are drawn and painted after the whole scene, so walls and counters never cover them
+const bubQ=[];function qBubble(...a){bubQ.push(a);}function flushBubbles(c){for(const a of bubQ)talkBubble(c,...a.slice(1));bubQ.length=0;}
 function talkBubble(c,x,y,t,fill,big){
   const w=big?20:18,h=big?20:16;
   c.fillStyle='#24160C';rrect(c,x-w/2-2,y-h/2-2,w+4,h+4,6);c.fill();
@@ -4061,13 +4102,13 @@ function drawExtra(c,m){
     if(n.draw){n.draw(c,n,m);continue;}
     if(n.spot){const k=0.6+0.4*Math.sin(T*3+n.x);c.fillStyle=alpha(C.gold,0.18*k);ell(c,n.x,n.y+6,16,6);c.fill();
       c.save();c.translate(n.x,n.y-10+Math.sin(T*2.5+n.x)*2);c.rotate(Math.PI/4);c.fillStyle=n.done?alpha('#F6EBD2',0.35):alpha('#FFE6A3',0.9);c.fillRect(-4,-4,8,8);c.restore();
-      if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)talkBubble(c,n.x,n.y-28,n.mk,n.mk==='!'?C.gold:'#F6EBD2',n.mk==='!');}
-      else if(!n.done)talkBubble(c,n.x,n.y-28,n.need&&open(n)?'!':'?',n.need&&open(n)?C.gold:'#F6EBD2',!!n.need);continue;}
+      if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)qBubble(c,n.x,n.y-28,n.mk,n.mk==='!'?C.gold:'#F6EBD2',n.mk==='!');}
+      else if(!n.done)qBubble(c,n.x,n.y-28,n.need&&open(n)?'!':'?',n.need&&open(n)?C.gold:'#F6EBD2',!!n.need);continue;}
     if(n.ch)drawChar(c,n.ch,n.x,n.y,n.kid?{face:n.face||1,t:T,scale:0.78,unarmed:1}:{face:n.face||1,t:T});
     else drawNPC(c,n.x,n.y-(n.mv?Math.abs(Math.sin(T*9+n.x*0.1))*1.5:0),{col:n.col,face:n.face||1,hair:n.hair,hat:n.hat,apron:n.apron,small:n.small,long:n.long});
     const top=n.y-(n.small?32:(n.hat?42:38))+Math.sin(T*4+n.x*0.05)*2.5;
-    if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)talkBubble(c,n.x,top,n.mk,n.mk==='!'?C.gold:'#F6EBD2',n.mk==='!');}
-    else if(!n.done){if(n.need&&open(n))talkBubble(c,n.x,top,'!',C.gold,true);else talkBubble(c,n.x,top,'…','#F6EBD2',false);}
+    if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)qBubble(c,n.x,top,n.mk,n.mk==='!'?C.gold:'#F6EBD2',n.mk==='!');}
+    else if(!n.done){if(n.need&&open(n))qBubble(c,n.x,top,'!',C.gold,true);else qBubble(c,n.x,top,'…','#F6EBD2',false);}
     if(n.label&&m.near!==n){const dl=Math.hypot(player.x-n.x,player.y-n.y);wlabel(n.x,n.y+21,n.label,{px:11,a:dl<170?1:0.6});}
   }
   const n=m.near;
@@ -5647,7 +5688,7 @@ function showRenown(back){const n=mxRenown(),rk=mxRank(),nx=MX_RANKS[rk];let not
             onclick:()=>{const L=grantReward(k.r,key);if(L){note='Rank '+(i+1)+': '+L.join(' · ');sfx('bless');}draw();}},ready?'Claim':'Locked'));}),
         h('p',{class:'ss-info',style:'margin:6px 0 0'},'Renown comes from exploring: a new district 5, a record 5, a quest 15 (the main quest 30). Use Keepsakes in Builds › Level & milestones.')),
       note?h('p',{class:'note',style:'color:#9BE7B8;margin:6px 0 0'},note):null,
-      h('div',{class:'row'},h('button',{class:'btn',type:'button','data-back':'1','data-primary':'1',onclick:()=>back()},'Back'))),'mode-select');};
+      h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>back()},'Back'))),'mode-select');};
   draw();}
 // players who finished Meridian quests before Expansion 02 get those quests' Keepsakes once (Stardust was already paid)
 function mxMigrate(){const x=save.mx;if(!x||!x.q)return;let ch=false;
@@ -5656,7 +5697,9 @@ function mxMigrate(){const x=save.mx;if(!x||!x.q)return;let ch=false;
   if(ch)persist();}
 mxMigrate();
 // ── Meridian menu and Journal
-function mxMapGrid(){const x=mxS(),cell=d=>d?h('div',{class:'mx-n'+(x.seen[d]?'':' off')+(x.at===d?' here':''),'data-d':d},x.seen[d]?MX_DISTRICTS[d].name:'Not visited',h('i',null,x.at===d?'You are here':(x.seen[d]?MX_DISTRICTS[d].blurb.split('.')[0]:'?'))):h('div',{class:'mx-n mx-gap'});
+// the first sentence of a blurb, not fooled by "St." or "Dr." (no regex look-behind: older iPhone Safari lacks it)
+function firstSentence(t){const parts=String(t).split('. ');let out=parts[0];for(let i=1;i<parts.length&&/(^|\s)(St|Dr|Mt|Mr|Mrs|No)$/.test(out);i++)out+='. '+parts[i];return out.replace(/\.$/,'');}
+function mxMapGrid(){const x=mxS(),cell=d=>d?h('div',{class:'mx-n'+(x.seen[d]?'':' off')+(x.at===d?' here':''),'data-d':d},x.seen[d]?MX_DISTRICTS[d].name:'Not visited',h('i',null,x.at===d?'You are here':(x.seen[d]?firstSentence(MX_DISTRICTS[d].blurb):'?'))):h('div',{class:'mx-n mx-gap'});
   const open=d=>{const L=WORLD_LOCS.find(q=>q.d===d);return !L||wmUnlocked(L)?d:null;}; // same rule as the world map and the exits
   return h('div',{class:'mx-map','aria-label':'Map of Meridian'},
     cell(null),cell(null),cell(open('annex')),cell(null),
@@ -5706,7 +5749,7 @@ function showJournal(back,tab){
   openOverlay(h('div',{class:'form mx'},formHead('Meridian','Journal'),
     h('div',{class:'mx-tabs'},tb('quests','Quests'),tb('stories','Stories'),tb('records','Records '+mxRecordCount()+' / '+MX_RECORDS),tb('map','Map')),
     h('div',{class:'mx-list'},...(tab==='stories'?mxStoriesList():tab==='quests'?quests:tab==='records'?recs:[mxMapGrid(),h('p',{class:'ss-info'},'Walk off a gold arrow at the edge of a district, or open the world map to travel.'),h('button',{class:'btn small',type:'button',onclick:()=>showWorldMap({from:'journal',back:()=>showJournal(back,'map')})},'Open the world map')])),
-    h('div',{class:'row'},h('button',{class:'btn',type:'button','data-back':'1','data-primary':'1',onclick:()=>back()},'Back'))),'mode-select');
+    h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>back()},'Back'))),'mode-select');
 }
 
 // ── Chapter 1
