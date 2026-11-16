@@ -3524,7 +3524,7 @@ function drawMissionHUD(){
 // ── party growth + choose your 3
 function joinCard(id,done){
   state='panel';const c=CHARS[id],how=CHAR_HOW[id];
-  sq&&!sq.roster.includes(id)&&sq.roster.push(id);
+  sq&&!sq.roster.includes(id)&&sq.roster.push(id);if(sq&&sq.met&&!sq.met.includes(id))sq.met.push(id);
   openOverlay(h('div',{class:'form join',style:'max-width:520px'},
     formHead('New ally','The party grows'),
     h('div',{class:'join-row'},portrait(id,72),h('div',null,h('div',{class:'join-nm'},nameOf(id)),h('span',{class:'rl '+ROLE_COL[c.roleKey]},c.role),
@@ -3560,10 +3560,10 @@ function missionFail(retry,quit){
 }
 // ── sequencer: a story is a list of steps {cut}, {join}, {mission, party|pick}, {fn}
 let sq=null;
-function runSeq(seq,opt={}){sq={seq,i:opt.i||0,roster:(opt.roster||['kairos']).slice(),end:opt.end||goHome,flags:Object.assign({},opt.flags||{}),save:opt.save||null};seqStep();}
+function runSeq(seq,opt={}){const roster=(opt.roster||['kairos']).slice();sq={seq,i:opt.i||0,roster,met:[...new Set([...(opt.met||[]),...roster])],end:opt.end||goHome,flags:Object.assign({},opt.flags||{}),save:opt.save||null};seqStep();}
 function seqStep(){
   const s=sq.seq[sq.i],nx=()=>{sq.i++;seqStep();};
-  if(sq.save&&s){save[sq.save]={i:sq.i,k:seqKey(sq.seq,sq.i),roster:sq.roster.slice(),flags:Object.assign({},sq.flags)};persist();}
+  if(sq.save&&s){save[sq.save]={i:sq.i,k:seqKey(sq.seq,sq.i),roster:sq.roster.slice(),met:(sq.met||sq.roster).slice(),flags:Object.assign({},sq.flags),rev:CH1_REV};persist();}
   if(!s){sq.end();return;}
   if(s.cut)playCutscene(s.cut,nx);
   else if(s.join)joinCard(s.join,nx);
@@ -3576,6 +3576,8 @@ function seqStep(){
   else if(s.bond)showBond(s.bond,nx);
   else if(s.split){const go=(a,b)=>startMission(s.split,a,ok=>{if(ok)nx();else missionFail(()=>go(a,b));},{b});showSplitPick(sq.roster,s,go);}
   else if(s.loss){const go=party=>startLoss(party,ok=>{if(ok)nx();else missionFail(()=>go(party));});showPick3(sq.roster,{n:3,must:s.must,prefer:s.prefer,title:s.title,sub:s.sub},go);}
+  else if(s.leave){sq.roster=sq.roster.filter(x=>x!==s.leave);nx();}            // someone stays behind (story), still "met"
+  else if(s.rejoin){if(!sq.roster.includes(s.rejoin))sq.roster.push(s.rejoin);if(sq.met&&!sq.met.includes(s.rejoin))sq.met.push(s.rejoin);nx();}
   else if(s.fn)s.fn(nx);
   else nx();
 }
@@ -4159,7 +4161,7 @@ const MX_GATES={before:()=>mxEra()==='before',fugitive:()=>mxEra()==='fugitive',
 // story era of the hub: 'before' the Festival (Chapter 1 in progress) or 'fugitive' (Chapter 1 cleared: the party is wanted, Lucas is gone)
 function mxEra(){return ch1Scene()>=99?'fugitive':'before';}
 // has the player met this character in Chapter 1 yet?
-function mxMet(id){return (save.ch1Clears|0)>0||!!(save.ch1b&&Array.isArray(save.ch1b.roster)&&save.ch1b.roster.includes(id));}
+function mxMet(id){const b=save.ch1b;return (save.ch1Clears|0)>0||!!(b&&((Array.isArray(b.met)&&b.met.includes(id))||(Array.isArray(b.roster)&&b.roster.includes(id))));}
 const mxQ=id=>mxS().q[id]||null,mxF=k=>!!mxS().f[k],mxSet=k=>{mxS().f[k]=1;},mxHas=k=>!!mxS().items[k];
 const mxAct=id=>{const q=mxQ(id);return q&&q.s==='active'?q:null;},mxStepOf=id=>{const q=mxAct(id);return q?MX_QUESTS[id].steps[q.n].id:null;};
 const MX_DISTRICTS={
@@ -6488,6 +6490,23 @@ const CH1_SEQ=[
     pn('black',[],[['n','CHAPTER 2: THE ARCHIVE'],['n','To be continued.']],{cap:'CHAPTER 2: THE ARCHIVE',mus:'title'})]},
 ];
 function ch1Seq(){return CH1_SEQ;}
+// ── Chapter 1 revision (v2 blueprint): save migration. CH1_REV is the chapter version written into ch1b.
+// Old mid-chapter keys resume at the START of the first revised scene not fully passed; the party is rebuilt by replaying
+// the revised sequence's join/leave/rejoin steps up to that point. The old ch1b is copied once to ch1b_pre_rev.
+const CH1_REV=1, CH1_REV_LIVE=false;
+function ch1MigKey(k){const m=/^(start|Cold open|Scene (\d+))#(\d+)$/.exec(String(k||''));if(!m)return null;const n=m[2]==null?-1:+m[2],off=+m[3];
+  if(n<6)return k;                          // Act I and the cold open are unchanged
+  if(n>=6&&n<=8)return 'Scene '+n+'#0';     // hospital, Office, Institute are revised: replay the scene
+  if(n===9)return off<6?'Scene 9#0':'Scene 9.6#0'; // before the old assault → Lucas's sequence; from it → the breakout
+  if(n===10||n===11)return 'Scene 11#0';    // the old rooftop is gone → the clock tower
+  if(n===12)return 'Scene 12#0';            // the Festival is revised
+  return k;}                                // Registry and Intake Window 1 are unchanged
+function ch1RosterAt(q,i){let r=['kairos'];const met=new Set(r);for(let k=0;k<i&&k<q.length;k++){const s=q[k],add=s.join||s.rejoin;
+  if(add){if(!r.includes(add))r.push(add);met.add(add);}if(s.leave)r=r.filter(x=>x!==s.leave);}return {roster:r,met:[...met]};}
+function ch1Migrate(sv,q){if(!sv||sv.rev>=2)return sv;const out=Object.assign({},sv);
+  if(!sv.done){const k=ch1MigKey(sv.k);if(k){out.k=k;const tmp={k,i:sv.i};const i=seqFind(q,tmp);out.i=i;const r=ch1RosterAt(q,i);out.roster=r.roster;out.met=[...new Set([...(sv.met||sv.roster||[]),...r.met])];}}
+  else out.met=[...new Set([...(sv.met||[]),...(sv.roster||[])])];
+  out.rev=2;return out;}
 let CH1=null;
 // a step's key is its scene tag ("Scene 6") plus how many steps into that scene it is,
 // so inserting or removing a line elsewhere never moves a saved player to the wrong place
@@ -6500,7 +6519,7 @@ function seqFind(q,sv){
 function startCh1(fresh){
   ensureAudio();CH1=CH1||ch1Seq();
   const sv=!fresh&&save.ch1b&&!save.ch1b.done?save.ch1b:null;
-  runSeq(CH1,{roster:sv?sv.roster:['kairos'],flags:sv?sv.flags:{},i:sv?seqFind(CH1,sv):0,save:'ch1b',end:showCh1End});
+  runSeq(CH1,{roster:sv?sv.roster:['kairos'],met:sv?(sv.met||sv.roster):['kairos'],flags:sv?sv.flags:{},i:sv?seqFind(CH1,sv):0,save:'ch1b',end:showCh1End});
 }
 function ch1Label(i){const q=CH1||(CH1=ch1Seq());let l='Cold open';for(let k=0;k<=i&&k<q.length;k++)if(q[k].sc)l=q[k].sc;return l;}
 function showCh1Menu(){
@@ -9607,7 +9626,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(SF_DEV){window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={lose:()=>{if(team)for(const m of team.members)if(!m.down)memberDown(m);},bondPend:()=>save.bondPending||{},postFresh:k=>mxPostFresh(k),exitsOf:d=>mxExits(MX_DISTRICTS[d]).map(e=>e[1]),fug:()=>Object.keys(MX_FUG),snaps:()=>snapshots(),snap:f=>snapshotSave(f),storage:()=>storageState,persistReq:()=>requestPersistentStorage(),parseBackup:t=>{try{return parseBackup(t);}catch(e){return {error:e.message};}},backupDue:()=>backupDue(),beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(SF_DEV){window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={mxMet:id=>mxMet(id),ch1MigKey:k=>ch1MigKey(k),ch1RosterAt:i=>ch1RosterAt(ch1Seq(),i),lose:()=>{if(team)for(const m of team.members)if(!m.down)memberDown(m);},bondPend:()=>save.bondPending||{},postFresh:k=>mxPostFresh(k),exitsOf:d=>mxExits(MX_DISTRICTS[d]).map(e=>e[1]),fug:()=>Object.keys(MX_FUG),snaps:()=>snapshots(),snap:f=>snapshotSave(f),storage:()=>storageState,persistReq:()=>requestPersistentStorage(),parseBackup:t=>{try{return parseBackup(t);}catch(e){return {error:e.message};}},backupDue:()=>backupDue(),beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,

@@ -473,7 +473,17 @@ After approval, these go into `Lore_Updates` as v1.2, so the Lore Bible is never
 | 5 | R15–R16: Festival (patrols, ritual, `rescue`), Registry clues, dawn with Naomi; `Lore_Updates` v1.2 | Part 4: full chapter |
 | 6 | Balance pass (§ 11), full suite, a manual chapter playthrough | Full `run_tests` |
 
-## 16. Remaining open questions
+## 16. Decisions (owner, 2026-11-16: "use recommendations")
+1. **The ticker** over the speaking-horn wires.
+2. **Theo's tenure:** about two years, eight years ago, as written.
+3. **`c_lucas_door`:** read in Chapter 1 (R13, R16), with one beat at the Chapter 2 rescue (noted for Chapter 2).
+4. **"Meet at the tower":** yes, kid Kairos may say it.
+5. **Courier passes for senior clerks:** yes, as new world detail.
+6. **Marr seed at the Festival:** kept, one unseen panel, as in R15.
+
+Implementation follows § 15, stage by stage.
+
+## 16a. The questions as asked
 1. **Ticker or runner?** A ticker over the speaking-horn wires (recommended), or handwritten notes carried by a St. Lucia's runner (lower-tech, slower, also fine).
 2. **Theo's tenure:** "about two years, eight years ago". Shorter or longer?
 3. **`c_lucas_door` consequences:** only a few lines (R13, R16), or should Chapter 2 use it too? Recommended: yes, one beat at the rescue.
