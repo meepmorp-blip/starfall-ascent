@@ -70,6 +70,10 @@ Points available today: 5 districts × 5 + 11 records × 5 + 30 + 5 optional que
 - Before this change, the top rank (175) fell in the middle of the city's *pre-Festival* content.
 - Ranks 1–5 are unchanged (no claim is lost and no rank goes down).
 - The new ranks sit just above the pre-Chapter 1 maximum (340), at about the middle of the post-Chapter 1 stories (460), and at about 94% of everything (570).
+- **Known and accepted (2026-11-16 review):**
+  - A completionist can reach the top rank (8, at 570) before Chapter 2 exists. The maximum is 605, so 35 Renown is spare.
+  - Thresholds are kept for now.
+  - When Chapter 2 content adds Renown, add ranks above 570 rather than moving these. Claimed ranks must never be taken back.
 - **Other rewards were reviewed and left unchanged:**
   - Stories pay 20–60 Stardust and 0–2 Keepsakes each.
   - All 19 stories and quests after Chapter 1 give about 13 Keepsakes in total. One Keepsake is 120 Memories, so that is roughly two levels spread over eight characters.

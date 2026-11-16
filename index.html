@@ -6609,7 +6609,7 @@ function goHome(){
     h('nav',{class:'tm-menu','aria-label':'Main menu'},
       it('Story','Chapter 1',showStoryStart,' primary'),
       it('Meridian','Explore the city',()=>showMeridian(),save.mx?'':' guide-new'),
-      it('Battle','Rifts · Horaios · Trials',()=>showPartySelect('battle')),
+      it('Battle','Practice · Rifts · Horaios · Trials',()=>showPartySelect('battle')),
       it('Builds','Fragments · Skills',()=>showBuilds(goHome)),
       it('Training','Basics · character drills',showTrainingMenu,loadPrefs().tutDone?'':' guide-new'),
       it('Guide','How everything works',()=>showGuide(goHome),loadPrefs().guideSeen?'':' guide-new')),
@@ -6663,6 +6663,9 @@ function dossier(id,action){
       sk('Team passive',k.p2.name,[],[h('p',null,k.p2.desc)])),
     action?h('div',{class:'dossier-bar'},action):null);
 }
+// Battle modes are practice, outside the story: any character can join, even one not met yet or away in the story (Lucas, while captured).
+// Story fights never use this screen; they pick from the chapter's own roster.
+const practiceNote=()=>h('p',{class:'ss-info ps-practice',style:'margin:4px 0 6px;color:#E9D9A6'},'Practice mode · not part of the story. Anyone can join here, even before you meet them or while they are away in the story. Story fights use only who is with you.');
 function showPartySelect(mode){
   state='title';room=null;paused=false;playMusic('title');
   const prefs=loadPrefs();
@@ -6709,7 +6712,7 @@ function showPartySelect(mode){
     h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},(mode==='story'?'Story':'Battle')+' · tap a slot, then a character'),h('h2',null,'Choose your party')),
       h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>{goHome();}},'Back'),
         h('button',{class:'btn outline',type:'button',onclick:()=>{showBuilds(()=>showPartySelect(mode));}},'Builds'),startBtn)),
-    team3,roster,note);
+    mode==='story'?null:practiceNote(),team3,roster,note);
   render();
   openOverlay(wrap,'mode-select');
 }
@@ -6755,7 +6758,7 @@ function showBattleMenu(party,tab){
         card('Archon Gate','Horaios (practice)','Normal difficulty, with your chosen Blessings.','Practice · no rewards',()=>startBattle(party,'boss',lvl,{practice:true,diff:0}),ROOMS.boss.theme)));
   }
   openOverlay(h('div',{class:'select bm'},
-    h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},party.map(nameOf).join(' · ')+' · avg Lv '+avg),h('h2',null,'Where to?')),
+    h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},'Practice · '+party.map(nameOf).join(' · ')+' · avg Lv '+avg),h('h2',null,'Where to?')),
       h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>{showPartySelect('battle');}},'Party'),
         h('button',{class:'btn outline',type:'button',onclick:()=>{showBuilds(()=>showBattleMenu(party,tab));}},'Builds'),h('button',{class:'btn outline',type:'button',onclick:()=>{goHome();}},'Home'))),
     tabs,body),'mode-select');
@@ -6769,7 +6772,7 @@ function showTrainingDone(cid){
     h('nav',{class:'tm-menu'},
       cid?it('Train another','Pick a character',()=>showTrainingMenu(),' primary',{'data-primary':'1'}):it('Character drills','Learn each character',()=>showTrainingMenu(),' primary',{'data-primary':'1'}),
       it('Story','Chapter 1',()=>showStoryStart()),
-      it('Battle','Rifts · Horaios · Trials',()=>showPartySelect('battle')),
+      it('Battle','Practice · Rifts · Horaios · Trials',()=>showPartySelect('battle')),
       it('Home','Main menu',()=>goHome(),'',{'data-back':'1'}))),'mode-select');
 }
 function startBattle(party,id,lvl,opt){

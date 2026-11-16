@@ -18,7 +18,7 @@ The QA pass found and fixed **two serious pre-existing bugs**:
 **Biggest remaining risks:**
 - No real-device testing. iPhone Safari performance, touch feel, storage eviction and the share sheet are unverified (section F).
 - How QA-01 behaved on iPhone is unknown. Safari supports canvas `filter` from iOS 18. Older iOS used the non-filter fallback and was probably never affected. On iOS 18 or later the slowdown may have happened. The fix removes the cost either way.
-- One design question is open (QA-03: captured or unrecruited characters in free-play modes).
+- QA-03 (characters in free-play modes) is resolved: those modes are now labelled as practice, outside the story.
 
 **Verdict: PASS WITH WARNINGS** (section H).
 
@@ -91,12 +91,29 @@ Results are from the final runs after all fixes. "×3" means desktop, phone and 
   Valid saves are untouched.
 - **Retest:** 11/11 damage kinds reach Meridian without errors; `save_protection` and old-save checks pass.
 
-### QA-03 · Medium · Captured Lucas, and characters not yet recruited, can be picked in Rifts, Battle and Trials. Not fixed: design decision
+### QA-03 · Medium · Captured Lucas, and characters not yet recruited, can be picked in Rifts, Battle and Trials. Resolved: labelled as practice
 - **System:** party select (`showPartySelect` lists all of `CH_ORDER`).
 - **Steps:** after the Chapter 1 clear (Lucas held by Horaios), open Battle or Rift → Lucas is selectable. On a new save, Dess and Cassie are selectable before they are met.
-- **Expected:** undecided. Free-play modes may be meant to be non-canon.
-- **Actual:** always selectable.
-- **Fix:** none. This needs your call: hide or lock them, or keep them and label the modes as practice.
+- **Decision (your review, 2026-11-16):** keep free play flexible and label it as non-canon practice.
+- **Fix:** labels only; nothing is locked and no story rule changed.
+  - The title menu's Battle entry now reads "Practice · Rifts · Horaios · Trials".
+  - The free-play party screen shows: "Practice mode · not part of the story. Anyone can join here, even before you meet them or while they are away in the story. Story fights use only who is with you."
+  - The stage menu is headed "Practice · …".
+  - Story party picks never use this screen: Chapter 1 picks come from the chapter's own roster, and Bond Story fights have fixed parties.
+- **Retest:** `practice_modes_test.js` ×3 (8 checks):
+  - labels shown
+  - a not-yet-met character and the captured Lucas are selectable
+  - the Chapter 1 St. Lucia's pick shows only the five who have joined, with no practice label
+
+### Bond unlocks · documented, not implemented
+No new Bond rewards were invented. The system stays as implemented: 0–5 hearts, each worth +4% HP and attack in story battles, with honest reward lines and a captured Lucas's Bond waiting until he is back. Unlocks at certain heart levels remain a future design decision.
+
+### Renown pacing · documented, thresholds kept
+Measured Renown:
+- 330 available before the Chapter 1 clear
+- 605 before Chapter 2
+
+Ranks 6–8 sit at 340 / 460 / 570, so a completionist can reach the top rank before Chapter 2 exists, with 35 Renown to spare. This is accepted for now. Future chapters should add ranks above 570, not move existing ones. Details: `docs/economy/PROGRESSION_BALANCE_TABLE.md`.
 
 ### QA-04 · Low · Device-clock changes can reset weekly and daily rewards. Not fixed
 - **System:** `bossWeekly` (week index from `Date.now()`) and Meridian's day (`mxDay`).
@@ -136,7 +153,7 @@ Results are from the final runs after all fixes. "×3" means desktop, phone and 
 | Storage full (every write throws) | Game keeps running; warning text prepared; no crash |
 | Hand-damaged save (11 kinds) | All load and reach Meridian (after QA-02) |
 | Developer tools on the published host, including URL tricks | Not present (`security_test`) |
-| Captured Lucas in free-play modes | Possible (QA-03, needs decision) |
+| Captured Lucas in free-play modes | Allowed by design; the modes are now labelled as practice outside the story (QA-03) |
 | Device clock forward | Weekly reward repeatable (QA-04, accepted) |
 
 Not attempted, automatically or otherwise: a mid-write power loss on a real device; two tabs open on the same save at once (the last write wins; snapshots limit the damage).
@@ -151,6 +168,22 @@ Not attempted, automatically or otherwise: a mid-write power loss on a real devi
   - `bond_lucas` (×3): two checks expected Lucas's Bond to rise at once while he is captured. That is the old behaviour. Task 8 deliberately keeps it as waiting Bond until he is back. The game behaves as designed; the test now counts added plus waiting Bond.
   - `qa_probe` desktop and phone, fight frame rate: 40–44 fps with 6 headless browsers running at once (58–60 fps alone). This is a load limit of the test machine, not a game regression. The threshold is now 30 fps under parallel load. The per-frame game cost (4–7 ms) is the meaningful number.
 - **Retest:** `bond_lucas` and `qa_probe`: all pass (6 runs, 226 checks).
+
+**Final targeted regression, after the QA-03 change:**
+- All passed: 25 runs, 673 checks, 0 failures.
+- Tests:
+  - `practice_modes` ×3 (party selection, recruitment, captured Lucas)
+  - `core_probe` desktop and phone (new game, Chapter 1 start to clear, recruitment, combat)
+  - `bond_lucas` ×3 (captured Lucas)
+  - `narrative_foundation` ×3 and `quest_system` ×3 (story progression)
+  - `save_protection` desktop and phone, `qa_probe` ×3 (save compatibility and damaged saves)
+  - `security`, `fugitive`, `bond`, `renown`
+
+**Chapter 1 left untouched:**
+- The `CH1_SEQ` story script in `index.html` is byte-for-byte identical to `main` before this queue.
+- 1 of 1,312 existing dialogue lines differs: the Meridian ward nurse's line, which has a fugitive-era variant (Task 4). The original still plays before the fugitive era, and it is not Chapter 1.
+- The only Chapter 1 code change is rendering (QA-01, grey figures drawn in one pass): same look, no text or flow change.
+- `docs/narrative/CH1_REVISION_BLUEPRINT.md` is unchanged since it was written and is not implemented.
 
 **Other systems:** no regressions in quests, NPC dialogue, the map, Ashlane, the Office, Hesper, exploration, economy, the Meridian playtest, or the earlier Bond Stories.
 
@@ -191,10 +224,11 @@ Tests updated in this pass, with the reason for each:
 
 ## G. Remaining issues
 
-- QA-03 (captured or unrecruited characters in free-play modes): needs a design decision.
+- QA-03: resolved by labelling the free-play modes as practice (see C).
 - QA-04 (clock-based weekly reward): accepted, no fix planned.
 - QA-05 (shared mission level): harmless now; noted.
-- Bond unlocks (Task 8): not implemented, needs design.
+- Bond unlocks: intentionally not added; a future design decision.
+- Renown: thresholds kept; top rank reachable before Chapter 2 (documented).
 - Chapter 1 revision blueprint: awaiting your approval; not implemented.
 - `RECOLLECTION_AUDIT.md`: not written. It was lower priority than implementation.
 - Real-device testing: not done (section F).
@@ -207,7 +241,6 @@ Tests updated in this pass, with the reason for each:
 
 No known critical or high bugs remain open. The two serious ones found (QA-01 final-fight freeze, QA-02 damaged-save crash) are fixed and retested. Warnings:
 - no physical iPhone testing
-- one open design question (QA-03)
 - performance numbers come from headless desktop-class hardware, not a phone
 
 This verdict is based on the targeted probes and the full suite together, not on green automated tests alone.
