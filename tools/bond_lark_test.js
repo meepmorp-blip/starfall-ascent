@@ -17,7 +17,7 @@ const go=async d=>{await E(d=>__sf.mxGo(d),d);await p.waitForTimeout(850);};
 const st=id=>E(id=>__sf.qstate(id),id);const step=id=>E(id=>{const q=__sf.mx().q[id];return q&&q.s!=='done'?__sf.mxQ[id].steps[q.n].id:null;},id);
 const mark=id=>E(id=>{const n=__sf.m().npcs.find(o=>o.id===id);return n&&n.mkf?n.mkf():null;},id);
 const pick=async i=>{await p.locator('.pzl-o').nth(i).click();await p.waitForTimeout(220);};
-const winFight=async()=>{await p.waitForTimeout(1400);const inFight=await E(()=>__sf.m()&&__sf.m().M.type==='fight');await E(()=>__sf.win());
+const winFight=async()=>{await p.waitForTimeout(1400);const inFight=await E(()=>__sf.m()&&['fight','defense'].includes(__sf.m().M.type));await E(()=>__sf.win());
   for(let i=0;i<40;i++){await p.waitForTimeout(200);if(await E(()=>__sf.m()&&__sf.m().M.type==='walk'))break;const bt=await p.$('.btn.primary,.res-cont');if(bt&&await bt.isVisible())await bt.click().catch(()=>{});}
   await p.waitForTimeout(700);return inFight;};
 const scene=async()=>{await p.waitForTimeout(500);const had=await E(()=>!!__sf.cut());for(let i=0;i<40&&await E(()=>!!__sf.cut());i++){await E(()=>__sf.cutNext());await p.waitForTimeout(120);}await p.waitForTimeout(900);return had;};

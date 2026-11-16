@@ -45,7 +45,7 @@ async function exitTo(side){const B=await p.evaluate(()=>__sf.bounds()),cx=(B[0]
 const mk0=await npcPos('matteo');ok(mk0&&mk0.mk==='!','Matteo shows a ! bubble before the first talk');
 await talk('matteo');I=await info();ok(I.q.streets&&I.q.streets.s==='active','talking to Matteo starts "Know the Streets"');
 await talk('matteo');I=await info();ok(I.q.glasses&&I.q.glasses.s==='active','second talk starts "Matteo’s Glasses"');
-const mk1=await npcPos('tessa');ok(mk1&&mk1.mk==='…','an unmet townsperson shows …');
+const mk1=await npcPos('tessa');ok(mk1&&!mk1.mk,'an ordinary townsperson shows no bubble (indicator rules: ! quest, ? discovery)');
 // records in the Market Ring
 await talk('market.chalk');I=await info();ok(I.found.includes('market.chalk')&&I.q.records,'reading the chalkboard records it and starts "Meridian Records"');
 await shot('talked');

@@ -17,7 +17,7 @@ const go=async d=>{await E(d=>__sf.mxGo(d),d);await p.waitForTimeout(850);};
 const st=id=>E(id=>__sf.qstate(id),id);const step=id=>E(id=>{const q=__sf.mx().q[id];return q&&q.s!=='done'?__sf.mxQ[id].steps[q.n].id:null;},id);
 const mark=id=>E(id=>{const n=__sf.m().npcs.find(o=>o.id===id);return n&&n.mkf?n.mkf():null;},id);
 const pick=async i=>{await p.locator('.pzl-o').nth(i).click();await p.waitForTimeout(220);};
-const winFight=async()=>{await p.waitForTimeout(1400);const inFight=await E(()=>__sf.m()&&__sf.m().M.type==='fight');await E(()=>__sf.win());
+const winFight=async()=>{await p.waitForTimeout(1400);const inFight=await E(()=>__sf.m()&&['fight','defense'].includes(__sf.m().M.type));await E(()=>__sf.win());
   for(let i=0;i<40;i++){await p.waitForTimeout(200);if(await E(()=>__sf.m()&&__sf.m().M.type==='walk'))break;const bt=await p.$('.btn.primary,.res-cont');if(bt&&await bt.isVisible())await bt.click().catch(()=>{});}
   await p.waitForTimeout(700);return inFight;};
 const scene=async()=>{await p.waitForTimeout(500);const had=await E(()=>!!__sf.cut());for(let i=0;i<40&&await E(()=>!!__sf.cut());i++){await E(()=>__sf.cutNext());await p.waitForTimeout(120);}await p.waitForTimeout(900);return had;};
@@ -61,7 +61,7 @@ for(let i=0;i<20&&await E(()=>__sf.st())==='dialog';i++){text.push(await E(()=>(
 r=await interact('shed');text=text.concat(r.lines);ok(r.lines.some(l=>/Pigeons/.test(l)),'caught behind the coal shed: “Pigeons.”');
 await afterWalk();let s=await S();
 ok(s.mx.q.lucas_mem_bread.s==='done'&&s.mx.at==='hesper','the memory ends back at St. Hesper’s and completes');
-ok(s.bonds.lucan===1&&s.mx.mem['rec.lm1']&&s.story['lucas.mem1'],'Bond +1 for Lucas (kept for his return), the end piece in the Journal');
+ok((s.bonds.lucan|0)+((s.bondPending||{}).lucan|0)===1&&s.mx.mem['rec.lm1']&&s.story['lucas.mem1'],'Bond +1 for Lucas (kept for his return), the end piece in the Journal');
 // ── memory 2: The Worst Plan (unlocked by the first)
 ok(await E(()=>__sf.m().npcs.some(n=>n.id==='mem.plan'&&!n.hide())),'the tower door is now a memory');
 await p.reload();await p.waitForTimeout(600);await E(()=>__sf.mxBegin());await p.waitForTimeout(900);ok(await st('lucas_mem_bread')==='completed'&&await st('lucas_mem_plan')==='available'||await st('lucas_mem_plan')==='undiscovered','progress survives a reload');
@@ -80,7 +80,7 @@ await p.screenshot({path:`out/lucas_${mode}_room.png`});
 r=await interact('kl');ok(r.lines.some(l=>/Look at all my stuff/.test(l)),'Lucas waits until you have looked around');
 for(const id of ['names','tin','clock','crust','list','kl']){r=await interact(id);text=text.concat(r.lines);}
 await afterWalk();s=await S();
-ok(s.mx.q.lucas_mem_room.s==='done'&&s.bonds.lucan===2&&s.mx.mem['rec.lm3']&&s.story['lucas.mem3'],'all three memories complete; Lucas’s Bond is 2');
+ok(s.mx.q.lucas_mem_room.s==='done'&&(s.bonds.lucan|0)+((s.bondPending||{}).lucan|0)===2&&s.mx.mem['rec.lm3']&&s.story['lucas.mem3'],'all three memories complete; Lucas’s Bond is 2');
 ok(await E(()=>__sf.m().npcs.filter(n=>/^mem\./.test(n.id)).every(n=>n.mkf()===null)),'the memory objects have nothing left to show');
 const d1=s.dust;r=await interact('mem.bread');ok((await S()).dust===d1&&r.lines.some(l=>/remember all of it/.test(l))&&!(await E(()=>!!__sf.cut())),'a finished memory is not replayed or paid again');
 // ── Journal, canon

@@ -86,7 +86,7 @@ await p.evaluate(()=>{for(const k of ['t_a','t_b','t_c']){delete __sf.mxQ[k];del
 // ── glue: hub → fight → hub, hub → scene → hub
 await p.evaluate(()=>__sf.mxGo('tower'));await p.waitForTimeout(800);
 await p.evaluate(()=>__sf.mxFight('roof'));await p.waitForTimeout(1500);
-ok(await p.evaluate(()=>!!(__sf.m()&&__sf.m().M&&__sf.m().M.type==='fight')),'a hub fight starts a fight room');
+ok(await p.evaluate(()=>!!(__sf.m()&&__sf.m().M&&['fight','defense'].includes(__sf.m().M.type))),'a hub fight starts a fight room');
 await p.evaluate(()=>__sf.win());for(let i=0;i<30;i++){await p.waitForTimeout(200);const r=await p.evaluate(()=>window.__mxFightResult);if(r!==undefined)break;
   const bt=await p.$('.btn.primary,.res-cont');if(bt&&await bt.isVisible())await bt.click().catch(()=>{});}
 ok(await p.evaluate(()=>window.__mxFightResult)===true&&await p.evaluate(()=>__sf.mx().at)==='tower'&&await p.evaluate(()=>__sf.m().M.type==='walk'),'after the fight you are back on the tower');

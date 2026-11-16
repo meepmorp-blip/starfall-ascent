@@ -917,7 +917,7 @@ body{font-weight:600}
 .mx-r{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline;padding:7px 10px;margin:0 0 6px;background:rgba(20,15,10,.5);border-radius:4px}
 .mx-r b{color:#FFE6A3;font-size:13px}.mx-r span{font-size:11px;color:#C9B48A}.mx-r p{grid-column:1/-1;margin:0;font-size:12.5px;color:#F6EBD2;line-height:1.4}
 .mx-r.lock b,.mx-r.lock p{color:#7A7068}
-@media (max-height:520px){.ss.mx .mx-n i{display:none}.ss.mx .mx-n{padding:5px 4px;font-size:11px}.ss.mx .mx-map{margin:4px 0;gap:4px;max-width:340px}.ss.mx .ss-title{font-size:20px}.ss.mx .ss-info{font-size:11.5px;margin:2px 0}.mx-list{max-height:52vh}.mx-list.mx-rn{max-height:38vh}.form.mx h2{font-size:20px}.form.mx .mx-bar{margin:4px 0 6px}}
+@media (max-height:520px){.ss.mx .mx-n i{display:none}.ss.mx .mx-n{padding:3px 4px;font-size:10.5px;line-height:1.1}.ss.mx .mx-map{margin:2px 0;gap:3px;max-width:380px}.ss.mx .ss-title{font-size:20px}.ss.mx .ss-info{font-size:11.5px;margin:2px 0}.mx-list{max-height:52vh}.mx-list.mx-rn{max-height:38vh}.form.mx h2{font-size:20px}.form.mx .mx-bar{margin:4px 0 6px}}
 .keepbox{border:1px solid rgba(201,162,90,.45);background:rgba(201,162,90,.08);border-radius:6px;padding:8px 10px;margin:8px 0 4px}
 .keepbox .kb-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.keepbox .kb-top b{color:var(--star-ink,#C9A25A)}.keepbox .kb-top span{font-size:12px;opacity:.85}
 .keepbox .kb-pv{margin:4px 0 0;font-size:12px;opacity:.9}
@@ -971,6 +971,9 @@ function alpha(hex,a){const n=parseInt(hex.replace('#',''),16);return `rgba(${(n
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FONT_UI='"Nunito", system-ui, -apple-system, "Segoe UI", sans-serif';
 const FONT_DISP='"Pixelify Sans", "Trebuchet MS", system-ui, sans-serif';
+// Developer tools (window.__sf and friends) exist only on a local machine: localhost, 127.0.0.1, [::1] or a file opened from disk.
+// The published site never gets them, whatever is in the URL (?debug no longer turns them on).
+const SF_DEV=location.protocol==='file:'||/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
 const PREF_KEY='starfall-ascent-prefs';
 function loadPrefs(){try{return JSON.parse(localStorage.getItem(PREF_KEY)||'{}')||{};}catch(_){return {};}}
 function savePrefs(p){try{localStorage.setItem(PREF_KEY,JSON.stringify(Object.assign(loadPrefs(),p)));}catch(_){}}
@@ -1420,65 +1423,134 @@ const ROLE_W={dps:{hp:0.03,atk:0.05},burst:{hp:0.035,atk:0.045},sub:{hp:0.035,at
 const MAX_LVL=20,xpNeed=l=>80+l*60;
 const MILESTONES=[[5,'Entrance recharges in 6s and hits 30% harder'],[10,'Sun skill cooldown −15%'],[15,'Moon skill cooldown −15%'],[20,'True memory: +10% HP, ATK and DEF']];
 let saveWarn='';
+// ═══ Save protection. The main save is one localStorage key; next to it the game keeps three rolling automatic backups
+// (SNAP_KEYS, newest first) and, during a restore, the save it replaced (PREV_KEY). None of them ever writes the main key except
+// recovery on load and an explicit restore/undo. See docs/quest_expansion/SAVE_PROTECTION.md.
+const SNAP_KEYS=[SAVE_KEY+'-snap-1',SAVE_KEY+'-snap-2',SAVE_KEY+'-snap-3'],PREV_KEY=SAVE_KEY+'-prev',SNAP_EVERY=10*60*1000,BACKUP_FORMAT=1,SAVE_V=2;
+const validSave=s=>!!(s&&typeof s==='object'&&!Array.isArray(s)&&s.chars&&typeof s.chars==='object'&&!Array.isArray(s.chars)&&!(s.v>SAVE_V));
+function readSnap(k){try{const o=JSON.parse(localStorage.getItem(k)||'null');return o&&validSave(o.save)?o:null;}catch(_){return null;}}
+const snapshots=()=>SNAP_KEYS.map(readSnap).filter(Boolean);
+function cleanBroken(){try{const ks=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(SAVE_KEY+'-broken-'))ks.push(k);}
+  ks.sort().slice(0,-2).forEach(k=>localStorage.removeItem(k));}catch(_){}}
 function loadSave(){
-  let raw=null,s=null;try{raw=localStorage.getItem(SAVE_KEY);}catch(_){saveWarn='This browser blocks saving. Progress will be lost when you close the page.';}
+  let raw=null,s=null,blocked=false;try{raw=localStorage.getItem(SAVE_KEY);}catch(_){blocked=true;saveWarn='This browser blocks saving. Progress will be lost when you close the page.';}
+  const fromSnap=why=>{const sn=snapshots()[0];if(!sn)return null;const d=new Date(sn.at);
+    saveWarn=why+' The automatic backup from '+d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' was loaded.';
+    try{localStorage.setItem(SAVE_KEY,JSON.stringify(sn.save));}catch(_){}return JSON.parse(JSON.stringify(sn.save));};
   if(raw){try{s=JSON.parse(raw);}catch(_){s=null;}
-    if(!s||typeof s!=='object'||!s.chars||typeof s.chars!=='object'){
-      try{localStorage.setItem(SAVE_KEY+'-broken-'+Date.now(),raw);}catch(_){}
-      saveWarn='Your save could not be read, so a new one was started. A copy of the old one was kept on this device.';s=null;}}
+    if(!validSave(s)){
+      try{localStorage.setItem(SAVE_KEY+'-broken-'+Date.now(),raw);}catch(_){}cleanBroken();
+      s=fromSnap('Your save could not be read (a copy of it was kept).');
+      if(!s)saveWarn='Your save could not be read, so a new one was started. A copy of the old one was kept on this device.';}}
+  else if(!blocked&&snapshots().length)saveWarn='No save was found on this device, but automatic backups were. Open Builds → Backup to restore one.';
   if(!s)s={chars:{},frags:[],dust:0,nextId:1};
   s.v=2; // v2 (Expansion 02): keep = Keepsakes, claims = one-time rewards already given
   s.frags=Array.isArray(s.frags)?s.frags:[];s.dust=s.dust|0;s.nextId=s.nextId||1;
   s.keep=Math.max(0,s.keep|0);if(!s.claims||typeof s.claims!=='object'||Array.isArray(s.claims))s.claims={};
+  // repair damaged entries instead of crashing later (QA: a hand-edited or half-written save could stop the game at Meridian)
+  const isObj=o=>!!o&&typeof o==='object'&&!Array.isArray(o);
+  for(const id in s.chars){const c=s.chars[id];if(!isObj(c)){delete s.chars[id];continue;}
+    c.lvl=Math.min(MAX_LVL,Math.max(1,c.lvl|0));c.xp=Math.max(0,+c.xp||0);if(!isObj(c.slots))c.slots={};for(const k of ['sun','moon','rising'])if(!(k in c.slots))c.slots[k]=null;}
+  if('mx' in s&&!isObj(s.mx))delete s.mx;
+  if(isObj(s.mx))for(const k of ['seen','talk','found','q','items','f'])if(!isObj(s.mx[k]))s.mx[k]={};
+  for(const k of ['bonds','story'])if(k in s&&!isObj(s[k]))s[k]={};
   for(const id of CH_ORDER)if(!s.chars[id])s.chars[id]={xp:0,lvl:1,slots:{sun:null,moon:null,rising:null}};
   return s;
 }
 let save=loadSave();
-function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(_){if(!saveWarn){saveWarn='Saving failed (storage full or blocked). Use Builds → Backup to keep a code of your progress.';}}}
+let lastSnapAt=(snapshots()[0]||{at:0}).at;
+// copy the committed save into the rolling backups (at most every 10 minutes, or at once when forced by a milestone); never touches the main save
+function snapshotSave(force){
+  try{if(!validSave(save))return false;if(!force&&Date.now()-lastSnapAt<SNAP_EVERY)return false;
+    const json=JSON.stringify(save),cur=readSnap(SNAP_KEYS[0]);if(cur&&JSON.stringify(cur.save)===json){lastSnapAt=Date.now();return false;}
+    for(let i=SNAP_KEYS.length-1;i>0;i--){const v=localStorage.getItem(SNAP_KEYS[i-1]);if(v!=null)localStorage.setItem(SNAP_KEYS[i],v);}
+    localStorage.setItem(SNAP_KEYS[0],'{"at":'+Date.now()+',"v":'+(save.v||SAVE_V)+',"save":'+json+'}');lastSnapAt=Date.now();return true;}catch(_){return false;}}
+function persist(){let okw=false;try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));okw=true;}catch(_){if(!saveWarn){saveWarn='Saving failed (storage full or blocked). Use Builds → Backup to keep a copy of your progress.';}}
+  if(okw)snapshotSave(false);}
+// ask the browser to keep this site's storage (best effort: Safari may say no, and nothing is ever guaranteed)
+let storageState='unknown';
+function requestPersistentStorage(){try{const st=navigator.storage;if(!st||!st.persist||!st.persisted){storageState='unsupported';return Promise.resolve(storageState);}
+  return st.persisted().then(p=>p?true:st.persist()).then(g=>{storageState=g?'granted':'denied';return storageState;}).catch(()=>{storageState='denied';return storageState;});}catch(_){storageState='unsupported';return Promise.resolve(storageState);}}
+// backup files and codes share one format
+const backupPayload=()=>({k:'sfa',format:'starfall-ascent-backup',v:BACKUP_FORMAT,saveV:save.v||SAVE_V,at:Date.now(),save:JSON.parse(JSON.stringify(save))});
+function checkBackup(o){if(!o||o.k!=='sfa'||!o.save)throw new Error('That is not a Starfall backup, or it is damaged.');
+  if((o.saveV|0)>SAVE_V||(o.save.v|0)>SAVE_V)throw new Error('That backup comes from a newer version of the game. Update the game first, then restore it.');
+  if(!validSave(o.save))throw new Error('That backup is damaged: it has no characters in it.');return o;}
+function parseBackup(text){text=String(text||'').trim();if(!text)throw new Error('Paste a code or choose a backup file first.');
+  if(/^SFA1-/.test(text.replace(/\s+/g,'')))return checkBackup(importCode(text));
+  let o;try{o=JSON.parse(text);}catch(_){throw new Error('That is not a Starfall backup code or file.');}return checkBackup(o);}
+const markBackedUp=()=>savePrefs({lastBackupAt:Date.now()});
+function backupFileName(){const d=new Date(),z=n=>(n<10?'0':'')+n;return 'starfall-backup-'+d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'.json';}
+function downloadBackup(){const o=checkBackup(backupPayload()),json=JSON.stringify(o),name=backupFileName(),blob=new Blob([json],{type:'application/json'});
+  try{if(isTouch&&typeof File==='function'&&navigator.canShare){const file=new File([blob],name,{type:'application/json'});
+      if(navigator.canShare({files:[file]}))return navigator.share({files:[file],title:'Starfall backup'}).then(()=>{markBackedUp();return 'shared';});}}catch(_){}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);markBackedUp();return Promise.resolve('downloaded');}
+// restore keeps the save it replaces (PREV_KEY) so it can be undone; if that copy can't be written, nothing changes
+function restoreBackup(o){checkBackup(o);
+  if(validSave(save)){try{localStorage.setItem(PREV_KEY,JSON.stringify({at:Date.now(),save}));}catch(_){throw new Error('There is no room to keep a copy of your current progress, so nothing was changed. Download a backup file first.');}}
+  localStorage.setItem(SAVE_KEY,JSON.stringify(o.save));save=loadSave();persist();snapshotSave(true);}
+const prevSave=()=>readSnap(PREV_KEY);
+function undoRestore(){const p=prevSave();if(!p)return false;localStorage.setItem(SAVE_KEY,JSON.stringify(p.save));localStorage.removeItem(PREV_KEY);save=loadSave();persist();return true;}
+// the gentle reminder on the title screen: progress made, no backup for 7 days, not snoozed
+function backupDue(){const pr=loadPrefs(),now=Date.now(),base=pr.lastBackupAt||pr.firstPlayAt||now;
+  const progress=(save.ch1Clears|0)>0||(save.ch1b&&(save.ch1b.i|0)>3)||CH_ORDER.some(id=>(save.chars[id].lvl|0)>1)||(save.dust|0)>0;
+  return progress&&now-base>7*864e5&&now>(pr.backupSnooze||0);}
 // Backup codes: the whole save as one text code
-function exportCode(){const json=JSON.stringify({k:'sfa',v:1,save,at:Date.now()});return 'SFA1-'+btoa(unescape(encodeURIComponent(json)));}
+function exportCode(){const json=JSON.stringify(backupPayload());return 'SFA1-'+btoa(unescape(encodeURIComponent(json)));}
 function importCode(code){
   code=String(code||'').trim().replace(/\s+/g,'');
   if(!code.startsWith('SFA1-'))throw new Error('That is not a Starfall backup code. It should start with SFA1-');
   let o;try{o=JSON.parse(decodeURIComponent(escape(atob(code.slice(5)))));}catch(_){throw new Error('The code is damaged or incomplete. Copy the whole thing.');}
-  if(!o||o.k!=='sfa'||!o.save||!o.save.chars)throw new Error('The code is damaged or incomplete. Copy the whole thing.');
+  if(!o||o.k!=='sfa'||!validSave(o.save))throw new Error('The code is damaged or incomplete. Copy the whole thing.');
   return o;
 }
 function showBackup(back){
-  const code=exportCode();
-  let msg='',ok=true;
+  let code=exportCode(),msg='',ok=true;
   const root=h('div',{class:'form',style:'max-width:640px'});
+  const when=t=>{const d=new Date(t);return d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});};
+  const say=(m,good)=>{msg=m;ok=good;sfx(good?'confirm':'nope');render();};
+  const doRestore=(o,label)=>{if(!confirm('Replace the progress on this device with '+label+'?\n\nYour current progress is kept, and you can undo this from this screen.'))return;
+    restoreBackup(o);code=exportCode();msg='Restored '+label+': '+save.frags.length+' fragments and '+save.dust+' Stardust. Changed your mind? Use “Undo restore”.';ok=true;sfx('bless');render();};
   function render(){
+    const pr=loadPrefs(),snaps=snapshots(),prev=prevSave();
     const out=h('textarea',{class:'codebox',readonly:'readonly',rows:'4','aria-label':'Your backup code'});out.value=code;
     const inp=h('textarea',{class:'codebox',rows:'3',placeholder:'Paste a code that starts with SFA1-','aria-label':'Paste a backup code'});
+    const file=h('input',{type:'file',accept:'.json,.txt,application/json,text/plain','aria-label':'Choose a backup file',style:'max-width:100%;font:inherit'});
+    file.onchange=()=>{const f=file.files&&file.files[0];if(!f)return;f.text().then(t=>{try{doRestore(parseBackup(t),'the backup file “'+f.name+'”');}catch(e){say(e.message,false);}});};
+    const protect=storageState==='granted'?'This browser has agreed to keep Starfall’s storage. That helps, but it is not a guarantee.':
+      storageState==='denied'?'This browser may clear Starfall’s storage if the device needs space or the game goes unused for a while.':
+      storageState==='unsupported'?'This browser can’t promise to keep Starfall’s storage.':'Checking whether this browser will keep Starfall’s storage…';
     root.replaceChildren(
       formHead('Backup','Save code'),
       h('h2',{style:'padding-right:0'},'Back up your progress'),
-      h('p',{class:'lede'},'Your progress lives in this browser only. Copy this code and keep it somewhere safe (like Notes). Paste it on another device to move your save there.'),
-      h('div',{class:'sect'},ico('equip'),'Your code'),
+      h('p',{class:'lede'},'Your progress lives in this browser only. On iPhone, the home-screen app and Safari keep separate progress, and removing the app removes its progress. Keep a backup file or code somewhere safe (Files, Notes, email).'),
+      h('p',{class:'note',style:'margin:4px 0'},protect+' '+(pr.lastBackupAt?'Last backup: '+when(pr.lastBackupAt)+'.':'No backup made yet.')),
+      h('div',{class:'sect'},ico('equip'),'Your backup'),
       h('div',{class:'chips',style:'margin-bottom:6px'},
         h('span',{class:'chip'},ico('memory'),'Levels'),h('span',{class:'chip'},ico('gem'),save.frags.length+' fragments'),
         h('span',{class:'chip'},ico('star'),save.dust+' Stardust')),
+      h('div',{class:'row',style:'margin-top:6px'},
+        h('button',{class:'btn',type:'button',onclick:()=>{downloadBackup().then(r=>say(r==='shared'?'Backup file shared. Save it to Files or send it to yourself.':'Backup file saved: '+backupFileName(),true)).catch(e=>say(e&&e.name==='AbortError'?'Cancelled.':'Could not make the file: '+(e&&e.message||e),false));}},'Download backup file')),
       out,
-      h('div',{class:'row',style:'margin-top:6px'},h('button',{class:'btn',type:'button',onclick:async()=>{
+      h('div',{class:'row',style:'margin-top:6px'},h('button',{class:'btn outline',type:'button',onclick:async()=>{
         let done=false;try{await navigator.clipboard.writeText(code);done=true;}catch(_){}
         if(!done){out.focus();out.select();try{done=document.execCommand('copy');}catch(_){}}
-        msg=done?'Copied! Paste it into Notes to keep it safe.':'Could not copy automatically. Select the code and copy it yourself.';ok=done;sfx(done?'confirm':'nope');render();}},'Copy code')),
-      h('div',{class:'sect'},ico('retro'),'Restore from a code'),
-      inp,
-      h('p',{class:'note',style:'margin:4px 0'},'Restoring replaces everything on this device: levels, fragments, Stardust and Story progress.'),
-      msg?h('p',{class:'note',style:'margin:4px 0;color:'+(ok?'var(--seal-ok)':'var(--seal)')},msg):'',
+        if(done)markBackedUp();say(done?'Copied! Paste it into Notes to keep it safe.':'Could not copy automatically. Select the code and copy it yourself.',done);}},'Copy code')),
+      h('div',{class:'sect'},ico('retro'),'Automatic backups on this device'),
+      h('p',{class:'note',style:'margin:4px 0'},snaps.length?snaps.length+' kept, newest '+when(snaps[0].at)+'. They live in the same browser storage as your save, so they help with a damaged save, not with a cleared browser.':'None yet. One is made every 10 minutes while you play.'),
+      snaps.length?h('div',{class:'row'},...snaps.map((sn,i)=>h('button',{class:'btn outline',type:'button',onclick:()=>{try{doRestore(sn,'the automatic backup from '+when(sn.at));}catch(e){say(e.message,false);}}},(i?'Older':'Newest')+' · '+when(sn.at)))):null,
+      h('div',{class:'sect'},ico('retro'),'Restore from a code or file'),
+      inp,file,
+      h('p',{class:'note',style:'margin:4px 0'},'Restoring replaces the progress on this device: levels, fragments, Stardust and Story. Your current progress is kept so you can undo it.'),
+      msg?h('p',{class:'note',role:'status',style:'margin:4px 0;color:'+(ok?'var(--seal-ok)':'var(--seal)')},msg):'',
       h('div',{class:'row'},
         h('button',{class:'btn ghost',type:'button','data-back':'1',onclick:()=>(back||goHome)()},'Back'),
-        h('button',{class:'btn',type:'button',onclick:()=>{
-          try{const o=importCode(inp.value);
-            if(!confirm('Replace this device’s progress with the backup? This cannot be undone.'))return;
-            localStorage.setItem(SAVE_KEY,JSON.stringify(o.save));save=loadSave();persist();
-            msg='Restored! '+save.frags.length+' fragments and '+save.dust+' Stardust loaded.';ok=true;sfx('bless');
-          }catch(e){msg=e.message;ok=false;sfx('nope');}
-          render();}},'Restore')));
+        prev?h('button',{class:'btn outline',type:'button',onclick:()=>{if(!confirm('Go back to the progress you had before the last restore ('+when(prev.at)+')?'))return;undoRestore();code=exportCode();say('Undone. Your earlier progress is back.',true);}},'Undo restore'):null,
+        h('button',{class:'btn',type:'button',onclick:()=>{try{doRestore(parseBackup(inp.value),'this backup');}catch(e){say(e.message,false);}}},'Restore')));
   }
   render();openOverlay(root,'mode-select');
+  if(storageState==='unknown')requestPersistentStorage().then(()=>{if(root.isConnected)render();});
 }
 const fragById=id=>id==null?null:save.frags.find(f=>f.id===id)||null;
 const equippedBy=f=>CH_ORDER.find(id=>save.chars[id].slots[f.slot]===f.id)||null;
@@ -1665,12 +1737,12 @@ function giveMp(ids,n){if(n<=0)return;for(const id of ids){const c=save.chars[id
 const KEEP_XP=120; // one Keepsake = 120 Memories to one character
 function rewardLines(r){const L=[];if(!r)return L;
   if(r.dust)L.push('+'+r.dust+' Stardust');if(r.keep)L.push('+'+r.keep+' Keepsake'+(r.keep>1?'s':''));
-  if(r.mpAll)L.push('Mastery +'+r.mpAll+' for all eight');if(r.bond)for(const b of r.bond)L.push('Bond +1 · '+nameOf(b));if(r.xp)for(const b in r.xp)L.push('+'+r.xp[b]+' Memories · '+nameOf(b));if(r.rec)L.push('Journal · '+r.rec.title);if(r.frag)L.push(r.frag==='star'?'a Star-born Fragment':'a Star Fragment');return L;}
+  if(r.mpAll)L.push('Mastery +'+r.mpAll+' for all eight');if(r.bond)for(const b of r.bond)L.push('Bond with '+nameOf(b)+' +1');if(r.xp)for(const b in r.xp)L.push('+'+r.xp[b]+' Memories · '+nameOf(b));if(r.rec)L.push('Journal · '+r.rec.title);if(r.frag)L.push(r.frag==='star'?'a Star-born Fragment':'a Star Fragment');return L;}
 function grantReward(r,key){
   if(key&&save.claims[key])return null;
-  if(r.dust)save.dust+=r.dust;if(r.keep)save.keep=(save.keep|0)+r.keep;if(r.mpAll)giveMp(CH_ORDER,r.mpAll);if(r.bond)for(const b of r.bond)bondUp(b);if(r.xp)for(const b in r.xp)giveXp([b],r.xp[b]);if(r.rec)mxS().mem[r.rec.id]=Date.now();
+  if(r.dust)save.dust+=r.dust;if(r.keep)save.keep=(save.keep|0)+r.keep;if(r.mpAll)giveMp(CH_ORDER,r.mpAll);const bl=r.bond?r.bond.map(bondGainLine):[];if(r.xp)for(const b in r.xp)giveXp([b],r.xp[b]);if(r.rec)mxS().mem[r.rec.id]=Date.now();
   if(r.frag){const was=save.frags.length;gainFrag(r.frag);if(save.frags.length===was&&r.frag==='star')save.dust+=80;}
-  if(key)save.claims[key]=Date.now();persist();return rewardLines(r);}
+  if(key)save.claims[key]=Date.now();persist();const out=rewardLines(Object.assign({},r,{bond:null}));out.push(...bl);return out;}
 const claimed=key=>!!save.claims[key];
 // use n Keepsakes on one character; returns {used, from, to}
 function useKeepsakes(id,n){const c=save.chars[id],from=c.lvl;let used=0;
@@ -3193,9 +3265,9 @@ function drawCutPanel(){
     else if(id==='npc')drawNPC(g,X,Y,{...oo,frozen:fz||oo.frozen,face});
     else if(id==='beam'){g.save();g.translate(X,Y);g.rotate(oo.rot||0.25);g.fillStyle=fz?'#7E8BA6':'#8A6A4A';g.fillRect(-46,-5,92,10);g.fillStyle=fz?'#5E6A82':'#5A4030';g.fillRect(-46,-5,92,2);g.fillRect(-46,3,92,2);g.restore();}
     else if(CHARS[id]){const glow=oo.glow;if(glow){const gl=g.createRadialGradient(X,Y-6,2,X,Y-6,40);gl.addColorStop(0,'rgba(191,243,255,0.7)');gl.addColorStop(1,'rgba(191,243,255,0)');g.fillStyle=gl;g.fillRect(X-40,Y-46,80,80);}
-      if(oo.grey){g.save();if('filter' in g)g.filter='grayscale(1) brightness(1.15)';}
-      drawChar(g,id,X,Y,{face:face||1,scale:oo.scale||1.6,t:ct,unarmed:!!oo.unarmed,moving:!!oo.moving&&!fz,fall:oo.fall,lunge:oo.lunge,hurt:oo.hurt,alpha:oo.grey&&!('filter' in g)?0.55:1});
-      if(oo.grey)g.restore();}}
+      const co={face:face||1,scale:oo.scale||1.6,t:ct,unarmed:!!oo.unarmed,moving:!!oo.moving&&!fz,fall:oo.fall,lunge:oo.lunge,hurt:oo.hurt,alpha:oo.grey&&!('filter' in g)?0.55:1};
+      if(oo.grey&&'filter' in g)drawGreyed(g,X,Y,40*co.scale,(gg,x,y)=>drawChar(gg,id,x,y,co));
+      else drawChar(g,id,X,Y,co);}}
   if(P.fire&&!fz){const gr=g.createLinearGradient(0,H,0,H*0.25);gr.addColorStop(0,'rgba(255,90,30,0.32)');gr.addColorStop(1,'rgba(255,90,30,0)');g.fillStyle=gr;g.fillRect(0,0,W,H);
     for(let i=0;i<46;i++){const x=(i*131+t*24+Math.sin(t*2+i)*14)%W,y=H-((i*71+t*90)%H);g.fillStyle=i%3?'rgba(255,170,70,0.9)':'rgba(255,230,150,0.9)';g.fillRect(x,y,2,2);}}
   if(P.crack){const k=fz?0.9:0.6+0.4*Math.sin(t*9);g.save();g.strokeStyle='rgba(255,120,210,'+k+')';g.lineWidth=4;g.shadowColor='#FF79C8';g.shadowBlur=18;g.beginPath();
@@ -3252,9 +3324,9 @@ function initMission(def){
     p.x=m.obj.x+40;p.y=m.obj.y-10;
     m.goals=[{esc:1,t:'Get Kairos to St. Lucia’s'}];
   } else if(M.type==='defense'){
-    m.obj={x:W/2,y:AY0+44,r:34,hp:100,max:100,ward:1,label:'Patients’ wing'};
+    m.obj={x:W/2,y:AY0+44,r:34,hp:100,max:100,ward:1,label:M.wardLabel||'Patients’ wing'};
     p.x=W/2;p.y=H*0.55;m.timer=M.dur;
-    m.goals=[{def:1,t:M.crowd?'Protect the crowd':'Protect the patients’ wing'}];
+    m.goals=[{def:1,t:M.crowd?'Protect the crowd':M.wardLabel?'Protect '+M.wardLabel.toLowerCase():'Protect the patients’ wing'}];
   } else if(M.type==='walk'||M.type==='fight'){initExtra(m);
   } else if(M.type==='split'){initSplit(m);
   } else if(M.type==='stealth'){
@@ -3370,6 +3442,10 @@ function drawMission(c){
   else if(g&&g.push&&m.beam){drawVoice(c,m.beam.x+50,m.beam.y-30,T,0.7,true);c.strokeStyle=alpha(C.gold,0.5+0.4*Math.sin(T*6));c.lineWidth=2;circ(c,m.beam.x,m.beam.y,m.beam.r+8);c.stroke();}
   if(m.obj){const o=m.obj;
     if(o.ward&&m.M.crowd)drawCrowd(c,o,m);
+    else if(o.ward&&m.M.ward==='oven'){ // Bram's brick oven on the roof
+      c.fillStyle='#24160C';c.fillRect(o.x-30,o.y-34,60,48);c.fillStyle='#9A4A32';c.fillRect(o.x-28,o.y-32,56,44);c.fillStyle='#6E3222';for(let r=0;r<5;r++)c.fillRect(o.x-28,o.y-32+r*9,56,1);
+      c.fillStyle='#FFB65C';c.fillRect(o.x-11,o.y-8,22,16);c.fillStyle='#FFE6A3';c.fillRect(o.x-6,o.y-4,12,8);lightPool(c,o.x,o.y,44+Math.sin(T*5)*3,'#FFB65C',0.35);
+      if(m.objHit>0){c.fillStyle=alpha(C.danger,m.objHit*1.5);c.fillRect(o.x-30,o.y-34,60,48);}}
     else if(o.ward){c.fillStyle='#E7DCC6';c.fillRect(o.x-56,o.y-34,112,50);c.fillStyle='#B98C6A';c.fillRect(o.x-60,o.y-40,120,8);c.fillStyle='#5A4030';c.fillRect(o.x-12,o.y-4,24,20);
       c.fillStyle=C.hp;c.fillRect(o.x-3,o.y-28,6,16);c.fillRect(o.x-8,o.y-23,16,6);
       if(m.objHit>0){c.fillStyle=alpha(C.danger,m.objHit*1.5);c.fillRect(o.x-60,o.y-40,120,58);}}
@@ -3392,7 +3468,7 @@ function drawMissionHUD(){
   let txt=g?g.t:'',sub='';
   if(m.type==='frozen'&&m.M.civ)sub='Saved '+m.saved+' / '+m.M.civ+(m.carry?' · carrying one':'');
   if(m.type==='escort')sub=(m.obj.carried?'Bram is carrying him (no attacks)':(m.obj.hide?'Bram is hiding. Clear the Vices!':'Bram is moving'))+' · Carry '+Math.max(0,Math.ceil(m.obj.hp))+'%';
-  if(m.type==='defense')sub=(m.M.crowd?'Crowd ':'Wing ')+Math.max(0,Math.ceil(m.obj.hp))+'% · hold for '+Math.ceil(Math.max(0,m.timer))+'s';
+  if(m.type==='defense')sub=(m.M.crowd?'Crowd ':m.M.wardLabel?m.M.wardLabel+' ':'Wing ')+Math.max(0,Math.ceil(m.obj.hp))+'% · hold for '+Math.ceil(Math.max(0,m.timer))+'s';
   if(m.type==='split')sub=splitSub(m);
   if(m.type==='walk'||m.type==='fight')sub=extraSub(m);
   if(m.type==='stealth')sub=m.freezeT>0?'Time stopped · '+m.freezeT.toFixed(1)+'s':(m.fcd>0?'Time stop recharging '+Math.ceil(m.fcd)+'s':(isTouch?'Sun button: stop time':'Q: stop time'))+(m.caught?' · spotted '+m.caught+'×':'');
@@ -3471,6 +3547,12 @@ const BOND_FX=0.04,BOND_MAX=5;
 function bondOf(id){return (save.bonds&&save.bonds[id])|0;}
 function bondUp(id){save.bonds=save.bonds||{};save.bonds[id]=Math.min(BOND_MAX,bondOf(id)+1);persist();return save.bonds[id];}
 function bondHearts(l){return '♥'.repeat(l)+'♡'.repeat(BOND_MAX-l);}
+// Bond is how close a character is to Kairos (0–5 hearts). Each heart: +4% HP and ATK in story battles (Chapter 1 and Bond Story fights).
+// A character who isn't there (Lucas, while Horaios holds him) doesn't grow closer in person: the Bond waits and is added when he is back.
+const bondAvailable=id=>!(id==='lucan'&&typeof lucasState==='function'&&lucasState()==='captured');
+function bondGainLine(id){if(!bondAvailable(id)){save.bondPending=save.bondPending||{};save.bondPending[id]=(save.bondPending[id]|0)+1;persist();return 'Bond with '+nameOf(id)+' +1, kept until he is back';}
+  const was=bondOf(id),l=bondUp(id);return l>was?'Bond with '+nameOf(id)+' '+bondHearts(l)+' (stronger in story battles)':'Bond with '+nameOf(id)+' is already full '+bondHearts(l);}
+function applyPendingBonds(){const P=save.bondPending;if(!P)return;let ch=false;for(const id in P)if(bondAvailable(id)){for(let i=0;i<P[id];i++)bondUp(id);delete P[id];ch=true;}if(ch)persist();}
 function showBond(o,done){
   const left=o.choices.slice();let n=Math.min(o.n||2,left.length);
   const render=()=>{
@@ -3639,10 +3721,22 @@ function lossEnd(){
   state='panel';const cb=run.onDone;run.onDone=null;
   if(cb)cb(true);else goHome();
 }
+// draw a figure centred near (x,y) (within R units) as ONE grey image: one filter pass instead of one per shape
+const greyCv=document.createElement('canvas'),greyG=greyCv.getContext('2d');
+function drawGreyed(g,x,y,R,draw){
+  const m=g.getTransform(),k=Math.min(4,Math.max(1,Math.hypot(m.a,m.b))),S=Math.ceil(R*2*k);
+  if(greyCv.width<S||greyCv.height<S){greyCv.width=Math.max(greyCv.width,S);greyCv.height=Math.max(greyCv.height,S);}
+  greyG.setTransform(1,0,0,1,0,0);greyG.globalAlpha=1;greyG.filter='none';greyG.clearRect(0,0,greyCv.width,greyCv.height);greyG.setTransform(k,0,0,k,0,0);
+  draw(greyG,R,R);
+  g.save();g.filter='grayscale(1) brightness(1.15)';g.drawImage(greyCv,0,0,S,S,x-R,y-R,R*2,R*2);g.restore();}
 function drawStatues(c){
   const b=boss;if(!b||!b.statues)return;const F='filter' in c;
-  for(const s of b.statues){c.save();if(F)c.filter='grayscale(1) brightness(1.15)';
-    drawChar(c,s.id,s.x,s.y,{face:s.face,t:0,alpha:F?0.95:0.5});c.restore();}
+  for(const s of b.statues){
+    if(F){const m=c.getTransform(),k=Math.min(4,Math.max(1,Math.hypot(m.a,m.b))),R=56,S=Math.ceil(R*2*k);
+      if(!s.img||s.img.width!==S){const tmp=document.createElement('canvas');tmp.width=tmp.height=S;const tg=tmp.getContext('2d');tg.setTransform(k,0,0,k,0,0);drawChar(tg,s.id,R,R,{face:s.face,t:0,alpha:0.95});
+        s.img=document.createElement('canvas');s.img.width=s.img.height=S;const ig=s.img.getContext('2d');ig.filter='grayscale(1) brightness(1.15)';ig.drawImage(tmp,0,0);}
+      c.drawImage(s.img,0,0,S,S,s.x-R,s.y-R,R*2,R*2);}
+    else{c.save();drawChar(c,s.id,s.x,s.y,{face:s.face,t:0,alpha:0.5});c.restore();}}
 }
 function drawCutExtra(g,id,X,Y,t,o){
   const s=o.scale||1;
@@ -4007,7 +4101,7 @@ function extraSub(m){
 // State lives in save.mx (see docs/meridian/MERIDIAN_WORLD_STRUCTURE.md). Writing follows Lore v1.1: the Mercy is clues only.
 Object.assign(SPK,{mxlaund:{name:'Laundress',col:'paper'},mxlamp:{name:'Lamplighter',col:'paper'},mxshop:{name:'Shopkeeper',col:'paper'},mxkid:{name:'Kid with a hoop',col:'paper'},mxcclerk:{name:'Counter clerk',col:'ash'},mxfiler:{name:'Filing clerk',col:'ash'},mxwait:{name:'Man with a ticket',col:'paper'},mxtobin:{name:'Tobin, apprentice',col:'paper'},mxpip:{name:'Pip',col:'paper'},mxwren:{name:'Wren',col:'paper'},mxbaker:{name:'Baker next door',col:'paper'},nurse:{name:'Ward nurse',col:'paper'},fwoman:{name:'Woman with a basket',col:'paper'},mxpat:{name:'Patient',col:'paper'},
   lseller:{name:'Lantern seller',col:'paper'},gsister:{name:'Sister at the gate',col:'paper'},mxsold:{name:'Garrison soldier',col:'earth'},
-  mxrosa:{name:'Rosa',col:'paper'},mxotti:{name:'Ottilie',col:'paper'},mxmv:{name:'A man’s voice',col:'ash'},mxhood:{name:'A woman in grey',col:'ash'},mxhanne:{name:'Old Hanne',col:'paper'},mxpim:{name:'Pim, junior clerk',col:'ash'},mxambr:{name:'Mr. Ambrose',col:'ash'},mxivo:{name:'Ivo the traveller',col:'paper'},mxfen:{name:'Fen',col:'paper'},mxmat:{name:'Old Matteo',col:'paper'},mxfish:{name:'Fish vendor',col:'paper'},mxtess:{name:'Tessa',col:'paper'}});
+  mxrosa:{name:'Rosa',col:'paper'},mxotti:{name:'Ottilie',col:'paper'},mxinsp:{name:'Office inspector',col:'ash'},mxpatrol:{name:'Garrison patrol',col:'earth'},mxguard:{name:'Door guard',col:'earth'},mxmv:{name:'A man’s voice',col:'ash'},mxhood:{name:'A woman in grey',col:'ash'},mxhanne:{name:'Old Hanne',col:'paper'},mxpim:{name:'Pim, junior clerk',col:'ash'},mxambr:{name:'Mr. Ambrose',col:'ash'},mxivo:{name:'Ivo the traveller',col:'paper'},mxfen:{name:'Fen',col:'paper'},mxmat:{name:'Old Matteo',col:'paper'},mxfish:{name:'Fish vendor',col:'paper'},mxtess:{name:'Tessa',col:'paper'}});
 function mxS(){const x=save.mx||(save.mx={v:1,at:'market',seen:{},talk:{},found:{},q:{},items:{},f:{}});
   for(const k of ['seen','talk','found','q','items','f','qseen','mem'])if(!x[k]||typeof x[k]!=='object'||Array.isArray(x[k]))x[k]={};if(!MX_DISTRICTS[x.at])x.at='market';return x;}
 // story flags that outlive the hub (set by quests' `sets`, and later by Chapter 2, e.g. 'ch2.lucasRescued'). save.story, created on first use
@@ -4037,6 +4131,7 @@ const MX_DISTRICTS={
   hesper:{name:'St. Hesper’s',theme:'orphanage',arrive:[0.5,0.62],blurb:'The orphanage where Kairos grew up, at dusk.',exits:[['w','plaza'],['e','tower']],solids:[],painted:'hesper'},
   ward:{name:'St. Lucia’s',theme:'hospital',arrive:[0.5,0.66],blurb:'The east ward, between visiting hours.',exits:[['n','market'],['e','ashlane']]},
 };
+const MX_WATCHED=['market','plaza','office','yard']; // after Chapter 1, officials walk these districts (see MX_FUG)
 const MX_ORDER=['market','plaza','yard','chapel','ward','hesper','office','ashlane','tower','oldchapel','annex'];
 // Know the Streets was written for the first five districts; it stays that way for every save
 const MX_STREETS=['market','plaza','yard','chapel','ward'];
@@ -4093,7 +4188,99 @@ function mxOfferAt(key){for(const id in MX_QUESTS){const Q=MX_QUESTS[id];if(Q.np
 function mxNpcWanted(key){if(mxOfferAt(key)||mxQLine(key))return true;const x=mxS();
   for(const id in MX_QUESTS){const q=x.q[id];if(!q||q.s==='done')continue;const sp=MX_QUESTS[id].steps[q.n];if(!sp)continue;
     if(sp.npc===key&&!mxStepOk(sp))return true;if(sp.objs&&sp.objs.some(o=>o.npc===key&&!o.ok()))return true;}return false;}
+// Follow-ups after a finished story. The first conversation of each entry shows "?" until heard; after that they mix with small talk.
+const MX_POST={
+  'tower.h_agnes':[
+    {q:'agnes_handmade',lines:[[['ines','The sling’s holding. I checked it twice this morning. Then once more. …Don’t.']],[['ines','Bram found the star. He didn’t say anything. He just did a very small nod. I’ll take it.']],[['ines','Still have the practice piece? Good. Neither of us mentions it.']]]},
+    {q:'bram_bread',lines:[[['ines','Corporal baked six loaves. I had two. That information is classified.']]]}],
+  'tower.h_bram':[
+    {q:'bram_bread',lines:[[['bram','I wrote Gran’s recipe on the inside of my shield strap. In case I forget again. Cardamom first. Well. Cardamom somewhere.']],[['bram','The oven bricks are still warm in the mornings. I keep it lit a little. Makes it feel like somebody lives here.']],[['bram','Next time I see Mum, I’ll bring her a loaf. Even if she calls me Tomas. Maybe especially then.']]]},
+    {q:'agnes_handmade',lines:[[['bram','Sarge has a new sling. There’s a star on it. I did not see the star. I am a very good soldier.']]]},
+    {q:'lucas_mem_bread',lines:[[['bram','Lucas blamed PIGEONS? When he gets back I am never letting him forget that.'],['bram','…Sorry. Bad word. I’m never letting him not remember that.']]]}],
+  'tower.h_noemi':[
+    {q:'lark_couldnt_save',lines:[[['noemi','ODELL. Still on my wrist. I go over it every morning so it doesn’t fade.']],[['noemi','Week six still bothers me. Not because of what’s missing. Because nobody noticed it was missing.']],[['noemi','Theo’s box sits on the windowsill, pointed at the city. He says it’s “listening”. I’ve stopped asking.']]]}],
+  'tower.h_theo':[
+    {q:'lark_couldnt_save',lines:[[['theo','“Emptier than empty.” I’m trying to build something that measures what isn’t there. So far it measures my sandwich.']],[['theo','She wrote his name on her wrist. I wrote it in the margin of every notebook I own. We’re a matched set.']]]},
+    {q:'dess_experiment',lines:[[['theo','Dess showed me her readings from the annex. I didn’t make a single joke. That’s how you know it’s serious.']]]}],
+  'tower.h_cass':[
+    {q:'cass_prayer',lines:[[['cass','Light before the lamps. I say it at night now. Out loud. It sounds different under a roof with holes in it.']],[['cass','I still believe. I believe with my eyes open now. It’s harder. It’s better.']],[['cass','Ottilie sends bread with the lamplighter. I didn’t ask her to. I didn’t tell her to stop.']]]},
+    {q:'side_unofficial_prayer',lines:[[['cass','The people in grey at St. Maren’s. I don’t blame them. I just won’t pray for what they pray for.']]]}],
+  'tower.h_dess':[
+    {q:'dess_experiment',lines:[[['dess','I keep the research log under my pillow. Sorry. I know that’s strange. It feels safer than a drawer.']],[['dess','The gold core doesn’t glow for me any more. I think it showed me what I could carry. Or what it could.']],[['dess','Smart enough to guess. I’m working on the other part.']]]},
+    {q:'lucas_mem_room',lines:[[['dess','You remember Lucas the way the cores remember people. All at once, very clearly. I hope it doesn’t hurt as much as it looks.']]]}],
+  'oldchapel.ottilie':[{q:'cass_prayer',lines:[[['mxotti','Your Sister Cassie prays louder than anyone who has ever been in here. The pigeons have started leaving.']]]}],
+  'hesper.agathe':[{q:'bram_bread',lines:[[['matron','Three spoons of my honey. Was it worth it? …Good. Tell the big one he can come to my kitchen door himself next time.']]]}],
+  'ward.nurse':[{q:'lark_couldnt_save',lines:[[['nurse','Mr. Odell’s folder came back to the desk. In order. Somebody had written “Don’t file this yet” on it again. I haven’t.']]]}]};
+const mxPostSeen=(key,q)=>mxF('post:'+key+':'+q);
+const mxPostFresh=key=>(MX_POST[key]||[]).some(e=>mxDoneQ(e.q)&&!mxPostSeen(key,e.q));
+function mxPostLine(key){const L=(MX_POST[key]||[]).filter(e=>mxDoneQ(e.q));if(!L.length)return null;
+  const un=L.find(e=>!mxPostSeen(key,e.q));if(un)return {lines:un.lines[0],then:()=>{mxSet('post:'+key+':'+un.q);persist();}};
+  const t=mxTalked(key);if(t%2)return null;const pool=L.flatMap(e=>e.lines);return {lines:pool[(t>>1)%pool.length],then:null};}
+const MX_FUG={
+  'market.matteo':[[['mxmat','Keep your hood up, boy. Half the Ring has your face on paper and the other half pretends it can’t read.']],
+    [['mxmat','They say you knocked the Registry down. I say the Registry was always going to fall on somebody.']],
+    [['mxmat','I went to the Festival. I know I did. I just can’t tell you what I did there.']]],
+  'market.rosa':[[['mxrosa','I don’t believe a word on those posters. Sit down. Eat something before you go.']],
+    [['mxrosa','Tessa’s mother comes by for bread. She’s kinder than she used to be. Emptier, too. I don’t like that I noticed.']],
+    [['mxrosa','I didn’t take the cup. I never do. Somebody on this Ring has to remember what things cost.']]],
+  'market.fish':[[['mxfish','Haven’t seen you. Never saw you. Mackerel’s three.']],
+    [['mxfish','Garrison came by asking about a boy with a scarf. I sold them a cod.']],
+    [['mxfish','Worked right through the Festival. Best day for selling. Missed the eclipse. Missed the cup too.']]],
+  'market.tessa':[[['mxtess','Kairos! Mama doesn’t remember why she was crying at the Festival. I do. I’m keeping it for her.']],
+    [['mxtess','The posters got your face wrong. Your eyebrows are better than that.']],
+    [['mxtess','Everyone says you’re bad now. I told them you carried my lantern. They didn’t listen.']]],
+  'plaza.lseller':[[['lseller','Sold every lantern for the Festival. Then the sky tore, and half of them burned. I’m making more.']],
+    [['lseller','The Office walks this Square twice a day now. Hold a lantern and look like you’re buying it.']],
+    [['lseller','I kept a blank lantern back. Nobody’s asked for it. I think it’s yours.']]],
+  'plaza.fwoman':[[['fwoman','Front of the line again this year. I can’t remember a word of the sermon. Isn’t that funny.']],
+    [['fwoman','My little one had her first cup. She sleeps so well now.']],
+    [['fwoman','They say heretics broke the Registry. Who would want to break a list of birthdays?']]],
+  'yard.sold':[[['mxsold','Didn’t see you. The Sergeant’s friends are the Sergeant’s business.']],
+    [['mxsold','There’s a drawing of you on the barracks wall. Bad likeness. Keep walking.']],
+    [['mxsold','Eleven a night, and five rifts at noon on Festival day. Nobody says “none in the streets” any more.']]],
+  'chapel.sister':[[['gsister','Father Vane preaches against you every morning now. I pray for you every evening. We are both very busy.']],
+    [['gsister','The garden is open to everyone until vespers. Everyone.']],
+    [['gsister','Sister Cassie set her badge down on the fountain so carefully. I keep thinking about how carefully.']]],
+  'chapel.believer':[[['believer','The Festival was beautiful. I don’t remember all of it. That’s how you know it worked.']],
+    [['believer','They say the Registry fell. The Church will write us all down again. It always does.']]],
+  'hesper.agathe':[[['matron','Kairos. Wipe your feet. You’re still a St. Hesper’s boy, posters or no posters.']],
+    [['matron','The Office came asking about you. I told them I raise children, not suspects.']],
+    [['matron','They say you took the Crane boy. I watched you two share a room for nine years. I know better.']],
+    [['matron','Every Sunday I gave you the spoon, and you never felt a thing. I used to think that was a blessing. Lately I wonder.']]],
+  'hesper.wren':[[['mxwren','Are you a criminal now? Sister says not to ask. I’m asking.']],
+    [['mxwren','The Garrison men looked for you in the yard. I hid too. They didn’t find me either.']],
+    [['mxwren','Pip says the clock tower is haunted now. I said it’s probably just you.']]],
+  'hesper.baker2':[[['mxbaker','Bread still goes over at six. Somebody up that tower takes the end pieces. I’ve started leaving an extra.']],
+    [['mxbaker','Garrison asked if I’d seen you. I said I see a lot of sparrows.']],
+    [['mxbaker','Honey rolls. Take two. Running is hungry work.']]],
+  'ashlane.laundress':[[['mxlaund','If anyone asks, you’re my nephew and you’re carrying a basket. Carry a basket.']],
+    [['mxlaund','Office men walked the Lane at dawn. They don’t look up. Nobody ever looks at washing.']],
+    [['mxlaund','Mind the sheets. Wanted or not, if they touch the cobbles, they go back in the tub, and so do you.']]],
+  'ashlane.lamplighter':[[['mxlamp','I light number seven early now. Gives a person a shadow to walk in.']],
+    [['mxlamp','All nine lamps went out on Festival night. First time in twenty years. I lit them again anyway.']]],
+  'ashlane.hoopkid':[[['mxkid','You’re on a poster! Mum says I’m not allowed to want your autograph.']],
+    [['mxkid','Bet you can’t keep a hoop going the whole Lane. Bet you can’t do it wanted, either.']]],
+  'office.counter':[[['mxcclerk','Take a number. …No. Don’t take a number. Turn around, keep your hood up, and walk.']],
+    [['mxcclerk','Every form has a new box now: “Have you seen this man?” I tick “no”. I tick it for everyone.']],
+    [['mxcclerk','Copies come up from the Registry cellar every morning. Half of them blank. Don’t ask me why.']]],
+  'office.filer':[[['mxfiler','Half the drawers came back from the Registry ruins empty. Misfiled, I say. Misfiled very hard.']],
+    [['mxfiler','I could find your record blindfolded. That’s the trouble. There isn’t one.']]],
+  'office.waiter':[[['mxwait','Number two hundred and six. The Registry fell down and they are still serving forty-one.']],
+    [['mxwait','I came to change one letter in my name. Now they want proof I was born. I was there.']]],
+  'ward.nurse':[[['nurse','Dr. Lark isn’t here. Dr. Lark was never here. Dr. Lark left a very neat set of notes.']],
+    [['nurse','The Office went through every drawer on the ward. They didn’t find what they wanted. I think she took it with her.']]],
+  'ward.pat':[[['mxpat','Is it Tuesday? …It isn’t, is it. Somebody told me something happened at the Festival. I can’t remember who.']],
+    [['mxpat','You look like someone. Don’t worry. I won’t remember who.']]],
+  'plaza.inspector':[[['mxinsp','Office of Correction. You. Hood down.'],['kairos','Burns. Kitchen fire. People stare.'],['mxinsp','…Move along.']],
+    [['mxinsp','I never forget a face. I’m told that’s unusual in this city.'],['kairos','Lucky you.']],
+    [['mxinsp','Did we speak yesterday? …No matter. Move along.']]],
+  'market.patrol':[[['mxpatrol','Papers? …Never mind. Everyone on this Ring looks guilty since the Festival.']],
+    [['mxpatrol','If you see a boy with a violet scarf, you report it. Nice scarf, by the way.']]],
+  'office.doorguard':[[['mxguard','Name? …Forget it. Queue’s that way. Everyone in it looks like a heretic.']],
+    [['mxguard','Records upstairs are closed to the public since the Registry. Not that you’d want them.']]]};
 const mxQLine=key=>MX_QLINES.find(e=>e.npc===key&&mxStepOf(e.q)===e.step&&!(e.flag&&mxF(e.flag)))||null;
+// a person whose conversation can reveal a story (the quest names them in talkFind) shows ?; only while that story can be found
+const mxTalkHint=key=>Object.keys(MX_QUESTS).some(id=>{const Q=MX_QUESTS[id];return Q.talkFind===key&&mxQState(id)==='undiscovered';});
 const mxStepOk=sp=>sp.objs?sp.objs.every(o=>o.ok()):!!(sp.ok&&sp.ok());
 const mxStepProg=sp=>sp.prog?sp.prog():sp.objs?sp.objs.filter(o=>o.ok()).length+' / '+sp.objs.length:null;
 // objective builders for content: flags, carried items, records, readables, being in a district, winning a hub fight
@@ -4117,7 +4304,7 @@ Object.assign(MX_QUESTS,{
     reward:{bond:['ines'],dust:40,keep:1,frag:'chest',rec:{id:'rec.agnes',title:'Agnes’s practice piece'}},sets:['agnes.crafted']},
   bram_bread:{title:'The Smell of Fresh Bread',kind:'bond',char:'bram',when:['fugitive'],at:'tower',npc:'tower.h_bram',giver:'Bram · the Clock Tower',
     desc:'The bakery by St. Hesper’s smells like Bram’s grandmother’s kitchen, and he can’t remember the whole recipe.',
-    found:()=>!!(mxS().looked||{})['look.bakery.after']||mxTalked('tower.h_bram')>0,
+    found:()=>!!(mxS().looked||{})['look.bakery.after']||mxTalked('tower.h_bram')>0,talkFind:'tower.h_bram',
     offer:[['bram','Kairos. You came up past the bakery, right? Did you smell it?'],['kairos','The six o’clock batch.'],
       ['bram','There’s something else in it. Sweet. My gran put it in hers.'],
       ['bram','I can tell you everything about her kitchen. Blue tiles. The dent in the big pot. But not the recipe. I remember the pot and not the bread. That’s backwards.'],
@@ -4229,8 +4416,8 @@ const MX_QLINES=[
   {q:'side_unofficial_prayer',step:'witness',npc:'oldchapel.grey1',lines:[['n','The woman in grey looks up. She doesn’t run.']],then:upWitness},
   {q:'side_morning_after',step:'tell',npc:'plaza.hanne',lines:[['mxhanne','The watch. The tile. The whistle. Help me put them in order. My head does it backwards now.']],
     then:sqPuzzle({head:'The Morning After',title:'Hanne’s night',exit:1,rounds:[
-      {q:'What happened first that night?',hint:'The watch stopped at 11:52.',opts:['The rain','The sky cracked over the Ring','The fountain'],a:1,no:'Hanne: No, love. Before that. Look at the watch.'},
-      {q:'And then?',hint:'The whistle: “found, the night of the cracks”.',opts:['Shapes poured out of the cracks into the streets','The sun came up'],a:0,no:'Hanne: Not yet. It was still night. The whistle, love.'},
+      {q:'What happened first that night?',opts:['The rain','The sky cracked over the Ring','The fountain'],a:1,no:'Hanne: No, love. Before that. Look at the watch.'},
+      {q:'And then?',opts:['Shapes poured out of the cracks into the streets','The sun came up'],a:0,no:'Hanne: Not yet. It was still night. The whistle, love.'},
       {q:'Then the rain came. And in the morning?',hint:'The tile: “found in the Square, in the morning, under something new”.',opts:['The Square was empty','There was a fountain where there hadn’t been one','Everyone had left the city'],a:1,ok:'Hanne: A fountain. Right there, like it had always been. Everybody said it was a gift.'}]},'ma_order',['That night, in order','Hanne holds the watch for a long time.'])},
   {q:'side_names_paper',step:'gather',npc:'chapel.sister',flag:'np_bapt',lines:[['kairos','Sister, do you keep the baptism copies?'],['gsister','For every child baptised here since before I was born. Venn… Ada, daughter of Corin Venn. Baptised the eleventh of Libra.'],['gsister','Copy it. Don’t take it.']]},
   {q:'side_names_paper',step:'compare',npc:'office.pim',lines:[['mxpim','Okay. Okay. Three pieces of paper, one woman. Help me.']],
@@ -4256,7 +4443,7 @@ const MX_QLINES=[
 Object.assign(MX_QUESTS,{
   lark_couldnt_save:{title:'The Things We Couldn’t Save',kind:'bond',char:'noemi',when:['fugitive'],at:'tower',npc:'tower.h_noemi',giver:'Naomi · the Clock Tower',
     desc:'Before the Festival, Naomi and Theo had a patient they could not help. Four pages are missing from his folder, and Naomi wants them back in order.',
-    found:()=>mxF('lt_chart')||mxTalked('tower.h_noemi')>=2,
+    found:()=>mxF('lt_chart')||mxTalked('tower.h_noemi')>=2,talkFind:'tower.h_noemi',
     offer:[['noemi','Kairos. Can I borrow you for a night? Not a fight. Paperwork. Worse.'],
       ['noemi','Before the Festival I had a patient. Mr. Odell. Retired teacher. He forgot his street, then his daughter, then the ward he was lying in.'],
       ['noemi','Theo measured him every two weeks. We did everything right, and it didn’t matter.'],
@@ -4290,7 +4477,7 @@ Object.assign(MX_QUESTS,{
 const DE_CORES=['violet','cracked','gold'];
 function dessRebuild(){showPuzzle({head:'The Girl in the Experiment',title:'The room, rebuilt',exit:1,rounds:[
     {q:'“Cores arranged around the subject, facing in.” Where does the chair go?',opts:['Against the back wall','In the middle of the ring','Behind the glass'],a:1,no:'Dess: Around the subject. Facing in. The chair has to be in the middle.'},
-    {q:'Which core goes closest to the chair?',hint:'Observation log: “Always the gold one. She will not sing for the others.”',opts:['The violet core','The gold core','The cracked core'],a:1,no:'Dess: Read the log again. She only sang for one of them.'},
+    {q:'Which core goes closest to the chair?',opts:['The violet core','The gold core','The cracked core'],a:1,no:'Dess: The observation log. “Always the gold one. She will not sing for the others.”'},
     {q:'And the last line of the procedure?',hint:'“Subject asked for her mother. Told her mother is close.”',opts:['Her mother was in the next room','A core was placed in her hands','Nobody answered her'],a:1,ok:'Dess: He put a core in her hands. And told her it was her mother.',no:'Dess: …No. Read the next line. I know it’s there. I don’t want to read it either.'}]},
   ok=>{state='play';atk.down=false;last=performance.now();if(ok){mxSet('de_rebuilt');persist();setBanner('The room is the way it was','Three cores on the ring. Wake them the way he did.',2.6);mxTick();}});}
 function dessMemory(){mxScene([pn('annex',[['dess',0.5,0.7,-1]],[
@@ -4371,7 +4558,7 @@ const LUCAS_MEM_SPOTS=[['lucas_mem_bread','bread',0.28,0.42,'a loose board',[['n
 Object.assign(MX_QUESTS,{
   cass_prayer:{title:'A Prayer of Her Own',kind:'bond',char:'cass',when:['fugitive'],at:'tower',npc:'tower.h_cass',giver:'Cassie · the Clock Tower',
     desc:'A prayer book from a chapel the Church closed. Cassie knows every word of its prayer. She cannot remember who taught it to her.',
-    found:()=>!!(mxS().looked||{})['look.prayerbook']||mxTalked('tower.h_cass')>=2,
+    found:()=>!!(mxS().looked||{})['look.prayerbook']||mxTalked('tower.h_cass')>=2,talkFind:'tower.h_cass',
     onStart:()=>{storyFlags()['oldchapel.found']=storyFlags()['oldchapel.found']||Date.now();},
     offer:[['cass','Kairos. That book. Where did you—'],['cass','Light before the lamps. Door before the wall. Name before the paper. Keep me.'],
       ['cass','My mother taught me that one. I know her voice saying it. I don’t know her face. The Office calls that grace.'],
@@ -4401,7 +4588,7 @@ function cassEnding(){mxScene([pn('oldchapel',[['kairos',0.3,0.72,1],['cass',0.5
 function larkOrder(){showPuzzle({head:'The Things We Couldn’t Save',title:'Mr. Odell’s folder',exit:1,rounds:[
     {q:'Four pages on the desk. Which comes first?',opts:['“Calls the nurses by his pupils’ names.”','“Could not find his way home from the bakery.”','“Asks his daughter’s name. Twice.”'],a:1,no:'Naomi: No. Earlier than that. The day his daughter brought him in.'},
     {q:'And after the bakery?',opts:['“Asks his daughter’s name. Twice.”','“Does not recognise the ward.”','“Calls the nurses by his pupils’ names.”'],a:0,no:'Naomi: That was later. Week two was his daughter.'},
-    {q:'Theo lines up his readings: 41, 38, then a gap, then 12. Why is there a gap?',hint:'Week 6: no page. No reading. Nothing in anyone’s hand.',opts:['Somebody took the page','Nobody measured him that week','The box was broken'],a:1,ok:'Naomi: I was on nights. Theo was in the Rift. Nobody measured week six.',no:'Theo: Nobody took it. There’s no page because there was nobody there to write it.'}]},
+    {q:'Theo lines up his readings: 41, 38, then a gap, then 12. Why is there a gap?',opts:['Somebody took the page','Nobody measured him that week','The box was broken'],a:1,ok:'Naomi: I was on nights. Theo was in the Rift. Nobody measured week six.',no:'Theo: Nobody took it. There’s no page because there was nobody there to write it.'}]},
   ok=>{state='play';atk.down=false;last=performance.now();if(ok){mxSet('lt_order');persist();setBanner('The folder is in order','Week six is still empty. Theo hands you his box.',2.6);mxTick();}});}
 function larkEnding(){mxScene([pn('hospital',[['kairos',0.3,0.72,1],['noemi',0.5,0.7,-1],['theo',0.64,0.7,-1]],[
     ['n','The four pages, in order, back in Mr. Odell’s folder. Week six is still empty.'],
@@ -4446,9 +4633,9 @@ function mxTick(){const x=mxS();let ch=false;
       else got=Q.reward?grantReward(Q.reward,'mxq:'+id)||[]:[];
       if(Q.sets)for(const k of Q.sets)storyFlags()[k]=storyFlags()[k]||Date.now();
       if(room)setBanner((MX_STORY_KINDS.includes(Q.kind)?'Story complete · ':'Quest complete · ')+Q.title,got.join(' · '),2.8);sfx('bless');
-      if(Q.onDone)try{Q.onDone(id);}catch(e){console.error(e);}}
+      if(Q.onDone)try{Q.onDone(id);}catch(e){console.error(e);}snapshotSave(true);}
     else if(ch&&room)setBanner(Q.title,Q.steps[q.n].t,2);}
-  mxDiscoverPass();if(ch)persist();}
+  mxDiscoverPass();applyPendingBonds();if(ch)persist();}
 const MX_STORY_KINDS=['bond','memory','hangout','side'];
 // the quest shown in the objective bar: the main quest first, then the newest optional one
 function mxTracked(){const x=mxS();let best=null;
@@ -4523,7 +4710,10 @@ const MX_FINDS=[
   {id:'office.notice',at:'office',fx:0.7,fy:0.26,title:'The notice board',text:[['n','NOTICES · Re-charting: clerical errors in your birth chart corrected free of charge, Tuesdays and Thursdays.'],['n','Lost: one umbrella, black. Found: eleven umbrellas, black.']]},
   {id:'office.queue',at:'office',fx:0.22,fy:0.84,title:'The waiting benches',text:[['n','Names carved into the waiting benches, decades of them, each with a ticket number beside it. The highest is 1,204.']]},
   {id:'office.stamp',at:'office',fx:0.62,fy:0.47,hidden:1,title:'A stamp under the rug',reward:{dust:10},text:[['n','Kicked half under the rug: a brass stamp. You press it on your palm. APPROVED.'],['th','First thing in this building that’s approved of me.']]},
-  {id:'tower.view',at:'tower',fx:0.6,fy:0.26,title:'The view from the tower',text:[['n','The whole city from up here: the Ring, the Square, the Cloister’s roof, the hospital lamps. And past the last roofs, the long grey line of the Wall.']]},
+  {id:'tower.view',at:'tower',fx:0.6,fy:0.26,title:'The view from the tower',text:()=>{const L=[['n','The whole city from up here: the Ring, the Square, the Cloister’s roof, the hospital lamps. And past the last roofs, the long grey line of the Wall.']];
+    const bits=[mxDoneQ('agnes_handmade')&&'a sling on a nail with a star nobody mentions',mxDoneQ('bram_bread')&&'an oven made of chimney bricks',mxDoneQ('lark_couldnt_save')&&'a name written small on a doctor’s wrist',mxDoneQ('cass_prayer')&&'a prayer said out loud',mxDoneQ('dess_experiment')&&'a research log under a pillow'].filter(Boolean);
+    if(bits.length)L.push(['th','Up here now: '+bits.join(', ')+'.'],['th',bits.length>=4?'A year ago I ran errands for this city. Now I know what the people in it are carrying.':'People I used to run errands for. Now I know a little of what they carry.']);
+    if(mxDoneQ('lucas_mem_room'))L.push(['th','And somewhere past all of it, Lucas. I remember the room. I’ll remember it for both of us until he can.']);return L;}},
   {id:'hesper.clock',at:'hesper',fx:0.5,fy:0.25,title:'The gate clock',text:[['n','The clock above the orphanage gate says 11:59. It has said 11:59 for as long as anyone remembers.'],['n','Nobody fixes it. Nobody takes it down either.']]},
   {id:'hesper.sun',at:'hesper',fx:0.5,fy:0.86,title:'The chalk sun',text:[['n','A chalk sun on the cobbles with a name in every ray. The rain will take them by Sunday, and someone will draw them again.']]},
   {id:'hesper.chores',at:'hesper',fx:0.35,fy:0.26,title:'The chore board',text:[['n','CHORES · sweep the yard · peel potatoes · fetch bread at six.'],['n','Underneath, in a child’s capitals: “AND DO NOT FEED THE PIGEONS (MATTEO)”.']]},
@@ -4541,8 +4731,13 @@ function mxPeople(d){const L=[];
       mark:()=>!mxQ('streets')||mxStepOf('streets')==='tell'||(mxQ('streets')&&!mxQ('glasses'))||mxStepOf('glasses')==='back'||(mxStepOf('rounds')==='ask'&&!mxF('bd_matteo'))?'!':null,
       say:()=>{
         if(mxStepOf('rounds')==='ask'&&!mxF('bd_matteo'))return {lines:[['kairos','Matteo, when’s your birthday?'],['mxmat','My birthday. It’s in the spring. Late spring. My sister always baked a honey cake.'],['mxmat','The date’s on the tip of my tongue. Ask me Sunday, it’ll come to me.']],then:()=>mxSet('bd_matteo')};
+        if(!mxQ('streets')&&mxEra()==='fugitive')return {lines:[['mxmat','Kairos. You’re on every wall in the Ring, and you still walk past my stall. Good.'],
+          ['mxmat','Do an old man a favour. Walk the city for me. All of it: the Square, the Yard, the Cloister, St. Lucia’s. Tell me what’s still standing after… all that.'],
+          ['kairos','You know what happened.'],['mxmat','I know there was a Festival. Humour me.']],then:()=>mxStart('streets')};
         if(!mxQ('streets'))return {lines:[['mxmat','Kairos. You run this city more than the pigeons do, and I bet you’ve never once walked it slow.'],
           ['mxmat','Do an old man a favour. Walk it today. All of it: the Square, the Yard, the Cloister, St. Lucia’s.'],['mxmat','Then come back and tell me it’s all still there. I like to hear it.'],['kairos','It’s always still there.'],['mxmat','Humour me.']],then:()=>mxStart('streets')};
+        if(mxStepOf('streets')==='tell'&&mxEra()==='fugitive')return {lines:[['kairos','The Square’s still scorched where the rifts opened. The Garrison doubled its patrols. The Cloister’s quiet. St. Lucia’s is short a doctor.'],
+          ['mxmat','Short a doctor. Hm.'],['mxmat','…All still there, then. Mostly. Thank you, boy.']],then:()=>mxSet('streetsTold')};
         if(mxStepOf('streets')==='tell')return {lines:[['kairos','Festival Square has the lanterns up. The Garrison counted eleven last night. The Cloister’s quiet. St. Lucia’s is busy.'],
           ['mxmat','Eleven! In my day it was three a week.'],['mxmat','…Good. All still there. Thank you, boy.']],then:()=>mxSet('streetsTold')};
         if(mxStepOf('glasses')==='back'&&mxHas('glasses'))return {lines:[['kairos','Your glasses. On the fountain, next to the cups.'],['mxmat','Bless you. I’d lose my head if it wasn’t on my neck.'],['th','He puts them on. Then he pats his head, just to check.']],then:()=>{delete mxS().items.glasses;mxSet('glassesBack');}};
@@ -4569,7 +4764,9 @@ function mxPeople(d){const L=[];
   if(d==='plaza'){
     L.push({id:'lseller',fx:0.2,fy:0.66,col:'#B5835A',hat:'#6A3A1A',apron:1,face:1,label:'Lantern seller',
       mark:()=>!mxQ('lanterns')?'!':null,
-      say:()=>{if(!mxQ('lanterns'))return {lines:[['lseller','Kairos, you’ve got young legs. The Cloister ordered a lantern for vespers and I can’t leave the stall, not this close to the Festival.'],
+      say:()=>{if(!mxQ('lanterns')&&mxEra()==='fugitive')return {lines:[['lseller','Kairos. Hood up. The Cloister still wants a lantern for vespers, Festival or no Festival.'],
+          ['lseller','I can’t leave the stall with the Office walking past every hour. Take it to the Sister at the gate?']],then:()=>mxStart('lanterns')};
+        if(!mxQ('lanterns'))return {lines:[['lseller','Kairos, you’ve got young legs. The Cloister ordered a lantern for vespers and I can’t leave the stall, not this close to the Festival.'],
           ['lseller','Take it to the Sister at the gate? She’ll know it’s from me.']],then:()=>mxStart('lanterns')};
         if(mxAct('lanterns'))return {lines:[['lseller','The Cloister, north of the Ring. The Sister at the gate.']]};
         return {amb:1,lines:[['lseller','Two hundred lanterns before the Festival. Two hundred and one, if you count the one you carried.']]};}});
@@ -4579,7 +4776,9 @@ function mxPeople(d){const L=[];
   if(d==='yard'){
     L.push({id:'sold',fx:0.3,fy:0.62,col:'#5A6A3A',hat:'#3A4A2A',face:1,label:'Garrison soldier',
       mark:()=>!mxQ('roster')||mxStepOf('roster')==='back'?'!':null,
-      say:()=>{if(!mxQ('roster'))return {lines:[['mxsold','Kairos. You’re going back to the Ring? The evening rooftop roster has to go up on the board there before shift change.'],
+      say:()=>{if(!mxQ('roster')&&mxEra()==='fugitive')return {lines:[['mxsold','Kairos. Don’t answer, just walk.'],
+          ['mxsold','The evening roster has to go up on the Ring board, and nobody looks twice at a boy carrying a sheet of paper. I’ll say I walked it there myself.']],then:()=>mxStart('roster')};
+        if(!mxQ('roster'))return {lines:[['mxsold','Kairos. You’re going back to the Ring? The evening rooftop roster has to go up on the board there before shift change.'],
           ['mxsold','I’ve done three flights of roof stairs today. My knees have filed a complaint.']],then:()=>mxStart('roster')};
         if(mxStepOf('roster')==='back')return {lines:[['kairos','It’s up. Top of the board.'],['mxsold','Good lad. If anyone asks, I walked it there myself.']],then:()=>mxSet('rosterDone')};
         if(mxAct('roster'))return {lines:[['mxsold','The bounty board, in the Market Ring. Top left, where people actually look.']]};
@@ -4617,10 +4816,10 @@ function mxPeople(d){const L=[];
         ['mxbaker','My oven’s older than that gate clock. Don’t tell the Sister I said so.'],['mxbaker','Smell that? Honey rolls. Not for you. …One. Fine.']][t%3]]};}});
   }
   if(d==='tower'){ // the party after Chapter 1 (Lucas is not here: Horaios took him through the Gate)
-    L.push({id:'h_agnes',ch:'ines',fx:0.22,fy:0.34,face:1,label:'Agnes',say:()=>mxStepOf('agnes_handmade')==='test'?{lines:[['ines','Right. Let’s see if it holds when something’s actually trying to kill us.'],['ines','There’s a crack in the air over the east chimney. Bring your sword.']],then:()=>mxFight(mxFightTheme('roof',{tag:'agnes',party:['ines','kairos'],kills:8,brief:'Agnes wants to see the sling hold under fire.'}),['ines','kairos'])}
+    L.push({id:'h_agnes',ch:'ines',fx:0.22,fy:0.34,face:1,label:'Agnes',say:()=>mxStepOf('agnes_handmade')==='test'?{lines:[['ines','Right. Let’s see if it holds when something’s actually trying to kill us.'],['ines','There’s a crack in the air over the east chimney. Bring your sword.']],then:()=>mxFight(mxFightTheme('roof',{tag:'agnes',party:['ines','kairos'],kills:6,pool:['spotlight','spotlight','hothead'],brief:'Spotlights on the chimneys lock a line on you. Step off it. Agnes wants to see the sling hold steady.'}),['ines','kairos'])}
         :mxStepOf('agnes_handmade')==='end'?{lines:[['ines','Sit down a minute.']],then:agnesEnding}
         :({amb:1,lines:[[['ines','Two Garrison patrols on the bridge at dusk. We move after the bells, not before.'],['ines','I’ve slept in worse places. Not many.'],['ines','Stop looking at the Gate side of the sky. It doesn’t help.']][mxTalked('tower.h_agnes')%3]]})});
-    L.push({id:'h_bram',ch:'bram',fx:0.58,fy:0.74,face:-1,label:'Bram',say:()=>mxStepOf('bram_bread')==='defend'?{lines:[['bram','Kairos. Smell that? Burning sugar, and something under it.'],['bram','Vices. They followed the warm. Not in my kitchen.']],then:()=>mxFight(mxFightTheme('roof',{tag:'bread',party:['bram','kairos'],kills:8,brief:'Vices drawn to the warm chimney.'}),['bram','kairos'])}
+    L.push({id:'h_bram',ch:'bram',fx:0.58,fy:0.74,face:-1,label:'Bram',say:()=>mxStepOf('bram_bread')==='defend'?{lines:[['bram','Kairos. Smell that? Burning sugar, and something under it.'],['bram','Vices. They followed the warm. Not in my kitchen.']],then:()=>mxFight(mxFightTheme('roof',{tag:'bread',type:'defense',ward:'oven',wardLabel:'The oven',dur:45,party:['bram','kairos'],pool:['devourer','gossip','hothead','gossip'],brief:'Vices drawn to the warm. Keep them off the oven for 45 seconds.'}),['bram','kairos'])}
         :mxStepOf('bram_bread')==='end'?{lines:[['bram','Come on. Everyone eats.']],then:bramEnding}
         :mxStepOf('bram_bread')==='bake'?{amb:1,lines:[['bram','Gran’s rule: flour first, hands second. Then you let it rest somewhere warm. Then the oven. Never rush the resting.']]}
         :({amb:1,lines:[[['bram','I brought bread. I always bring bread.'],['bram','Sarge says I snore. I say the tower snores. It creaks a lot.'],['bram','We’ll get him back. Lucas. I don’t know how. But we will.']][mxTalked('tower.h_bram')%3]]})});
@@ -4631,13 +4830,17 @@ function mxPeople(d){const L=[];
   }
   if(d==='annex')L.push({id:'q_dess',ch:'dess',fx:0.5,fy:0.3,face:1,label:'Dess',hide:()=>!mxAct('dess_experiment'),
       say:()=>{const sp=mxStepOf('dess_experiment');
-        if(sp==='fight')return {lines:[['dess','Kairos. The gold one. It’s— something is coming out of it. Not a memory. Something hungry.']],then:()=>mxFight(mxFightTheme('annex',{tag:'dess',party:['dess','kairos'],kills:10,brief:'Something comes out of the gold core. Keep it away from Dess.'}),['dess','kairos'])};
+        if(sp==='fight')return {lines:[['dess','Kairos. The gold one. It’s— something is coming out of it. Not a memory. Something hungry.']],then:()=>mxFight(mxFightTheme('annex',{tag:'dess',party:['dess','kairos'],kills:10,pool:['devourer','deadline','waxer','gossip'],brief:'Something hungry comes out of the gold core. Devourers pull, a Deadline grows. Keep it away from Dess.'}),['dess','kairos'])};
         if(sp==='memory')return {lines:[['dess','It’s quiet now. It’s warm. I think… I think it wants to show me something.']],then:dessMemory};
         if(sp==='records')return {amb:1,lines:[['dess','Four files. He always kept four. Intake, observation, procedure, closure. Sorry. I know where he puts things.']]};
         if(sp==='rebuild')return {amb:1,lines:[['dess','The chair goes in the middle. Everything else faces the chair. That’s how he set up every room.']]};
         if(sp==='cores')return {amb:1,lines:[['dess','Low to high. Like tuning an instrument. He used to do it before every session.']]};
         return {amb:1,lines:[['dess','This is where he kept things he didn’t want to look at.']]};}});
   if(mxEra()==='fugitive'){
+    if(d==='plaza')L.push({id:'inspector',fx:0.56,fy:0.72,col:'#2A2A34',hat:'#1A1A22',face:1,label:'Office inspector',say:()=>({amb:1,lines:[['mxinsp','…']]}),
+      then:null});
+    if(d==='market')L.push({id:'patrol',fx:0.28,fy:0.62,col:'#5A6A3A',hat:'#3A4A2A',face:1,label:'Garrison patrol',say:()=>({amb:1,lines:[['mxpatrol','…']]})});
+    if(d==='office')L.push({id:'doorguard',fx:0.5,fy:0.86,col:'#5A6A3A',hat:'#3A4A2A',face:-1,label:'Door guard',say:()=>({amb:1,lines:[['mxguard','…']]})});
     if(d==='plaza')L.push({id:'hanne',fx:0.76,fy:0.6,col:'#6A5A7A',hair:'#E0DCD0',long:1,face:-1,label:'Old Hanne',
       say:()=>({amb:1,lines:[mxDoneQ('side_morning_after')?['mxhanne','Every year on that night I light a candle by the fountain for the people the cracks took. Fewer come every year.']:['mxhanne','Twenty years I’ve sat on this bench. The pigeons have changed. The bench hasn’t.']]})});
     if(d==='office'){L.push({id:'pim',fx:0.74,fy:0.4,col:'#4A5A6A',hair:'#8A5A2A',face:-1,label:'Pim, junior clerk',
@@ -4666,7 +4869,7 @@ function mxPeople(d){const L=[];
         ['mxfen','I copy the ones that are falling apart. Badly. My handwriting is a crime against God.']][t%3]]};}});
     L.push({id:'q_cass',ch:'cass',fx:0.5,fy:0.62,face:1,label:'Cassie',cond:()=>mxEra()==='fugitive'&&!!mxAct('cass_prayer'),
       say:()=>{const sp=mxStepOf('cass_prayer');
-        if(sp==='defend')return {lines:[['cass','Kairos. The roof. Something is coming down through the hole, and it isn’t rain.'],['cass','Not in here. Not tonight.']],then:()=>mxFight(mxFightTheme('oldchapel',{tag:'cass',party:['cass','kairos'],kills:8,brief:'Vices drop through the broken roof. Keep them away from the shelves.'}),['cass','kairos'])};
+        if(sp==='defend')return {lines:[['cass','Kairos. The roof. Something is coming down through the hole, and it isn’t rain.'],['cass','Not in here. Not tonight.']],then:()=>mxFight(mxFightTheme('oldchapel',{tag:'cass',party:['cass','kairos'],kills:8,pool:['collector','collector','gossip','hothead'],brief:'Collectors drop through the roof, after the shelves and your Pneuma. Get the hoard back.'}),['cass','kairos'])};
         if(sp==='end')return {lines:[['cass','Stay a minute. I want to say it out loud once.']],then:cassEnding};
         if(sp==='altar')return {amb:1,lines:[['cass','Three empty niches on the altar, and three lines in the prayer. I think they go together.']]};
         return {amb:1,lines:[['cass','I took my vows in a chapel just like this. Smaller. Warmer. It had a roof.']]};}});
@@ -4709,10 +4912,12 @@ function mxPeople(d){const L=[];
   if(d==='ward'){
     L.push({id:'nurse',fx:0.42,fy:0.48,col:'#E8E2D4',hair:'#4A3A2A',apron:1,face:1,label:'Ward nurse',
       mark:()=>!mxQ('rounds')||mxStepOf('rounds')==='back'?'!':null,
-      say:()=>{if(!mxQ('rounds'))return {lines:[['nurse','Dr. Lark has us asking every patient their birthday. Don’t ask me why, she has her reasons and a lot of notebooks.'],
+      say:()=>{if(!mxQ('rounds')&&mxEra()==='fugitive')return {lines:[['nurse','Dr. Lark left us a list before she… left. Birthdays. Every patient, and a few healthy people to compare.'],
+          ['nurse','Ask three for me? Matteo, Rosa and the fish vendor on the Ring. She’d want it finished.']],then:()=>mxStart('rounds')};
+        if(!mxQ('rounds'))return {lines:[['nurse','Dr. Lark has us asking every patient their birthday. Don’t ask me why, she has her reasons and a lot of notebooks.'],
           ['nurse','She wants a few answers from healthy people too, to compare. You know everyone at the Ring. Ask three of them?']],then:()=>mxStart('rounds')};
         if(mxStepOf('rounds')==='back')return {lines:[['kairos','Rosa: third of Taurus, six in the morning. The fish vendor: twenty-first of Pisces, noon tide. Matteo: spring. He wasn’t sure.'],
-          ['nurse','Two exact, one “spring”.'],['nurse','Huh. That’s about what we get in here. I’ll put it in Dr. Lark’s notes.']],then:()=>mxSet('roundsDone')};
+          ['nurse','Two exact, one “spring”.'],['nurse',mxEra()==='fugitive'?'Huh. That’s about what we get in here. I’ll put it with her notes. Somebody should keep them going.':'Huh. That’s about what we get in here. I’ll put it in Dr. Lark’s notes.']],then:()=>mxSet('roundsDone')};
         if(mxAct('rounds'))return {lines:[['nurse','Matteo, Rosa and the fish vendor, in the Market Ring. Exact dates if they have them.']]};
         return {amb:1,lines:[['nurse','Visiting hours are over at six. You can stay as long as you’re useful.']]};}});
     L.push({id:'naomi',ch:'noemi',fx:0.7,fy:0.56,face:-1,label:'Naomi',cond:()=>mxMet('noemi')&&mxEra()==='before',
@@ -4722,7 +4927,7 @@ function mxPeople(d){const L=[];
     const lt=()=>mxEra()==='fugitive'&&!!mxAct('lark_couldnt_save');
     L.push({id:'q_naomi',ch:'noemi',fx:0.7,fy:0.56,face:-1,label:'Naomi',cond:lt,
       say:()=>{const sp=mxStepOf('lark_couldnt_save');
-        if(sp==='defend')return {lines:[['noemi','Kairos. Behind the curtains. Something is moving, and it isn’t a patient.'],['theo','Lamps up. Naomi, stay behind me. …Behind Kairos, then.']],then:()=>mxFight(mxFightTheme('hospital',{tag:'lark',party:['noemi','theo','kairos'],kills:8,brief:'Vices in the ward. Keep them off Naomi.'}),['noemi','theo','kairos'])};
+        if(sp==='defend')return {lines:[['noemi','Kairos. Behind the curtains. Something is moving, and it isn’t a patient.'],['theo','Lamps up. Naomi, stay behind me. …Behind Kairos, then.']],then:()=>mxFight(mxFightTheme('hospital',{tag:'lark',party:['noemi','theo','kairos'],kills:8,pool:['waxer','deadline','gossip','gossip'],brief:'Waxers keep the other Vices alive. Naomi spots them: take the healers down first.'}),['noemi','theo','kairos'])};
         if(sp==='end')return {lines:[['noemi','Sit with me a minute.']],then:larkEnding};
         if(sp==='order')return {amb:1,lines:[['noemi','The desk. Admission first, then the weeks. I know the order. I just can’t look at it on my own.']]};
         if(sp==='read')return {amb:1,lines:[['noemi','His bed was by the right-hand wall, next to the man who asks if it’s Tuesday. Theo’s box will tell you when you’re close. Loudly.']]};
@@ -4744,10 +4949,12 @@ function mxNpcs(d){
     n.lines=()=>{const ql=mxQLine(key);if(ql){n._then=()=>{if(ql.then)ql.then();else{mxSet(ql.flag);persist();mxTick();}};return ql.lines;}
       const r=p.say();if(r&&!r.amb){n._then=r.then||null;return r.lines;}
       const off=mxOfferAt(key);if(off){const Q=MX_QUESTS[off];n._then=()=>{mxDiscover(off);mxStart(off);};return typeof Q.offer==='function'?Q.offer():Q.offer;}
+      const po=r.amb&&!r.then?mxPostLine(key):null;if(po){n._then=po.then;return po.lines;}
+      if(r.amb&&!r.then&&mxEra()==='fugitive'&&MX_FUG[key]){const F=MX_FUG[key];n._then=null;if(MX_VOICE[key])mxMurmur(MX_VOICE[key]);return F[mxTalked(key)%F.length];}
       n._then=r.then||null;if(r.amb&&!r.then&&!p.ch&&MX_VOICE[key])mxMurmur(MX_VOICE[key]);return r.lines;};
     n.route=MX_ROUTES[key]||null;n.voice=MX_VOICE[key]||null;if(p.hide)n.hide=p.hide;
     n.talk=()=>{const x=mxS();x.talk[key]=(x.talk[key]|0)+1;const t=n._then;n._then=null;if(t)t();persist();mxTick();};
-    n.mkf=()=>{if(mxNpcWanted(key))return '!';const k=p.mark&&p.mark();return k||(mxTalked(key)?null:'…');};return n;});
+    n.mkf=()=>{if(mxNpcWanted(key))return '!';const k=p.mark&&p.mark();if(k)return k;return mxTalkHint(key)||mxPostFresh(key)?'?':null;};return n;});
   const Fd=MX_FINDS.filter(f=>f.at===d).map(f=>{const n={id:f.id,fx:f.fx,fy:f.fy,spot:1,find:f};
     n.lines=()=>typeof f.text==='function'?f.text():f.text;
     n.talk=()=>{const x=mxS(),first=!x.found[f.id];x.found[f.id]=1;if(f.on)f.on();
@@ -4775,7 +4982,7 @@ function mxEnter(m){const d=m.M.dist,D=MX_DISTRICTS[d],x=mxS(),p=player,first=!x
   else{const a=D.arrive||[0.5,0.86];p.x=AX0+(AX1-AX0)*a[0];p.y=AY0+(AY1-AY0)*a[1];}
   if(mxFast){mxFast=false;m.arrT=0.9;ring(p.x,p.y,34,C.gold,0.7);burstParts(p.x,p.y-6,'#FFE6A3',18,120);if(ac&&vol.sfx>0){tone(784,0.18,'sine',0.02);tone(1175,0.24,'sine',0.016,0,0.08);}setBanner(D.name,'Fast travel',1.3);}
   mxFrom=null;m.leave=null;m.arrT=Math.max(m.arrT||0,0.6);
-  if(!first&&!mxFast)setBanner(D.name,'',1.2);
+  if(!first&&!mxFast)setBanner(D.name,mxEra()==='fugitive'&&MX_WATCHED.includes(d)?'Patrols about · keep your hood up':'',1.4);
   m.goals=[{talk:1,t:mxGoal()}];mxTick();}
 function mxUpdate(m,dt){const p=player,D=MX_DISTRICTS[m.M.dist];
   if(mxFade>0)mxFade=Math.max(0,mxFade-dt*2.6);
@@ -4824,6 +5031,7 @@ function agnesAssemble(){showPuzzle({head:'A Little Something Handmade',title:'T
   ok=>{state='play';atk.down=false;last=performance.now();if(ok){mxSet('ag_made');persist();setBanner('The sling is finished','Agnes wants to test it.',2.2);mxTick();}});}
 function mxFightTheme(theme,o){const id='mxf_'+theme+(o&&o.tag?'_'+o.tag:'');if(!MISSIONS[id])addMission(id,Object.assign({type:'fight',name:'Vices',place:'Meridian',theme,party:['kairos'],lvl:2,kills:8,max:3,pool:['gossip','hothead'],brief:'Vices spill out of a crack in the air.'},o||{}));return id;}
 function mxFight(missionId,party,cb){const d=room&&room.m&&room.m.M&&room.m.M.dist||mxS().at;
+  {const M=MISSIONS[missionId],P=party||['kairos'];if(M){if(M.baseLvl==null)M.baseLvl=M.lvl||2;const avg=P.reduce((a,id)=>a+((save.chars[id]&&save.chars[id].lvl)|0),0)/P.length;M.lvl=Math.max(M.baseLvl,Math.ceil(avg/2));}}
   startMission(missionId,party||['kairos'],ok=>{if(ok)mxSet('won:'+missionId);mxS().at=d;persist();mxBegin();if(cb)cb(ok);});}
 // a scene from the hub: cutscene panels (pn(...)) played through the story sequencer, then back to the same district
 function mxScene(panels,cb,roster){const d=room&&room.m&&room.m.M&&room.m.M.dist||mxS().at;
@@ -4834,7 +5042,7 @@ function mxBegin(fast){ensureAudio();const x=mxS();persist();newRun('explore',['
 // Daily chests, three activities, obstacles, interactables, moving townsfolk and murmurs. See docs/exploration/.
 const MXP=(fx,fy)=>({x:AX0+(AX1-AX0)*fx,y:AY0+(AY1-AY0)*fy});
 // ── the day: local calendar date, so chests turn over at the player's own midnight
-function mxDay(){if(window.__mxDay)return window.__mxDay;const d=new Date(),z=n=>(n<10?'0':'')+n;return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
+function mxDay(){if(SF_DEV&&window.__mxDay)return window.__mxDay;const d=new Date(),z=n=>(n<10?'0':'')+n;return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
 function mxDayState(){const x=mxS(),k=mxDay();
   if(!x.day||x.day.key!==k){x.day={key:k,opened:{},pages:{}};
     // drop yesterday's daily claims so the save does not grow every day (one-time claims are untouched)
@@ -4885,7 +5093,7 @@ function mxDrawChest(c,n){const x=n.x,y=n.y,o=n.opened(),L=CHEST_LOOK[n.tier]||C
 // first time Kairos comes near a closed chest on this visit: a soft chime and a glint ring, so a found chest feels found
 function mxChestNotice(m){for(const n of m.npcs){if(!n.tier||n.noticed||n.opened()||(n.hide&&n.hide(m)))continue;
   if(Math.hypot(player.x-n.x,player.y-n.y)<85){n.noticed=1;ring(n.x,n.y-4,22,n.tier==='precious'?'#C9A8FF':C.gold,0.6);
-    if(ac&&vol.sfx>0){tone(1568,0.16,'sine',0.018);tone(2093,0.2,'sine',0.014,0,0.07);if(n.tier!=='common')tone(2637,0.22,'sine',0.01,0,0.14);}window.__mxChime=(window.__mxChime|0)+1;}}}
+    if(ac&&vol.sfx>0){tone(1568,0.16,'sine',0.018);tone(2093,0.2,'sine',0.014,0,0.07);if(n.tier!=='common')tone(2637,0.22,'sine',0.01,0,0.14);}if(SF_DEV)window.__mxChime=(window.__mxChime|0)+1;}}}
 function mxOpenChest(n){if(n.opened())return;const L=grantReward(MX_CHEST_REWARD[n.tier],n.key)||[];n.openT=T;const K=CHEST_LOOK[n.tier];
   burstParts(n.x,n.y-8,n.tier==='precious'?'#C9A8FF':n.tier==='fine'?'#BFEFFF':C.gold,n.tier==='common'?14:n.tier==='fine'?22:34,n.tier==='precious'?180:140);
   ring(n.x,n.y-4,n.tier==='precious'?40:28,n.tier==='precious'?'#C9A8FF':C.gold,0.55);sfx(n.tier==='precious'?'bless':n.tier==='fine'?'orb':'select');
@@ -4917,7 +5125,9 @@ const MX_LOOKS=[
   {id:'look.washing',at:'ashlane',fx:0.55,fy:0.24,title:'The washing line',text:[['n','Sheets, shirts and one very small sock, strung between the third and fifth houses.']]},
   {id:'look.wanted.market',at:'market',fx:0.6,fy:0.36,era:'fugitive',title:'A wanted notice',text:[['n','WANTED by order of the Concord Council: for the destruction of the Registry of Births and the abduction of Lucas Crane, son of the Chancellor.'],['n','Seven persons. The sketch of the errand boy looks nothing like you. You check twice anyway.']]},
   {id:'look.wanted.plaza',at:'plaza',fx:0.56,fy:0.24,era:'fugitive',title:'A wanted notice',text:[['n','The same notice, pasted over the Festival poster. Someone has drawn a moustache on the Garrison sergeant.']]},
-  {id:'look.bedrolls',at:'tower',fx:0.27,fy:0.8,title:'The bedrolls',text:[['n','Bedrolls along the beams, one for each of you. One more is still tied up, waiting.']]},
+  {id:'look.bedrolls',at:'tower',fx:0.27,fy:0.8,title:'The bedrolls',text:()=>{const L=[['n','Bedrolls along the beams, one for each of you. One more is still tied up, waiting.']];
+    if(mxDoneQ('lucas_mem_bread'))L.push(['n','Someone has left the end piece of a loaf on the last bedroll. Nobody owns up to it.']);
+    if(mxDoneQ('lucas_mem_room'))L.push(['n','Tucked under its strap: a drawing of the gate clock, both hands at 11:59.']);return L;}},
   {id:'look.roofhole',at:'oldchapel',fx:0.82,fy:0.44,title:'The hole in the roof',text:[['n','Moonlight comes straight down through the roof onto the flagstones. Rubble, a few slates, a pigeon feather.'],['n','Somebody has put a bucket exactly where the rain lands.']]},
   {id:'look.prayerbook',at:'chapel',fx:0.22,fy:0.36,era:'fugitive',title:'A prayer book by the wall',text:[['n','A small prayer book, wedged behind a flowerbed stone and swollen with rain. On the inside cover, a stamp: ST. MAREN’S · ASH LANE.'],['th','Cassie says grace every night at the tower. She would know this book.']]},
   {id:'look.festbox',at:'hesper',fx:0.36,fy:0.52,era:'fugitive',title:'A box of old decorations',text:[['n','A box on the back step, lid half off: paper lanterns gone soft with age, a painted banner rolled up tight. Old Festival decorations.'],['th','These are older than the ones they hang now. Different colours.']]},
@@ -5230,6 +5440,7 @@ function mxHideNpc(){const n={id:'hide.spot',spot:1,verb:'look',ptitle:'behind h
   n.talk=(F,m,nn)=>mxHideFound(m,nn);return n;}
 // ── townsfolk routes: [fx, fy, pause seconds, face] in a loop; one-point routes stay put and look around
 const MX_ROUTES={
+  'plaza.inspector':[[0.56,0.72,0]],'market.patrol':[[0.28,0.62,0]],'office.doorguard':[[0.5,0.86,0]],
   'annex.q_dess':[[0.5,0.3,0]],
   'oldchapel.ottilie':[[0.66,0.27,0]],'oldchapel.fen':[[0.93,0.5,3],[0.93,0.86,2]],'oldchapel.q_cass':[[0.5,0.62,0]],
   'tower.h_agnes':[[0.22,0.34,0]],'tower.h_bram':[[0.58,0.74,0]],'tower.h_noemi':[[0.78,0.7,0]],'tower.h_theo':[[0.74,0.3,0]],'tower.h_cass':[[0.36,0.6,0]],'tower.h_dess':[[0.46,0.32,0]],
@@ -5244,7 +5455,7 @@ const MX_ROUTES={
   'office.filer':[[0.66,0.6,3],[0.66,0.84,2],[0.76,0.84,2],[0.76,0.6,2]],'office.counter':[[0.5,0.2,0]],'office.waiter':[[0.3,0.48,0]],'office.tobin':[[0.42,0.72,0]],
   'hesper.agathe':[[0.56,0.36,4],[0.62,0.6,3],[0.5,0.5,2]],'hesper.pip':[[0.4,0.64,2],[0.45,0.6,1.5],[0.42,0.7,1.5]],'hesper.wren':[[0.92,0.42,0]],'hesper.baker2':[[0.18,0.3,0]],
 };
-const MX_VOICE={'plaza.hanne':'oldwoman','office.pim':'man','office.ambrose':'oldman','ashlane.ivo':'man','oldchapel.ottilie':'oldwoman','oldchapel.fen':'man','market.matteo':'oldman','market.rosa':'oldwoman','market.fish':'man','market.tessa':'child','plaza.lseller':'man','plaza.fwoman':'woman',
+const MX_VOICE={'plaza.inspector':'man','market.patrol':'man','office.doorguard':'man','plaza.hanne':'oldwoman','office.pim':'man','office.ambrose':'oldman','ashlane.ivo':'man','oldchapel.ottilie':'oldwoman','oldchapel.fen':'man','market.matteo':'oldman','market.rosa':'oldwoman','market.fish':'man','market.tessa':'child','plaza.lseller':'man','plaza.fwoman':'woman',
   'yard.sold':'man','chapel.sister':'woman','chapel.believer':'woman','ward.nurse':'woman','ward.pat':'oldman',
   'ashlane.laundress':'woman','ashlane.lamplighter':'oldman','ashlane.shopkeep':'oldwoman','ashlane.hoopkid':'child',
   'office.counter':'man','office.filer':'woman','office.waiter':'oldman','office.tobin':'child',
@@ -5305,7 +5516,7 @@ function mxMurmur(type){if(!ac||!sfxBus||vol.sfx<=0)return;const V=MX_VOICES[typ
       const amp=0.055*F[2];out.gain.setValueAtTime(0.0001,t);out.gain.exponentialRampToValueAtTime(amp,t+0.03);out.gain.setValueAtTime(amp,t+d*0.6);out.gain.exponentialRampToValueAtTime(0.0001,t+d);
       for(const [fq,q,g] of [[F[0],5,1],[F[1],7,0.5]]){const bp=ac.createBiquadFilter(),gg=ac.createGain();bp.type='bandpass';bp.frequency.value=fq*(type==='child'?1.18:type==='man'||type==='oldman'?0.88:1);bp.Q.value=q;gg.gain.value=g;o.connect(bp);bp.connect(gg);gg.connect(out);}
       out.connect(sfxBus);o.start(t);lf.start(t);o.stop(t+d+0.03);lf.stop(t+d+0.03);t+=d;}
-    window.__mxMurmurs=(window.__mxMurmurs|0)+1;}catch(_){}}
+    if(SF_DEV)window.__mxMurmurs=(window.__mxMurmurs|0)+1;}catch(_){}}
 // ═══════════════════════════════════════════ Regional world map and fast travel (World Expansion 01)
 // Places stay separate single-screen maps; the world map is the connected layer over them.
 // x,y are positions on the map (0..1, 16:10). d = the explorable district id once it exists in MX_DISTRICTS.
@@ -5344,6 +5555,7 @@ function showWorldMap(o){o=o||{};const from=o.from||'menu';
     side.replaceChildren(...[h('p',{class:'eyebrow'},'Meridian · world map'),h('h3',null,st==='locked'&&!wmNameKnown(sel)?'Unknown place':sel.name),
       h('span',{class:'wm-st '+(st==='open'?'open':st==='here'?'here':st==='locked'?'lock':'')},WM_STATUS_TXT[st]),
       h('p',null,st==='locked'&&!wmNameKnown(sel)?'Somewhere in the city you have not been yet.':sel.blurb),
+      mxEra()==='fugitive'&&st!=='locked'&&sel.d?(MX_WATCHED.includes(sel.d)?h('p',{class:'wm-need'},'Patrols about. Keep your hood up.'):['tower','oldchapel','hesper','ashlane'].includes(sel.d)?h('p',{class:'wm-need'},sel.d==='tower'?'The hideout. Safe.':'Quiet. People here look the other way.'):null):null,
       st==='found'?h('p',{class:'wm-need'},sel.need&&sel.need.text?sel.need.text:'Walk there to discover it.'):st==='locked'?h('p',{class:'wm-need'},sel.need.text):st==='soon'?h('p',{class:'wm-need'},'This place is not open for exploring yet.'):null,
       h('p',{class:'wm-legend'},'Gold: discovered · fast travel. Faded: not discovered. Lock: story. Tap a place, then Travel.'),
       h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',disabled:st==='open'?null:'disabled',onclick:travel},st==='here'?'You are here':'Travel'),
@@ -5357,7 +5569,7 @@ function showWorldMap(o){o=o||{};const from=o.from||'menu';
     if(e.code==='KeyM'){close();return true;}return false;};
   wmActive=cv2;
   const loop=()=>{if(!cv2.isConnected){if(wmActive===cv2)wmActive=null;return;}drawWorldMap(cv2,sel);requestAnimationFrame(loop);};requestAnimationFrame(loop);
-  window.__wmSel=id=>{const L=WORLD_LOCS.find(q=>q.id===id);if(L){sel=L;drawSide();}};}
+  if(SF_DEV)window.__wmSel=id=>{const L=WORLD_LOCS.find(q=>q.id===id);if(L){sel=L;drawSide();}};}
 let wmActive=null;
 function wmNameKnown(L){if(wmStatus(L)!=='locked')return true;if(L.need&&L.need.ch1)return false;if(L.id==='tower')return ch1Scene()>=11;if(L.id==='canals')return true;return false;}
 // the map itself: parchment, the city wall, the canal, roads, and a pixel icon for every place
@@ -5389,7 +5601,8 @@ function drawWorldMap(c,sel){const r=c.getBoundingClientRect(),d=Math.min(window
     if(L.d&&mxQuestPlaces()[L.d]&&st!=='locked'){g.globalAlpha=1;const bx=x-k*1.05,by=y-k*1.05,br=k*0.55+Math.sin(performance.now()/250)*k*0.05;g.fillStyle='#24160C';g.beginPath();g.arc(bx,by,br+k*0.12,0,TAU);g.fill();g.fillStyle='#FFD166';g.beginPath();g.arc(bx,by,br,0,TAU);g.fill();g.fillStyle='#24160C';g.font=`900 ${Math.round(k*0.85)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='middle';g.fillText('!',bx,by+k*0.04);}
     g.globalAlpha=1;
     const name=st==='locked'&&!wmNameKnown(L)?'???':L.name;g.font=`800 ${Math.round(u*0.36)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='top';
-    g.lineJoin='round';g.miterLimit=2;g.lineWidth=u*0.12;g.strokeStyle='rgba(240,228,200,0.92)';g.strokeText(name,x,y+k*1.45);g.fillStyle=on?'#24160C':'#5A4A3A';g.fillText(name,x,y+k*1.45);
+    const tw=g.measureText(name).width,lx=Math.min(W2-tw/2-u*0.15,Math.max(tw/2+u*0.15,x)); // keep labels near the edge (the Clock Tower) inside the map
+    g.lineJoin='round';g.miterLimit=2;g.lineWidth=u*0.12;g.strokeStyle='rgba(240,228,200,0.92)';g.strokeText(name,lx,y+k*1.45);g.fillStyle=on?'#24160C':'#5A4A3A';g.fillText(name,lx,y+k*1.45);
     if(st==='here'){const b=Math.sin(performance.now()/220)*u*0.08;g.fillStyle='#B5523A';g.beginPath();g.moveTo(x,y-k*1.4+b);g.lineTo(x-k*0.5,y-k*2.3+b);g.lineTo(x+k*0.5,y-k*2.3+b);g.closePath();g.fill();g.fillStyle='#FFE6A3';g.fillRect(x-k*0.15,y-k*2.1+b,k*0.3,k*0.3);}}
   // compass
   const cx=W2*0.93,cy=H2*0.86,cr=u*0.5;g.strokeStyle='#5A4A3A';g.lineWidth=u*0.06;g.beginPath();g.arc(cx,cy,cr,0,TAU);g.stroke();g.fillStyle='#8A6A3A';g.beginPath();g.moveTo(cx,cy-cr*1.1);g.lineTo(cx-cr*0.25,cy);g.lineTo(cx+cr*0.25,cy);g.closePath();g.fill();
@@ -5405,8 +5618,11 @@ function wmIcon(g,ic,x,y,k,on){const ink=on?'#24160C':'#4A3A2A',p=k*0.16;g.fillS
   else if(ic==='houses'){R(-5,-1,4,5);R(1,-2,4,6);R(-4,-3,2,2);R(2,-4,2,2);}
   else if(ic==='clock'){R(-3,-5,6,10);g.fillStyle='#F6EBD2';R(-2,-4,4,4);g.fillStyle=ink;R(0,-3,1,2);}
   else if(ic==='waves'){g.fillStyle='#4A7FB0';R(-5,-2,3,1);R(-2,-3,3,1);R(1,-2,3,1);R(-5,1,3,1);R(-2,0,3,1);R(1,1,3,1);}}
-// ── Meridian Renown: account progress from districts, records and quests. Rank rewards are claimed by hand (keys renown:1..5).
-const MX_RANKS=[{at:20,r:{keep:1,dust:30}},{at:50,r:{keep:2,dust:50}},{at:90,r:{mpAll:2,dust:60}},{at:130,r:{keep:3,dust:80}},{at:175,r:{frag:'star',keep:3,dust:100}}];
+// ── Meridian Renown: account progress from districts, records and quests. Rank rewards are claimed by hand (keys renown:1..8).
+// Ranks 1–5 fit the city before the Festival (at most 330 Renown is available before Chapter 1 is cleared); ranks 6–8 (added with the
+// Bond Stories) need the stories and side quests that open after it. Everything before Chapter 2 adds up to 605 Renown.
+const MX_RANKS=[{at:20,r:{keep:1,dust:30}},{at:50,r:{keep:2,dust:50}},{at:90,r:{mpAll:2,dust:60}},{at:130,r:{keep:3,dust:80}},{at:175,r:{frag:'star',keep:3,dust:100}},
+  {at:340,r:{keep:3,dust:120}},{at:460,r:{frag:'star',keep:3,dust:150}},{at:570,r:{mpAll:3,keep:4,dust:200}}];
 function mxRenown(){const x=mxS();let n=MX_ORDER.filter(d=>x.seen[d]).length*5+mxRecordCount()*5;
   for(const id in MX_QUESTS){const q=x.q[id];if(q&&q.s==='done')n+=MX_QUESTS[id].kind==='main'?30:15;}
   for(const k of ['act:drill','act:sundial','act:pages','act:hideseek','act:folders','act:oddities'])if(claimed(k))n+=10;
@@ -5434,8 +5650,13 @@ function mxMigrate(){const x=save.mx;if(!x||!x.q)return;let ch=false;
   if(ch)persist();}
 mxMigrate();
 // ── Meridian menu and Journal
-function mxMapGrid(){const x=mxS(),cell=d=>d?h('div',{class:'mx-n'+(x.seen[d]?'':' off')+(x.at===d?' here':'')},x.seen[d]?MX_DISTRICTS[d].name:'Not visited',h('i',null,x.at===d?'You are here':(x.seen[d]?MX_DISTRICTS[d].blurb.split('.')[0]:'?'))):h('div',{class:'mx-n mx-gap'});
-  return h('div',{class:'mx-map','aria-label':'Map of Meridian'},cell(null),cell('chapel'),cell('office'),cell(null),cell('yard'),cell('market'),cell('plaza'),cell('hesper'),cell(null),cell('ward'),cell('ashlane'),cell('oldchapel'));}
+function mxMapGrid(){const x=mxS(),cell=d=>d?h('div',{class:'mx-n'+(x.seen[d]?'':' off')+(x.at===d?' here':''),'data-d':d},x.seen[d]?MX_DISTRICTS[d].name:'Not visited',h('i',null,x.at===d?'You are here':(x.seen[d]?MX_DISTRICTS[d].blurb.split('.')[0]:'?'))):h('div',{class:'mx-n mx-gap'});
+  const open=d=>{const L=WORLD_LOCS.find(q=>q.d===d);return !L||wmUnlocked(L)?d:null;}; // same rule as the world map and the exits
+  return h('div',{class:'mx-map','aria-label':'Map of Meridian'},
+    cell(null),cell(null),cell(open('annex')),cell(null),
+    cell(null),cell('chapel'),cell(open('office')),cell(open('tower')),
+    cell('yard'),cell('market'),cell('plaza'),cell(open('hesper')),
+    cell(null),cell('ward'),cell(open('ashlane')),cell(open('oldchapel')));}
 function showMeridian(){
   state='title';room=null;boss=null;paused=false;playMusic('title');
   const x=mxS(),it=(label,sub,go,cls,attrs)=>h('button',Object.assign({class:'tm-item'+(cls||''),type:'button',onclick:go},attrs||{}),h('span',{class:'tm-l'},label),sub?h('span',{class:'tm-s'},sub):null);
@@ -5459,7 +5680,9 @@ function mxStoriesList(){const ids=Object.keys(MX_QUESTS).filter(id=>MX_STORY_KI
     h('p',null,Q.desc),st==='available'?h('p',{class:'ob'},'→ '+(Q.giver||'Find out more')):st==='active'?(()=>{const sp=Q.steps[mxS().q[id].n],pg=mxStepProg(sp);return h('p',{class:'ob'},'→ '+sp.t+(pg?' ('+pg+')':''));})():null,
     st==='completed'&&Q.reward&&Q.reward.rec&&mxS().mem[Q.reward.rec.id]?h('p',{class:'rw'},'Kept in the Journal: '+Q.reward.rec.title):null);});
   if(!out.length)out.push(h('p',{class:'ss-info'},mxEra()==='fugitive'?'No stories found yet. Listen to the people around you, and to the party at the hideout.':'Stories open up after Chapter 1.'));
-  if(locked)out.push(h('p',{class:'ss-info'},locked+' more '+(locked>1?'stories are':'story is')+' still hidden or locked.'));return out;}
+  if(locked)out.push(h('p',{class:'ss-info'},locked+' more '+(locked>1?'stories are':'story is')+' still hidden or locked.'));
+  const pend=save.bondPending||{};
+  out.push(h('p',{class:'ss-info'},'Bond ♥: '+CH_ORDER.filter(id=>id!=='kairos').map(id=>nameOf(id)+' '+bondHearts(bondOf(id))+(pend[id]?' (+'+pend[id]+' waiting)':'')).join(' · ')+'. Each heart: +4% HP and attack in story battles.'));return out;}
 function showJournal(back,tab){
   tab=tab||'quests';const x=mxS();
   const qCard=id=>{const Q=MX_QUESTS[id],q=x.q[id],done=q.s==='done',st=!done&&Q.steps[q.n];
@@ -6250,7 +6473,7 @@ function showCh1End(){
   const first=!save.ch1Clears;save.ch1Clears=(save.ch1Clears|0)+1;
   const xp=first?200:60,dust=first?100:30,ups=giveXp(CH_ORDER,xp);save.dust+=dust;giveMp(CH_ORDER,first?5:2);
   const found=[];if(first)for(let i=0;i<2;i++){gainFrag('boss');found.push(save.frags[save.frags.length-1]);}
-  save.ch1b=Object.assign(save.ch1b||{},{done:true,i:0,k:null});persist();
+  save.ch1b=Object.assign(save.ch1b||{},{done:true,i:0,k:null});persist();snapshotSave(true);
   const kp=first?grantReward({keep:3},'ch1:first'):null;
   const rw=h('div',{class:'mech rw'},h('div',{class:'rwh'},ico('memory'),'Memories +'+xp+' for all eight'+(first?' (first clear)':'')),
     h('div',{class:'row1'},...ups.map(u=>h('span',{class:'lvchip'+(u.up?' up':'')},nameOf(u.id)+' Lv '+u.lvl+(u.up?' ↑':'')))),
@@ -6391,6 +6614,9 @@ function goHome(){
       it('Training','Basics · character drills',showTrainingMenu,loadPrefs().tutDone?'':' guide-new'),
       it('Guide','How everything works',()=>showGuide(goHome),loadPrefs().guideSeen?'':' guide-new')),
     saveWarn?h('p',{class:'hint',role:'alert',style:'color:#FFB27A;font-weight:700'},'⚠ '+saveWarn):null,
+    !saveWarn&&backupDue()?h('p',{class:'hint bk-remind'},'It has been a while since your last backup. ',
+      h('button',{class:'btn outline',type:'button',style:'padding:2px 10px;margin:0 4px',onclick:()=>showBackup(goHome)},'Back up'),
+      h('button',{class:'btn ghost',type:'button',style:'padding:2px 10px',onclick:e=>{savePrefs({backupSnooze:Date.now()+3*864e5});e.target.closest('.bk-remind').remove();}},'Later')):null,
     h('p',{class:'tm-foot'},'Prototype build'));
   openOverlay(card,'mode-title');
 }
@@ -7031,7 +7257,8 @@ function guidePage(tab){
       gcard('rising','↑ Entrance (Rising)','Each character does a free move when they switch in: a piercing shot, a quake, a heal, a fan drone. Switch on purpose to use it.'),
       gcard('hp','Benched characters','Only the active character takes damage. If someone is low, switch them out. Naomi’s Triage heals the bench too.'),
       gcard('skull','Going down','If the active character falls, the next one jumps in. If all three fall, the run ends. Downed allies get back up between districts.'),
-      gcard('team','Buffs follow you','Shields, Spotted marks, turrets and team buffs stay when you switch. Set them up, then switch to a damage dealer.')),
+      gcard('team','Buffs follow you','Shields, Spotted marks, turrets and team buffs stay when you switch. Set them up, then switch to a damage dealer.'),
+      gcard('star','Bond ♥','How close a character is to Kairos, up to five hearts. Each heart gives them +4% HP and attack in story battles (Chapter 1 and Bond Stories), not in Rifts or Trials. It grows through talks in the story and by finishing Bond Stories in Meridian.')),
     gtip('A good loop: a support switches in → casts their Moon skill → switch to your main damage dealer → use everything → repeat.','Rotation')];
   if(tab==='chars')return [h('h2',null,'Characters'),
     h('p',{class:'lede'},'A quick “how to play” for each one. Full details are on the party select screen.'),
@@ -9328,7 +9555,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(SF_DEV){window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={lose:()=>{if(team)for(const m of team.members)if(!m.down)memberDown(m);},bondPend:()=>save.bondPending||{},postFresh:k=>mxPostFresh(k),exitsOf:d=>mxExits(MX_DISTRICTS[d]).map(e=>e[1]),fug:()=>Object.keys(MX_FUG),snaps:()=>snapshots(),snap:f=>snapshotSave(f),storage:()=>storageState,persistReq:()=>requestPersistentStorage(),parseBackup:t=>{try{return parseBackup(t);}catch(e){return {error:e.message};}},backupDue:()=>backupDue(),beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
@@ -9340,6 +9567,7 @@ if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(locati
   hurt:d=>{player.iframe=0;hurtPlayer(d);}, members:()=>team.members.map(m=>({id:m.id,hp:Math.round(m.hp),down:m.down,cd:m.cd,ent:+m.entCd.toFixed(1)})),
   pause:()=>pauseGame(), resume:()=>resumeGame(), paused:()=>paused, music:()=>({id:mus.id,ac:ac&&ac.state}), aspd:()=>effAspd(player),
   step:sec=>{for(let i=0;i<sec*60;i++)tick(1/60);render();}};
+} // end of developer tools (SF_DEV)
 
 // UI sounds: every button in the menus gets a voice based on what it does
 function buttonSound(b){
@@ -9359,6 +9587,7 @@ let lastHover=null;
 overlay.addEventListener('pointerover',e=>{if(e.pointerType!=='mouse')return;const b=e.target.closest&&e.target.closest('button');if(b&&b!==lastHover){lastHover=b;sfx('hover');}else if(!b)lastHover=null;});
 
 // ═══════════════════════════════════════════ boot
+{const pr=loadPrefs();if(!pr.firstPlayAt)savePrefs({firstPlayAt:Date.now()});}requestPersistentStorage();snapshotSave(false);
 resize();
 goHome();
 requestAnimationFrame(t=>{last=t;requestAnimationFrame(frame);});

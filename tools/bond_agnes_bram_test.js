@@ -18,7 +18,7 @@ const go=async d=>{await E(d=>__sf.mxGo(d),d);await p.waitForTimeout(850);};
 const st=id=>E(id=>__sf.qstate(id),id);const step=id=>E(id=>{const q=__sf.mx().q[id];return q&&q.s!=='done'?__sf.mxQ[id].steps[q.n].id:null;},id);
 const mark=id=>E(id=>{const n=__sf.m().npcs.find(o=>o.id===id);return n&&n.mkf?n.mkf():null;},id);
 const pick=async i=>{await p.locator('.pzl-o').nth(i).click();await p.waitForTimeout(220);};
-const winFight=async()=>{await p.waitForTimeout(1400);const inFight=await E(()=>__sf.m()&&__sf.m().M.type==='fight');await E(()=>__sf.win());
+const winFight=async()=>{await p.waitForTimeout(1400);const inFight=await E(()=>__sf.m()&&['fight','defense'].includes(__sf.m().M.type));await E(()=>__sf.win());
   for(let i=0;i<40;i++){await p.waitForTimeout(200);if(await E(()=>__sf.m()&&__sf.m().M.type==='walk'))break;const bt=await p.$('.btn.primary,.res-cont');if(bt&&await bt.isVisible())await bt.click().catch(()=>{});}
   await p.waitForTimeout(700);return inFight;};
 const scene=async()=>{await p.waitForTimeout(500);const had=await E(()=>!!__sf.cut());for(let i=0;i<40&&await E(()=>!!__sf.cut());i++){await E(()=>__sf.cutNext());await p.waitForTimeout(120);}await p.waitForTimeout(900);return had;};
@@ -94,7 +94,7 @@ await interact('h_agnes');ok(await scene(),'Agnes’s ending is a scene');s=awai
 ok(s.mx.q.agnes_handmade.s==='done'&&s.bonds.ines===1&&s.keep===k0+1&&s.frags.length>=f0+1&&s.mx.mem['rec.agnes']&&s.story['agnes.crafted'],'Agnes’s story completes: Bond +1, Keepsake, Fragment, practice piece');
 // ── once only
 const d1=s.dust;await E(()=>{__sf.qstart('agnes_handmade');__sf.qstart('bram_bread');__sf.qtick();});
-r=await interact('h_agnes');r=await interact('h_bram');s=await S();ok(s.dust===d1&&s.bonds.ines===1&&s.bonds.bram===1&&!/maintenance|cardamom/i.test(r.lines.join(' ')),'finished stories are not offered or paid again');
+r=await interact('h_agnes');r=await interact('h_bram');s=await S();ok(s.dust===d1&&s.bonds.ines===1&&s.bonds.bram===1&&!/maintenance|Did you smell it/i.test(r.lines.join(' ')),'finished stories are not offered or paid again ('+[s.dust,d1,s.bonds.ines,s.bonds.bram].join(',')+' / '+r.lines.join(' ')+')');
 // ── Journal
 await E(()=>__sf.mxMenu());await p.waitForTimeout(300);await E(()=>{const b=[...document.querySelectorAll('button')].find(b=>/Journal/.test(b.textContent));if(b)b.click();});await p.waitForTimeout(300);
 await E(()=>{const b=[...document.querySelectorAll('.mx-tabs button')].find(b=>/Stories/.test(b.textContent));if(b)b.click();});await p.waitForTimeout(300);

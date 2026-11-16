@@ -56,6 +56,24 @@ Points available today: 5 districts × 5 + 11 records × 5 + 30 + 5 optional que
 | 3 | 90 | Mastery +2 for all eight · 60 Stardust |
 | 4 | 130 | 3 Keepsakes · 80 Stardust |
 | 5 | 175 | 1 Star-born Fragment · 3 Keepsakes · 100 Stardust |
+| 6 | 340 | 3 Keepsakes · 120 Stardust *(new, 2026-11-16)* |
+| 7 | 460 | 1 Star-born Fragment · 3 Keepsakes · 150 Stardust *(new)* |
+| 8 | 570 | Mastery +3 for all eight · 4 Keepsakes · 200 Stardust *(new)* |
+
+**Why ranks 6–8 were added (measured on 2026-11-16 with a filled test save):**
+
+| Content | Renown |
+|---|---|
+| Everything available before Chapter 1 is cleared (8 districts, those districts' records, the 6 city quests, 6 activities, 2 secrets) | **330** |
+| Everything before Chapter 2 (11 districts × 5, 27 records × 5, 22 stories and quests, activities, secrets) | **605** |
+
+- Before this change, the top rank (175) fell in the middle of the city's *pre-Festival* content.
+- Ranks 1–5 are unchanged (no claim is lost and no rank goes down).
+- The new ranks sit just above the pre-Chapter 1 maximum (340), at about the middle of the post-Chapter 1 stories (460), and at about 94% of everything (570).
+- **Other rewards were reviewed and left unchanged:**
+  - Stories pay 20–60 Stardust and 0–2 Keepsakes each.
+  - All 19 stories and quests after Chapter 1 give about 13 Keepsakes in total. One Keepsake is 120 Memories, so that is roughly two levels spread over eight characters.
+  - That is not inflation.
 
 ## Keepsakes (new)
 - One Keepsake = **120 Memories** to one character. It can't be used at Lv 20.
