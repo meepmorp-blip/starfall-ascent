@@ -6943,7 +6943,7 @@ function ch1Label(i){const q=CH1||(CH1=ch1Seq());let l='Cold open';for(let k=0;k
 function showCh1Menu(){
   const sv=save.ch1b,cont=sv&&!sv.done&&sv.i>0,bg=thumbOf('night');
   const it=(label,sub,go,cls,attrs)=>h('button',Object.assign({class:'tm-item'+(cls||''),type:'button',onclick:go},attrs||{}),h('span',{class:'tm-l'},label),sub?h('span',{class:'tm-s'},sub):null);
-  const info=cont?'Saved at: '+ch1Label(sv.i)+' · Party: '+sv.roster.map(nameOf).join(', '):(sv&&sv.done?'Chapter 1 complete. Play it again any time; your Bonds carry over.':'About an hour · saves at every scene');
+  const info=cont?'Saved at: '+ch1Label(sv.i)+' · Party: '+sv.roster.map(nameOf).join(', '):(sv&&sv.done?'Chapter 1 complete. Play it again any time; your Bonds carry over.':'About two hours · saves at every scene');
   const confirmRestart=()=>openOverlay(h('div',{class:'ss ss-sm'},h('p',{class:'eyebrow'},'Chapter 1'),h('h2',{class:'ss-title'},'Start over?'),
     h('p',{class:'ss-info'},'Your saved scene is replaced. Bond levels stay.'),
     h('nav',{class:'tm-menu'},it('Start over','From the beginning',()=>startCh1(true),' primary',{'data-primary':'1'}),it('Cancel','',()=>showCh1Menu(),'',{'data-back':'1'}))),'mode-select');
