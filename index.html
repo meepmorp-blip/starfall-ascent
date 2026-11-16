@@ -3358,7 +3358,7 @@ function drawMission(c){
     c.strokeStyle=alpha(hot?C.danger:C.gold,fz?0.25:0.6);c.lineWidth=1.2;c.stroke();
     if(gd.cam){c.fillStyle='#3A3A44';c.fillRect(gd.x-6,gd.y-4,12,8);c.fillStyle=hot||Math.floor(T*2)%2?C.danger:'#552';c.fillRect(gd.x-1.5,gd.y-1.5,3,3);}
     else drawNPC(c,gd.x,gd.y,{frozen:fz,col:'#2E3B55',hair:'#1C1C22',face:Math.cos(a)>=0?1:-1});}
-  for(const s of m.solids){
+  for(const s of m.solids){if(s.inv)continue;
     if(s.w){if(s.gate)continue;c.fillStyle='#4A3424';c.fillRect(s.x,s.y,s.w,s.h);c.fillStyle='#6B4C33';for(let y=s.y+6;y<s.y+s.h;y+=14)c.fillRect(s.x+2,y,s.w-4,3);continue;}
     if(s.npc){drawNPC(c,s.x,s.y,{frozen:true,face:s.face,col:s.col,up:s.up});continue;}
     c.save();c.translate(s.x,s.y-6+Math.sin(s.rot)*2);c.rotate(s.rot);c.fillStyle='rgba(0,0,0,0.2)';c.fillRect(-s.r,s.r+6,s.r*2,2);
@@ -3879,6 +3879,7 @@ function initExtra(m){
     const F=cutFlags(),list=(M.npcs||MARKET_NPCS)(F);
     m.npcs=list.filter(n=>!n.cond||n.cond(F)).map(n=>Object.assign({},n,{x:n.fx!=null?AX0+(AX1-AX0)*n.fx:n.x,y:n.fy!=null?AY0+(AY1-AY0)*n.fy:n.y}));
     if(M.start){p.x=AX0+(AX1-AX0)*M.start[0];p.y=AY0+(AY1-AY0)*M.start[1];}
+    if(M.solids)for(const so of M.solids())m.solids.push(Object.assign(so,{inv:1}));
     m.goals=[{talk:1,t:M.goal||'Errands'}];
     if(M.hub)mxEnter(m);
   } else if(M.type==='fight'){
@@ -3965,7 +3966,7 @@ function drawExtra(c,m){
       c.save();c.translate(n.x,n.y-10+Math.sin(T*2.5+n.x)*2);c.rotate(Math.PI/4);c.fillStyle=n.done?alpha('#F6EBD2',0.35):alpha('#FFE6A3',0.9);c.fillRect(-4,-4,8,8);c.restore();
       if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)talkBubble(c,n.x,n.y-28,n.mk,n.mk==='!'?C.gold:'#F6EBD2',n.mk==='!');}
       else if(!n.done)talkBubble(c,n.x,n.y-28,n.need&&open(n)?'!':'?',n.need&&open(n)?C.gold:'#F6EBD2',!!n.need);continue;}
-    if(n.ch)drawChar(c,n.ch,n.x,n.y,{face:n.face||1,t:T});
+    if(n.ch)drawChar(c,n.ch,n.x,n.y,n.kid?{face:n.face||1,t:T,scale:0.78,unarmed:1}:{face:n.face||1,t:T});
     else drawNPC(c,n.x,n.y-(n.mv?Math.abs(Math.sin(T*9+n.x*0.1))*1.5:0),{col:n.col,face:n.face||1,hair:n.hair,hat:n.hat,apron:n.apron,small:n.small,long:n.long});
     const top=n.y-(n.small?32:(n.hat?42:38))+Math.sin(T*4+n.x*0.05)*2.5;
     if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)talkBubble(c,n.x,top,n.mk,n.mk==='!'?C.gold:'#F6EBD2',n.mk==='!');}
@@ -4142,6 +4143,70 @@ Object.assign(MX_QUESTS,{
       {id:'end',at:'ward',npc:'ward.q_theo',t:'Talk to Theo',ok:()=>mxF('lt_end')}],
     reward:{bond:['noemi','theo'],dust:40,keep:1,frag:'chest',rec:{id:'rec.lark',title:'Naomi’s notebook'}},sets:['lark.casefile']}});
 const LT_BED=[0.86,0.5];
+const KIDNPC={kid:1};
+addMission('mem_bread',{type:'walk',kid:1,name:'The Bread Incident',place:'St. Hesper’s, fourteen years ago',theme:'orphanage',party:['kairos'],lvl:1,count:false,
+  brief:'Six years old. The baker puts the bread out to cool at six.',goal:'The end piece',start:[0.08,0.7],
+  hint:m=>{const n=m.npcs.filter(x=>x.need&&!x.done).length;return n?'A memory · '+n+' left':'';},
+  npcs:()=>[
+    {id:'kl',ch:'lucan',kid:1,fx:0.2,fy:0.62,need:1,face:1,label:'Lucas',lines:[['kidl','The baker puts the bread out to cool at six. He gives the end pieces to the pigs.'],['kidl','That’s a crime against bread.'],['kidk','So we take them.'],['kidl','So we rescue them.']]},
+    {id:'fence',spot:1,fx:0.3,fy:0.3,need:1,after:'kl',wait:[['kidl','Wait for me. It was my idea.']],lines:[['n','A loose board in the bakery fence. Lucas fits through first. You fit through second, with a splinter.']]},
+    {id:'rack',spot:1,fx:0.52,fy:0.26,need:1,after:'fence',wait:[['n','The fence first.']],lines:[['n','The cooling rack. Twelve loaves. The baker comes out every few minutes to count them.']],
+      puzzle:{head:'A memory',title:'The cooling rack',rounds:[{q:'The baker counts the loaves left to right, and every morning he stops at the eleventh to scratch his nose and goes back inside. Which end piece will he never miss?',opts:['The first loaf','The sixth loaf','The twelfth loaf'],a:2,ok:'Kairos (age 6): He never gets to twelve.',no:'Kairos (age 6): No. He’d see that one. Count with him.'}]},
+      solved:[['kidl','How did you know that?'],['kidk','I watched him. Three mornings.'],['kidl','You’re weird. Good weird.']]},
+    {id:'shed',spot:1,fx:0.86,fy:0.72,need:1,last:1,wait:[['n','Not yet. The bread first.']],lines:[['n','Behind the coal shed. Half each. Lucas gives you the bigger half and pretends he didn’t.'],['matron','LUCAS. KAIROS.'],['kidl','…Pigeons.'],
+      ['matron','Pigeons do not eat the end piece, Lucas, and pigeons do not have crumbs down their jumpers.'],['n','Sister Agathe takes the bread. Then she breaks off a corner and gives it back to each of you.'],['matron','Next time, ask.']]}]});
+addMission('mem_plan',{type:'walk',kid:1,name:'The Worst Plan',place:'St. Hesper’s, twelve years ago',theme:'orphanage',party:['kairos'],lvl:1,count:false,
+  brief:'Eight years old. Lucas has a plan to get up the clock tower. It is not a good plan.',goal:'Up the clock tower',start:[0.08,0.62],
+  hint:m=>{const a=m.npcs.find(x=>x.id==='laundry'),b=m.npcs.find(x=>x.id==='stairs');return !m.npcs.find(x=>x.id==='kl').done?'Lucas has a plan':!a.done?'Kairos remembers the rounds':!b.done?'Five past nine is coming':'The tower door';},
+  npcs:()=>[
+    {id:'kl',ch:'lucan',kid:1,fx:0.16,fy:0.5,need:1,face:1,label:'Lucas',lines:[['kidl','Here’s the plan. Under the stairs, then the laundry, then the tower door. I have the key.'],['kidk','Where did you get a key?'],['kidl','Sister Agathe’s desk. I’m a genius.'],
+      ['kidk','She does the stairs at five to nine. The laundry at nine. The tower door at five past.'],['kidl','How do you know that?'],['kidk','She’s done it every night for two years.'],['kidl','…Then we do it your way. But it’s still my plan.']]},
+    {id:'rounds',spot:1,fx:0.36,fy:0.74,lines:[['th','Sister Agathe’s rounds, every night: the stairs at five to nine, the laundry at nine, the tower door at five past.'],['th','It’s four minutes to nine. She is on the stairs right now.']]},
+    {id:'laundry',spot:1,fx:0.6,fy:0.7,need:1,after:'kl',wait:[['kidl','Plan first. Then sneaking.']],lines:[['n','Behind the laundry baskets. Sheets, starch, Lucas’s elbow in your ear.'],['n','The lantern goes past the stairs, right on time.']]},
+    {id:'stairs',spot:1,fx:0.44,fy:0.3,need:1,after:'laundry',wait:[['n','A lantern swings on the stairs. You flatten against the wall until it’s gone.'],['th','Five to nine: she is on the stairs. Not yet.']],lines:[['n','Under the stairs. The lantern is in the laundry now, exactly where you were a minute ago.'],['kidl','You’re scary when you count.']]},
+    {id:'door',spot:1,fx:0.88,fy:0.42,need:1,last:1,wait:[['n','The tower door. Not yet: you’d cross her path.']],lines:[['kidl','Key. Behold.'],['n','It does not fit. It is, on closer inspection, the key to the pantry.'],
+      ['matron','Five past nine. Tower door. Every night, boys. Every single night.'],['kidl','We were… checking it was locked.'],['matron','And?'],['kidk','It’s locked.'],['matron','Bed. Both of you. And I’ll have my pantry key back, Lucas Crane.']]}]});
+addMission('mem_room',{type:'walk',kid:1,name:'Old Roommates',place:'St. Hesper’s dormitory, eleven years ago',theme:'dorm',party:['kairos'],lvl:1,count:false,
+  brief:'Nine years old. Your room, the way it was.',goal:'Your old room',start:[0.5,0.5],solids:()=>dormGeo().map(o=>({x:o.x,y:o.y,w:o.w,h:o.h})),
+  hint:m=>{const n=m.npcs.filter(x=>x.need&&!x.last&&!x.done).length;return n?n+' things to remember':'Lucas, by the window';},
+  npcs:()=>[
+    {id:'names',spot:1,fx:0.88,fy:0.36,need:1,lines:[['n','Two names carved into the bedpost of the window bed, very small: KAIROS · LUCAS.'],['th','He did the K. It took him a week. I did the rest in one night.']]},
+    {id:'tin',spot:1,fx:0.22,fy:0.36,need:1,lines:[['n','A tin of buttons under Lucas’s pillow. Brass, bone, one shaped like a fish.'],['kidl','For when I’m rich. Rich people have loads of buttons.']]},
+    {id:'clock',spot:1,fx:0.4,fy:0.24,need:1,lines:[['n','A drawing pinned to the wall: the clock above the gate, in Kairos’s careful pencil. Both hands at 11:59.'],['th','I drew it a hundred times. It never moved, so I always got it right.']]},
+    {id:'crust',spot:1,fx:0.22,fy:0.64,need:1,lines:[['n','Under the other pillow, wrapped in a handkerchief: one end piece of bread, rock hard.'],['kidk','Emergency bread.'],['kidl','For emergencies.']]},
+    {id:'list',spot:1,fx:0.7,fy:0.64,need:1,lines:[['n','A list in Lucas’s handwriting: THINGS KAIROS REMEMBERS THAT I DON’T. It goes on for three pages.'],['n','At the bottom, added later: “Doesn’t matter. He’ll tell me.”']]},
+    {id:'kl',ch:'lucan',kid:1,fx:0.8,fy:0.42,need:1,last:1,face:-1,label:'Lucas',wait:[['kidl','You’re looking at all my stuff. Look at all my stuff, then come here.']],lines:[
+      ['kidl','If somebody ever picks one of us, the other one gets the window bed.'],['kidk','Nobody’s picking anyone. We’re nine.'],['kidl','Then we both keep the window.'],['kidk','There’s only one window bed.'],['kidl','We’ll take turns. You count.']]}]});
+function lucasMemSeq(id){const P='orphanage';
+  if(id==='lucas_mem_bread')return [{cut:[pn(P,[['kairos',0.44,0.72,1,KID],['lucan',0.56,0.72,-1,KID]],[['n','The loose board in the bakery fence. Kairos puts his hand on it, and remembers.']],{cap:'Fourteen years ago. Six in the morning.',mus:'warm'})]},
+      {mission:'mem_bread'},
+      {cut:[pn(P,[['kairos',0.44,0.72,1,KID],['lucan',0.56,0.72,-1,KID]],[['kidl','Pigeons. I said pigeons.'],['kidk','You did.'],['kidl','Next time I’m saying a cat.'],['kidk','We don’t have a cat.'],['kidl','Even better. Nobody can check.']],{cap:'Fourteen years ago.',mus:'warm'}),
+        pn(P,[['kairos',0.5,0.72,1]],[['th','He always gave me the bigger half. I remember every time.'],['th','He’s the one who had to forget.']],{...NIGHT,mus:'sorrow'})]}];
+  if(id==='lucas_mem_plan')return [{cut:[pn(P,[['kairos',0.44,0.72,1,KID],['lucan',0.56,0.72,-1,KID]],[['n','The door at the foot of the clock tower. Kairos stands in front of it, and remembers.']],{...NIGHT,cap:'Twelve years ago. Four minutes to nine.',mus:'warm'})]},
+      {mission:'mem_plan'},
+      {cut:[pn(P,[['kairos',0.5,0.72,1]],[['th','Third try, we got up there. He found the right key in the end. He never told me how.'],['th','He made me count the seconds till inspection was over. I still count, up there. I can’t stop.']],{...NIGHT,mus:'sorrow'})]}];
+  return [{cut:[pn(P,[['kairos',0.5,0.72,1]],[['n','The dormitory window, from the yard. Kairos looks up at it, and remembers the room the way it was.']],{...NIGHT,cap:'Eleven years ago.',mus:'warm'})]},
+    {mission:'mem_room'},
+    {cut:[pn(P,[['kairos',0.5,0.72,1]],[['th','His bed is still the window bed. Somebody else sleeps in it now.'],['th','He said he wasn’t going to lose me twice. I never promised anything back.'],['th','I just never forgot. That has to count for something.']],{...NIGHT,mus:'sorrow'})]}];}
+// play a memory from St. Hesper's and come back to the same spot
+function lucasMemory(id){const d=mxS().at;const Q=MX_QUESTS[id];if(mxQState(id)!=='active'){mxDiscover(id);mxStart(id);}
+  runSeq(lucasMemSeq(id),{roster:['kairos'],end:()=>{mxSet(Q.flag);mxS().at=d;persist();mxBegin();mxTick();}});}
+Object.assign(MX_QUESTS,{
+  lucas_mem_bread:{title:'The Things We Remember · The Bread Incident',kind:'memory',char:'lucan',when:['fugitive'],at:'hesper',flag:'lm_bread',giver:'A loose board by the bakery, St. Hesper’s',
+    desc:'A memory of Lucas, from before the Chancellor, before the fire. The first time you ever stole bread together.',found:()=>mxF('lm_seen_bread'),
+    steps:[{id:'remember',at:'hesper',t:'Remember (the loose board by the bakery, St. Hesper’s)',ok:()=>mxF('lm_bread')}],
+    reward:{bond:['lucan'],dust:20,rec:{id:'rec.lm1',title:'The end piece'}},sets:['lucas.mem1']},
+  lucas_mem_plan:{title:'The Things We Remember · The Worst Plan',kind:'memory',char:'lucan',when:['fugitive'],pre:['lucas_mem_bread'],at:'hesper',flag:'lm_plan',giver:'The tower door, St. Hesper’s',
+    desc:'Lucas’s first plan to get up the clock tower. It went about as well as his plans went.',found:()=>mxF('lm_seen_plan'),
+    steps:[{id:'remember',at:'hesper',t:'Remember (the tower door, St. Hesper’s)',ok:()=>mxF('lm_plan')}],
+    reward:{dust:20,keep:1,rec:{id:'rec.lm2',title:'The key that didn’t fit'}},sets:['lucas.mem2']},
+  lucas_mem_room:{title:'The Things We Remember · Old Roommates',kind:'memory',char:'lucan',when:['fugitive'],pre:['lucas_mem_plan'],at:'hesper',flag:'lm_room',giver:'The dormitory window, St. Hesper’s',
+    desc:'Nine years in one room. The way it was, the autumn before Adoption Day.',found:()=>mxF('lm_seen_room'),
+    steps:[{id:'remember',at:'hesper',t:'Remember (the dormitory window, St. Hesper’s)',ok:()=>mxF('lm_room')}],
+    reward:{bond:['lucan'],dust:30,rec:{id:'rec.lm3',title:'Two names on a bedpost'}},sets:['lucas.mem3']}});
+const LUCAS_MEM_SPOTS=[['lucas_mem_bread','bread',0.28,0.42,'a loose board',[['n','A loose board in the bakery fence, the same one. It still lifts if you know where to push.']]],
+  ['lucas_mem_plan','plan',0.74,0.44,'the tower door',[['n','The little door at the foot of the clock tower. You live up there now. It is still locked.']]],
+  ['lucas_mem_room','room',0.62,0.26,'the dormitory window',[['n','Second floor, end window. The window bed.']]]];
 Object.assign(MX_QUESTS,{
   cass_prayer:{title:'A Prayer of Her Own',kind:'bond',char:'cass',when:['fugitive'],at:'tower',npc:'tower.h_cass',giver:'Cassie · the Clock Tower',
     desc:'A prayer book from a chapel the Church closed. Cassie knows every word of its prayer. She cannot remember who taught it to her.',
@@ -4495,7 +4560,7 @@ function mxExitPos(side,k){const cx=AX0+(AX1-AX0)*0.5,cy=AY0+(AY1-AY0)*0.55;
 function mxEnter(m){const d=m.M.dist,D=MX_DISTRICTS[d],x=mxS(),p=player,first=!x.seen[d];
   x.at=d;x.seen[d]=1;persist();
   for(const [fx,fy,r] of D.solids||[])m.solids.push({x:AX0+(AX1-AX0)*fx,y:AY0+(AY1-AY0)*fy,r});
-  if(D.painted)for(const so of mxPaintedSolids(D.painted))m.solids.push(so);
+  if(D.painted)for(const so of mxPaintedSolids(D.painted))m.solids.push(Object.assign(so,{inv:1})); // the art is already painted: collision only
   mxLivingEnter(m,d);
   const back=mxFrom&&D.exits.find(e=>e[1]===mxFrom);
   if(back){const q=mxExitPos(back[0],58);p.x=q.x;p.y=q.y;p.face=back[0]==='e'?-1:1;}
@@ -4692,6 +4757,11 @@ function mxExtras(d){const L=[],x=mxS();
           if(m.lit.length===BAKE_ORDER.length){mxSet('br_baked');persist();setBanner('The bread is in','Something warm, and something watching it.',2.4);sfx('bless');mxTick();}}
         else{sfx('nope');addText(n.x,n.y-26,'Bram: Not yet. Gran would’ve smacked my hand.',C.ash,10,{life:1.6});}};L.push(st);}
     const nb={id:'tower.board',fx:0.38,fy:0.24,spot:1,verb:'read',ptitle:'notice board',lines:()=>[],mkf:()=>mxQuestsAvailable().length?'!':'?'};nb.talk=()=>{state='panel';showJournal(()=>{closeOverlay();state='play';last=performance.now();},'stories');};L.push(nb);}
+  if(d==='hesper'&&mxEra()==='fugitive')for(const [qid,k,fx,fy,pt,text] of LUCAS_MEM_SPOTS){
+    const n={id:'mem.'+k,fx,fy,spot:1,verb:'remember',ptitle:pt,lines:()=>mxDoneQ(qid)?[['th','Just a '+pt.replace(/^(a|the) /,'')+'. You remember all of it now.']]:text,
+      mkf:()=>mxDoneQ(qid)?null:mxQState(qid)==='undiscovered'?'?':'!'};
+    n.hide=()=>['locked_by_story','locked_by_prerequisite'].includes(mxQState(qid));
+    n.talk=()=>{mxSet('lm_seen_'+k);persist();if(!mxDoneQ(qid))lucasMemory(qid);};L.push(n);}
   if(d==='hesper'){const n=mxHideNpc();const q=n.at();n.x=q.x;n.y=q.y;L.push(n);}
   if(d==='plaza'){const n={id:'pages.stand',fx:0.92,fy:0.24,spot:1,verb:'look'};
     n.lines=()=>{const g=mxPagesGot(),k='act:pages:'+mxDay();
@@ -4823,6 +4893,8 @@ function oldChapelGeo(){const L=[{k:'wall',x:0,y:0,w:W,h:46},{k:'altar',x:W/2-46
       if(ri===2&&side===0){L.push({k:'broken',x:x0,y:y-2,w:w*0.42,h:14,tilt:-0.12},{k:'broken',x:x0+w*0.55,y:y+3,w:w*0.45,h:12,tilt:0.1});}
       else L.push({k:'pew',x:x0,y,w,h:12});}});
   return L;}
+function dormGeo(){const L=[];for(const fx of [0.12,0.3,0.62,0.8]){L.push({k:'bed',x:W*fx-17,y:56,w:34,h:52,win:fx===0.8});L.push({k:'bed',x:W*fx-17,y:H-100,w:34,h:52});}
+  L.push({k:'chest',x:W*0.46-14,y:58,w:28,h:18});return L;}
 function streetClutter(){const R=mulberry(hashStr('street~detail')),out=[];for(let i=0;i<14;i++)R();for(let i=0;i<9;i++)R();
   for(let i=0;i<6;i++){const x=R()<0.5?W*0.02+R()*W*0.05:W*0.93+R()*W*0.05,y=90+R()*(H-150);out.push([R()<0.5?'barrel':'crate',x,y]);}return out;}
 // solids that match props painted into a theme (so the art is solid where it looks solid)
@@ -7903,7 +7975,7 @@ function drawPlayer(){
   if(p.ultT>0){c.strokeStyle=alpha(C.gold,0.4+0.3*Math.sin(T*10));c.lineWidth=2;circ(c,p.x,p.y-4,p.r+16);c.stroke();}
   if(team.tailwind>0&&rand()<0.3)part(p.x+rr(-8,8),p.y+rr(-4,8),-p.fx*60,-p.fy*60,0.3,C.air,1.6);
   const blink=p.iframe>0&&p.dodgeT<=0&&!p.dash&&!team.shield&&Math.floor(T*22)%2===0;
-  drawCharOutlined(c,p.id,p.x,p.y,{dir:Math.abs(p.fy||0)>Math.abs(p.fx||0)*1.15?((p.fy||0)>0?'down':'up'):'side',unarmed:!!(room&&room.m&&room.m.M&&room.m.M.type==='walk'),face:p.face,moving:p.moving&&p.dodgeT<=0,alpha:blink?0.4:1,flash:p.flash>0,scale:1.2,lunge:clamp(1-(T-(p.lastAtkT??-9))/0.16,0,1),
+  drawCharOutlined(c,p.id,p.x,p.y,{dir:Math.abs(p.fy||0)>Math.abs(p.fx||0)*1.15?((p.fy||0)>0?'down':'up'):'side',unarmed:!!(room&&room.m&&room.m.M&&room.m.M.type==='walk'),face:p.face,moving:p.moving&&p.dodgeT<=0,alpha:blink?0.4:1,flash:p.flash>0,scale:room&&room.m&&room.m.M&&room.m.M.kid?0.86:1.2,lunge:clamp(1-(T-(p.lastAtkT??-9))/0.16,0,1),
     hurt:p.flash>0?clamp(p.flash/0.15,0,1):0,roll:p.dodgeT>0?1-p.dodgeT/0.17:0,pop:clamp(1-(T-(p.swapAt??-9))/0.22,0,1)});
 }
 function drawAlly(a){
@@ -8123,6 +8195,7 @@ const ATMO={
   roof:{grade:['#FFB07A',0.10,'#2A1A4A',0.18],vig:0.38,motes:{n:16,col:'#FFE0B0',kind:'ember'},night:1},
   orphanage:{grade:['#C7D5E8',0.06,'#12143A',0.22],vig:0.44,motes:{n:18,col:'#E8EEFF',kind:'float'},night:1},
   oldchapel:{grade:['#C7D5FF',0.08,'#140F24',0.24],vig:0.46,motes:{n:24,col:'#E8E4FF',kind:'dust'},night:1},
+  dorm:{grade:['#FFE0B0',0.08,'#1A1A3A',0.22],vig:0.44,motes:{n:14,col:'#FFF3C4',kind:'dust'},night:1},
 };
 function bakeGrade(g,theme){
   const A=ATMO[theme];if(!A)return;
@@ -8510,6 +8583,19 @@ function paintTheme(g,theme){
       for(const [x,y] of [[70,56],[W-70,56],[70,H-56],[W-70,H-56]])barrel(g,x,y);
       for(let i=0;i<4;i++){const x=80+R()*(W-160),y=60+R()*(H-120);g.strokeStyle='#C99A63';g.lineWidth=2;circ(g,x,y,5);g.stroke();circ(g,x,y,2.5);g.stroke();}
       lamp(g,W/2-40,50);lamp(g,W/2+40,H-40);
+      break;}
+    case 'dorm':{ // St. Hesper's boys' dormitory, eleven years ago: plank floor, eight small beds, two windows, a rug
+      planks(g,R,0,0,W,H,['#7A5432','#6E4A2C','#845C38','#694628']);
+      g.fillStyle=OL;g.fillRect(0,0,W,46);g.fillStyle='#5A4A6A';g.fillRect(0,0,W,44);g.fillStyle='#4A3C58';g.fillRect(0,36,W,8);
+      for(const wx of [W*0.3,W*0.8]){g.fillStyle=OL;g.fillRect(wx-17,5,34,30);g.fillStyle='#1E2A4A';g.fillRect(wx-16,6,32,28);g.fillStyle='#E8EEFF';circ(g,wx+7,14,4);g.fill();g.fillStyle='#8A6A4A';g.fillRect(wx-1,6,2,28);g.fillRect(wx-16,19,32,2);
+        shaft(g,wx-14,36,28,90,10,'#C7D5FF',0.14);}
+      rug(g,W*0.36,H*0.42,W*0.28,H*0.2,'#6E2E3A','#A0504A');
+      const pal=['#4A6E9A','#9A4A4A','#5A8A5A','#8A7A4A','#6A5A9A','#9A6A3A','#4A8A8A','#8A5A7A'];let i=0;
+      for(const o of dormGeo()){shadow(g,o.x+o.w/2,o.y+o.h+2,o.w/2,3);g.fillStyle=OL;g.fillRect(o.x-1,o.y-1,o.w+2,o.h+2);
+        if(o.k==='chest'){g.fillStyle='#7A4E26';g.fillRect(o.x,o.y,o.w,o.h);g.fillStyle='#4A4A52';g.fillRect(o.x,o.y+6,o.w,2);continue;}
+        g.fillStyle='#8B5A2B';g.fillRect(o.x,o.y,o.w,o.h);g.fillStyle=pal[i++%pal.length];g.fillRect(o.x+2,o.y+14,o.w-4,o.h-16);g.fillStyle='rgba(255,255,255,0.15)';g.fillRect(o.x+2,o.y+14,o.w-4,3);
+        g.fillStyle='#F2ECDC';g.fillRect(o.x+5,o.y+3,o.w-10,9);}
+      for(const [x,y] of [[W*0.06,H*0.5],[W*0.94,H*0.5]])candle(g,x,y);
       break;}
     case 'oldchapel':{ // St. Maren's: flagstones, broken pews, a stripped altar, the keepers' shelves, moonlight through the roof
       for(let y=46,r=0;y<H;y+=26,r++)for(let x=(r%2)*-17;x<W;x+=34){g.fillStyle=pick2(R,['#5E5A66','#66626E','#57535F','#6C6874']);g.fillRect(x,y,34,26);g.fillStyle='rgba(0,0,0,0.22)';g.fillRect(x,y,34,1);g.fillRect(x,y,1,26);
@@ -8982,7 +9068,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,

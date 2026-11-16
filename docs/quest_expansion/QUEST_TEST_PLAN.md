@@ -21,6 +21,7 @@
 | `bond_agnes_bram_test.js` | `ab` | Agnes and Bram, played together and interleaved: story lock, world discovery, "!" markers, gathering, reload mid-story, puzzle (wrong answer, leave, finish), bake order (reset), two fights, endings, rewards once, Journal, HUD overlap, canon regex. 45 checks ×3 |
 | `bond_lark_test.js` | `lark` | Naomi and Theo: story lock, both discovery routes, "!" markers, the pair at the ward, reachability flood fill, HUD overlap, pages with reload, ordering puzzle (wrong, leave, finish), hot-and-cold beep rate, hidden bed, fight, ending, rewards once, they leave afterwards, Journal, no-Mercy regex. 35 checks ×3 |
 | `bond_cass_test.js` | `cass` | Cassie and St. Maren's: story and map locks, both discovery routes, the place opening on story start, walking in from Ash Lane, people, painted-collision match, HUD overlap, reachability, writings with reload, altar puzzle (wrong, leave, finish), fight, ending, rewards once, fast travel, Meridian map, Journal, canon regex (factions case-sensitive). 38 checks ×3 |
+| `bond_lucas_test.js` | `lucas` | Lucas Part A: free/captured states, no present-day Lucas, ordered discovery, three playable memories (child sprites, counting puzzle, rounds-order walk, the dorm room with solid beds), rewards once, no replay, reload, Journal, no Scene 9 lines, no fire/Chancellor/Mercy. 37 checks ×3 |
 | *(next stages)* | — | Each story: discovery, steps, rewards, canon regex (§ 3) |
 
 ## 2. Foundation cases (`quest_system_test.js`, all automated)

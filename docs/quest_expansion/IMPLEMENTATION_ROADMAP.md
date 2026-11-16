@@ -97,7 +97,7 @@
   - Bond +1 for Naomi and Theo.
 - **Possible regressions:** the Rounds quest at the ward; ward chest spots.
 
-## Stage 5 · Cassie (+ the old chapel district) (Implemented, tested · not committed)
+## Stage 5 · Cassie (+ the old chapel district) (done, `cbdac27`)
 - **Needs approval first:** a new district (tracker § 6.2).
 - **Scope:** `cass_prayer`; the old chapel walk district (chapel theme, painted props, collision, chest spots or none).
 - **Features:**
@@ -113,7 +113,7 @@
   - Reachability flood fill and painted-collision checks, as in `ashlane_test.js`.
 - **Possible regressions:** the world-map layout; the precious-chest pool (district list); Renown totals.
 
-## Stage 6 · Lucas Part A (memories)
+## Stage 6 · Lucas Part A (memories) (Implemented, tested · not committed)
 - **Scope:** `lucas_mem_bread`, `lucas_mem_plan`, `lucas_mem_room`.
 - **Features:**
   - Memory objects at Hesper.
@@ -237,4 +237,21 @@
 | Test | desk | phone | small |
 |---|---|---|---|
 | `bond_cass_test.js` | 38/38 | 38/38 | 38/38 |
+| Full regression (all tests, chest spots) | pass | pass | pass |
+
+## Results · Stage 6 (2026-11-16)
+**Built**
+- Three memory quests, each a scene, a playable child-sized memory walk and a reflection.
+- A new `dorm` theme for the third memory.
+
+**System additions**
+- Walk missions can draw the player as a child (`kid:1`).
+- Walk-scene NPCs can be children (`kid:1`).
+- Walk missions can supply their own solids (`solids()`).
+
+**Fix found while building:** painted-prop collision shapes were also drawn as generic brown boxes over the art in St. Hesper's, the Office, Ash Lane, the tower and St. Maren's. Those collision shapes are now invisible (`inv:1`), so the real art shows. Collision is unchanged.
+
+| Test | desk | phone | small |
+|---|---|---|---|
+| `bond_lucas_test.js` | 37/37 | 37/37 | 37/37 |
 | Full regression (all tests, chest spots) | pass | pass | pass |

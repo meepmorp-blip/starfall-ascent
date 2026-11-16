@@ -38,9 +38,9 @@
 | `bram_bread` | The Smell of Fresh Bread | bond (Bram) | Chapter 1 cleared; the bakery window or Bram | St. Hesper's → Clock Tower, Market, Ash Lane | 10–14 min | Implemented | Yes |
 | `lark_couldnt_save` | The Things We Couldn't Save | bond (Naomi & Theo) | Chapter 1 cleared; the folder at St. Lucia's or Naomi | Clock Tower → St. Lucia's | 10–14 min | Implemented | Yes |
 | `cass_prayer` | A Prayer of Her Own | bond (Cassie) | Chapter 1 cleared; the prayer book at the Cloister or Cassie | Clock Tower → St. Maren's (new district, approved) | 12–16 min | Implemented | Yes |
-| `lucas_mem_bread` | The Things We Remember A·1 · The Bread Incident | memory (Lucas) | Chapter 1 cleared; Lucas captured | St. Hesper's (memory object) | 6–8 min | Planned | No |
-| `lucas_mem_plan` | The Things We Remember A·2 · The Worst Plan | memory (Lucas) | after `lucas_mem_bread` | St. Hesper's / Clock Tower | 6–8 min | Planned | No |
-| `lucas_mem_room` | The Things We Remember A·3 · Old Roommates | memory (Lucas) | after `lucas_mem_plan` | St. Hesper's (their old room, a memory walk) | 8–10 min | Planned | No |
+| `lucas_mem_bread` | The Things We Remember A·1 · The Bread Incident | memory (Lucas) | Chapter 1 cleared; Lucas captured | St. Hesper's (the loose fence board) | 5–7 min | Implemented | Yes |
+| `lucas_mem_plan` | The Things We Remember A·2 · The Worst Plan | memory (Lucas) | after `lucas_mem_bread` | St. Hesper's (the tower door) | 5–7 min | Implemented | Yes |
+| `lucas_mem_room` | The Things We Remember A·3 · Old Roommates | memory (Lucas) | after `lucas_mem_plan` | St. Hesper's (the dormitory window) → the old dormitory (memory) | 5–8 min | Implemented | Yes |
 | `dess_experiment` | The Girl in the Experiment | bond (Dess) · **special unlock** | all 7 prerequisite quests completed (§ 3.2) | Clock Tower → Institute annex *(new district, `lab` art)* | 15–20 min | Planned | No |
 | `lucas_hang_route` | The Things We Remember B·4 · A Familiar Route | hangout (Lucas) | **Chapter 2 rescue** | Hesper, Market, Plaza | 8–10 min | Blocked (needs Chapter 2) | No |
 | `lucas_hang_remember` | The Things We Remember B·5 · The Things We Remember | hangout (Lucas) | after B·4 | Clock Tower | 6–8 min | Blocked (needs Chapter 2) | No |
@@ -256,43 +256,62 @@
 - **Map:** world map place (cross icon, south-east of Ash Lane), a road from Ash Lane, and a Meridian-menu cell. It needs Chapter 1 cleared **and** the `oldchapel.found` story flag (new `need.flag` support).
 - **Also reused by:** `side_empty_chapel` and `side_unofficial_prayer` (Stage 7b).
 
-### `lucas_mem_bread` · A·1 The Bread Incident
-- **Category:** memory · **Character:** Lucas (`lucan`), as a child · **Start:** St. Hesper's kitchen window
-- **Story:**
-  - A different bread theft from Scene 9: an earlier, failed one.
-  - The imaginary cat is introduced as the joke.
-  - It does **not** repeat Scene 9's "the cat did it" lines.
-- **Unlock:** `when:['fugitive']`; Lucas `captured` or `rescued`
-- **Discovery:** the empty saucer
-- **Objectives:**
-  1. Remember: a flashback, as cutscene panels with KID sprites (`mxScene`).
-  2. Sneak through the kitchen: a short memory walk.
-  3. Choose the excuse.
+### Lucas · The Things We Remember, Part A · **Implemented, tested**
+**How the memories work**
+- **Unlock:** `when:['fugitive']`, so Lucas is `captured`.
+- **Discovery:** a memory object at St. Hesper's. Only the next unlocked one is visible; the chain is ordered with `pre`.
+- **Playing one:**
+  1. Touching the object starts the quest.
+  2. A short scene with KID sprites.
+  3. A **playable memory walk**: a non-hub walk mission with `kid:1`, so the player and Lucas are drawn as children.
+  4. A present-day reflection by Kairos.
+  5. Back at St. Hesper's, the quest completes.
+- **Leaving early:** quitting mid-memory leaves the quest active, and the object replays it.
+- **No present-day Lucas:** Lucas appears only as a child (tested).
+- **Scene 9:** none of its lines are reused (tested against the Scene 9 text). The fire, the Chancellor, Adoption Day and the cup are never shown.
+
+#### `lucas_mem_bread` · A·1 The Bread Incident (age 6)
+- **Object:** a loose board in the bakery fence.
+- **Memory:**
+  1. Lucas's plan to "rescue" the end pieces.
+  2. Through the fence.
+  3. A counting puzzle: the baker always stops at the eleventh loaf, so take the twelfth.
+  4. Caught behind the coal shed. Lucas: "…Pigeons." Sister Agathe gives each of them a corner back: "Next time, ask."
+- **Outro:**
+  - The cat joke is **born**: "Next time I'm saying a cat." / "We don't have a cat." / "Even better. Nobody can check."
+  - Kairos: "He's the one who had to forget."
 - **Rewards:**
-  - Bond +1 · Lucas (stored for later; Lucas is not playable until he is rescued)
+  - Bond +1 · Lucas (kept until he is back)
   - 20 Stardust
-  - Journal collectible "The saucer"
-- **Flags:** `lucas.mem1` · **Status:** Planned · **Tested:** No
+  - Journal: "The end piece"
+- **Flags:** `lucas.mem1`
 
-### `lucas_mem_plan` · A·2 The Worst Plan
-- **Category:** memory · **Pre:** `lucas_mem_bread`
-- **Story:** The two boys try to sneak up the clock tower. The tower they now live in was locked even then.
-- **Objectives:**
-  1. A flashback.
-  2. A timing/hide minigame that reuses Hide-and-Seek's spot logic.
-  3. Caught by Sister Agathe (`matron`).
-- **Rewards:** 20 Stardust, 1 Keepsake, collectible "The tower key that didn't fit"
-- **Flags:** `lucas.mem2` · **Status:** Planned · **Tested:** No
+#### `lucas_mem_plan` · A·2 The Worst Plan (age 8)
+- **Object:** the little door at the foot of the clock tower.
+- **Memory:** Lucas's plan (stairs, laundry, door, with a stolen key) against Kairos, who knows Sister Agathe's rounds by heart:
+  - stairs at 8:55
+  - laundry at 9:00
+  - tower door at 9:05
+- **How to play:** go in the right order (laundry, then stairs). Going early gets "not yet" feedback. At the door the key turns out to be the pantry key, and they're caught.
+- **Outro:** "Third try, we got up there… I still count, up there." This echoes Scene 11 without repeating it.
+- **Rewards:** 20 Stardust, 1 Keepsake, Journal "The key that didn't fit"
+- **Flags:** `lucas.mem2`
 
-### `lucas_mem_room` · A·3 Old Roommates
-- **Category:** memory · **Pre:** `lucas_mem_plan`
-- **Story:** A memory walk through their old room: find 5 objects that show the friendship.
-- **Objectives:**
-  1. Enter the memory (orphanage theme, KID sprites).
-  2. Find 5 objects (multi-objective).
-  3. Kairos, in the present, at the empty bunk.
-- **Rewards:** Bond +1 · Lucas, 30 Stardust, collectible "Two names on a bedpost"
-- **Flags:** `lucas.mem3` · **Status:** Planned · **Tested:** No
+#### `lucas_mem_room` · A·3 Old Roommates (age 9)
+- **Object:** the dormitory window.
+- **Memory:** their old room, in a **new `dorm` theme**: plank floor, eight small beds, two moonlit windows and a rug. One geometry list drives both the art and the solid beds.
+- **Find 5 things in any order:**
+  - two names carved on the window bedpost
+  - Lucas's button tin
+  - Kairos's drawing of the clock at 11:59
+  - emergency bread
+  - Lucas's list, THINGS KAIROS REMEMBERS THAT I DON'T: "Doesn't matter. He'll tell me."
+- **Last:** Lucas at the window: "If somebody ever picks one of us, the other one gets the window bed… We'll take turns. You count."
+- **Rewards:**
+  - Bond +1 · Lucas
+  - 30 Stardust
+  - Journal: "Two names on a bedpost"
+- **Flags:** `lucas.mem3`
 
 ### `dess_experiment` · The Girl in the Experiment (special)
 - **Category:** bond · **Character:** Dess (`dess`)
@@ -377,5 +396,5 @@ For every side quest:
 3. **Dess's prerequisites:** all three Lucas memories (proposed), or only some?
 4. **Cosmetic and accessory rewards** ("unique Dess accessory", "paired accessory"): the game has no cosmetic or accessory system. Proposed: a Journal collectible plus a Fragment instead, with no new system.
 5. **"Crafting materials":** there is no material system. Proposed: Fragments or Stardust. No new currency.
-6. **"The Morning After"** says "the first major rift event". The canon says that night was a **rain and the fountain rising**, not a rift. Proposed: write it as the night of the rain.
+6. **"The Morning After":** ~~the canon says that night was a rain and the fountain rising, not a rift~~. **Corrected (Stage 6):** the Chapter 1 cold open shows rifts over the Market Ring and the harbour that night ("Meridian. Twenty years ago. 11:52 PM."), and the Lore Bible adds the rain and the fountain the next morning. Both are canon, so the quest can cover the rifts *and* the morning the fountain was there. Nothing needs approval.
 7. **Bram's Eastern Rift.** The spec says Agnes *saved his life* there. The canon says Bram *followed her into* the Rift ("Fourteen Vices. He had a shield and no plan."). Keep to the canon wording unless you approve the stronger claim.
