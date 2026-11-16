@@ -1,6 +1,14 @@
-# Chapter 1 Revision · Blueprint (v3: narrative + gameplay design)
+# Chapter 1 Revision · Blueprint (v3.1: narrative + gameplay design)
 
 **Status:** design approved in direction ("Chapter 1 Complete Narrative Revision & Gameplay Expansion", 2026-11-17). Implementation runs in stages on branch `ch1-revision`. Nothing is published.
+
+**v3.1 changes** (owner review of v3, 2026-11-17)
+1. Durations recalculated (§ 3e). The v3 Act figures summed to 97, not 75. The honest total is about 97 min for the main story, plus about 18 min optional.
+2. Cassie's identity checked against the Lore Bible (§ 2 R13, § 9.6a).
+3. Full battle specs (§ 3a).
+4. A roster check for every fight (§ 3g). Two errors fixed: the cistern pick, and Lucas joining *during* a fight.
+5. Save migration, with real fixtures, a policy and results (§ 10a).
+6. Continuity check with fixes (§ 3h): the transfer time, the Festival-to-Registry dusk, and the warrant timing.
 
 **v3 changes** (from v2)
 - Every scene now has a **gameplay layer**: exploration, battles with their own mechanic, puzzles, optional content and rewards.
@@ -149,6 +157,7 @@ Cold open; `market`, Tessa's choice; `chase` (held minute #1); `first`, `garriso
     - a locked cabinet of labelled cores, all humming at different speeds
     - Dess at a desk (an NPC), nervous, who answers one question about the cores
   - Optional reads, each a one-time 20 Stardust: the shift roster ("23:00 shift change"; it matters later), a Concord funding letter ("on behalf of our patrons" [NEW, one line]).
+  - **Not optional for the plot:** Lucas learns the 23:15 transfer from the register (R9) and the party learns the cart time from Naomi (R10), so skipping the roster costs nothing.
 - **Puzzle · Core Resonance** [NEW, observational]:
   - Marr returns, kept lines: the needle, `c_marr_*`, "you signed… you just don't remember".
   - He sets three cores on a tray: "Hold the one that feels warm." In play, each core **pulses** at a different speed (a drawn glow).
@@ -164,7 +173,7 @@ Cold open; `market`, Tessa's choice; `chase` (held minute #1); `first`, `garriso
   - Marr does **not** help: he watches through the glass, writing.
   - Losing (the unit breaks): Retry, nothing lost.
 - **After the fight:**
-  - Marr, delighted and quiet: "Observation, retained indefinitely." Night transfer at the 23:00 shift change.
+  - Marr, delighted and quiet: "Observation, retained indefinitely." Transfer to the retention wing at **23:15**, once the 23:00 shift has signed in.
   - **Dess's progression:** pushes back (kept); watches which shelf (kept); **reads "retained indefinitely" and recognises the wording** from a file she was never allowed to open [NEW]; swaps the core for a blank (kept, now motivated).
   - Her decision is **active**: she tells no one, and she hides the real "little star" core in her coat.
 - **Flags:** `core_first_try`, `g7_seen` (all three memory points touched; read by Dess in R11 and by Marr's file in Chapter 2), `c_marr_*` (kept).
@@ -198,7 +207,7 @@ Full timeline in § 3 and sequence in § 5 (kept from v2), with these gameplay u
   - At the carriage: the tower, and kid Kairos's voice: "Inspection's over at nine. Meet at the tower."
 - **h. The cup** (two lines).
 - **i. The step:** what he remembers and what he doesn't. He knows Kairos mattered, and that he has lived nine years as someone else's son.
-- **The choice to help** [NEW, a quiet beat, no menu]: at the Office (his clearance) he reads the **transfer register**: Marr's order, 23:00. He signs out a courier pass under his own name. That's the commitment, and it can be traced to him.
+- **The choice to help** [NEW, a quiet beat, no menu]: at the Office (his clearance) he reads the **transfer register**: Marr's order, transfer at 23:15. He signs out a courier pass under his own name. That's the commitment, and it can be traced to him.
 - **Flags:** `lucas_frag` (0–3 orphanage objects), `c_lucas_door` (kept), `lucas_knock`.
 
 ### R10 · The Plan (Day 2, 21:00) · revised, with a Theo moment (≈ 3 min)
@@ -206,7 +215,7 @@ Full timeline in § 3 and sequence in § 5 (kept from v2), with these gameplay u
 - **Play:**
   - Agnes's Garrison safehouse (a cutscene).
   - **Puzzle · The Ticker** [NEW]: Naomi's message comes through as a tape of long and short taps. Theo has a card of the code (part of it is torn).
-    - The player matches the tape to the card. The torn letters can be worked out from context ("LAUNDRY CART 23:00 SERVICE STAIRS").
+    - The player matches the tape to the card. The torn letters can be worked out from context ("LAUNDRY CART 2255 SERVICE STAIRS").
     - Theo talks the whole time (character moment).
     - A wrong decode makes Theo laugh, "'Lunatic cart'? No…", and the player tries again.
   - Plan: three ride in on Naomi's laundry cart and open the service stairs from inside.
@@ -216,12 +225,12 @@ Full timeline in § 3 and sequence in § 5 (kept from v2), with these gameplay u
 
 ### R11 · Breakout (Day 2, 23:00–23:40) · kept core, made interactive (≈ 11 min)
 - **a. Lights Out** [NEW, Agnes's moment, `fight` with an objective]:
-  - From the laundry cart, the outside team (pick 3 of Agnes, Bram, Theo; Agnes recommended as lead) must **put out the yard's spotlights**: Spotlight Vices that lock lines on the cart.
+  - From the laundry cart, the outside team (**fixed party: Agnes, Bram, Theo**; Agnes leads; no pick screen) must **put out the yard's spotlights**: Spotlight Vices that lock lines on the cart.
   - Goal: defeat 4 spotlights before the cart reaches the door (a `defense` timer with the cart as the ward).
   - Agnes's sniping and Spotted marks make this her scene.
-- **b. `assault`** (kept, pick 3, with Lucas's convergence):
-  - Mid-fight a **courier lift** opens: Lucas steps out. "You said 'next'." / "This afternoon I didn't remember a kitchen fire" (kept).
-  - `join:'lucan'` for the rest of the breakout.
+- **b. Lucas's convergence, then `assault`** (kept fight):
+  - **Between** Lights Out and `assault` (a cutscene, not mid-fight; the engine can't add a member during a fight): the **courier lift** opens on the service landing and Lucas steps out. "You said 'next'." / "This afternoon I didn't remember a kitchen fire" (kept). `join:'lucan'` (his card).
+  - `assault`: **pick 3 of Agnes, Bram, Theo, Lucas.**
 - **c. `sneak`** (Kairos inside, `stealth`, kept), extended:
   - **two security switches** (interact points) must be thrown before the exit counts. The guards and cameras are as built.
   - Held minute #2, kept: "someone's holding it with me".
@@ -265,11 +274,14 @@ Full timeline in § 3 and sequence in § 5 (kept from v2), with these gameplay u
   - Turning them in the order of the tallies (1-2-3-4, *read from the wall*, not told) lifts the hatch.
   - Wrong order: the gears grind back with a clunk.
   - Kairos's held-minute sense also helps: if you stand still near the mechanism, the right gear **ticks once**. That's a subtle hint, not an answer.
-- **Cassie in the bell loft** [CHANGE]:
-  - Office of Correction, off duty, reading the St. Hesper's **Sunday spoon ledger** (children brought in the week of the fountain night).
+- **Cassie in the bell loft** [CHANGE: *where* she is met, not *who* she is]:
+  - **Who she is (canon):** **Sister Cassie Vire, 21**: a professed Sister under vows, serving as an agent of the **Office of Correction**. Her faith is sincere, and she has drunk the Mercy every Sunday since she was six (Lore Bible Part 15). She becomes a *former* agent only at the Festival.
+  - Here she is in her habit, outside an Office assignment; "off duty" means only that. Nothing about her vows, rank or history changes.
+  - She is reading the St. Hesper's **Sunday spoon ledger** (children brought in the week of the fountain night).
   - She recognises Kairos from tonight's warrant and doesn't arrest him. Cold and guarded.
   - **Choice `c_cass_ask` / `c_cass_leave`.**
-  - She drinks from a small Mercy vial before she leaves ("for bad nights"). Her parting line: "The Office searches St. Hesper's in two days. Be gone by then."
+  - She drinks from a small Mercy vial before she leaves ("for bad nights"). [NEW, approved v1 decision 4; documented in § 9.6a.] Her parting line: "The Office searches St. Hesper's in two days. Be gone by then."
+  - **Faith respected:** she prays before she reads, and her suspicion is of *the Office's records*, not of God. The hymnal page is something she found and is troubled by; it is not her belief.
 - **Hidden document (optional):**
   - Her hymnal page, left in the ledger: "The seven who were set to keep the gates have forgotten their keeping" [NEW lore hint, subtle].
   - Reading it gives a one-time Fragment and the flag `cass_page`; Cassie mentions it at the Festival.
@@ -315,7 +327,7 @@ Full timeline in § 3 and sequence in § 5 (kept from v2), with these gameplay u
 - **Patrols:** Church stewards walk routes. Get too close and "Move along" sets you back a few steps. Nothing fails (light, as decided).
 - **Restricted area · the cistern** [NEW, `fight`]:
   - Behind the fountain, a gated stair is guarded by **Waxer Vices that keep the others alive**: take the healers down first.
-  - The pick: 3 of 7; **Cassie isn't playable yet**.
+  - The pick: **3 of 6** (Kairos, Agnes, Bram, Theo, Lucas, Dess). Naomi is at St. Lucia's and **Cassie hasn't joined yet**.
   - Inside: the vats, the stamped cups, and **nothing provable**. It sets up the dread without revealing the mechanism.
 - **The Unburdening** [NEW, interactive]: people write a grief on a slip and burn it in a lantern. Kairos may write one too.
   - `c_unburden_write`: he holds the pen and can't think of anything. He has no grief he remembers, and that is its own answer.
@@ -331,6 +343,7 @@ Full timeline in § 3 and sequence in § 5 (kept from v2), with these gameplay u
   - It's a puzzle of *order*: the beam can only be wedged after the people are clear.
 - **Battle · Protect the Crowd** (`festival` defense, kept): pick 3 of 7, Cassie playable, crowd as the ward.
 - **Moves on by:** every Vice turns toward the Registry (kept). Theo's reader points the way the cup carts went.
+- **Bridge to the Registry** [NEW, fixes a timing gap]: the eclipse is at noon, but the party goes in at night. After the fight the Registry **locks down** (bronze shutters, stewards at the doors), and the city's Vices circle it all afternoon. The party waits out the afternoon in the cistern stair (R15's restricted area, now empty). At dusk, Lucas: "The night clerks come in through the archive stair. My father's keys open it." That is Agnes's "night staff are inside".
 - **Marr seed** (one panel): eclipse readings at the Square's edge. The party doesn't see him.
 - **Flags:** `mercy_clues` (0–3), `c_unburden_*`, `cistern_done`.
 
@@ -357,27 +370,49 @@ Full timeline in § 3 and sequence in § 5 (kept from v2), with these gameplay u
 
 ---
 
-## 3a. Battles at a glance (every story fight has a rule)
-| Fight | Scene | Type | The rule | Party |
-|---|---|---|---|---|
-| `first`, `garrison` | R3 | fight | kept | Kairos / + Agnes, Bram |
-| `lucia` | R6 | fight (pick 3/5) | defend the ward beds | |
-| **Containment Failure** | R8 | defense | protect the containment unit; devourers pull you in | Kairos solo |
-| **Forgotten Memory** | R9 | fight | three phases; each returned memory makes Lucas stronger | Lucas solo |
-| **Lights Out** | R11 | defense | spotlight Vices lock lines on the laundry cart; kill 4 before it reaches the door | pick 3 (Agnes led) |
-| `assault` | R11 | fight | kept; Lucas joins mid-fight | pick 3 |
-| `sneak` | R11 | stealth | kept + 2 security switches | Kairos |
-| **escape** | R11 | escort | protect Dess while she opens 3 seal doors | Dess + 2 |
-| **The cistern** | R15 | fight | waxers heal the others; kill healers first | pick 3/7 |
-| `rescue` | R15 | frozen | order: people out, then wedge the beam, before the minute ends | Kairos |
-| `festival` | R15 | defense | protect the crowd | pick 3/7 |
-| **Record Keepers** (`stacks`) | R16 | split | collectors steal records; a lost record seals a shelf | 2 × 3 |
-| Horaios | R16 | loss | kept (scripted) | pick 3 |
+## 3a. Battles: implementation specs (v3.1)
+**General rules (all story fights)**
+- **Losing:** the existing story failure screen: "Not like this. You restart right at the start of this fight. Nothing is lost." Retry restarts the same fight with the same party; Quit saves the scene and returns to the menu. Exceptions: the scripted Horaios loss, and solo fights, which restart the same way.
+- **Difficulty scaling:**
+  - Chapter 1 fights keep a **fixed enemy level** (the mission's `lvl`, as today) so the curve doesn't depend on grinding.
+  - Character level and Bond (+4% per heart, story only) apply as they do now.
+  - New fights continue today's curve: Act I lvl 1, R6 lvl 2, R8 lvl 3, R9–R11 lvl 3–4, R15–R16 lvl 5.
+- **Solo-fight floor** [NEW, small]: a solo character below the fight's level fights at that level for this fight only. Without it, a fresh save's Lucas would be level 1 against lvl 3. This touches only R8 (Kairos) and R9 (Lucas).
+- **No healer from R11 to R16:** the counts below already include the 10–15% cut (v2 § 11).
 
-- **Retired:** `cass` (rooftop), kept for a future Cassie trial.
-- **Losing any fight:** Retry at the start of the fight, nothing lost (existing `missionFail`).
-- **Balance (from v2 § 11):** with no healer in R11–R16, pressure drops 10–15% through each mission's own enemy counts and levels.
+| Fight (scene) | Type | Objective (win) | Fail | Enemies and behaviour | The distinct rule | Party | Lvl / numbers |
+|---|---|---|---|---|---|---|---|
+| **Containment Failure** (R8) | `defense` | Keep the **containment unit** standing for **40 s** | Unit HP reaches 0 (or Kairos goes down) | Devourers *pull* Kairos toward the cracked cabinet; Gossips chip at the unit. Spawns come **from the cabinet** (one side), not the edges | Positional: stand between the cabinet and the unit while resisting the pull; dodge the pull or be dragged off the unit | Kairos (solo, forced) | lvl 3 (solo floor), max 4 on screen, unit 100 HP |
+| **Forgotten Memory** (R9) | `fight`, boss-style | Defeat **the Vice that remembers him** (Collector body, bigger) | Lucas goes down | Phase 1 (100–75%): circles at range, steals Pneuma (Collector). At 75 / 50 / 25% the **screen freezes for 1 s** (the existing frozen tint) with a fragment line; each adds 2 Gossips and gives Lucas **Remembering** (+10% damage, stacks to 3). Phase 4 (<25%): it stops fleeing and charges | **Gets easier as he remembers**, so the emotion is the mechanic. Teaches range and marks: it punishes standing close | Lucas (solo, forced) | lvl 3 (solo floor), boss HP ≈ a lvl-3 champion × 0.8, adds max 3 |
+| **Lights Out** (R11) | `escort` (the cart carries itself along the yard path) | Destroy **4 Spotlight Vices** before the laundry cart reaches the service door (~60 s of path) | The cart's HP reaches 0 (spotlight lines burn it) | Spotlights stand on the yard walls and **lock lines** on the cart; Hotheads rush the cart. Lines must be broken by **killing the light** or **standing in the line** (Bram's shield) | Precision under a timer: Agnes's range and Spotted marks; Bram body-blocks lines | Agnes, Bram, Theo (fixed; Agnes leads) | lvl 3, cart 100 HP, 4 spotlights + up to 3 hotheads |
+| `assault` (R11) | `fight` (kept) | 20 kills (→ 17 with no healer) | All down | as built | kept | pick 3 of Agnes, Bram, Theo, Lucas | lvl 3 |
+| `sneak` (R11) | `stealth` (kept) + 2 switches | Throw **2 security switches**, then reach the exit | Caught → back to the last checkpoint (kept); no fail screen | Guards and cameras as built | Switches open the last door; the order is free | Kairos | — |
+| **Escape** (R11) | `escort` (was `fight`) | Get **Dess** through **3 seal doors**; she must work **5 s at each door** while you hold the room | Dess's HP reaches 0 | Waxers heal; Hotheads target **Dess** first while she works; a Deadline grows at the third door | Protect a working NPC: you can't leave her side; the healers must die before the Deadline lands | Dess (forced) + 2 of Kairos, Lucas, Agnes, Bram, Theo | lvl 3, Dess 100 HP, slowed when hit |
+| **The Cistern** (R15) | `fight` | 12 kills | All down | **Waxers stand at the back and heal** everything; Gossips and Hotheads screen them | Target priority: kill the healers first or the fight doesn't end | pick 3 of 6 (Kairos, Agnes, Bram, Theo, Lucas, Dess) | lvl 4, max 5, 3 waxers |
+| `rescue` (R15) | `frozen` (moved) | Move **3 people** out from under the rig, then **wedge the beam**, within the minute | The timer ends → Retry | None (stopped time) | Order puzzle under a clock: the wedge only works with nobody under the rig | Kairos | timer 60 s (re-timed to the new layout) |
+| `festival` (R15) | `defense` (kept) | Keep the crowd safe for 100 s | Crowd HP reaches 0 | as built | kept | pick 3 of 7 (Cassie now playable) | lvl 5 (−10% with no healer) |
+| **The Record Keepers** (`stacks`, R16) | `split` (kept) + a rule | Team A: clear the aisles. Team B: hold the index (kept goals) | All of a team down | **Collectors grab a record and run for the far wall**; if one gets there, a shelf **seals** and that team's arena narrows (min 60%) | The arena shrinks if you ignore the runners: prioritise them | Two teams of 3 from 7 | lvl 5, −10%, 2 collectors per wave |
+| Horaios (R16) | `loss` (kept) | scripted | scripted | kept | kept | pick 3, Kairos must | kept |
 
+**Not reused as the "same fight with new enemies":**
+
+| Fight | Type | What makes it distinct |
+|---|---|---|
+| Containment Failure | defense | Positional pull |
+| Forgotten Memory | boss | Phases that buff the player |
+| Lights Out | escort | Precision under a timer, against lines |
+| Escape | escort | Protect someone who must stand still |
+| Cistern | fight | Target priority |
+| Rescue | frozen | Order under a clock |
+| Record Keepers | split | A shrinking arena |
+
+**New code needed (small):**
+- the solo floor
+- a boss phase hook (thresholds → freeze + buff)
+- an escort variant where the carrier follows a path (Lights Out) or stops at doors (Escape)
+- a `stacks` rule for record runners and shelf seals
+
+Everything else already exists.
 ## 3b. Puzzles at a glance (all observational, none told by an NPC)
 | Puzzle | Scene | Clue in the room | Wrong answer |
 |---|---|---|---|
@@ -409,19 +444,64 @@ Kept: `c_bread`/`c_earnest`/`c_joke`, `c_ines_*`, `c_noemi_*`, `c_truth`/`c_lie`
 
 Retired (harmless in old saves): `c_cass_name`, `c_cass_joke`.
 
-## 3e. Pacing and length
-| Act | Scenes | Est. min | Mix |
+## 3e. Pacing and length (recalculated, v3.1)
+**Method**
+- The same rates as v2, which put today's chapter at about 56 min ("about an hour" on the menu):
+  - a dialogue scene ≈ 1–2 min
+  - a walk with interact points ≈ 1.5–2.5 min, including movement
+  - a story fight ≈ 2–3 min
+  - a puzzle ≈ 1–2 min, including one wrong try
+- Kept scenes keep their v2 figures.
+- **Main** means everything the story requires. **Optional** means extra reads, clues, objects, Bond talks and stalls.
+- Retries after a lost fight are not counted (about +2–4 min for a typical first-time player).
+- Realistic error margin: ±15%. These figures will be checked by a timed playthrough in Stage 8.
+
+| Scene | Main path (what's in it) | Main | Optional |
 |---|---|---|---|
-| I | R0–R5 | 10 | kept |
-| II | R6–R8 | 21 | puzzle → fight → walk → quiet → choice → investigation → fight |
-| III | R9–R12 | 30 | solo walk → solo fight → playable memory → puzzle → 3 fights + stealth → quiet walk |
-| IV | R13–R14 | 12 | exploration, puzzle, bonds, debate |
-| V | R15–R16 | 24 | festival exploration, fight, ritual, timed rescue, defense, exploration, split fight, finale |
-| **Total** | | **≈ 75 min** (≈ 65 with no optional content) | |
+| Act I (R0–R5) | kept: cold open, `market`, `chase`, `first`, `garrison`, joins, `carry` | **10** | — |
+| R6 St. Lucia's | exam 1.5 · reader puzzle 1 · `lucia` 2.5 · ward-clock puzzle 1.5 · Naomi stays / ticker 1 | **7.5** | +2 (3 patients, shelf, chart) |
+| R7 Concord Office | room walk 1.5 · `queue` 1.5 · window + choice 1.5 · Lucas 1 · Marr 1 · Theo / gate 1 | **7.5** | +1 (directory, notices) |
+| R8 Institute | lab walk 2 · Marr / needle 1.5 · Core Resonance 1.5 · G-7 memory walk 1 · Containment Failure 2.5 · Dess 1 | **9.5** | +1.5 (roster, letter, cabinet) |
+| R9 Lucas | archive 1.5 · `longway` 2 · Agathe 1.5 · orphanage 1.5 · Forgotten Memory 2.5 · fire 1.5 · morning after 2 · cup / step 1 · register 0.5 | **14** | +1.5 (3 objects) |
+| R10 The Plan | safehouse 1 · ticker decode 1.5 | **2.5** | — |
+| R11 Breakout | Lights Out 2.5 · Lucas 1 · `assault` 2.5 · `sneak` + switches 3 · Dess / cores puzzle / choice 2 · escort escape 2.5 · Marr / yard 1 | **14.5** | — |
+| R12 Crane house | walk + choice | **2** | — |
+| R13 Clock Tower | arrival 1 · exploration (main path) 1 · clock puzzle 1.5 · Cassie 2 · Lucas 1.5 · Lyra 0.5 | **7.5** | +5 (Bond talks 3, objects 1, hymnal 1) |
+| R14 Naomi's warning | ticker 1 · debate + choice 1.5 | **2.5** | — |
+| R15 Festival | warm walk 2 · cistern fight 2.5 · Unburdening 1 · Tessa's mother / Cassie 3 · eclipse 0.5 · rescue 1.5 · `festival` 2.5 · bridge 0.5 | **13.5** | +5.5 (clues 2.5, stalls / NPCs 2, Bram's mother 1) |
+| R16 Registry → dawn | dusk 0.5 · hall 1.5 · gates puzzle 1.5 · Record Keepers 4 · Window 1 / Horaios 3 · Lucas taken / collapse 1.5 · dawn / coda 3.5 | **15.5** | +2 (4 reads) |
 
-- Rhythm rule: no two cutscenes back-to-back over 2 minutes.
+| Act | Main | Optional | With all optional |
+|---|---|---|---|
+| I (R0–R5) | 10 | 0 | 10 |
+| II (R6–R8) | 24.5 | 4.5 | 29 |
+| III (R9–R12) | 33 | 1.5 | 34.5 |
+| IV (R13–R14) | 10 | 5 | 15 |
+| V (R15–R16) | 29 | 7.5 | 36.5 |
+| **Total** | **≈ 106.5 min** | **≈ 18.5 min** | **≈ 125 min** |
+
+**Honest reading**
+- The design as written runs **≈ 1 h 45 min** for the main story (≈ 2 h with everything). That is well over the 60–75 min target, and almost twice today's chapter.
+- Most of the growth is Act III (Lucas's thread and the interactive breakout) and Act V (the Festival investigation and the Registry hall).
+- I recommend **not** forcing it down by shortening estimates.
+
+**Trims that keep every story beat** (for your decision; the § 2 design is unchanged until you choose). Each one saves about 2–3 min of main path:
+
+| # | Trim | Saves |
+|---|---|---|
+| T1 | Lights Out folds into `assault` as its first objective (one fight, not two) | ≈ 2.5 |
+| T2 | R9's orphanage walk merges into `longway` (the objects move onto the same map) | ≈ 1.5 |
+| T3 | R12 becomes a 1-min cutscene with the choice (no walk) | ≈ 1 |
+| T4 | The cistern fight becomes optional (the stair can be skipped; its clue moves to a stall) | ≈ 2.5 |
+| T5 | The Registry hall reads become optional along a short main path (the gate is near the entrance) | ≈ 1 |
+| T6 | The R7 room walk merges into `queue` | ≈ 1.5 |
+| T7 | Ward-clock and ticker puzzles become optional shortcuts (skipping them plays a short line instead) | ≈ 2.5 |
+
+All seven together: ≈ 12.5 min, giving **≈ 94 min main**. Getting to 75 would mean cutting whole set pieces: for example Lucas's orphanage *and* morning-after walk, or the Festival investigation. I don't recommend that; they are the parts the brief values most.
+
+**Rhythm rules (unchanged)**
+- No two cutscenes back to back over 2 minutes.
 - Every revelation is followed by a walk or a fight.
-
 ## 3f. Character moments (who gets to be themselves)
 | Character | Moment |
 |---|---|
@@ -433,6 +513,48 @@ Retired (harmless in old saves): `c_cass_name`, `c_cass_joke`.
 | Lucas | the archive, the orphanage, the solo fight, the playable memory, the courier pass, the Crane house |
 | Cassie | the spoon ledger, the hymnal page, covering at the patrol, the badge |
 | Dess | the hidden core, the doors in the escape, the cores choice |
+
+## 3g. Party availability: every fight checked (v3.1)
+Who is in `sq.roster` at each point, from the join / leave / rejoin steps:
+
+| Point | Roster | Fights here | Valid? |
+|---|---|---|---|
+| R3 → R5 | Kairos, Agnes, Bram | `first` (Kairos), `garrison` (the 3), `carry` (Agnes, Bram) | ✔ |
+| R6 | + Naomi, Theo | `lucia` pick 3 of 5 | ✔ |
+| after R6 | − Naomi (`leave`) → Kairos, Agnes, Bram, Theo | — | ✔ |
+| R8 | (Kairos alone in the scene; the roster is unchanged) | Containment Failure: forced `['kairos']` | ✔ forced party, not a pick |
+| R9, R12 | (Lucas's own thread) | Forgotten Memory: forced `['lucan']` | ✔ Lucas is not in the roster yet; a forced party doesn't need it |
+| R11 | Kairos, Agnes, Bram, Theo | Lights Out: fixed Agnes, Bram, Theo | ✔ |
+| R11 after the lift | + Lucas (`join`) | `assault` pick 3 of Agnes, Bram, Theo, Lucas (Kairos is inside) | ✔ `from` list excludes Kairos |
+| R11 | Kairos | `sneak` | ✔ |
+| R11 after the cores | + Dess (`join`) | Escape: Dess + 2 of Kairos, Lucas, Agnes, Bram, Theo | ✔ |
+| after R11 | − Lucas (`leave`) → Kairos, Agnes, Bram, Theo, Dess | — | ✔ |
+| R13 ~02:00 | + Lucas (`rejoin`, no card) | — | ✔ |
+| R15 | Kairos, Agnes, Bram, Theo, Lucas, Dess | Cistern: pick 3 of 6 | ✔ (v3 said 7: **fixed**) |
+| R15 after the badge | + Cassie (`join`) | `rescue` (Kairos); `festival` pick 3 of 7 | ✔ |
+| R16 | the 7 | `stacks` 2 × 3 of 7; the loss: pick 3, Kairos must | ✔ |
+| dawn | − Lucas (taken); Naomi arrives | — | ✔ (the coda is a cutscene) |
+
+**Rules the implementation must follow**
+- Forced parties (`party:[…]`) are used only for scenes where the story puts exactly those people there.
+- Every pick uses `from:` so absent people can't be chosen.
+- `prefer` never names someone who isn't in the roster.
+- Naomi never appears in a Chapter 1 fight after R6. She is still playable everywhere else (Meridian, Rifts, replays of R6).
+- The tests check each row (`ch1_revised_test`, Stage 8).
+
+## 3h. Continuity check (v3.1)
+| Thread | Timeline | Issue found | Fix |
+|---|---|---|---|
+| Marr's transfer | R8 sets "retained indefinitely"; R9 21:30 Lucas reads the register; R10 21:00 Naomi's cart time; R11 23:00 | v3 had the transfer *at* 23:00 while the breakout also starts at 23:00 | The transfer is booked for **23:15**, after the 23:00 shift signs in. The cart enters at **22:55** (Naomi), and Lucas's courier pass is stamped 23:00. Both plans aim at the 15-minute gap, the same timetable read from two sides |
+| Lucas arrives / leaves | R7 Day 2 10:00 (Office) → R9 18:00–21:30 → R11 23:00 joins → 23:40 leaves (yard) → R12 00:30 Crane → R13 02:00 tower | ✔ consistent; he never learns the hideout from the party | — |
+| Cassie's warrant | R13 ~00:15: she "recognises Kairos from tonight's warrant" | Is a warrant out within the hour of the breakout? | Yes: Marr reports a "heretic break-in" at 23:40 (R11), and the Office posts the Unwritten's description at midnight (it already had it from the morning's scene at the Office). One line in R13: "They posted you at midnight." |
+| Naomi's channel | Ticker given R6 (Day 1); used R10 (Day 2 21:00), R13 Bond (Day 3 night), R14 (Day 3 morning); she arrives at dawn Day 5 | The ticker's limits: short, slow, could be intercepted | Every message is under 12 words. In R14 she says the Office "took the other machine apart". The ticker then goes quiet, which explains why there is no contact during the Festival |
+| St. Lucia's search | R14 (Day 3 morning): the Office and Garrison searched it | Why is Naomi free until dawn Day 5? | They search the hospital, not her: she's a doctor on shift. She leaves when the Registry collapses on Day 4 night, to treat the injured, and walks to the roof at dawn |
+| Festival → Registry | Eclipse at noon Day 4; the Registry fight at night | v3 had no bridge (noon → "night staff") | **Added the R15 bridge:** the Registry lockdown, the afternoon in the cistern stair, dusk, and Lucas's archive stair |
+| Ash Lane unlock | R10 (Naomi's laundry cart route) | ✔ fits the map (St. Lucia's → Ash Lane → north) | `need:{ch1:9, flag:'ashlane'}` set in R10 |
+| Held minutes | #1 R2 chase · #2 R11 sneak · #3 R15 rescue | ✔ the coda's "Three times" holds | — |
+| Who's on the dawn roof | Kairos, Agnes, Bram, Theo, Dess, Cassie + Naomi = **seven**; Lucas taken | ✔ [CANON] | — |
+| Theo's history | R7 three lines; R8 his decommissioned prototype; R10 "never below sub-level one" | ✔ "about two years, eight years ago" + "six years" of being fringe | — |
 
 ## 12a. Visual direction and asset needs
 - **Reused (no new maps):**
@@ -490,8 +612,8 @@ Implementation follows § 15, stage by stage.
 | 19:30 | St. Hesper's gate | **Sister Agathe** recognises him: "You were the other boy." She tells him about the fire, the boy who pulled him out, and the Chancellor at the door | Kairos is real; Kairos saved him | — |
 | 20:00 | Orphanage roof | **Solo fight**: a Vice carrying his memories (§ 5) | Flashes of bread, a laugh, smoke | It attacks the orphanage, the way Vices did after the fire [CANON] |
 | 20:15 | Memory | The fire (kept), then the playable morning after (§ 5). Last fragment: Kairos's voice, "Inspection's over at nine. Meet at the tower." | The fire, the hands, the window, being taken, the cup, the tower | — |
-| 21:30 | Concord Office (his clearance) | Reads the **transfer register**: Marr's order, "retained indefinitely", night transfer at the 23:00 shift change, sub-level 3 | Where Kairos is, and that tonight is the last easy chance | He decides to help |
-| 23:00 | Institute, via the **records-courier lift** (senior clerks have courier passes [NEW]) | Comes up into the corridor where the outside team is fighting | — | **Convergence:** both plans use the 23:00 shift change, his from the register and the party's from Naomi's laundry schedule. It isn't luck; it's the same timetable |
+| 21:30 | Concord Office (his clearance) | Reads the **transfer register**: Marr's order, "retained indefinitely", transfer to the retention wing at **23:15**, after the 23:00 shift change, from sub-level 3 (v3.1) | Where Kairos is, and that tonight is the last easy chance | He decides to help |
+| 23:00 | Institute, via the **records-courier lift** (senior clerks have courier passes [NEW]) | Comes up into the corridor where the outside team is fighting | — | **Convergence** (v3.1: both aim at the 23:00–23:15 gap; the cart enters 22:55, his pass is stamped 23:00): both plans use the 23:00 shift change, his from the register and the party's from Naomi's laundry schedule. It isn't luck; it's the same timetable |
 | 23:40 | Service yard | Leaves **before** the hideout is chosen: "I have to ask my father something. Tonight, while I still remember the question." | He doesn't know where they'll hide | — |
 | 00:30 | Crane house (R12) | Confronts the Chancellor and takes his coat | He can't go home | — |
 | 02:00 | Clock tower (R13) | Guesses where Kairos would hide, from the R9 fragment ("Meet at the tower"), and climbs up | The tower from his recovered memory | He has nowhere else, and he thinks Kairos would choose it |
@@ -569,6 +691,7 @@ Built only from **existing systems**: walk scenes, interact points, a fight miss
 | 9.4 | **Theo** has no stated link to the Institute | Was on Marr's staff about two years, eight years ago; resigned quietly; Marr made him "fringe" | Gives the rivalry roots; explains "nobody takes seriously" and "six years" | Chapter 2 (Marr's return), Theo's future story; rewrites one line ("which floor") | Optional (strong) |
 | 9.5 | **No ticker device** | Theo's paired brass ticker boxes, tapping short messages over the city's speaking-horn wires (the same network Crane uses at dawn) | Keeps Naomi present without a phone; fits "builds machines out of whatever he finds" | Chapter 2 communication (limit: short, slow, could be intercepted) | Optional (or replace with notes carried by a hospital runner) |
 | 9.6 | **Cassie's motive:** a true believer who breaks at the Festival | Same break, but she was already privately investigating the spoon ledger, carries a Mercy vial for bad nights, and owns a hymnal page about the gate-keepers | The brief: her own agenda and her use of the Mercy as relief | Her Bond Story (it gains setup); Chapter 2 "Cassie after the reveal" | Essential in part (the agenda); optional in part (the vial, the hymnal page) |
+| 9.6a | **Cassie's identity** (checked v3.1): Lore Bible Part 15: "Sister Cassie Vire · 21 · former agent of the Office of Correction. A true believer…" She is a vowed Sister serving as an Office agent; "former" means after the Festival | **Unchanged.** Still a vowed Sister and an active agent at the tower (in her habit, off assignment). Only *where she is first met* changes (9.1). Her Mercy vial is the one [NEW] detail (v1 decision 4) | The brief: she must not gain a new occupation or backstory | Her Bond Story, Chapter 2 | — (no change to identity) |
 | 9.7 | **Ash Lane unlocks** at Chapter 1 Scene 10 (`need:{ch1:10}`), tied to the rooftop | Unlocks at R10: Naomi's laundry cart runs up Ash Lane, the washing street. (v1's "Lucas's walk" didn't fit the map: Ash Lane is south-east, between St. Lucia's and the south; the Office and St. Hesper's are north and east) | Scene 10 is gone | `WORLD_LOCS.ashlane.need`, `ashlane_test` (save keys and its no-rooftop rule), `docs/world` | **Essential** |
 | 9.8 | **Lucas** is the clerk who opens Kairos's blank record | A normal clerk; Lucas is drawn by the commotion | The brief | Chapter 2 references to Window 3 / the clerk (none found); the Lore Bible Scene 7 summary | **Essential** |
 | 9.9 | **Lucas** remembers off-screen and knocks at the Garrison safehouse | His own playable thread; joins inside the Institute; leaves; finds the tower from memory | The brief; fixes the safehouse-address gap | Part A memories (no overlap, § 14); Chapter 2's rescue (stronger) | **Essential** |
@@ -622,4 +745,40 @@ After approval, these go into `Lore_Updates` as v1.2, so the Lore Bible is never
 - **Tests:** load a fixture for every row and check the resume point, the roster, `met` and the Ash Lane unlock.
 
 ---
+
+### 10a. Migration (v3.1): implemented infrastructure and verified
+**Where it runs**
+- **Not in `loadSave()`.** That runs at start-up before `CH1_SEQ` is defined, so it can't use the sequence.
+- `ch1MigrateSave()` runs once **at the end of start-up**, after everything is defined.
+- It stays **off** (`CH1_REV_LIVE=false`) until the revised scenes exist (Stage 7).
+
+**Policy (never loses progress)**
+1. A forced **snapshot** of the whole save first (the existing rolling backups).
+2. The untouched `ch1b` is copied once to `ch1b_pre_rev`.
+3. **Only `ch1b` is replaced:**
+   - its key, moved to the start of the first revised scene not fully passed
+   - its roster, rebuilt by replaying the revised sequence's join / leave / rejoin steps
+   - `met`, which only grows
+   - `rev: 2`
+4. **Cleared** saves keep their place, `done` and `ch1Clears`; only `met` is filled in.
+5. Saves already migrated, saves without Chapter 1 data and damaged `ch1b` values are left alone.
+6. Running it twice changes nothing.
+
+**Fixtures and results**
+- `tools/fixtures/ch1_old_saves.json` holds 19 real-shaped old saves: every row of the § 10 table, plus a new player, a cleared chapter, an already migrated save, no Chapter 1 data, and a damaged `ch1b`.
+- Each fixture carries levels, equipped fragments, Stardust, Keepsakes, claimed rewards, Bonds, star ratings, Meridian quests and items, and story flags.
+- **`tools/ch1_save_migration_test.js`: 21/21 pass.** For each fixture:
+  - the right resume key
+  - every other part of the save byte-identical
+  - choice flags kept
+  - everyone met before still met
+  - cleared progress unchanged
+  - the original in `ch1b_pre_rev`
+  - a pre-migration snapshot taken
+  - persisted
+  - a second run is a no-op
+  - nothing moves while the switch is off
+
+  A damaged `ch1b` still opens the Story menu.
+- **Still to verify in Stage 7:** that each new key lands on the right *step and party* in the finished revised sequence (the targets "Scene 9.6", "Scene 11"… exist only then). The test will be extended with a resume-and-roster check per row.
 

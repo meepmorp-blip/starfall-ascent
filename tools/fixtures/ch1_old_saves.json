@@ -1,0 +1,3440 @@
+[
+ {
+  "name": "new player (no progress)",
+  "want": "start#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 0,
+    "k": "start#0",
+    "roster": [
+     "kairos"
+    ],
+    "flags": {}
+   }
+  }
+ },
+ {
+  "name": "Act I, Scene 3",
+  "want": "Scene 3#3",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 9,
+    "k": "Scene 3#3",
+    "roster": [
+     "kairos",
+     "ines"
+    ],
+    "flags": {
+     "c_bread": true
+    }
+   }
+  }
+ },
+ {
+  "name": "Scene 5 carry",
+  "want": "Scene 5#1",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 15,
+    "k": "Scene 5#1",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram"
+    ],
+    "flags": {
+     "c_bread": true,
+     "c_ines_fight": true
+    }
+   }
+  }
+ },
+ {
+  "name": "Scene 6 mid (ward rift)",
+  "want": "Scene 6#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 21,
+    "k": "Scene 6#5",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo"
+    ],
+    "flags": {
+     "c_noemi_joke": true
+    }
+   }
+  }
+ },
+ {
+  "name": "Scene 7 queue",
+  "want": "Scene 7#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 26,
+    "k": "Scene 7#1",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo"
+    ],
+    "flags": {}
+   }
+  }
+ },
+ {
+  "name": "Scene 8 Institute",
+  "want": "Scene 8#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 28,
+    "k": "Scene 8#0",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo"
+    ],
+    "flags": {
+     "c_truth": true
+    }
+   }
+  }
+ },
+ {
+  "name": "Scene 9 before assault (Lucas met)",
+  "want": "Scene 9#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 33,
+    "k": "Scene 9#4",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo",
+     "lucan"
+    ],
+    "flags": {
+     "c_truth": true,
+     "c_marr_joke": true
+    }
+   }
+  }
+ },
+ {
+  "name": "Scene 9 at assault",
+  "want": "Scene 9.6#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 35,
+    "k": "Scene 9#6",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo",
+     "lucan"
+    ],
+    "flags": {
+     "c_lie": true
+    }
+   }
+  }
+ },
+ {
+  "name": "Scene 9 escape (Dess met)",
+  "want": "Scene 9.6#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 42,
+    "k": "Scene 9#13",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo",
+     "lucan",
+     "dess"
+    ],
+    "flags": {}
+   }
+  }
+ },
+ {
+  "name": "Scene 10 rooftop (retired)",
+  "want": "Scene 11#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 45,
+    "k": "Scene 10#1",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo",
+     "lucan",
+     "dess"
+    ],
+    "flags": {
+     "c_cass_name": true
+    }
+   }
+  }
+ },
+ {
+  "name": "Scene 10 frozen fire (retired)",
+  "want": "Scene 11#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 47,
+    "k": "Scene 10#3",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo",
+     "lucan",
+     "dess"
+    ],
+    "flags": {
+     "c_cass_joke": true
+    }
+   }
+  }
+ },
+ {
+  "name": "Scene 11 tower",
+  "want": "Scene 11#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 50,
+    "k": "Scene 11#1",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo",
+     "lucan",
+     "dess"
+    ],
+    "flags": {
+     "c_breakfast": true
+    }
+   }
+  }
+ },
+ {
+  "name": "Scene 12 Festival (Cassie joined)",
+  "want": "Scene 12#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 56,
+    "k": "Scene 12#4",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo",
+     "lucan",
+     "dess",
+     "cass"
+    ],
+    "flags": {
+     "c_job": true
+    }
+   }
+  }
+ },
+ {
+  "name": "Scene 13 Registry",
+  "want": "Scene 13#2",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 60,
+    "k": "Scene 13#2",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo",
+     "lucan",
+     "dess",
+     "cass"
+    ],
+    "flags": {}
+   }
+  }
+ },
+ {
+  "name": "Scene 14 Intake Window 1",
+  "want": "Scene 14#1",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 63,
+    "k": "Scene 14#1",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo",
+     "lucan",
+     "dess",
+     "cass"
+    ],
+    "flags": {
+     "c_been": true
+    }
+   }
+  }
+ },
+ {
+  "name": "Chapter cleared",
+  "want": "Scene 14#3",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 65,
+    "k": "Scene 14#3",
+    "roster": [
+     "kairos",
+     "ines",
+     "bram",
+     "noemi",
+     "theo",
+     "lucan",
+     "dess",
+     "cass"
+    ],
+    "flags": {
+     "c_been": true
+    },
+    "done": 1
+   },
+   "ch1Clears": 1
+  }
+ },
+ {
+  "name": "already migrated (rev 2)",
+  "want": "Scene 11#0",
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": {
+    "i": 40,
+    "k": "Scene 11#0",
+    "roster": [
+     "kairos"
+    ],
+    "flags": {},
+    "rev": 2
+   }
+  },
+  "already": 1
+ },
+ {
+  "name": "no Chapter 1 data",
+  "want": null,
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   }
+  },
+  "none": 1
+ },
+ {
+  "name": "damaged ch1b (a string)",
+  "want": null,
+  "save": {
+   "v": 2,
+   "nextId": 9,
+   "dust": 1234,
+   "keep": 5,
+   "chars": {
+    "kairos": {
+     "xp": 40,
+     "lvl": 8,
+     "slots": {
+      "sun": 3,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "ines": {
+     "xp": 10,
+     "lvl": 7,
+     "slots": {
+      "sun": null,
+      "moon": 4,
+      "rising": null
+     }
+    },
+    "bram": {
+     "xp": 0,
+     "lvl": 6,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "noemi": {
+     "xp": 0,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "theo": {
+     "xp": 5,
+     "lvl": 5,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "lucan": {
+     "xp": 0,
+     "lvl": 4,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "cass": {
+     "xp": 0,
+     "lvl": 2,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    },
+    "dess": {
+     "xp": 0,
+     "lvl": 3,
+     "slots": {
+      "sun": null,
+      "moon": null,
+      "rising": null
+     }
+    }
+   },
+   "frags": [
+    {
+     "id": 3,
+     "el": "Fire",
+     "rar": 2,
+     "sign": "Aries",
+     "deg": 4,
+     "slot": "sun",
+     "lvl": 1
+    },
+    {
+     "id": 4,
+     "el": "Water",
+     "rar": 1,
+     "sign": "Cancer",
+     "deg": 9,
+     "slot": "moon",
+     "lvl": 0
+    },
+    {
+     "id": 5,
+     "el": "Air",
+     "rar": 3,
+     "sign": "Gemini",
+     "deg": 12,
+     "slot": "sun",
+     "lvl": 2
+    }
+   ],
+   "claims": {
+    "ch1:scene3": 1700000000000,
+    "rift:fire:1": 1700000000001,
+    "mx:q:streets": 1700000000002
+   },
+   "bonds": {
+    "ines": 2,
+    "bram": 1,
+    "noemi": 1,
+    "theo": 1
+   },
+   "stars": {
+    "rift_fire": 3,
+    "rift_water": 2
+   },
+   "bossWeek": {
+    "0": 2900
+   },
+   "mx": {
+    "v": 1,
+    "at": "plaza",
+    "seen": {
+     "market": 1,
+     "plaza": 1,
+     "yard": 1,
+     "chapel": 1,
+     "ward": 1
+    },
+    "talk": {
+     "rosa": 2
+    },
+    "found": {
+     "market.coin": 1
+    },
+    "q": {
+     "streets": {
+      "s": "done",
+      "n": 2
+     },
+     "glasses": {
+      "s": "active",
+      "n": 1,
+      "at": 1
+     }
+    },
+    "items": {
+     "glasses": 1
+    },
+    "f": {
+     "streetsTold": 1
+    }
+   },
+   "story": {
+    "ch1.met.matteo": 1
+   },
+   "ch1b": "broken"
+  },
+  "none": 1
+ }
+]
