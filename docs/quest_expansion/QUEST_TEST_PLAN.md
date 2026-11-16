@@ -78,12 +78,30 @@ For every story quest:
   - Hidden while `captured`.
   - Unlocked only by `ch2.lucasRescued`.
 
-## 4. Regression suite (run after every stage)
+## 4. Running the tests (`tools/run_tests.js`)
+The runner gives each test its own port (`SF_PORT`), runs several at once, and prints one line per run plus a summary. The summary is also saved to `tools/out/run_tests_summary.txt`.
+
 ```
-node chest_spots.js check
-for m in desk phone small: quest_system, narrative_foundation, ashlane, office, hesper, worldmap, exploration_polish
-for m in desk phone: exploration_test, meridian_playtest, economy_test
+node run_tests.js                      # full suite: chest spots + every test on every screen size (before a push)
+node run_tests.js quick                # chest spots + the quest tests + polish (after each stage)
+node run_tests.js bond_cass polish     # only these tests, every screen size
+node run_tests.js quick --modes desk   # one screen size
+node run_tests.js --jobs 4             # fewer at once (default 6)
 ```
+
+**When to use which**
+- After each content stage: `quick` plus that stage's own new test.
+- Before any push or publish: the **full** suite.
+- While building: only the test being worked on.
+
+Running tests one at a time on port 5190 (`node <test>.js desk`) still works as before.
+
+**Measured on 2026-11-16** (12-core machine; all passing, no flaky failures from running in parallel):
+
+| Run | Before (one at a time) | Now |
+|---|---|---|
+| Full suite (43 runs, 1,473 checks) | about 60 min | **14 min 32 s** at 4 at a time |
+| `quick` (25 runs, 934 checks) | about 35 min | **4 min 35 s** at 6 at a time |
 
 ### Results, 2026-11-16 (Quest System Foundation)
 | Test | desk | phone | small |
