@@ -28,4 +28,5 @@ A locked place shows "???" until the story has shown it:
 | Ash Lane | 4 | **Yes** (exit from St. Lucia's opens at Scene 10) |
 | Clock Tower | 5 | **Yes** (exit from St. Hesper's opens after Chapter 1) |
 | St. Maren's (old chapel) | Narrative Stage 5 | **Yes** (exit from Ash Lane opens once Cassie's story starts) |
+| The Institute Annex | Narrative Stage 8 | **Yes** (north exit from the Clock Tower opens once Dess's story starts) |
 | Drowned Canals | 6 | Prepared only (story-locked) |

@@ -137,12 +137,12 @@
   - The traveller stays unreliable (row 12).
   - Sketches, not photographs (row 15).
 
-## Stage 7b · World side quests, batch 2 (Implemented, tested · not committed)
+## Stage 7b · World side quests, batch 2 (done, `0fb2cfa`)
 - **Scope:** `side_empty_chapel`, `side_unofficial_prayer`.
 - **Depends on:** Stage 5 (the old chapel district).
 - **Acceptance:** `side_unofficial_prayer` stays `locked_by_prerequisite` until `side_empty_chapel` is done. The factions appear as rumour only.
 
-## Stage 8 · Dess · The Girl in the Experiment
+## Stage 8 · Dess · The Girl in the Experiment (Implemented, tested · not committed)
 - **Needs approval first:** the Institute annex district (tracker § 6.2) and the Lucas prerequisite set (§ 6.3).
 - **Scope:** `dess_experiment` with `pre` set to the 7 ids, `autoFind:1`; the annex district (lab theme); the core-reaction event at the tower.
 - **Acceptance:**
@@ -283,3 +283,16 @@ The test now checks this.
 |---|---|---|---|
 | `chapel_quests_test.js` | 36/36 | 36/36 | 36/36 |
 | `run_tests.js quick` (28 runs, 1,042 checks) | pass | pass | pass (5 min) |
+
+## Results · Stage 8 (2026-11-16)
+**Built**
+- The Institute Annex district (new art, shared geometry, a record, a readable, a map place, and the tower's north exit).
+- Dess's story with the seven-story unlock and the unlock event.
+- A room-rebuilding puzzle, the core sequence, a fight and the memory scene.
+
+| Test | desk | phone | small |
+|---|---|---|---|
+| `bond_dess_test.js` | 35/35 | 35/35 | 35/35 |
+| `run_tests.js quick` (31 runs, 1,147 checks) | pass | pass | pass (5 min) |
+
+**What's left:** only Stage 9 (Lucas hangouts after the rescue), which is blocked on Chapter 2, and Stage 10 (final polish and the full suite before a push).

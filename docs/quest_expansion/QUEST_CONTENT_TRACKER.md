@@ -41,7 +41,7 @@
 | `lucas_mem_bread` | The Things We Remember A·1 · The Bread Incident | memory (Lucas) | Chapter 1 cleared; Lucas captured | St. Hesper's (the loose fence board) | 5–7 min | Implemented | Yes |
 | `lucas_mem_plan` | The Things We Remember A·2 · The Worst Plan | memory (Lucas) | after `lucas_mem_bread` | St. Hesper's (the tower door) | 5–7 min | Implemented | Yes |
 | `lucas_mem_room` | The Things We Remember A·3 · Old Roommates | memory (Lucas) | after `lucas_mem_plan` | St. Hesper's (the dormitory window) → the old dormitory (memory) | 5–8 min | Implemented | Yes |
-| `dess_experiment` | The Girl in the Experiment | bond (Dess) · **special unlock** | all 7 prerequisite quests completed (§ 3.2) | Clock Tower → Institute annex *(new district, `lab` art)* | 15–20 min | Planned | No |
+| `dess_experiment` | The Girl in the Experiment | bond (Dess) · **special unlock** | all 7 prerequisites **completed** (§ 3.2) | Clock Tower → the Institute Annex (new district) | 12–16 min | Implemented | Yes |
 | `lucas_hang_route` | The Things We Remember B·4 · A Familiar Route | hangout (Lucas) | **Chapter 2 rescue** | Hesper, Market, Plaza | 8–10 min | Blocked (needs Chapter 2) | No |
 | `lucas_hang_remember` | The Things We Remember B·5 · The Things We Remember | hangout (Lucas) | after B·4 | Clock Tower | 6–8 min | Blocked (needs Chapter 2) | No |
 | `lucas_hang_promise` | The Things We Remember B·6 · A Promise Kept | hangout (Lucas) | after B·5 | St. Hesper's / Clock Tower | 6–8 min | Blocked (needs Chapter 2) | No |
@@ -313,35 +313,50 @@
   - Journal: "Two names on a bedpost"
 - **Flags:** `lucas.mem3`
 
-### `dess_experiment` · The Girl in the Experiment (special)
-- **Category:** bond · **Character:** Dess (`dess`)
-- **Unlock:** § 3.2
-- **Story:**
-  - A recovered core reacts to Dess.
-  - The resonance matches an old Institute experiment.
-  - In a disused annex the party finds Marr's records about an unnamed **"Subject"** with dates that fit her age.
-- **Start:** Clock Tower → Institute annex (new district, `lab` art)
+### `dess_experiment` · The Girl in the Experiment · **Implemented, tested**
+- **Category:** bond, with a special unlock · **Character:** Dess (`dess`)
+- **Unlock:**
+  - `when:['fugitive']`, `pre:` all seven of `agnes_handmade`, `bram_bread`, `lark_couldnt_save`, `cass_prayer`, `lucas_mem_bread`, `lucas_mem_plan`, `lucas_mem_room`, and `autoFind:1`.
+  - It stays `locked_by_prerequisite` until every one of the seven is **completed**. Starting or half-finishing one does not count (tested).
+  - The moment the last one finishes, wherever the player is, a "New story · The Girl in the Experiment" banner appears, the tower is marked, and Dess gets a "!".
+  - Tested with three different stories finishing last.
+- **The event:** at the hideout, one of the cores Dess carried out of the Institute is glowing gold, pulsing like a heartbeat, but only when she holds it. Its pattern matches her father's old file, ANNEX.
+- **Start:** Dess at the tower. Starting the story sets `annex.found`, which opens the annex on the map and the tower's north exit across the rooftops.
 - **Objectives:**
-  1. The core reacts (event).
-  2. Reach the annex.
-  3. Recover four records (multi-objective).
-  4. Lab reconstruction puzzle.
-  5. Core reactions.
-  6. Fight a Vice tied to the experiment (hub fight, lab theme).
-  7. A short memory sequence.
+  1. Cross the rooftops to the annex.
+  2. Find the four files (Intake, Observation, Procedure, Closure). The subject's name is removed; the intake date is sixteen years old and the subject was four.
+  3. Rebuild the room as the files describe it (a 3-round puzzle): the chair in the ring, the gold core closest, and "a core placed in her hands… told her mother is close".
+  4. Wake the three cores low to high (violet, cracked, gold), an ordered sequence. A wrong order resets.
+  5. Something hungry comes out of the gold core: a fight with Dess and Kairos in the annex (`mxf_annex_dess`).
+  6. The memory, a scene:
+     - A white room, a child in a chair too big for her, a star drawn on the window.
+     - A man's voice: "Sing it again… Your mother is very close."
+     - Dess: "It isn't mine… Maybe that's the point." / "I'm smart enough to guess. I'm still not brave enough to know. But I'm braver than I was this morning."
+     - Something small and bright watches from the doorway, and it is gone when she looks.
 - **Rewards:**
   - Bond +1 · Dess
   - 60 Stardust
   - 2 Keepsakes
-  - Journal collectible "Research log, Subject"
-  - a Star-born Fragment
-- **Flags:** `dess.annex`
-- **Spoilers:**
-  - Nothing confirms the Subject is Dess.
-  - The girl of light stays unexplained.
-  - Marr's motive stays open.
-  - Her mother stays unresolved.
-- **Status:** Planned · **Tested:** No · **Needs approval:** the annex district (§ 6)
+  - a Star-born Fragment (if it's a duplicate, the existing rule pays +80 Stardust instead)
+  - Journal: "Research log · Subject"
+- **Flags:** `dess.annex`, `annex.found`; items `de_r1`–`de_r4`; flags `de_rebuilt`, `de_cores`, `de_end`
+- **Canon (tested):**
+  - Nothing confirms that the Subject is Dess.
+  - The girl of light is not explained.
+  - Marr's motive and Dess's mother stay unresolved.
+  - No Mercy and no Chapter 2 material.
+- **Test:** `tools/bond_dess_test.js`
+
+#### The Institute Annex (new district, `annex`)
+- **Art:** a new painted theme, `annex`. It is a dim, disused cousin of the Institute lab:
+  - dead monitors, four empty tanks (two cracked)
+  - bare core racks, sheet-covered consoles
+  - a faded floor ring with an examination chair in the middle
+  - scattered papers
+- **Collision:** shared geometry (`annexGeo`) for the art and the solids.
+- **Records and readables:** 1 record (the stencilled ANNEX B · STORAGE sign) and 1 readable (a star drawn on a tank's glass, from the inside, at a child's height).
+- **No chests.**
+- **Map:** a world-map place north of the tower, with a road from it; needs Chapter 1 cleared and `annex.found`.
 
 ### `lucas_hang_route` / `lucas_hang_remember` / `lucas_hang_promise` · B·4–6
 - **Category:** hangout · `when:['lucasRescued']` (forced by the system as well)
@@ -410,11 +425,11 @@
 
 ## 6. Open questions that need the owner's approval
 1. **Recollection naming.** Pay "Recollection progress" as Bond +1 (as approved), as Memories XP to the character, or both? The system supports both.
-2. **New districts:**
+2. **New districts:** (both **approved and built**: St. Maren's in Stage 5, the Institute Annex in Stage 8)
    - An **old chapel** for `cass_prayer` and `side_empty_chapel`, reusing the chapel art. Proposed: east of Ash Lane, found when either quest starts.
    - An **Institute annex** for `dess_experiment`, reusing the lab art and reached from the tower by night.
    - Both are new world-map places.
-3. **Dess's prerequisites:** all three Lucas memories (proposed), or only some?
+3. **Dess's prerequisites:** ~~all three Lucas memories?~~ **Approved (2026-11-16):** all seven stories, including all three Lucas memories.
 4. **Cosmetic and accessory rewards** ("unique Dess accessory", "paired accessory"): the game has no cosmetic or accessory system. Proposed: a Journal collectible plus a Fragment instead, with no new system.
 5. **"Crafting materials":** there is no material system. Proposed: Fragments or Stardust. No new currency.
 6. **"The Morning After":** ~~the canon says that night was a rain and the fountain rising, not a rift~~. **Corrected (Stage 6):** the Chapter 1 cold open shows rifts over the Market Ring and the harbour that night ("Meridian. Twenty years ago. 11:52 PM."), and the Lore Bible adds the rain and the fountain the next morning. Both are canon, so the quest can cover the rifts *and* the morning the fountain was there. Nothing needs approval.

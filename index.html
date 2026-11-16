@@ -4007,7 +4007,7 @@ function extraSub(m){
 // State lives in save.mx (see docs/meridian/MERIDIAN_WORLD_STRUCTURE.md). Writing follows Lore v1.1: the Mercy is clues only.
 Object.assign(SPK,{mxlaund:{name:'Laundress',col:'paper'},mxlamp:{name:'Lamplighter',col:'paper'},mxshop:{name:'Shopkeeper',col:'paper'},mxkid:{name:'Kid with a hoop',col:'paper'},mxcclerk:{name:'Counter clerk',col:'ash'},mxfiler:{name:'Filing clerk',col:'ash'},mxwait:{name:'Man with a ticket',col:'paper'},mxtobin:{name:'Tobin, apprentice',col:'paper'},mxpip:{name:'Pip',col:'paper'},mxwren:{name:'Wren',col:'paper'},mxbaker:{name:'Baker next door',col:'paper'},nurse:{name:'Ward nurse',col:'paper'},fwoman:{name:'Woman with a basket',col:'paper'},mxpat:{name:'Patient',col:'paper'},
   lseller:{name:'Lantern seller',col:'paper'},gsister:{name:'Sister at the gate',col:'paper'},mxsold:{name:'Garrison soldier',col:'earth'},
-  mxrosa:{name:'Rosa',col:'paper'},mxotti:{name:'Ottilie',col:'paper'},mxhood:{name:'A woman in grey',col:'ash'},mxhanne:{name:'Old Hanne',col:'paper'},mxpim:{name:'Pim, junior clerk',col:'ash'},mxambr:{name:'Mr. Ambrose',col:'ash'},mxivo:{name:'Ivo the traveller',col:'paper'},mxfen:{name:'Fen',col:'paper'},mxmat:{name:'Old Matteo',col:'paper'},mxfish:{name:'Fish vendor',col:'paper'},mxtess:{name:'Tessa',col:'paper'}});
+  mxrosa:{name:'Rosa',col:'paper'},mxotti:{name:'Ottilie',col:'paper'},mxmv:{name:'A man’s voice',col:'ash'},mxhood:{name:'A woman in grey',col:'ash'},mxhanne:{name:'Old Hanne',col:'paper'},mxpim:{name:'Pim, junior clerk',col:'ash'},mxambr:{name:'Mr. Ambrose',col:'ash'},mxivo:{name:'Ivo the traveller',col:'paper'},mxfen:{name:'Fen',col:'paper'},mxmat:{name:'Old Matteo',col:'paper'},mxfish:{name:'Fish vendor',col:'paper'},mxtess:{name:'Tessa',col:'paper'}});
 function mxS(){const x=save.mx||(save.mx={v:1,at:'market',seen:{},talk:{},found:{},q:{},items:{},f:{}});
   for(const k of ['seen','talk','found','q','items','f','qseen','mem'])if(!x[k]||typeof x[k]!=='object'||Array.isArray(x[k]))x[k]={};if(!MX_DISTRICTS[x.at])x.at='market';return x;}
 // story flags that outlive the hub (set by quests' `sets`, and later by Chapter 2, e.g. 'ch2.lucasRescued'). save.story, created on first use
@@ -4029,14 +4029,15 @@ const MX_DISTRICTS={
   plaza:{name:'Festival Square',theme:'plaza',arrive:[0.3,0.5],blurb:'The fountain, and the Festival getting ready around it.',exits:[['w','market'],['e','hesper']],solids:[[0.5,0.555,34]]},
   yard:{name:'Garrison Yard',theme:'yard',arrive:[0.5,0.7],blurb:'Barracks, drills, and the rooftop guns.',exits:[['e','market']]},
   chapel:{name:'The Cloister',theme:'chapel',arrive:[0.5,0.82],blurb:'The Concord Church’s walled garden.',exits:[['s','market'],['e','office']],solids:[[0.5,0.5,16]]},
-  tower:{name:'The Clock Tower',theme:'roof',arrive:[0.5,0.7],blurb:'The old clock tower above St. Hesper’s. The party’s hideout.',exits:[['s','hesper']],solids:[],painted:'tower'},
+  tower:{name:'The Clock Tower',theme:'roof',arrive:[0.5,0.7],blurb:'The old clock tower above St. Hesper’s. The party’s hideout.',exits:[['s','hesper'],['n','annex']],solids:[],painted:'tower'},
+  annex:{name:'The Institute Annex',theme:'annex',arrive:[0.5,0.88],blurb:'A disused annex behind the Institute. Marr called it storage.',exits:[['s','tower']],solids:[],painted:'annex'},
   oldchapel:{name:'St. Maren’s',theme:'oldchapel',arrive:[0.08,0.56],blurb:'A disused chapel behind Ash Lane. Somebody still keeps the books.',exits:[['w','ashlane']],solids:[],painted:'oldchapel'},
   ashlane:{name:'Ash Lane',theme:'street',arrive:[0.5,0.62],blurb:'Terraced houses, washing lines and lamps, on the road to St. Lucia’s.',exits:[['w','ward'],['e','oldchapel']],solids:[],painted:'ashlane'},
   office:{name:'Concord Office',theme:'office',arrive:[0.5,0.62],blurb:'The whole city on paper. Take a number.',exits:[['s','chapel']],solids:[],painted:'office'},
   hesper:{name:'St. Hesper’s',theme:'orphanage',arrive:[0.5,0.62],blurb:'The orphanage where Kairos grew up, at dusk.',exits:[['w','plaza'],['e','tower']],solids:[],painted:'hesper'},
   ward:{name:'St. Lucia’s',theme:'hospital',arrive:[0.5,0.66],blurb:'The east ward, between visiting hours.',exits:[['n','market'],['e','ashlane']]},
 };
-const MX_ORDER=['market','plaza','yard','chapel','ward','hesper','office','ashlane','tower','oldchapel'];
+const MX_ORDER=['market','plaza','yard','chapel','ward','hesper','office','ashlane','tower','oldchapel','annex'];
 // Know the Streets was written for the first five districts; it stays that way for every save
 const MX_STREETS=['market','plaza','yard','chapel','ward'];
 // future activities: where each one will open from (see MERIDIAN_GAMEPLAY_ROADMAP.md)
@@ -4268,6 +4269,41 @@ Object.assign(MX_QUESTS,{
       {id:'end',at:'ward',npc:'ward.q_theo',t:'Talk to Theo',ok:()=>mxF('lt_end')}],
     reward:{bond:['noemi','theo'],dust:40,keep:1,frag:'chest',rec:{id:'rec.lark',title:'Naomi’s notebook'}},sets:['lark.casefile']}});
 const LT_BED=[0.86,0.5];
+Object.assign(MX_QUESTS,{
+  dess_experiment:{title:'The Girl in the Experiment',kind:'bond',char:'dess',when:['fugitive'],at:'tower',npc:'tower.h_dess',giver:'Dess · the Clock Tower',
+    pre:['agnes_handmade','bram_bread','lark_couldnt_save','cass_prayer','lucas_mem_bread','lucas_mem_plan','lucas_mem_room'],autoFind:1,
+    desc:'One of the cores Dess carried out of the Institute has started to glow gold when she holds it. The pattern matches an old file of her father’s: ANNEX.',
+    onStart:()=>{storyFlags()['annex.found']=storyFlags()['annex.found']||Date.now();},
+    offer:[['dess','Kairos. Kairos, come here. Look.'],
+      ['n','One of the cores Dess carried out of the Institute lies glowing on her bedroll. Not the usual dull violet. Gold, and pulsing, like a heartbeat.'],
+      ['dess','It started an hour ago. It only does it when I hold it. Sorry. I know how that sounds.'],
+      ['dess','I’ve seen that pattern before, in my father’s notes. An old experiment, from before I worked in the lab. The file was called ANNEX.'],
+      ['dess','There is an annex. Behind the Institute, past the rooftops. He always said it was storage.'],
+      ['dess','I need to know what he stored. I’m smart enough to go. I don’t know if I’m brave enough. Will you come?'],['kairos','Always.']],
+    steps:[{id:'go',at:'tower',t:'Cross the rooftops to the annex (north from the Clock Tower)',ok:()=>!!mxS().seen.annex},
+      {id:'records',t:'Find the four files',objs:[MXO.item('de_r1','Intake',{at:'annex'}),MXO.item('de_r2','Observation',{at:'annex'}),MXO.item('de_r3','Procedure',{at:'annex'}),MXO.item('de_r4','Closure',{at:'annex'})]},
+      {id:'rebuild',at:'annex',t:'Rebuild the room the way the files describe it',ok:()=>mxF('de_rebuilt')},
+      {id:'cores',at:'annex',t:'Wake the three cores, the way he did',ok:()=>mxF('de_cores')},
+      {id:'fight',at:'annex',npc:'annex.q_dess',t:'Something is coming out of the gold core. Talk to Dess',ok:()=>mxF('won:mxf_annex_dess')},
+      {id:'memory',at:'annex',npc:'annex.q_dess',t:'Stay with Dess',ok:()=>mxF('de_end')}],
+    reward:{bond:['dess'],dust:60,keep:2,frag:'star',rec:{id:'rec.de',title:'Research log · Subject'}},sets:['dess.annex']}});
+const DE_CORES=['violet','cracked','gold'];
+function dessRebuild(){showPuzzle({head:'The Girl in the Experiment',title:'The room, rebuilt',exit:1,rounds:[
+    {q:'“Cores arranged around the subject, facing in.” Where does the chair go?',opts:['Against the back wall','In the middle of the ring','Behind the glass'],a:1,no:'Dess: Around the subject. Facing in. The chair has to be in the middle.'},
+    {q:'Which core goes closest to the chair?',hint:'Observation log: “Always the gold one. She will not sing for the others.”',opts:['The violet core','The gold core','The cracked core'],a:1,no:'Dess: Read the log again. She only sang for one of them.'},
+    {q:'And the last line of the procedure?',hint:'“Subject asked for her mother. Told her mother is close.”',opts:['Her mother was in the next room','A core was placed in her hands','Nobody answered her'],a:1,ok:'Dess: He put a core in her hands. And told her it was her mother.',no:'Dess: …No. Read the next line. I know it’s there. I don’t want to read it either.'}]},
+  ok=>{state='play';atk.down=false;last=performance.now();if(ok){mxSet('de_rebuilt');persist();setBanner('The room is the way it was','Three cores on the ring. Wake them the way he did.',2.6);mxTick();}});}
+function dessMemory(){mxScene([pn('annex',[['dess',0.5,0.7,-1]],[
+    ['n','Dess holds the gold core in both hands. The annex goes white.'],
+    ['n','A small room. A chair too big for the child sitting in it. A star drawn in the condensation on the window.'],
+    ['mxmv','Again. Sing it again.'],['n','The child sings. Along the wall, the cores light up one by one.'],['mxmv','Good. Good girl. Your mother is very close.'],
+    ['n','Then the white goes out, like a hand over a lamp.']],{mus:'sorrow'}),
+  pn('annex',[['kairos',0.36,0.72,1],['dess',0.56,0.7,-1]],[
+    ['dess','That was a memory. It isn’t mine. It can’t be mine. I don’t remember any of that.'],['dess','…Maybe that’s the point.'],
+    ['kairos','You don’t have to know tonight.'],
+    ['dess','I’m smart enough to guess. I’m still not brave enough to know. But I’m braver than I was this morning.'],
+    ['n','For a moment, at the edge of the light, something small and bright watches them from the doorway. When Dess looks up, it is gone.']],{...NIGHT,mus:'sorrow'})],
+  ()=>{mxSet('de_end');persist();mxTick();},['kairos','dess']);}
 const KIDNPC={kid:1};
 addMission('mem_bread',{type:'walk',kid:1,name:'The Bread Incident',place:'St. Hesper’s, fourteen years ago',theme:'orphanage',party:['kairos'],lvl:1,count:false,
   brief:'Six years old. The baker puts the bread out to cool at six.',goal:'The end piece',start:[0.08,0.7],
@@ -4466,6 +4502,11 @@ const MX_FINDS=[
   {id:'ashlane.sign',at:'ashlane',fx:0.86,fy:0.4,quest:'side_unofficial_prayer',title:'A chalk sign',vis:()=>mxStepOf('side_unofficial_prayer')==='s1',text:[['n','Under lamp number seven, low on the wall: a chalk circle with a line through it. An arrow beside it, pointing toward St. Lucia’s.']],on:()=>{mxSet('up_s1');}},
   {id:'ward.sign',at:'ward',fx:0.46,fy:0.8,quest:'side_unofficial_prayer',title:'A chalk sign',vis:()=>mxStepOf('side_unofficial_prayer')==='s2',text:[['n','Behind the laundry trolleys at St. Lucia’s: the same circle, the same line. The arrow points back toward Ash Lane, and past it.']],on:()=>{mxSet('up_s2');}},
   {id:'oldchapel.sign',at:'oldchapel',fx:0.36,fy:0.92,quest:'side_unofficial_prayer',title:'A chalk sign',vis:()=>mxStepOf('side_unofficial_prayer')==='s3',text:[['n','On the back wall of St. Maren’s, by the font: the circle again, freshly chalked. Under it, a time. Tonight.'],['th','Somebody is coming here after dark. Not Ottilie.']],on:()=>{mxSet('up_s3');}},
+  {id:'annex.de_r1',at:'annex',fx:0.2,fy:0.38,quest:'dess_experiment',title:'An intake card',vis:()=>mxStepOf('dess_experiment')==='records'&&!mxHas('de_r1'),text:[['n','INTAKE. SUBJECT: (name removed). Age at intake: four years. Chart: withheld. Consent: by guardian.'],['n','The date is sixteen years old.']],on:()=>{mxS().items.de_r1=1;}},
+  {id:'annex.de_r2',at:'annex',fx:0.8,fy:0.38,quest:'dess_experiment',title:'An observation log',vis:()=>mxStepOf('dess_experiment')==='records'&&!mxHas('de_r2'),text:[['n','OBSERVATION. Day 31. Subject sings to the cores. The cores respond.'],['n','Resonance, violet core: 1.1. Cracked core: 2.6. Gold core: 4.2. “Always the gold one. She will not sing for the others.”']],on:()=>{mxS().items.de_r2=1;}},
+  {id:'annex.de_r3',at:'annex',fx:0.34,fy:0.86,quest:'dess_experiment',title:'A procedure note',vis:()=>mxStepOf('dess_experiment')==='records'&&!mxHas('de_r3'),text:[['n','PROCEDURE, in a small, careful hand. Cores arranged around the subject, facing in. Gold core closest.'],['n','“Subject asked for her mother. Told her mother is close. Core placed in subject’s hands. Subject calm.” — E. M.']],on:()=>{mxS().items.de_r3=1;}},
+  {id:'annex.de_r4',at:'annex',fx:0.62,fy:0.86,quest:'dess_experiment',title:'A closing page',vis:()=>mxStepOf('dess_experiment')==='records'&&!mxHas('de_r4'),text:[['n','CLOSURE. Trial seven discontinued. Subject relocated. File closed. — E. M.'],['n','Nothing else. Not where. Not why.']],on:()=>{mxS().items.de_r4=1;}},
+  {id:'annex.sign',at:'annex',fx:0.3,fy:0.94,title:'A stencilled sign',text:[['n','Stencilled on the door, under a newer coat of paint that has started to peel: INSTITUTE OF MERIDIAN · ANNEX B · STORAGE.']]},
   {id:'plaza.glasses',at:'plaza',fx:0.62,fy:0.66,quest:'glasses',title:'Matteo’s glasses',vis:()=>mxStepOf('glasses')==='find'&&!mxHas('glasses'),
     text:[['n','Folded on the fountain rim between two silver cups, with a bread crust beside them: Matteo’s glasses.'],['th','The pigeons got the bread. The glasses survived.']],on:()=>{mxS().items.glasses=1;}},
   {id:'yard.tally',at:'yard',fx:0.13,fy:0.3,title:'The starfall tally',text:[['n','A chalk tally on the barracks wall, one column a night. Last night: eleven.'],['n','At the bottom of every column, the same line: “none past the rooftops”.']]},
@@ -4588,6 +4629,14 @@ function mxPeople(d){const L=[];
     L.push({id:'h_cass',ch:'cass',fx:0.36,fy:0.6,face:1,label:'Cassie',say:()=>({amb:1,lines:[[['cass','I still say grace. I just don’t say it to them anymore.'],['cass','The bells for vespers. Six years I never missed them.'],['cass','If you’re going to stare at the city, at least stare at it with your back to a wall.']][mxTalked('tower.h_cass')%3]]})});
     L.push({id:'h_dess',ch:'dess',fx:0.46,fy:0.32,face:1,label:'Dess',say:()=>({amb:1,lines:[[['dess','The cores hum louder at night. I’m writing down which ones. Just… in case.'],['dess','Sorry. I talk to the cores sometimes. They’re easier.'],['dess','Do you think he’s cold, wherever he is? Lucas. Sorry. I just wondered.']][mxTalked('tower.h_dess')%3]]})});
   }
+  if(d==='annex')L.push({id:'q_dess',ch:'dess',fx:0.5,fy:0.3,face:1,label:'Dess',hide:()=>!mxAct('dess_experiment'),
+      say:()=>{const sp=mxStepOf('dess_experiment');
+        if(sp==='fight')return {lines:[['dess','Kairos. The gold one. It’s— something is coming out of it. Not a memory. Something hungry.']],then:()=>mxFight(mxFightTheme('annex',{tag:'dess',party:['dess','kairos'],kills:10,brief:'Something comes out of the gold core. Keep it away from Dess.'}),['dess','kairos'])};
+        if(sp==='memory')return {lines:[['dess','It’s quiet now. It’s warm. I think… I think it wants to show me something.']],then:dessMemory};
+        if(sp==='records')return {amb:1,lines:[['dess','Four files. He always kept four. Intake, observation, procedure, closure. Sorry. I know where he puts things.']]};
+        if(sp==='rebuild')return {amb:1,lines:[['dess','The chair goes in the middle. Everything else faces the chair. That’s how he set up every room.']]};
+        if(sp==='cores')return {amb:1,lines:[['dess','Low to high. Like tuning an instrument. He used to do it before every session.']]};
+        return {amb:1,lines:[['dess','This is where he kept things he didn’t want to look at.']]};}});
   if(mxEra()==='fugitive'){
     if(d==='plaza')L.push({id:'hanne',fx:0.76,fy:0.6,col:'#6A5A7A',hair:'#E0DCD0',long:1,face:-1,label:'Old Hanne',
       say:()=>({amb:1,lines:[mxDoneQ('side_morning_after')?['mxhanne','Every year on that night I light a candle by the fountain for the people the cracks took. Fewer come every year.']:['mxhanne','Twenty years I’ve sat on this bench. The pigeons have changed. The bench hasn’t.']]})});
@@ -4764,6 +4813,10 @@ function drawReadingLamp(c,n,lit){const x=n.x,y=n.y;c.save();c.fillStyle='rgba(2
   c.fillStyle='#24160C';c.fillRect(x-1.5,y-18,3,24);c.fillRect(x-7,y+4,14,3);c.fillStyle='#8A6A3A';c.fillRect(x-0.5,y-17,1,21);
   c.fillStyle='#24160C';c.fillRect(x-6,y-27,12,10);c.fillStyle=lit?'#FFE6A3':'#5A4A3A';c.fillRect(x-5,y-26,10,8);c.fillStyle='#C9A25A';c.fillRect(x-6,y-28,12,2);
   if(lit){c.fillStyle='#FFB65C';ell(c,x,y-22,1.6,2.6+Math.sin(T*9)*0.4);c.fill();}c.restore();}
+function drawAnnexCore(c,n,lit){const x=n.x,y=n.y,col=n.cid==='gold'?'#FFD166':n.cid==='cracked'?'#8E7ACF':'#B49CFF';c.save();
+  c.fillStyle='rgba(0,0,0,0.3)';ell(c,x,y+6,8,3);c.fill();c.fillStyle='#24160C';c.fillRect(x-6,y-2,12,8);c.fillStyle='#4A5266';c.fillRect(x-5,y-1,10,6);
+  if(lit)lightPool(c,x,y-8,30+Math.sin(T*4)*3,col,0.45);c.fillStyle=lit?col:alpha(col,0.45);circ(c,x,y-8,5.5);c.fill();c.fillStyle='rgba(255,255,255,0.5)';c.fillRect(x-2,y-11,2,2);
+  if(n.cid==='cracked'){c.strokeStyle='rgba(30,20,40,0.8)';c.lineWidth=1;c.beginPath();c.moveTo(x-3,y-12);c.lineTo(x+1,y-7);c.lineTo(x-1,y-4);c.stroke();}c.restore();}
 function agnesAssemble(){showPuzzle({head:'A Little Something Handmade',title:'The workbench',exit:1,rounds:[
     {q:'Agnes lays everything out on the bench. What comes first?',opts:['Stitch the pad on','Cut the leather to length','Rivet the rings'],a:1,no:'Agnes: Measure twice, cut once. Then everything else.'},
     {q:'The strap is cut. Next?',opts:['Punch the stitch holes','Start stitching','Oil the leather'],a:0,no:'Agnes: You can’t stitch through leather you haven’t punched.'},
@@ -4798,6 +4851,7 @@ const MX_CHEST_SPOTS={ // chosen by tools/chest_spots.js: clear of solids, peopl
   ashlane:[[0.03,0.94],[0.84,0.58],[0.45,0.4],[0.72,0.94],[0.3,0.88],[0.18,0.4],[0.72,0.22]],
   office:[[0.21,0.94],[0.78,0.22],[0.21,0.37],[0.54,0.7],[0.33,0.61],[0.48,0.43],[0.6,0.22]],
   tower:[],
+  annex:[],
   oldchapel:[],
   hesper:[[0.03,0.91],[0.81,0.64],[0.42,0.25],[0.57,0.94],[0.3,0.82],[0.69,0.25],[0.18,0.4]],
 };
@@ -4867,6 +4921,7 @@ const MX_LOOKS=[
   {id:'look.roofhole',at:'oldchapel',fx:0.82,fy:0.44,title:'The hole in the roof',text:[['n','Moonlight comes straight down through the roof onto the flagstones. Rubble, a few slates, a pigeon feather.'],['n','Somebody has put a bucket exactly where the rain lands.']]},
   {id:'look.prayerbook',at:'chapel',fx:0.22,fy:0.36,era:'fugitive',title:'A prayer book by the wall',text:[['n','A small prayer book, wedged behind a flowerbed stone and swollen with rain. On the inside cover, a stamp: ST. MAREN’S · ASH LANE.'],['th','Cassie says grace every night at the tower. She would know this book.']]},
   {id:'look.festbox',at:'hesper',fx:0.36,fy:0.52,era:'fugitive',title:'A box of old decorations',text:[['n','A box on the back step, lid half off: paper lanterns gone soft with age, a painted banner rolled up tight. Old Festival decorations.'],['th','These are older than the ones they hang now. Different colours.']]},
+  {id:'look.annexstar',at:'annex',fx:0.3,fy:0.3,title:'The glass of an empty tank',text:[['n','Someone has drawn a star in the dust on the glass. From the inside. At a child’s height.'],['th','Five points. Slightly crooked. Kairos doesn’t say anything, and neither does Dess.']]},
   {id:'look.ticket',at:'office',fx:0.4,fy:0.26,title:'The number machine',text:()=>{const n=180+hashStr(mxDay()+':ticket')%90;return [['n','The ticket machine sticks, then gives. Number '+n+'.'],['n','The board over the counter says NOW SERVING 41.']];}},
   {id:'look.ladder',at:'office',fx:0.21,fy:0.26,title:'The rolling ladder',text:[['n','A rolling ladder on a brass rail, for the top shelves. A sign: CLERKS ONLY. A smaller sign under it: THIS MEANS YOU, TOBIN.']]},
   {id:'look.swing',at:'hesper',fx:0.95,fy:0.5,title:'The rope swing',text:[['n','A rope swing on the big tree. The seat is worn pale where a hundred children have sat.']]},
@@ -4903,6 +4958,14 @@ function mxExtras(d){const L=[],x=mxS();
     n.talk=(F,m,nn)=>{if(claimed('act:sundial'))return;const L2=grantReward({dust:30,frag:'boss'},'act:sundial')||[];nn.openT=T;burstParts(nn.x,nn.y-6,'#C9A8FF',30,150);sfx('bless');
       setBanner('The Hour Candles · solved',L2.join(' · '),2.6);};L.push(n);}
   if(d==='ashlane')for(const n of mxOddNpcs())L.push(n);
+  if(d==='annex'&&mxAct('dess_experiment')&&!mxF('de_cores')){
+    const ch={id:'annex.chair',fx:0.5,fy:0.555,spot:1,verb:'look',ptitle:'the chair',lines:()=>[],mkf:()=>'!'};ch.hide=()=>mxStepOf('dess_experiment')!=='rebuild';ch.talk=()=>dessRebuild();L.push(ch);
+    for(const [cid,fx,fy] of [['violet',0.38,0.555],['cracked',0.62,0.555],['gold',0.5,0.76]]){
+      const c={id:'annex.core.'+cid,fx,fy,spot:1,verb:'wake',ptitle:'the '+cid+' core',cid,lines:()=>[],mkf:()=>(room.m.lit||[]).includes(cid)?null:'?',draw:(cc,n)=>drawAnnexCore(cc,n,(room.m.lit||[]).includes(cid))};
+      c.hide=()=>mxStepOf('dess_experiment')!=='cores';
+      c.talk=(F,m,n)=>{if(mxSeqStep(m,'cores',DE_CORES,cid)){burstParts(n.x,n.y-8,cid==='gold'?'#FFD166':'#B49CFF',14,80);sfx('select');if(ac&&vol.sfx>0)tone(330*Math.pow(1.5,m.lit.length-1),0.3,'sine',0.02);
+          if(m.lit.length===3){mxSet('de_cores');persist();setBanner('The cores sing','The gold one is getting brighter. Too bright.',2.6);sfx('bless');mxTick();}}
+        else{sfx('nope');addText(n.x,n.y-26,'Dess: Low to high. Start again.',C.ash,10,{life:1.6});}};L.push(c);}}
   if(d==='oldchapel'&&(mxAct('side_empty_chapel')||mxDoneQ('side_empty_chapel'))){const lit=()=>mxF('ec_lamp');
     const lp={id:'oldchapel.lamp',fx:0.5,fy:0.76,spot:1,verb:'light',ptitle:'the reading lamp',lines:()=>lit()?[['n','The reading lamp burns on its stand. Somebody has put a chair beside it.']]:[['n','You trim the wick and light it. The flame catches, steadies, and the whole nave turns gold for the first time in seventeen years.']],
       mkf:()=>lit()?null:'!',draw:(c,n)=>drawReadingLamp(c,n,lit())};
@@ -5057,6 +5120,11 @@ function mxObjDraw(c,m){if(!m.objs)return;const d=m.M.dist;
   if(d==='ward'&&m.cart&&m.cartOff>20&&!claimed('sec:ward.hatch')){const x=m.cartX0+5,y=m.cart.y+3;c.fillStyle='#24160C';c.fillRect(x,y,20,12);c.fillStyle='#9AA8A4';c.fillRect(x+1,y+1,18,10);c.fillStyle='#7E8A86';c.fillRect(x+1,y+5,18,1);}}
 // the edge clutter of the `street` dressing, re-derived from the same seed and call order as enrichTheme('street')
 // St. Maren's: one list of props, used to paint them and to make them solid
+// the Institute annex: one list of props for the painting and the collision
+function annexGeo(){const L=[{k:'wall',x:0,y:0,w:W,h:46}];
+  for(const [fx,cr] of [[0.14,1],[0.3,0],[0.7,1],[0.86,0]])L.push({k:'tank',x:W*fx-13,y:50,w:26,h:54,cracked:cr});
+  for(let y=150;y<H-60;y+=100){L.push({k:'rack',x:6,y,w:26,h:38});L.push({k:'rack',x:W-32,y,w:26,h:38});}
+  L.push({k:'console',x:W*0.2-22,y:H*0.62,w:44,h:20},{k:'console',x:W*0.8-22,y:H*0.62,w:44,h:20},{k:'chair',x:W/2-9,y:H*0.555-9,w:18,h:18});return L;}
 function oldChapelGeo(){const L=[{k:'wall',x:0,y:0,w:W,h:46},{k:'altar',x:W/2-46,y:51,w:92,h:28},{k:'shelf',x:13,y:51,w:82,h:26},{k:'shelf',x:W-95,y:51,w:82,h:26}];
   [140,200,260,320].forEach((y,ri)=>{for(const side of [0,1]){const x0=side?W*0.62:W*0.12,w=W*0.26;
       if(ri===2&&side===0){L.push({k:'broken',x:x0,y:y-2,w:w*0.42,h:14,tilt:-0.12},{k:'broken',x:x0+w*0.55,y:y+3,w:w*0.45,h:12,tilt:0.1});}
@@ -5072,6 +5140,7 @@ function mxPaintedSolids(k){
     {x:40-1,y:40-1,w:26,h:30},{x:W-60-1,y:50-1,w:26,h:30},{x:50-1,y:H-50-1,w:26,h:30},{x:W-70-1,y:H-60-1,w:26,h:30}, // chimneys
     {x:W*0.1,y:H*0.5,r:26},{x:W*0.1+34,y:H*0.5+30,r:15},{x:W*0.9,y:H*0.46,r:22},{x:W*0.9-28,y:H*0.46-26,r:13},       // gears
     {x:W*0.62-1,y:H*0.84-1,w:16,h:14}];                                                                            // the bread crate
+  if(k==='annex')return annexGeo().map(o=>({x:o.x-1,y:o.y-1,w:o.w+2,h:o.h+2}));
   if(k==='oldchapel')return oldChapelGeo().map(o=>({x:o.x-1,y:o.y-1,w:o.w+2,h:o.h+2}));
   if(k==='ashlane'){const L=[
     {x:AX0,y:AY0,w:AX1-AX0,h:40-AY0},                                    // the terraced houses
@@ -5161,6 +5230,7 @@ function mxHideNpc(){const n={id:'hide.spot',spot:1,verb:'look',ptitle:'behind h
   n.talk=(F,m,nn)=>mxHideFound(m,nn);return n;}
 // ── townsfolk routes: [fx, fy, pause seconds, face] in a loop; one-point routes stay put and look around
 const MX_ROUTES={
+  'annex.q_dess':[[0.5,0.3,0]],
   'oldchapel.ottilie':[[0.66,0.27,0]],'oldchapel.fen':[[0.93,0.5,3],[0.93,0.86,2]],'oldchapel.q_cass':[[0.5,0.62,0]],
   'tower.h_agnes':[[0.22,0.34,0]],'tower.h_bram':[[0.58,0.74,0]],'tower.h_noemi':[[0.78,0.7,0]],'tower.h_theo':[[0.74,0.3,0]],'tower.h_cass':[[0.36,0.6,0]],'tower.h_dess':[[0.46,0.32,0]],
   'market.rosa':[[0.38,0.78,3],[0.31,0.62,1.5],[0.28,0.36,5,-1],[0.31,0.62,1.5]],
@@ -5250,10 +5320,11 @@ const WORLD_LOCS=[
   {id:'office',d:'office',x:0.66,y:0.24,icon:'papers',name:'Concord Office',blurb:'The whole city on paper: the queue, the clerks, the forms.',need:{ch1:7,text:'You first go there in Chapter 1, Scene 7.'}},
   {id:'ashlane',d:'ashlane',x:0.68,y:0.78,icon:'houses',name:'Ash Lane',blurb:'Terraced houses on the road toward St. Lucia’s.',need:{ch1:10,text:'Opens once Chapter 1 reaches Scene 10.'}},
   {id:'oldchapel',d:'oldchapel',x:0.86,y:0.84,icon:'cross',name:'St. Maren’s',blurb:'A disused chapel behind Ash Lane. Somebody still keeps the books.',need:{clear:1,flag:'oldchapel.found',text:'Somebody would have to tell you it is there.'}},
+  {id:'annex',d:'annex',x:0.74,y:0.09,icon:'papers',name:'The Institute Annex',blurb:'A disused annex behind the Institute. Marr called it storage.',need:{clear:1,flag:'annex.found',text:'Somebody would have to show you where it is.'}},
   {id:'tower',d:'tower',x:0.9,y:0.22,icon:'clock',name:'St. Hesper’s Clock Tower',blurb:'The old clock tower above the orphanage.',need:{clear:1,text:'Opens after Chapter 1 is complete.'}},
   {id:'canals',d:'canals',x:0.17,y:0.8,icon:'waves',name:'Drowned Canals',blurb:'Fog over the old channels on the city’s low side.',need:{ch:2,text:'Opens later in the story.'}},
 ];
-const WORLD_ROADS=[['market','chapel'],['market','plaza'],['market','yard'],['market','ward'],['plaza','hesper'],['hesper','tower'],['chapel','office'],['ward','ashlane'],['ashlane','oldchapel'],['yard','canals']];
+const WORLD_ROADS=[['market','chapel'],['market','plaza'],['market','yard'],['market','ward'],['plaza','hesper'],['hesper','tower'],['chapel','office'],['ward','ashlane'],['ashlane','oldchapel'],['tower','annex'],['yard','canals']];
 // Chapter 1 progress: the furthest scene reached (0 = cold open), 99 once the chapter is complete
 function ch1Scene(){if((save.ch1Clears|0)>0||(save.ch1b&&save.ch1b.done))return 99;const k=save.ch1b&&save.ch1b.k;const m=k&&/^Scene (\d+)/.exec(k);return m?+m[1]:0;}
 function wmUnlocked(L){const n=L.need;if(!n)return true;if(n.flag&&!storyFlag(n.flag))return false;if(n.walk)return true;if(n.ch1)return ch1Scene()>=n.ch1;if(n.clear)return ch1Scene()>=99;return false;}
@@ -8364,6 +8435,7 @@ const ATMO={
   roof:{grade:['#FFB07A',0.10,'#2A1A4A',0.18],vig:0.38,motes:{n:16,col:'#FFE0B0',kind:'ember'},night:1},
   orphanage:{grade:['#C7D5E8',0.06,'#12143A',0.22],vig:0.44,motes:{n:18,col:'#E8EEFF',kind:'float'},night:1},
   oldchapel:{grade:['#C7D5FF',0.08,'#140F24',0.24],vig:0.46,motes:{n:24,col:'#E8E4FF',kind:'dust'},night:1},
+  annex:{grade:['#9BE8E0',0.05,'#0A0A1A',0.3],vig:0.5,motes:{n:30,col:'#C8B4FF',kind:'dust'},night:1},
   dorm:{grade:['#FFE0B0',0.08,'#1A1A3A',0.22],vig:0.44,motes:{n:14,col:'#FFF3C4',kind:'dust'},night:1},
 };
 function bakeGrade(g,theme){
@@ -8752,6 +8824,25 @@ function paintTheme(g,theme){
       for(const [x,y] of [[70,56],[W-70,56],[70,H-56],[W-70,H-56]])barrel(g,x,y);
       for(let i=0;i<4;i++){const x=80+R()*(W-160),y=60+R()*(H-120);g.strokeStyle='#C99A63';g.lineWidth=2;circ(g,x,y,5);g.stroke();circ(g,x,y,2.5);g.stroke();}
       lamp(g,W/2-40,50);lamp(g,W/2+40,H-40);
+      break;}
+    case 'annex':{ // the Institute annex: dim tiles, a faded floor ring, a chair in the middle, empty tanks, covered consoles, dead screens
+      for(let y=0;y<H;y+=24)for(let x=0;x<W;x+=24){g.fillStyle=((x+y)/24)%2?'#4A505C':'#454B57';g.fillRect(x,y,24,24);g.fillStyle='rgba(255,255,255,0.04)';g.fillRect(x,y,24,1);g.fillRect(x,y,1,24);
+        if(R()<0.1){g.fillStyle='rgba(20,22,30,0.4)';g.fillRect(x+3+R()*14,y+3+R()*14,3+R()*6,2);}}
+      g.strokeStyle='rgba(154,123,255,0.28)';g.lineWidth=3;g.setLineDash([10,8]);circ(g,W/2,H*0.555,70);g.stroke();g.setLineDash([]);
+      g.strokeStyle='rgba(154,123,255,0.12)';g.lineWidth=1;circ(g,W/2,H*0.555,84);g.stroke();
+      for(const o of annexGeo()){
+        if(o.k==='wall'){g.fillStyle=OL;g.fillRect(0,0,W,48);g.fillStyle='#4E5464';g.fillRect(0,0,W,46);g.fillStyle='#5C6476';g.fillRect(0,0,W,5);for(let x=0;x<W;x+=48){g.fillStyle='rgba(0,0,0,0.2)';g.fillRect(x,5,1,41);}
+          for(const x of [W*0.42,W*0.53]){g.fillStyle=OL;g.fillRect(x-1,10,34,20);g.fillStyle='#10161A';g.fillRect(x,11,32,18);g.fillStyle='rgba(85,224,176,0.15)';g.fillRect(x+3,14,12,1);}}
+        else if(o.k==='tank'){const x=o.x+13,y=o.y+26;shadow(g,x,y+28,14,4);g.fillStyle=OL;g.fillRect(o.x,o.y,26,54);g.fillStyle='#3A4050';g.fillRect(o.x+1,o.y+42,24,11);g.fillRect(o.x+1,o.y+1,24,6);
+          g.fillStyle='rgba(120,130,160,0.22)';g.fillRect(o.x+3,o.y+7,20,35);g.fillStyle='rgba(255,255,255,0.18)';g.fillRect(o.x+4,o.y+8,2,30);
+          if(o.cracked){g.strokeStyle='rgba(230,235,255,0.6)';g.lineWidth=1;g.beginPath();g.moveTo(o.x+8,o.y+12);g.lineTo(o.x+14,o.y+22);g.lineTo(o.x+11,o.y+30);g.moveTo(o.x+14,o.y+22);g.lineTo(o.x+20,o.y+26);g.stroke();}}
+        else if(o.k==='rack'){g.fillStyle=OL;g.fillRect(o.x-1,o.y-1,o.w+2,o.h+2);g.fillStyle='#4A5266';g.fillRect(o.x,o.y,o.w,o.h);for(let r=0;r<3;r++){g.fillStyle='#2E3440';g.fillRect(o.x,o.y+11+r*12,o.w,2);}
+          g.fillStyle='#6E5AA8';circ(g,o.x+8,o.y+19,2);g.fill();}
+        else if(o.k==='console'){shadow(g,o.x+o.w/2,o.y+o.h+2,o.w/2,4);g.fillStyle=OL;g.fillRect(o.x-1,o.y-1,o.w+2,o.h+2);g.fillStyle='#7A8296';g.fillRect(o.x,o.y,o.w,o.h);
+          g.fillStyle='#B8B4AC';g.beginPath();g.moveTo(o.x-3,o.y+o.h+2);g.lineTo(o.x+4,o.y-4);g.lineTo(o.x+o.w-2,o.y-3);g.lineTo(o.x+o.w+3,o.y+o.h+3);g.closePath();g.fill();g.fillStyle='rgba(0,0,0,0.12)';g.fillRect(o.x+6,o.y+2,2,o.h);g.fillRect(o.x+24,o.y,2,o.h+2);}
+        else if(o.k==='chair'){const x=o.x+9,y=o.y+9;shadow(g,x,y+10,11,3);g.fillStyle=OL;g.fillRect(x-9,y-13,18,24);g.fillStyle='#8A92A4';g.fillRect(x-8,y-12,16,22);g.fillStyle='#5E6678';g.fillRect(x-8,y-12,16,6);
+          g.fillStyle='#3A3A44';g.fillRect(x-10,y-2,3,2);g.fillRect(x+7,y-2,3,2);}}
+      papers(g,R,W*0.3,H*0.3,W*0.4,H*0.5,10);
       break;}
     case 'dorm':{ // St. Hesper's boys' dormitory, eleven years ago: plank floor, eight small beds, two windows, a rug
       planks(g,R,0,0,W,H,['#7A5432','#6E4A2C','#845C38','#694628']);
@@ -9237,7 +9328,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||/[?&]debug/.test(location.search))window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
