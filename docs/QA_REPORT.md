@@ -10,6 +10,12 @@ All tests used temporary test saves in a fresh browser profile. The player's own
 
 The game is in good shape overall. Progression, rewards and saves held up against deliberate abuse: repeat claims, reloads mid-fight and mid-dialogue, double-clicks, spammed quest ticks, damaged backups, and a full storage quota.
 
+**Update (2026-11-16, after physical iPhone testing):** two more pre-existing bugs, both now fixed and retested:
+- **QA-06, critical softlock:** Pause → World map → Close → Resume left the player unable to move or use any control.
+- **QA-07, touch:** tapping Talk could close or skip the dialogue it had just opened.
+
+Both are detailed in section C.
+
 The QA pass found and fixed **two serious pre-existing bugs**:
 
 1. **The final Chapter 1 fight could freeze the game** (QA-01). In the scripted Horaios defeat, each "processed" party member became a grey statue drawn with a canvas filter around hundreds of tiny shapes. Every frame took about 600 ms, the game ran at about 1 fps, and the headless browser tab crashed within about 40 seconds. That is the last fight before the Chapter 1 clear. Fixed: 60 fps, and Chapter 1 now plays start to finish in automated runs.
@@ -90,6 +96,78 @@ Results are from the final runs after all fixes. "×3" means desktop, phone and 
   - replaces a non-object `mx`, `bonds` or `story`, and the `mx` sub-tables
   Valid saves are untouched.
 - **Retest:** 11/11 damage kinds reach Meridian without errors; `save_protection` and old-save checks pass.
+
+### QA-06 · Critical (softlock) · Pause → World map → Close → Resume leaves the player unable to do anything
+- **Found:** physical iPhone testing by the developer, 2026-11-16. Reproduced in automated tests on desktop (keyboard) and phone (touch) in six districts: Market, Plaza, Tower, Ward, Garrison Yard, Ashlane.
+- **System:** pause menu ↔ world map ↔ gameplay state.
+- **Steps:**
+  1. In any Meridian district, open the pause menu (Esc / P or the ⏸ button).
+  2. Open World map.
+  3. Press Close.
+  4. Press Resume.
+- **Expected:** back to play, with every control working.
+- **Actual:**
+  - The game looks normal, but the character cannot move.
+  - The Talk/attack button and keyboard do nothing.
+  - The ⏸ button and Esc no longer open the pause menu.
+  - The only way out is reloading the page.
+  - Recorded state after Resume: `state:'panel'`, `paused:false`, no overlay.
+- **Root cause:**
+  - `showWorldMap()` set `state='panel'` for both entry points, from play and from the pause menu.
+  - Opened from play, its Close sets `state='play'` again. Opened from pause, Close only re-shows the pause menu.
+  - `resumeGame()` clears `paused` but never touches `state`, so the game stayed in `'panel'` with nothing on screen.
+  - Every input path requires `state==='play'`: `update()`, the keyboard handler, the canvas touch handler (including the ⏸ button) and `pauseGame()`. So all input was ignored.
+  - Escape on the pause map (which resumes directly) hit the same stuck state.
+  - The bug dates from the world-map feature (commit `9e76894`), well before the dev queue.
+- **Fix (one line, `showWorldMap`):** the map only takes the game out of `'play'` when it was opened from play. From the pause menu the game is already halted by the pause and its overlay, the same as on the pause menu itself, so the state stays `'play'` and Resume works. Travel and Close from play behave as before.
+- **Retest:**
+  - `menu_flow_test.js`: desktop 54/54, phone 50/50, small 50/50.
+  - The same test on the unfixed build fails 13 checks, so it does detect this bug.
+
+### QA-07 · High (touch) · A tap on the Talk/attack button closed or skipped the dialogue it opened
+- **Found:** while building the QA-06 touch tests. Intermittent: one-line conversations vanished, longer ones lost their first line.
+- **System:** touch input on the game canvas → dialogue and overlays.
+- **Steps:** on a touch screen, stand next to a townsperson and tap the Talk/attack button.
+- **Expected:** the dialogue opens on line 1 and waits for a tap.
+- **Actual:** when the finger lifted, the dialogue advanced at once. One-line talks closed before they could be read.
+- **Evidence:** a click logger recorded `click → .dlg-wrap` at the moment of lift-off, then state `dialog → play`.
+- **Root cause:**
+  - Browsers send a compatibility `click` after a touch, iOS Safari included.
+  - The tap is handled on `pointerdown` and opens the dialogue under the finger, so the `click` at lift-off landed on the new dialogue, whose wrapper advances on click.
+  - The same could put a stray tap on the pause menu or the map opened by the ⏸ and 🗺 buttons.
+- **Fix:** the game canvas cancels the browser's follow-up click for touches that start on it (`touchend` → `preventDefault`). Those touches are already fully handled as pointer events, and nothing listens for clicks on the canvas. Menus, dialogue taps and buttons outside the canvas are unaffected.
+- **Retest:**
+  - The trace shows no stray click; the dialogue stays on line 1.
+  - `menu_flow_test.js` touch checks (talk after every menu sequence, plus a baseline before any menu): phone and small all pass.
+- **Needs a real iPhone:** confirm a tap on Talk opens the dialogue and waits.
+
+### Why earlier QA missed QA-06 (and QA-07)
+- **Tests that should have caught it:**
+  - `worldmap_test.js` checked map → Close only when the map was opened from play, which restores the state itself.
+  - It and `map_consistency_test.js` checked the pause-menu map only through **Travel**, which also sets `'play'` itself.
+  - No test took the one exit that skips the restore: pause → map → **Close** → Resume.
+- **Why they passed:**
+  - Each menu worked on its own.
+  - The checks after closing a menu read the state value only, and only on paths that set it.
+  - No test tried to move, talk or reopen pause after a menu round-trip.
+  - The QA probe's "growth" run opened the Meridian menu and the Journal, never the pause map.
+- **QA-07:**
+  - Earlier touch tests used direct calls or keyboard to talk.
+  - The joystick test only checked movement.
+  - Playwright's `tap()` presses and releases inside one frame. The hub never even saw it, so the stray click never had a dialogue to land on.
+- **Coverage added: `menu_flow_test.js`**, run at desktop (keyboard) and phone and small (touch: the ⏸ button, menu taps, joystick drag, a 110 ms finger hold on Talk). It drives the real menus with real input. After every sequence it checks that the player can move, talk to a real townsperson with the Talk/attack button and reopen the pause menu. Sequences:
+  - **Baseline:** in each district before any menu.
+  - **Six districts:** pause → map → Close → Resume.
+  - **Reopen:** pause → map → Close → Resume → pause straight away.
+  - **Map keys (desktop):** pause → map → M → Resume, and pause → map → Escape (resumes directly).
+  - **Repeat:** the whole sequence five times in a row.
+  - **Other menus:** pause → map → Close → Journal → Back → Guide → Back → Resume.
+  - **Travel:** pause → map → Travel.
+  - **Map from play:** map → Close.
+  - **Then a fight:**
+    - party switching (key 3 or the portrait tap)
+    - attacks damage the target
+    - pause opens in the fight, and Resume returns to it
 
 ### QA-03 · Medium · Captured Lucas, and characters not yet recruited, can be picked in Rifts, Battle and Trials. Resolved: labelled as practice
 - **System:** party select (`showPartySelect` lists all of `CH_ORDER`).
@@ -178,6 +256,21 @@ Not attempted, automatically or otherwise: a mid-write power loss on a real devi
   - `narrative_foundation` ×3 and `quest_system` ×3 (story progression)
   - `save_protection` desktop and phone, `qa_probe` ×3 (save compatibility and damaged saves)
   - `security`, `fugitive`, `bond`, `renown`
+
+**After the QA-06 and QA-07 fixes (2026-11-16):**
+- **Full suite:** 79 runs, of which 65 passed and 14 failed.
+  - That run took 29 minutes, double the usual time, so the machine was overloaded.
+  - 10 of the failures were the page never loading at all (`page.goto` 30 s timeout on localhost).
+  - The other 4 failed checks:
+    - phone joystick (`qa_probe` small)
+    - skill cooldown (`core_probe` phone)
+    - one HUD-overlap check (`bond_cass` small)
+    - a Meridian playtest helper crash
+- **Rerun:**
+  - All 14 failed runs, through the runner: 25 runs, 839 checks, all passed in 5 m 24 s.
+  - `qa_probe` small and `meridian_playtest` desktop, run alone: all passed.
+- **Conclusion:** no failure reproduced, and none involve the changed code paths (the world-map state line, canvas `touchend`). They are recorded here rather than hidden.
+- **`menu_flow_test.js`:** 54 / 50 / 50 checks passed (desktop / phone / small). On the unfixed build it fails 13 checks.
 
 **Chapter 1 left untouched:**
 - The `CH1_SEQ` story script in `index.html` is byte-for-byte identical to `main` before this queue.

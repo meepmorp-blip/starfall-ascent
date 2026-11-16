@@ -1080,6 +1080,9 @@ cv.addEventListener('pointermove',e=>{
 const endPtr=e=>{if(e.pointerId===joy.id)joy.id=null;if(atk.down&&atk.pid===e.pointerId)atkRelease();};
 cv.addEventListener('pointerup',endPtr); cv.addEventListener('pointercancel',endPtr); cv.addEventListener('lostpointercapture',endPtr);
 cv.addEventListener('contextmenu',e=>e.preventDefault());
+// touches on the game are handled as pointer events above: stop the browser's follow-up click, which would otherwise land on
+// whatever the tap just opened (a dialogue line, the pause menu, the map) when the finger lifts
+cv.addEventListener('touchend',e=>{if(e.cancelable)e.preventDefault();},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault());
 document.addEventListener('touchmove',e=>{if(e.target===cv)e.preventDefault();},{passive:false});
 function inputVec(){
@@ -5544,7 +5547,10 @@ function wmBuilt(L){return !!(L.d&&MX_DISTRICTS[L.d]);}
 function wmStatus(L){const x=mxS();if(!wmUnlocked(L))return 'locked';if(!wmBuilt(L))return 'soon';if(run&&run.mode==='explore'&&room&&room.m&&room.m.M&&room.m.M.dist===L.d)return 'here';return x.seen[L.d]?'open':'found';}
 const WM_STATUS_TXT={here:'You are here',open:'Discovered',found:'Not discovered',soon:'Not open yet',locked:'Story locked'};
 function showWorldMap(o){o=o||{};const from=o.from||'menu';
-  const inRun=from==='play'||from==='pause';if(inRun){state='panel';atk.down=false;joy.id=null;}
+  const inRun=from==='play'||from==='pause';if(inRun){atk.down=false;joy.id=null;}
+  // from play the map halts the game itself (Close gives 'play' back); from the pause menu the game is already halted
+  // by the pause, and Close returns to that menu, so the state must stay 'play' for Resume to work
+  if(from==='play')state='panel';
   let sel=WORLD_LOCS.find(L=>wmStatus(L)==='here')||WORLD_LOCS.find(L=>L.id===mxS().at)||WORLD_LOCS[0];
   const cv2=h('canvas',{'aria-label':'Regional map of Meridian'}),box=h('div',{class:'wm-map'},cv2),side=h('div',{class:'wm-side'});
   const close=()=>{if(from==='play'){closeOverlay();state='play';last=performance.now();}else if(from==='pause')showPause();else if(o.back)o.back();else showMeridian();};
