@@ -3366,7 +3366,7 @@ function initMission(def){
   } else if(M.type==='defense'){
     m.obj={x:W/2,y:AY0+44,r:34,hp:100,max:100,ward:1,label:M.wardLabel||'Patients’ wing'};
     p.x=W/2;p.y=H*0.55;m.timer=M.dur;
-    m.goals=[{def:1,t:M.crowd?'Protect the crowd':M.wardLabel?'Protect '+M.wardLabel.toLowerCase():'Protect the patients’ wing'}];
+    m.goals=[{def:1,t:M.goalText||(M.crowd?'Protect the crowd':M.wardLabel?'Protect '+M.wardLabel.toLowerCase():'Protect the patients’ wing')}];
   } else if(M.type==='walk'||M.type==='fight'){initExtra(m);
   } else if(M.type==='split'){initSplit(m);
   } else if(M.type==='stealth'){
@@ -3433,6 +3433,7 @@ function updateMission(dt){
     if(o.wi>=m.path.length){finishRoom(true,'ARRIVED');return;}
   } else if(m.type==='defense'){
     const o=m.obj;m.timer-=dt;
+    if(m.M.doors){const per=m.M.dur/m.M.doors,dn=Math.min(m.M.doors-1,Math.floor((m.M.dur-m.timer)/per));if(dn>(m.door|0)){m.door=dn;sfx('spark');setBanner('Seal door '+dn+' open',dn<m.M.doors-1?'Dess moves to the next door. Hold the room.':'Last door. Hold on.',2);o.hp=Math.min(o.max,o.hp+15);}}
     for(const e of enemies)if(!e.dead&&e.spawnT<=0&&dist(e,o)<e.r+o.r+4){o.hp-=5*dt*(e.st==='charge'?3:1);m.objHit=0.25;}
     const late=m.t>m.M.dur*0.5;m.spawnCd-=dt;
     if(m.spawnCd<=0&&aliveCount()<(late?7:5)){missionSpawn(late?room.def.pool:room.def.pool.slice(0,4),0.55);m.spawnCd=late?1.5:2.2;}
@@ -3482,6 +3483,21 @@ function drawMission(c){
   else if(g&&g.push&&m.beam){drawVoice(c,m.beam.x+50,m.beam.y-30,T,0.7,true);c.strokeStyle=alpha(C.gold,0.5+0.4*Math.sin(T*6));c.lineWidth=2;circ(c,m.beam.x,m.beam.y,m.beam.r+8);c.stroke();}
   if(m.obj){const o=m.obj;
     if(o.ward&&m.M.crowd)drawCrowd(c,o,m);
+    else if(o.ward&&m.M.ward==='cart'){ // Naomi's laundry cart (R11)
+      c.fillStyle='#2A1E14';c.fillRect(o.x-30,o.y-18,60,30);c.fillStyle='#8A6A44';c.fillRect(o.x-28,o.y-16,56,24);c.fillStyle='#E8E2D4';c.fillRect(o.x-24,o.y-26,48,12);c.fillStyle='#CFC8B8';c.fillRect(o.x-20,o.y-30,18,6);
+      c.fillStyle='#1A1410';c.fillRect(o.x-24,o.y+10,8,8);c.fillRect(o.x+16,o.y+10,8,8);
+      if(m.objHit>0){c.fillStyle=alpha(C.danger,m.objHit*1.5);c.fillRect(o.x-30,o.y-30,60,48);}}
+    else if(o.ward&&m.M.ward==='dess'){ // Dess working a seal door (R11)
+      c.fillStyle='#3A3F52';c.fillRect(o.x-30,o.y-44,60,40);c.fillStyle='#5A6078';for(let r=0;r<3;r++)c.fillRect(o.x-28,o.y-40+r*12,56,2);
+      c.fillStyle=(m.door|0)%2?'#7FD3EE':'#FFD36B';c.fillRect(o.x+18,o.y-30,6,6);drawChar(c,'dess',o.x,o.y+8,{face:1,t:T});
+      if(m.objHit>0){c.fillStyle=alpha(C.danger,m.objHit*1.5);c.fillRect(o.x-30,o.y-44,60,58);}}
+    else if(o.ward&&m.M.ward==='pylon'){ // the Institute's containment unit (R8)
+      const k=o.hp/o.max,f=0.6+0.4*Math.sin(T*6);
+      c.fillStyle='#1C1A24';c.fillRect(o.x-22,o.y-40,44,54);c.fillStyle='#3A3F52';c.fillRect(o.x-20,o.y-38,40,50);
+      c.fillStyle='#8FA6C8';for(let r=0;r<4;r++)c.fillRect(o.x-16,o.y-32+r*11,32,2);
+      c.fillStyle=alpha(k>0.35?'#7FD3EE':C.danger,0.5+0.4*f);c.fillRect(o.x-6,o.y-30,12,34);
+      lightPool(c,o.x,o.y-10,38+f*4,k>0.35?'#7FD3EE':'#FF6A5A',0.3);
+      if(m.objHit>0){c.fillStyle=alpha(C.danger,m.objHit*1.5);c.fillRect(o.x-22,o.y-40,44,54);}}
     else if(o.ward&&m.M.ward==='oven'){ // Bram's brick oven on the roof
       c.fillStyle='#24160C';c.fillRect(o.x-30,o.y-34,60,48);c.fillStyle='#9A4A32';c.fillRect(o.x-28,o.y-32,56,44);c.fillStyle='#6E3222';for(let r=0;r<5;r++)c.fillRect(o.x-28,o.y-32+r*9,56,1);
       c.fillStyle='#FFB65C';c.fillRect(o.x-11,o.y-8,22,16);c.fillStyle='#FFE6A3';c.fillRect(o.x-6,o.y-4,12,8);lightPool(c,o.x,o.y,44+Math.sin(T*5)*3,'#FFB65C',0.35);
@@ -3814,10 +3830,10 @@ addMission('first',{type:'fight',name:'First Fight',place:'Market Ring',theme:'m
   tips:[[0,'Attack','Tap attack for the Clock Hands combo. The 5th hit is a finisher.'],[3,'Dodge','Dodge right before a hit. A perfect dodge triggers Slipstream.'],[6,'Tide','Your hits add Tide. At 3 stacks a Vice goes Drowsy.'],[8,'Foresight','Enemies flicker just before they attack. That’s you, seeing it early.']]});
 addMission('garrison',{type:'fight',name:'Garrison',place:'Market Ring',theme:'market',party:['kairos','ines','bram'],lvl:1,kills:24,max:5,pool:['gossip','hothead','waxer','gossip'],brief:'Hold the square with the Garrison until the rift seals.',
   tips:[[0,'Switch',(isTouch?'Tap a portrait':'Press 1, 2 or 3')+' to switch. Everyone has an Entrance move.'],[4,'Agnes','Agnes Spots enemies (+15% damage taken) and keeps sniping from the bench.'],[8,'Bram','Bram hits light. His bashes stagger, then stun.'],[12,'Aspect combo','Use one skill, then the other, for an Aspect combo.']]});
-addMission('assault',{type:'fight',name:'Breakout · Outside',place:'Institute sub-levels',theme:'lab',lvl:3,kills:20,max:5,pool:['hothead','waxer','gossip','deadline'],brief:'Fight down through the Institute. Third sub-level.',
+addMission('assault',{type:'fight',name:'Breakout · Outside',place:'Institute sub-levels',theme:'lab',lvl:3,kills:17,max:5,pool:['hothead','waxer','gossip','deadline'],brief:'Fight down through the Institute. Third sub-level.',
   tips:[[0,'Lucas','Lucas pins enemies from range. Switching Kairos ↔ Lucas gives a shield.']]});
-addMission('escape',{type:'fight',name:'Escape',place:'Institute sub-levels',theme:'lab',lvl:3,kills:16,max:5,pool:['hothead','gossip','waxer'],brief:'Get out. All of you.',
-  tips:[[0,'Dess','Dess is support: Sun = water pulses on ally hits, Moon = team crit damage, Ult = team +20% damage.'],[5,'The Vow','If Kairos would go down, Lucas takes the hit. Once per fight.']]});
+addMission('escape',{type:'defense',name:'Escape',place:'Institute sub-levels',theme:'lab',lvl:3,dur:36,doors:3,ward:'dess',wardLabel:'Dess at the seal door',goalText:'Protect Dess while she opens the seal doors',max:5,pool:['hothead','waxer','gossip','hothead','deadline'],brief:'Dess has to work three seal doors. Keep them off her: the healers first.',
+  tips:[[5,'The Vow','If Kairos would go down, Lucas takes the hit. Once per fight.']]});
 addMission('cass',{type:'fight',name:'The Inquisitor',place:'Ash Lane rooftops',theme:'rooftop',lvl:4,cass:1,pool:['gossip'],brief:'Sister Cassie punishes standing still. Keep moving.'});
 addMission('festival',{type:'defense',name:'Festival of the Mercy',place:'Festival Square',theme:'plaza',lvl:5,dur:100,crowd:1,fore:1,
   brief:'Five rifts at once. Keep the Vices off the crowd.',pool:['hothead','gossip','waxer','devourer','deadline','gossip']});
@@ -3894,31 +3910,104 @@ const MARKET_NPCS=()=>[
 MISSIONS.market.npcs=MARKET_NPCS;MISSIONS.market.goal='Errands: get Matteo’s list, then deliver it';MISSIONS.market.lastHint='Tessa is waiting for you';
 MISSIONS.market.brief='An ordinary Tuesday. Read Matteo’s list, then run it around the Ring.';
 
-addMission('ward',{type:'walk',name:'Ward Rounds',place:'St. Lucia’s · east ward',theme:'hospital',party:['kairos'],lvl:2,count:false,
-  brief:'Evening at St. Lucia’s. Ask the patients by the window their birthdays, or just tell Naomi you’re done.',goal:'Ward rounds · talk to Naomi when you’re done',start:[0.1,0.6],
+addMission('ward',{type:'walk',name:'Rounds with Naomi',place:'St. Lucia’s · east ward',theme:'hospital',party:['kairos'],lvl:2,count:false,
+  brief:'Evening at St. Lucia’s. The ward clock lost the minute like every other clock. Set it right, and talk to the patients if you like.',goal:'Set the ward clock right · then Naomi',start:[0.1,0.6],
+  hint:m=>{const c=m.npcs.find(n=>n.id==='wclock');return c&&!c.done?'The ward clock, on the far wall':'Naomi';},
   npcs:()=>[
-    {id:'p1',fx:0.3,fy:0.3,col:'#8A8A7A',hair:'#E0E0D8',face:-1,label:'Patient',lines:[['kairos','Dr. Lark wants to know your birthday.'],['patient','Spring. It was spring. I had the day a minute ago.'],['patient','My wife will know. She does my dates.']],on:(F,m)=>{m.asked=(m.asked|0)+1;}},
-    {id:'p2',fx:0.5,fy:0.25,col:'#9A7A8A',hair:'#4A3A2A',long:1,face:-1,label:'Patient',lines:[['kairos','When’s your birthday?'],['patient','The fourteenth of… no.'],['patient','Isn’t that funny. I go every Sunday. I never miss.'],['th','She laughs. It isn’t funny to her either.']],on:(F,m)=>{m.asked=(m.asked|0)+1;}},
-    {id:'p3',fx:0.7,fy:0.3,col:'#5A7A6A',hat:'#3A4A3A',face:-1,label:'Dockworker',lines:[['kairos','When’s your birthday?'],['dock','Ninth of Leo. Hour of the noon bell, my mam always said.'],['dock','Don’t make it Sunday cups, me. Fish don’t wait.']],on:(F,m)=>{m.asked=(m.asked|0)+1;}},
-    {id:'theo',fx:0.82,fy:0.75,ch:'theo',face:-1,lines:[['theo','Don’t touch the box.'],['theo','…Okay, touch the box. See that needle? It hasn’t settled since 9:04.'],['theo','Something is still open somewhere. I just don’t know where.']]},
+    {id:'p1',fx:0.3,fy:0.3,col:'#8A8A7A',hair:'#E0E0D8',face:-1,label:'Patient',lines:[['kairos','Dr. Lark wants to know your birthday.'],['patient','Spring. It was spring. I had the day a minute ago.'],['patient','My wife will know. She does my dates.']],on:F=>{F.noemi_clues=(F.noemi_clues|0)+1;}},
+    {id:'p2',fx:0.5,fy:0.25,col:'#9A7A8A',hair:'#4A3A2A',long:1,face:-1,label:'Patient',lines:[['kairos','When’s your birthday?'],['patient','The fourteenth of… no.'],['patient','Isn’t that funny. I go every Sunday. I never miss.'],['th','She laughs. It isn’t funny to her either.']],on:F=>{F.noemi_clues=(F.noemi_clues|0)+1;}},
+    {id:'p4',fx:0.66,fy:0.32,col:'#6A5A4A',hair:'#BDBDB0',face:-1,label:'Bed four',lines:[['watchman','You’re the boy who glowed. Look at this.'],['n','He holds up a wind-up pocket watch, the old kind with a key.'],['watchman','It was in my drawer all morning, wound and ticking. Never left it.'],['watchman','Now it’s exactly one minute ahead of the ward clock. To the second.'],['watchman','The watch is right. I’d bet my pension the watch is right.'],['th','Every clock in the city lost a minute at 9:04. His was in a drawer, and it didn’t.']]},
+    {id:'p7',fx:0.42,fy:0.82,col:'#B07A6A',hair:'#6A3A1A',long:1,small:1,face:1,label:'Bed seven',lines:[['pgirl','I drew a fountain. Do you like it?'],['kairos','It’s good. Which fountain?'],['pgirl','The big one in the square. With the lady on top.'],['pgirl','I’ve never been to the square. Mama says I haven’t.'],['th','She’s drawn every stone of it.']],on:F=>{F.noemi_clues=(F.noemi_clues|0)+1;}},
+    {id:'p3',fx:0.82,fy:0.3,col:'#5A7A6A',hat:'#3A4A3A',face:-1,label:'Dockworker',lines:[['kairos','When’s your birthday?'],['dock','Ninth of Leo. Hour of the noon bell, my mam always said.'],['dock','Don’t make it Sunday cups, me. Fish don’t wait.']]},
+    {id:'chart',spot:1,fx:0.22,fy:0.16,lines:[['n','The nurses’ chart on the wall. Bed numbers, doses, a column of initials.'],['n','At the bottom, in Naomi’s small neat hand: “Evening bell rung 6:42 by the chapel. Ward clock says 6:41.”'],['n','And under it: “Patients forgetting their birthdays: 3 this week. Last spring: 1 in 10.”']]},
+    {id:'shelf',spot:1,fx:0.9,fy:0.62,lines:[['n','The medicine shelf. Someone has tucked a few Stardust coins behind the iodine, for the night nurse’s supper.'],['n','A note: “Take it, whoever’s on tonight. You earned it.”'],['th','Tonight that’s me, I suppose.']],on:()=>{ch1Find('r6shelf',{dust:30},'The night nurse’s supper');}},
+    {id:'wclock',spot:1,fx:0.6,fy:0.17,need:1,label:'Ward clock',lines:[['n','The ward clock. A big plain face, a winding key, and a hand that sticks.'],['n','It reads 6:41.']],
+      puzzle:{head:'The ward clock',title:'Set it right',rounds:[
+        {q:'The ward clock reads 6:41. What does it need?',opts:['Turn it back one minute','Turn it forward one minute','Turn it forward one hour','Leave it, it’s right'],a:1,
+         ok:'Kairos: One minute forward. Like the watch in the drawer.',no:'The ward bell chimes at the wrong moment. From the far bed, Naomi: “That’s not when it happened.”'}]},
+      solved:[['n','The hand clicks forward. The ward bell answers it, right on time, for the first time all day.'],['theo','Exactly sixty seconds. Everywhere. Every clock.'],['theo','Except the one that was shut in a drawer. Huh.']],on:F=>{F.ward_clock=true;}},
+    {id:'theo',fx:0.84,fy:0.78,ch:'theo',face:-1,lines:[['theo','Don’t touch the box.'],['theo','…Okay, touch the box. See that needle? It hasn’t settled since 9:04.'],['theo','Something is still open somewhere. I just don’t know where.']]},
     {id:'bram',fx:0.18,fy:0.82,ch:'bram',face:1,lines:[['bram','I gave my bread to the man in bed four. He forgot he already ate.'],['bram','So I gave him more bread.']]},
-    {id:'noemi',fx:0.55,fy:0.7,ch:'noemi',face:-1,need:1,label:'Naomi',lines:(F,m)=>(m.asked|0)>=2?[
-      ['noemi','Well?'],['kairos','Two of three couldn’t tell me.'],['noemi','Last spring it was one in ten.'],
+    {id:'noemi',fx:0.55,fy:0.7,ch:'noemi',face:-1,need:1,after:'wclock',label:'Naomi',wait:[['noemi','Fix my clock first. It’s been wrong since this morning and it’s driving me mad.']],lines:(F,m)=>(F.noemi_clues|0)>=2?[
+      ['noemi','Well?'],['kairos',(F.noemi_clues|0)>=3?'Three of them couldn’t tell me things they should know.':'Two of them couldn’t tell me.'],['noemi','Last spring it was one in ten.'],
       ['n','She writes something on her arm, under “patient was glowing.” She doesn’t show him what.'],['noemi','Go sleep. That’s a prescription.']]:[
-      ['noemi','Done already?'],['kairos','I didn’t ask everyone.'],['noemi','Then ask tomorrow. Some days half of them can’t tell me their own birthday.'],
+      ['noemi','Done?'],['kairos','I didn’t ask everyone.'],['noemi','Then ask tomorrow. Some days half of them can’t tell me their own birthday.'],
       ['kairos','Stress?'],['noemi','That’s the official answer.'],['noemi','Go sleep. That’s a prescription.']],
-     on:(F,m)=>{if((m.asked|0)>=2)F.c_ward=true;}}]});
+     on:(F)=>{if((F.noemi_clues|0)>=2)F.c_ward=true;}}]});
 
-addMission('queue',{type:'walk',name:'The Queue',place:'Concord Office',theme:'office',party:['kairos','theo'],lvl:2,count:false,
-  brief:'Take a number. Everyone in Meridian ends up in this line eventually.',goal:'Take a number · the window at the end of the hall',start:[0.08,0.6],
+addMission('queue',{type:'walk',name:'The Queue',place:'Concord Office',theme:'office',party:['kairos'],lvl:2,count:false,
+  brief:'Take a number. Everyone in Meridian ends up in this hall eventually. Theo is filing the clock report; you have a chart to ask for.',goal:'The records window, at the end of the hall',start:[0.08,0.6],
   npcs:()=>[
     {id:'couple',fx:0.25,fy:0.3,col:'#B5835A',hair:'#3A2A1A',long:1,face:1,label:'Engaged',lines:[['fiance','Our charts say Scorpio and Leo. The clerk calls it a “difficult aspect.”'],['fiance','We’ve been engaged six years. We’re appealing. Again.'],['th','Six years of standing in this line to ask paper for permission.']]},
     {id:'qmom',fx:0.42,fy:0.75,col:'#7A6A9A',hair:'#2A1A12',long:1,face:-1,label:'Mother',lines:[['qmother','They put him in the masons’ school. Fourth House, they said. Builders and foundations.'],['boy','I want to draw ships.'],['qmother','Hush.'],['boy','I draw them anyway.']]},
     {id:'widow',fx:0.58,fy:0.28,col:'#3A3A3A',hair:'#9A9A9A',long:1,face:-1,label:'Widow',lines:[['widow','My husband’s record says he died in the First Starfall.'],['widow','He died last winter. In our bed. I held his hand.'],['widow','They won’t change it. The record is older than my memory, they say.'],['th','If the paper says it, it happened. That’s the rule here.']]},
+    {id:'clocks',spot:1,fx:0.33,fy:0.12,lines:[['n','The clock-log board. Every public clock in Meridian reports here by wire.'],['n','Today every card on it has the same correction pinned underneath, in red: “9:04 · −60 s.”'],['n','Somebody has drawn a little sad face on the harbour card.']]},
+    {id:'houses',spot:1,fx:0.5,fy:0.12,lines:[['n','The Houses directory. Twelve aisles of drawers, every drawer marked with a planet’s sign.'],['n','A child’s whole life, filed by the sky over the minute they were born.'],['th','Somewhere in here is the drawer I should be in.']]},
+    {id:'notice',spot:1,fx:0.86,fy:0.22,lines:[['n','A notice, freshly pasted: “Festival of the Mercy · Friday · Festival Square.”'],['n','“This year the Church offers one cup to every citizen. Come, drink, and be unburdened.”'],['th','Every citizen. That’s a lot of cups.']]},
     {id:'rclerk',fx:0.74,fy:0.7,col:'#4A4A5A',face:-1,label:'Records clerk',lines:[['rclerk','Every child in Meridian is registered within the hour. Hour, minute, stars, Houses.'],['rclerk','Your record decides your school, your trade, who you may marry.'],['rclerk','It’s the one thing this city agrees on, young man. Take a number.']]},
-    {id:'theo',fx:0.15,fy:0.75,ch:'theo',face:1,lines:[['theo','Paper is the only thing this city trusts.'],['theo','Which is why I’m about to hand them a witness statement about a stopped minute. This will go great.']]},
-    {id:'window',fx:0.92,fy:0.5,col:'#4A4A5A',need:1,face:-1,label:'Window 3',lines:[['clerk','Number forty-one. Name.'],['kairos','Kairos.'],['clerk','Surname.'],['kairos','Don’t have one. I grew up at St. Hesper’s.'],['clerk','Then I’ll pull your record.'],['th','Every child, within the hour. Nobody ever showed me mine.']]}]});
+    {id:'theo',fx:0.15,fy:0.75,ch:'theo',face:1,lines:[['theo','Paper is the only thing this city trusts.'],['theo','So I’m going to that window to hand them a witness statement about a stopped minute. This will go great.'],['theo','You ask for your chart. And don’t sign anything.']]},
+    {id:'ines',fx:0.2,fy:0.5,ch:'ines',face:1,lines:[['ines','Two guards by the pillars. One by the door. They’re bored.'],['ines','Let’s keep them bored.']]},
+    {id:'bram',fx:0.66,fy:0.86,ch:'bram',face:-1,lines:[['bram','My mam had my chart framed. Over the stove. Says I’m a Fourth House boy, steady as a wall.'],['bram','I think she just liked the frame.']]},
+    {id:'window',fx:0.92,fy:0.5,col:'#4A4A5A',need:1,face:-1,label:'Records window',lines:[['clerk','Number forty-one. Name.'],['kairos','Kairos.'],['clerk','Surname.'],['kairos','Don’t have one. I grew up at St. Hesper’s.'],['clerk','Then I’ll pull your record.'],['th','Every child, within the hour. Nobody ever showed me mine.']]}]});
 
+addMission('lab_wait',{type:'walk',name:'A Consultation',place:'The Institute · third sub-level',theme:'lab',party:['kairos'],lvl:3,count:false,
+  brief:'“Wait here. The doctor will be a moment.” Nobody said you couldn’t look around.',goal:'Look around while you wait',start:[0.12,0.7],
+  hint:m=>{const n=m.npcs.filter(x=>x.need&&!x.done).length;return n?'The cabinet of cores, and the woman at the console':'Wait for Dr. Marr';},
+  npcs:()=>[
+    {id:'clock',spot:1,fx:0.5,fy:0.12,lines:[['th','A clock on the wall. Of course there’s a clock.'],['th','My pulse jumps every time it ticks. I hate that he’ll notice.']]},
+    {id:'proto',spot:1,fx:0.22,fy:0.22,lines:[['n','On a high shelf, behind glass: a brass box with three needles. Dusty. A paper tag on a string.'],['n','“LARK · SEAM READER · DECOMMISSIONED.”'],['th','Theo’s box. An older one. Somebody kept it like a trophy.']],flag:'saw_proto'},
+    {id:'log',spot:1,fx:0.36,fy:0.78,lines:[['n','An observation log, open on a trolley.'],['n','“Volunteer G-7, Garrison. Day 2: cooperative. Day 6: asks to go home. Day 9: cannot recall volunteering. Continue.”'],['th','Continue.']],flag:'saw_g7log'},
+    {id:'cabinet',spot:1,fx:0.78,fy:0.2,need:1,label:'Core cabinet',lines:[['n','A glass cabinet, floor to ceiling. Rows of smoky crystals, each with a number.'],['n','They hum. Not together. Each one at its own speed, like a room of people breathing.'],['th','Every one of these was a Vice. And before that…'],['th','I don’t want to finish that thought.']]},
+    {id:'dess',fx:0.62,fy:0.62,ch:'dess',face:-1,need:1,label:'Assistant',lines:[['dess','Don’t touch the cabinet.'],['kairos','What are they?'],['dess','Cores. What a Vice leaves when it dies. We catalogue them.'],['kairos','They hum.'],['dess','…You can hear that?'],['dess','Most people can’t. My father can’t.'],['n','She goes back to her column of numbers. Her pen has stopped moving.']]},
+    {id:'roster',spot:1,fx:0.9,fy:0.7,lines:[['n','A duty roster pinned by the door. Night shift changes at 23:00. Transfers “after sign-in.”'],['n','Someone has left their lunch money pinned under it.']],on:()=>{ch1Find('r8roster',{dust:20},'Lunch money');}},
+    {id:'letter',spot:1,fx:0.08,fy:0.3,lines:[['n','A letter on Institute paper, half under a blotter.'],['n','“…the Council’s funding continues, on the understanding that results are shared first with our patrons…”'],['th','Patrons. Not “the Council.” Somebody else.']],on:()=>{ch1Find('r8letter',{dust:20},'A careless blotter');}}]});
+addMission('g7mem',{type:'walk',name:'Someone Else’s Kitchen',place:'Inside a Vice core',theme:'dorm',party:['kairos'],lvl:3,count:false,
+  brief:'This isn’t your memory. Touch what he remembers before it fades.',goal:'Three things he kept',start:[0.15,0.7],
+  hint:m=>{const n=m.npcs.filter(x=>x.need&&!x.done).length;return n?n+' things still here':'';},
+  npcs:()=>[
+    {id:'table',spot:1,fx:0.35,fy:0.35,need:1,lines:[['n','A kitchen table. Two bowls. Steam that doesn’t move.'],['n','A man’s voice, close: “Eat. You’ll be late for drill.”'],['n','The bowls fade as you look at them.']],on:F=>{F.g7_seen=(F.g7_seen|0)+1;}},
+    {id:'drawing',spot:1,fx:0.65,fy:0.3,need:1,lines:[['n','A child’s drawing pinned to a cupboard. A soldier, a house, a sun with a face.'],['n','“That’s you, Da.”'],['n','The crayon lines go pale, then white, then gone.']],on:F=>{F.g7_seen=(F.g7_seen|0)+1;}},
+    {id:'door',spot:1,fx:0.82,fy:0.72,need:1,lines:[['n','A front door, half open. Morning outside.'],['n','The same voice: “Back by supper. I volunteered, love. It’s an honour.”'],['n','The door closes. On the other side there’s nothing at all.']],on:F=>{F.g7_seen=(F.g7_seen|0)+1;}}],
+  endLabel:'FADED'});
+addMission('containment',{type:'defense',name:'Containment Failure',place:'The Institute · third sub-level',theme:'lab',party:['kairos'],lvl:2,dur:40,ward:'pylon',wardLabel:'The containment unit',goalText:'Protect the containment unit',
+  pool:['devourer','gossip','gossip','devourer'],max:4,
+  brief:'The cores are waking up. Keep them off the containment unit for 40 seconds. Devourers pull you in: dodge out of it.'});
+addMission('archive',{type:'walk',name:'After Hours',place:'Concord Office · the archive',theme:'office',party:['lucan'],lvl:2,count:false,
+  brief:'The Office is closed. Senior clerks have keys. “Records don’t go missing,” you told him. Prove it.',goal:'The St. Hesper’s intake ledgers',start:[0.1,0.7],
+  hint:m=>{const n=m.npcs.filter(x=>x.need&&!x.done).length;return n?'The intake shelf, at the back':'';},
+  npcs:()=>[
+    {id:'desk',spot:1,fx:0.22,fy:0.3,lines:[['n','His own desk. Pencils sharpened to the same length. A stack of transfer forms, all stamped, all neat.'],['lucan','Eleven years at this desk. I never once looked up a name for myself.']]},
+    {id:'shelf',spot:1,fx:0.62,fy:0.18,need:1,label:'Intake ledgers',lines:[['n','St. Hesper’s intake ledgers, one per year, bound in green.'],['n','He takes down the year of the fountain night. Then the one after.']]},
+    {id:'kline',spot:1,fx:0.74,fy:0.4,need:1,after:'shelf',wait:[['lucan','A loose page. Start with the ledgers first. In order.']],lines:[['n','Page forty. A line in a careful hand: “Foundling. Male. Found 11:59 on the step. No chart.”'],['n','Beside it, in pencil, later: “Kairos.”'],['lucan','So he’s real. The Registry just never wrote him down.']]},
+    {id:'lpage',spot:1,fx:0.84,fy:0.62,need:1,after:'kline',wait:[['lucan','Later. One line at a time.']],lines:[['n','Two lines below. The same careful hand.'],['n','“Lucas. Foundling. Discharged to the household of A. Crane.” The date is the morning after a kitchen fire.'],['lucan','…'],['lucan','I have never seen this page.'],['lucan','Nobody ever told me there was a page.']],flag:'lucas_page'}]});
+addMission('hesper_now',{type:'walk',name:'The Other Boy',place:'St. Hesper’s · the old wing',theme:'orphanage',party:['lucan'],lvl:2,count:false,
+  brief:'Sister Agathe let you in. “Take as long as you need.” The old wing is quiet. Something is on the roof.',goal:'Look around · then the roof stairs',start:[0.1,0.75],
+  hint:m=>{const d=m.npcs.filter(x=>x.obj&&!x.done).length;return d?d+' things that might be yours':'The roof stairs';},
+  npcs:()=>[
+    {id:'bunk',spot:1,obj:1,fx:0.28,fy:0.3,lines:[['n','Two bunks under the window. Carved into the frame, low down where a child could reach: “K” and “L”.'],['n','The L is better carved. Someone helped the other one with his K.'],['lucan','I did that. I taught him the K.']],on:F=>{F.lucas_frag=(F.lucas_frag|0)+1;ch1HesperFrag(F);}},
+    {id:'board',spot:1,obj:1,fx:0.55,fy:0.7,lines:[['n','A loose floorboard. Under it, a tin. Under the lid: three marbles, a bread crust gone to stone, and a paper clock with hands drawn in pencil.'],['n','The hands point to nine.'],['lucan','“Inspection’s over at nine.” Who used to say that?']],on:F=>{F.lucas_frag=(F.lucas_frag|0)+1;ch1HesperFrag(F);}},
+    {id:'saucer',spot:1,obj:1,fx:0.78,fy:0.36,lines:[['n','By the kitchen door, a chipped saucer. Still there, eleven years on. Somebody still fills it.'],['lucan','There wasn’t a cat. There was never a cat.'],['lucan','So who was it for?']],on:F=>{F.lucas_frag=(F.lucas_frag|0)+1;ch1HesperFrag(F);}},
+    {id:'stairs',spot:1,fx:0.9,fy:0.12,need:1,label:'Roof stairs',lines:[['n','The roof stairs. Above, something scrapes across the slates. A smell like old smoke.'],['lucan','The Vices came here the night after the fire. Agathe said so.'],['lucan','They came back.']]}]});
+addMission('lucas_alone',{type:'fight',name:'Forgotten Memory',place:'St. Hesper’s · the roof',theme:'orphanage',party:['lucan'],lvl:2,kills:12,max:3,
+  pool:['collector','gossip','gossip'],memory:['Bread, still warm. Someone laughing with his mouth full.','Someone counting to sixty under a blanket. Out loud. For him.','Smoke. A hand that won’t let go.'],
+  brief:'A Vice that carries pieces of you. Stay at range. Every memory it drops makes you stronger.'});
+addMission('morning',{type:'walk',kid:1,name:'The Morning After',place:'St. Hesper’s, eleven years ago',theme:'orphanage',party:['lucan'],lvl:1,count:false,
+  brief:'The morning after the fire. A carriage is waiting at the gate.',goal:'Your bag · the window · the carriage',start:[0.1,0.7],
+  hint:m=>{const n=m.npcs.filter(x=>x.need&&!x.done).length;return n?'':'';},
+  npcs:()=>[
+    {id:'agathe',fx:0.3,fy:0.55,col:NUNC,hair:'#2A2A2A',long:1,face:-1,need:1,label:'Sister Agathe',lines:[['matron','Your things. All of them. I packed the marbles too.'],['matron','Be good for him, Lucas. Be good, and be happy. That’s all I ask.'],['kidl','Is Kairos coming?'],['matron','Kairos is very sick, love. He’s sleeping.']]},
+    {id:'window',spot:1,fx:0.6,fy:0.25,need:1,after:'agathe',wait:[['matron','Lucas! Your bag, love. Come and get your bag first.']],label:'A window',lines:[['n','A window on the ground floor. Inside, a boy asleep, both hands wrapped in white bandages.'],['n','The carriage driver calls your name.']]},
+    {id:'carriage',spot:1,fx:0.88,fy:0.6,need:1,after:'window',wait:[['kidl','…Not yet. Just a minute.']],label:'The carriage',lines:[['n','A black carriage with the Chancellor’s crest. The door is open.'],['n','Above the orphanage roof, the old clock tower. Stopped, like always.']]}]});
+addMission('lightsout',{type:'defense',name:'Lights Out',place:'The Institute · service yard',theme:'lab',party:['ines','bram','theo'],lvl:3,dur:45,ward:'cart',wardLabel:'The laundry cart',goalText:'Keep the spotlights off the laundry cart',
+  pool:['spotlight','spotlight','hothead','spotlight'],max:5,
+  brief:'Spotlights on the yard walls lock lines on the cart. Break them: shoot the lights, or stand in the line. 45 seconds to the service door.'});
+addMission('crane_study',{type:'walk',name:'The Crane House',place:'The Chancellor’s study · midnight',theme:'office',party:['lucan'],lvl:2,count:false,
+  brief:'Home. One lamp is lit in the study. He is waiting up.',goal:'The study',start:[0.1,0.7],
+  npcs:()=>[
+    {id:'chair',spot:1,fx:0.25,fy:0.65,lines:[['n','A small chair by the hearth, too small for anyone now. His, once. The Chancellor never moved it.'],['lucan','He kept the chair. He threw away the boy.']]},
+    {id:'medal',spot:1,fx:0.45,fy:0.18,lines:[['n','A framed commendation: “Lucas Crane · Registry Service · Eleven years without an error.”'],['lucan','Without an error.']]},
+    {id:'cup',spot:1,fx:0.72,fy:0.2,need:1,label:'A silver cup',lines:[['n','On the shelf behind the desk, a small silver cup. He has walked past it every day for eleven years.'],['n','Engraved on the base: “So the new life may begin clean.”']]},
+    {id:'crane',fx:0.6,fy:0.55,col:CRANEC,hat:'#1A1A28',face:-1,need:1,after:'cup',wait:[['crane','Not now, Lucas. Sit down. I’m finishing a letter.']],label:'The Chancellor',lines:[['crane','You’re late. And you smell of smoke.']]}]});
 addMission('longway',{type:'walk',name:'The Long Way Home',place:'St. Hesper’s, after dark',theme:'orphanage',party:['lucan'],lvl:2,count:false,
   brief:'Lucas walks home the long way. Something keeps pulling him toward the orphanage.',goal:'Walk the long way home',start:[0.06,0.7],
   hint:m=>{const n=m.npcs.filter(x=>x.need&&!x.last&&!x.done).length;return n?n+' things here you shouldn’t recognize':'The gate clock';},
@@ -4042,7 +4131,7 @@ function missionExtra(m,dt){
       atk.down=false;m.held=true;if(!near.spot){near.face=p.x<near.x?-1:1;}p.face=near.x<p.x?-1:1;sfx('select');
       const isOpen=open(near),F=cutFlags();
       const res=L=>flagLines(typeof L==='function'?L(F,m):L);
-      const lines=res(!isOpen?(near.wait||near.lines):(near.done&&near.again?near.again:near.lines));
+      const lines=res(!isOpen?(near.wait||[['n','Not yet. Something else comes first.']]):(near.done&&near.again?near.again:near.lines));
       const finish=()=>{state='play';atk.down=false;m.held=false;
         if(near.talk)near.talk(F,m,near);
         if(isOpen&&!near.done){near.done=1;if(near.flag)F[near.flag]=true;if(near.on)near.on(F,m);
@@ -4073,7 +4162,9 @@ function missionExtra(m,dt){
       return true;}
     m.spawnCd-=dt;
     if(m.spawnCd<=0&&m.spawned<M.kills&&aliveCount()<M.max){enemies.push(spawnEdge(pick(M.pool)));m.spawned++;m.spawnCd=rr(0.6,1.4);}
-    if(got>=M.kills){finishRoom(true,'CLEAR');return true;}
+    if(M.memory){const ph=Math.min(3,Math.floor(got/(M.kills/4)));while((m.memPh|0)<ph){m.memPh=(m.memPh|0)+1;slowReal=0.9;shake(5,0.3);sfx('bless');
+      setBanner('Remembering · '+m.memPh,M.memory[m.memPh-1],2.6);team.atkBuffV=0.1*m.memPh;team.atkBuffT=999;addText(p.x,p.y-40,'+10% · REMEMBERING',C.gold,12,{life:1.4});}}
+    if(got>=M.kills){if(M.memory){team.atkBuffV=0;team.atkBuffT=0;}finishRoom(true,'CLEAR');return true;}
     if(m.spawned>=M.kills&&aliveCount()===0)m.spawned=got;
     return true;
   }
@@ -5575,7 +5666,7 @@ const WORLD_LOCS=[
   {id:'ward',d:'ward',x:0.47,y:0.73,icon:'aid',name:'St. Lucia’s',blurb:'The hospital’s east ward, Dr. Lark’s rounds.'},
   {id:'hesper',d:'hesper',x:0.83,y:0.44,icon:'gate',name:'St. Hesper’s',blurb:'The orphanage where Kairos grew up, at the quiet end of the city.',need:{walk:'plaza',text:'Walk there from Festival Square (east).'}},
   {id:'office',d:'office',x:0.66,y:0.24,icon:'papers',name:'Concord Office',blurb:'The whole city on paper: the queue, the clerks, the forms.',need:{ch1:7,text:'You first go there in Chapter 1, Scene 7.'}},
-  {id:'ashlane',d:'ashlane',x:0.68,y:0.78,icon:'houses',name:'Ash Lane',blurb:'Terraced houses on the road toward St. Lucia’s.',need:{ch1:10,text:'Opens once Chapter 1 reaches Scene 10.'}},
+  {id:'ashlane',d:'ashlane',x:0.68,y:0.78,icon:'houses',name:'Ash Lane',blurb:'Terraced houses on the road toward St. Lucia’s.',need:{ch1orFlag:[10,'ch1.ashlane'],text:'Opens once Chapter 1 reaches “The Plan”.'}},
   {id:'oldchapel',d:'oldchapel',x:0.86,y:0.84,icon:'cross',name:'St. Maren’s',blurb:'A disused chapel behind Ash Lane. Somebody still keeps the books.',need:{clear:1,flag:'oldchapel.found',text:'Somebody would have to tell you it is there.'}},
   {id:'annex',d:'annex',x:0.74,y:0.09,icon:'papers',name:'The Institute Annex',blurb:'A disused annex behind the Institute. Marr called it storage.',need:{clear:1,flag:'annex.found',text:'Somebody would have to show you where it is.'}},
   {id:'tower',d:'tower',x:0.9,y:0.22,icon:'clock',name:'St. Hesper’s Clock Tower',blurb:'The old clock tower above the orphanage.',need:{clear:1,text:'Opens after Chapter 1 is complete.'}},
@@ -5584,7 +5675,7 @@ const WORLD_LOCS=[
 const WORLD_ROADS=[['market','chapel'],['market','plaza'],['market','yard'],['market','ward'],['plaza','hesper'],['hesper','tower'],['chapel','office'],['ward','ashlane'],['ashlane','oldchapel'],['tower','annex'],['yard','canals']];
 // Chapter 1 progress: the furthest scene reached (0 = cold open), 99 once the chapter is complete
 function ch1Scene(){if((save.ch1Clears|0)>0||(save.ch1b&&save.ch1b.done))return 99;const k=save.ch1b&&save.ch1b.k;const m=k&&/^Scene (\d+)/.exec(k);return m?+m[1]:0;}
-function wmUnlocked(L){const n=L.need;if(!n)return true;if(n.flag&&!storyFlag(n.flag))return false;if(n.walk)return true;if(n.ch1)return ch1Scene()>=n.ch1;if(n.clear)return ch1Scene()>=99;return false;}
+function wmUnlocked(L){const n=L.need;if(!n)return true;if(n.ch1orFlag)return ch1Scene()>=n.ch1orFlag[0]||storyFlag(n.ch1orFlag[1]);if(n.flag&&!storyFlag(n.flag))return false;if(n.walk)return true;if(n.ch1)return ch1Scene()>=n.ch1;if(n.clear)return ch1Scene()>=99;return false;}
 function wmBuilt(L){return !!(L.d&&MX_DISTRICTS[L.d]);}
 // status: here · open (fast travel) · found (reachable on foot, not visited) · soon (unlocked, not built yet) · locked (story)
 function wmStatus(L){const x=mxS();if(!wmUnlocked(L))return 'locked';if(!wmBuilt(L))return 'soon';if(run&&run.mode==='explore'&&room&&room.m&&room.m.M&&room.m.M.dist===L.d)return 'here';return x.seen[L.d]?'open':'found';}
@@ -5758,6 +5849,11 @@ function showJournal(back,tab){
 // ── Chapter 1, script v3: cold open, Kairos's own voice, choices, characters explain the world
 const MATTEO='#7A6A5A',TESSA='#C96F4A',COAT='#2A2A3A',CLERK='#4A4A5A',MARRC='#E7E3DA',VANEC='#D8D2C4',LYRAC='#2A2A3A',NUNC='#E8E2D4',CRANEC='#3A3A52';
 const pn=(bg,cast,lines,o)=>Object.assign({bg,cast,lines},o||{});
+// a one-time find in a Chapter 1 scene: pays once per save (claims), shows what it gave
+function ch1HesperFrag(F){if((F.lucas_frag|0)>=3)ch1Find('r9frags',{keep:1},'All three · a Keepsake');}
+function ch1Find(key,r,title){const L=grantReward(r,'ch1x:'+key);if(L){setBanner(title||'Found',L.join(' · '),2.4);sfx('bless');}return !!L;}
+Object.assign(SPK,{ticker:{name:'Ticker · Naomi',col:'water'},watchman:{name:'Man in bed four',col:'paper'},pgirl:{name:'Girl in bed seven',col:'paper'},
+  iporter:{name:'Institute porter',col:'ash'}});
 const NIGHT={tint:'night'},FROZEN={tint:'frozen'};
 const CAMPB='roof';
 const KID={scale:1.15,unarmed:1};
@@ -6013,37 +6109,61 @@ const CH1_SEQ=[
       ['noemi','Me too. Don’t tell anyone.']],{...NIGHT,mus:'warm'})]},
   {mission:'ward'},
   {cut:[
-    pn('hospital',[['ines',0.32,0.7,1],['kairos',0.46,0.7,1],['theo',0.6,0.7,-1],['noemi',0.72,0.7,-1],['bram',0.2,0.7,1]],[
-      ['theo','We have to report this. The Concord Office keeps every record in Meridian. Every clock, every birth.'],
+    pn('hospital',[['theo',0.3,0.7,1],['kairos',0.44,0.7,1],['noemi',0.6,0.7,-1],['ines',0.74,0.7,-1],['bram',0.18,0.7,1]],[
+      ['theo','Sixty seconds, everywhere, and the centre was you. I can measure where. I can’t tell you why.'],
+      ['theo','But the Concord Office keeps every clock log in Meridian. And every birth chart.'],
+      ['theo','If your chart says anything about this, it’s there.'],
+      ['kairos','I’ve never seen my chart. Nobody ever showed me mine.'],
       ['ines','And they’ll want to see him.'],
       ['kairos','Is that bad?'],
       ['ines','I don’t know yet. That’s why I’m coming.'],
       ['theo','Also. You need a job? I need an assistant who remembers where I put things. You found the minute faster than I did.'],
       ['kairos','…Does it pay?'],
       ['theo','In money. Mostly real.'],
-      ['kairos','I told a kid this morning I help people for bread. This is a promotion.',{if:'c_bread'}],
+      ['kairos','I told a kid this morning I help people for bread. This is a promotion.',{if:'c_bread'}]],{...NIGHT,mus:'warm'}),
+    pn('hospital',[['noemi',0.42,0.7,1],['theo',0.56,0.7,-1],['kairos',0.7,0.7,-1]],[
+      ['kairos','You’re not coming.'],
+      ['noemi','I have three patients who can’t remember their own birthdays.',{if:'noemi_clues'}],
+      ['noemi','I have a ward full of patients who came in short of breath after a minute nobody can account for.',{not:'noemi_clues'}],
+      ['noemi','Somebody has to keep writing it down while it’s still strange. By next week it’ll just be Tuesday.'],
       ['noemi','Tessa’s mother came through the ward. She says you told her girl somebody has to remember things for everyone.',{if:'c_earnest'}],
       ['noemi','That’s a heavy job to give yourself.',{if:'c_earnest'}],
       ['kairos','Somebody has to.',{if:'c_earnest'}],
-      ['noemi','Tomorrow. Everyone sleeps first.']],{...NIGHT,mus:'warm'})]},
+      ['n','Theo digs in his bag and comes up with two brass boxes the size of prayer books, each with a little key on top.'],
+      ['theo','Tickers. One for you, one for me. They tap down the speaking-horn wires. Short messages. Slow ones.'],
+      ['noemi','You built these for the Festival so you could find me in the crowd.'],
+      ['theo','I built them because I was bored. The Festival thing is a coincidence.'],
+      ['noemi','Tomorrow. Everyone sleeps first. That’s a prescription.']],{...NIGHT,mus:'warm'})]},
+  {leave:'noemi'},
 
   // ───────── SCENE 7: the Concord Office
   {sc:'Scene 7 · The Concord Office',cut:[
-    pn('office',[['kairos',0.4,0.7,1],['theo',0.28,0.7,1]],[
+    pn('office',[['kairos',0.4,0.7,1],['theo',0.28,0.7,1],['ines',0.18,0.7,1],['bram',0.52,0.7,-1]],[
       ['th','Marble floors. Cabinets up to the ceiling. The whole city on paper.'],
-      ['theo','We report the event, register you as a witness, then breakfast. In and out.'],
+      ['theo','I report the clock event, you ask for your chart, then breakfast. In and out.'],
+      ['ines','Nobody signs anything without reading it.'],
       ['th','The queue goes around the hall twice.']],{cap:'The next morning. The Concord Office.',mus:'office'})]},
   {mission:'queue'},
   {cut:[
-    pn('office',[['kairos',0.4,0.7,1],['lucan',0.6,0.7,-1],['npc',0.72,0.66,-1,{col:CLERK}]],[
-      ['n','A young man in a sharp grey coat takes the folder from the clerk without asking.'],
-      ['clerk','Mr. Crane.'],
+    pn('office',[['kairos',0.42,0.7,1],['npc',0.62,0.68,-1,{col:CLERK}],['ines',0.26,0.7,1],['bram',0.32,0.7,1]],[
+      ['n','The clerk pulls a drawer. Then another. Then the first one again, slower, as if that might help.'],
+      ['clerk','St. Hesper’s intake, eleven years back. Foundlings. No Kairos.'],
+      ['clerk','Every child in Meridian is registered within the hour. There is no record of you, young man.'],
+      ['kairos','I’m standing right here.'],
+      ['clerk','I can see that. I can’t file it.'],
+      ['?',[
+        {t:'St. Hesper’s. Nine years. Sister Agathe can tell you.',f:'c_office_plead',r:[['clerk','Sister Agathe is not a record.'],['kairos','She held me when I was sick. She knows my birthday. She made one up for me.'],['clerk','Then it isn’t a birthday.']]},
+        {t:'Then your book is wrong.',f:'c_office_angry',r:[['clerk','The book is never wrong, young man. That is what a book is for.'],['kairos','I ate breakfast in this city every day of my life. Write that down.']]}],'Nine years. I existed for nine years.'],
+      ['n','Voices rise. The queue turns to look. Two Council guards push off the wall.'],
+      ['n','Agnes’s hand lands on Kairos’s shoulder. Bram steps between him and the guards, smiling the way big men smile when they’d rather not.'],
+      ['bram','He’s fine! He’s just loud. He gets that from me.']],{mus:'tense'}),
+    pn('office',[['kairos',0.4,0.7,1],['lucan',0.62,0.7,-1],['npc',0.74,0.66,-1,{col:CLERK}]],[
+      ['n','A young man in a sharp grey coat stops halfway across the hall, a stack of transfer forms under his arm.'],
+      ['lucan','Is there a problem with this record?'],
+      ['clerk','Mr. Crane. There’s no record, sir. None at all.'],
       ['lucan','Lucas Crane, senior clerk. Yes, that Crane. You can stop staring.'],
-      ['n','He opens the folder. Reads it. His face doesn’t move.'],
-      ['lucan','It’s blank. No hour. No stars. No Houses. Just a name, in pencil.'],
-      ['lucan','Congratulations. You don’t exist.'],
-      ['th','The couple in the queue had six years of appeals. The widow had the wrong death. I don’t even have a wrong one.'],
-      ['th','And then I look at the man holding my blank page.'],
+      ['n','He takes the search slip without asking. Reads it. His face doesn’t move.'],
+      ['lucan','No hour. No stars. No Houses. Just a name, in pencil.'],
       ['th','Taller. Colder. The same crooked eyebrow when he reads.'],
       ['kairos','Lucas? It’s me.']],{mus:'tense'}),
     pn('office',[['kairos',0.4,0.7,1],['lucan',0.6,0.7,-1]],[
@@ -6053,38 +6173,63 @@ const CH1_SEQ=[
         {t:'…No. Sorry. Wrong person.',f:'c_lie',r:[['lucan','Clearly.'],['th','It hurts more to say it than I thought it would.']]}],'He really doesn’t remember me.'],
       ['lucan','What happened to your hands?'],
       ['kairos','A kitchen fire. A long time ago. I pulled someone out.'],
-      ['lucan','How heroic. Next.'],
-      ['th','But his hand on the folder tightens. Just a little.']],{focus:[0.5,0.55],zoom:0.1,mus:'sorrow'}),
-    pn('office',[['kairos',0.4,0.7,1],['npc',0.62,0.68,-1,{col:MARRC}],['npc',0.74,0.66,-1,{col:'#3A4A6A'}],['bram',0.24,0.7,1]],[
-      ['n','Footsteps. Two guards, and a smiling man in a white coat with reading glasses on a chain.'],
-      ['marr','So this is our Unwritten. The Registry’s little blank page.'],
-      ['marr','Dr. Ezekiel Marr. I study Vices for the Chancellor. As of nine o’clock yesterday morning, I study you.'],
-      ['theo','Dr. Marr, we came to report the event, not to—'],
-      ['marr','And I’m so grateful you did, Mr. Lark. It saves everyone so much time.'],
-      ['kairos','And if I say no?'],
-      ['marr','You won’t. You’re a helpful boy. Everyone in the Market Ring says so.'],
-      ['marr','Besides, you already agreed. Didn’t you? You came here on your own.']],{mus:'tense'}),
-    pn('office',[['kairos',0.4,0.7,1],['ines',0.24,0.7,1],['bram',0.3,0.7,1],['npc',0.62,0.66,-1,{col:'#3A4A6A'}],['lucan',0.78,0.7,-1]],[
-      ['n','The guards step forward. Bram moves to stop them. Agnes grabs his arm.'],
-      ['ines','Not here. We fight Council guards in the Council’s building, we all go to a cell, and nobody gets him out.'],
+      ['lucan','How heroic.'],
+      ['lucan','Records don’t go missing, Mr…. Kairos. They go to the Registry.'],
+      ['n','He folds the slip once and puts it in his breast pocket.'],
+      ['lucan','I’ll look into it. That is all I can promise.'],
+      ['th','He walks away without looking back. But his hand stays on the pocket. Just a little.']],{focus:[0.5,0.55],zoom:0.1,mus:'sorrow'}),
+    pn('office',[['kairos',0.4,0.7,1],['npc',0.62,0.68,-1,{col:MARRC}],['ines',0.24,0.7,1],['bram',0.3,0.7,1]],[
+      ['n','At the next window a man in a white coat has been leaning on the counter, a bundle of Garrison reports under his arm. Reading glasses on a chain.'],
+      ['marr','Forgive me. I couldn’t help overhearing. Hard not to, the way you shout.'],
+      ['n','His eyes go to Kairos’s collar, pulled open in the scuffle. To the clock-shaped mark on his chest.'],
+      ['marr','Dr. Ezekiel Marr. The Institute. I study Vices, and what they leave behind in people.'],
+      ['marr','St. Lucia’s couldn’t tell you what’s wrong with you. I can.'],
+      ['marr','A consultation. This afternoon, if you like. No queue.'],
+      ['kairos','…You know what this is?'],
+      ['marr','I know what it isn’t. That’s further than anyone else has got.'],
+      ['ines','We’ll wait for Mr. Lark.'],
+      ['marr','Of course. Though I leave in five minutes, and I’m not back for a month.'],
+      ['th','Nine years of not knowing. He says it like he’s holding the answer behind his back.'],
+      ['kairos','I’m going.'],
+      ['ines','You’re not under arrest. I can’t stop you.'],
+      ['ines','I don’t like how fast he smiles.'],
+      ['marr','Sergeant. A pleasure.']],{mus:'tense'}),
+    pn('office',[['theo',0.3,0.7,1,{moving:1}],['bram',0.46,0.7,-1],['ines',0.58,0.7,-1]],[
+      ['theo','Clock report filed, witness statement filed, nobody arrested me. Where’s Kairos?'],
+      ['bram','He went with a doctor. A Dr. Marr. He said he could help.'],
+      ['n','Theo goes white.'],
+      ['theo','I worked for him. Two years.'],
+      ['theo','He measured a man until the man forgot his own name.'],
+      ['theo','We go. Now.']],{mus:'disaster'}),
+    pn('street',[['npc',0.62,0.66,-1,{col:'#3A4A6A'}],['bram',0.42,0.7,1],['ines',0.3,0.7,1],['theo',0.2,0.7,1]],[
+      ['n','The Institute gate. Bronze, closed, and very polite.'],
+      ['iporter','The patient signed in voluntarily. Visiting is by appointment.'],
+      ['theo','He signed a consultation form. Ask to see the second page.'],
+      ['iporter','There is no second page, sir.'],
+      ['bram','I could open it.'],
+      ['n','Bram moves for the gate. Agnes grabs his arm.'],
+      ['ines','Not here. We fight Institute guards at the Institute gate, we all go to a cell, and nobody gets him out.'],
       ['bram','But Sarge—'],
       ['ines','I know, Bram.'],
-      ['kairos','It’s fine. I’ll be fine.'],
-      ['th','I’m lying. I think everyone knows.'],
-      ['th','At the door I look back at Lucas. He’s looking at the floor.']],{mus:'sorrow'})]},
+      ['theo','Then we find another way in.']],{mus:'sorrow'})]},
 
   // ───────── SCENE 8: the lab
   {sc:'Scene 8 · This Won’t Hurt',cut:[
+    pn('lab',[['kairos',0.4,0.7,1],['npc',0.6,0.68,-1,{col:MARRC}],['dess',0.78,0.7,-1]],[
+      ['th','White tiles. Glass tanks full of smoky crystals. Very clean, very quiet.'],
+      ['marr','Sit anywhere. I need ten minutes with the Council’s paperwork, and then you have my full attention.'],
+      ['marr','Dess will keep you company. Dess, don’t bore him.'],
+      ['n','The young woman at the console doesn’t look up.']],{cap:'The Institute. Third sub-level. That afternoon.',mus:'tense'})]},
+  {mission:'lab_wait'},
+  {cut:[
     pn('lab',[['kairos',0.45,0.7,1,{hurt:1}],['npc',0.6,0.68,-1,{col:MARRC}],['dess',0.76,0.7,-1]],[
-      ['th','White tiles. Glass tanks full of smoky crystals. And a clock on the wall. Of course there’s a clock.'],
-      ['marr','You keep looking at that. Your heart rate jumps every time it ticks.'],
+      ['marr','You keep looking at the clock. Your heart rate jumps every time it ticks.'],
       ['kairos','Could you take it down?'],
       ['marr','No. Dess, the needle.'],
-      ['n','A young woman at the console doesn’t look up. Her pen is moving down a column of numbers faster than anyone could read them.'],
       ['dess','His heart rate is one-forty. If we go in now the reading’s useless, it’ll be all adrenaline—'],
       ['marr','In the lab you speak when the numbers are interesting, Dess.'],
       ['dess','…These are interesting.'],
-      ['th','He doesn’t answer that. She doesn’t take it back.']],{cap:'The Institute. Third sub-level.',mus:'tense'}),
+      ['th','He doesn’t answer that. She doesn’t take it back.']],{mus:'tense'}),
     pn('lab',[['kairos',0.45,0.7,1,{hurt:1}],['npc',0.58,0.68,-1,{col:MARRC}],['dess',0.76,0.7,-1]],[
       ['marr','Relax. This won’t hurt.'],
       ['kairos','It hurts.'],
@@ -6093,15 +6238,15 @@ const CH1_SEQ=[
         {t:'Then you go first.',f:'c_marr_joke',r:[['marr','Ha! Oh, I like you. That will make this so much more unpleasant.']]},
         {t:'…Okay.',f:'c_marr_comply',r:[['marr','Good boy. See? Much easier when we agree.']]},
         {t:'(Say nothing. Stare at the clock.)',f:'c_marr_silent',r:[['marr','The silent ones always break the loudest. Did you know that?']]}],'A man smiling while he hurts you.'],
-      ['marr','You signed the consent form at the Concord Office, by the way. You remember.'],
-      ['kairos','I didn’t sign anything.'],
-      ['marr','You did. You just don’t remember. That happens to everyone in this city. Even you, apparently.'],
-      ['th','I remember everything. I didn’t sign.'],
-      ['th','…Did I?'],
+      ['marr','You signed the consultation form downstairs, by the way. Page two is the interesting page.'],
+      ['kairos','There wasn’t a page two.'],
+      ['marr','There’s always a page two. You just don’t remember it. That happens to everyone in this city. Even you, apparently.'],
+      ['th','I remember everything. There was one page.'],
+      ['th','…Wasn’t there?'],
       ['th','That’s his trick. He doesn’t need the needle. He makes you doubt your own head.']],{...NIGHT,focus:[0.55,0.55],zoom:0.1,mus:'tense'}),
     pn('lab',[['kairos',0.45,0.7,1,{glow:1}],['npc',0.6,0.68,-1,{col:MARRC}],['dess',0.7,0.7,-1]],[
       ['marr','Dess. A core.'],
-      ['n','She brings one: a fist-sized smoky crystal. What a Vice leaves behind when it dies. Marr presses it into Kairos’s strapped hand.'],
+      ['n','She brings one from the cabinet: a fist-sized crystal, faintly gold. Marr presses it into Kairos’s strapped hand.'],
       ['n','The core lights up. And sings.'],
       ['n','A little girl laughing. Then a woman’s voice, tired and kind: “Come inside, little star. Your father’s home.”'],
       ['dess','…'],
@@ -6109,23 +6254,86 @@ const CH1_SEQ=[
       ['marr','Every mother in Meridian says “little star,” Dess. Put it back on the shelf.'],
       ['dess','The resonance doubles every time the clock ticks. No— it isn’t the clock. It’s syncing to his pulse.'],
       ['marr','There. Now the numbers are interesting.'],
-      ['marr','Do you know what’s on those shelves, Dess? Everything this city forgot. Every one of them was somebody’s.'],
-      ['marr','If a core can say it once, I can make it say it again. Imagine giving it back to them.'],
-      ['dess','And if they don’t want it back?'],
-      ['marr','Then they never have to know it was gone.'],
       ['th','He took the core away from her very fast. Faster than he does anything else.'],
-      ['th','She watched which shelf he put it on.']],{...NIGHT,fx:'flash',mus:'sorrow'})]},
+      ['th','She watched which shelf he put it on.'],
+      ['marr','Let’s see if it’s you or the crystal. Three cores, Mr…. Kairos. Hold the one that feels warm.']],{...NIGHT,fx:'flash',mus:'sorrow'})]},
+  {fn:nx=>{const go=()=>showPuzzle({head:'The Institute',title:'Core Resonance',rounds:[
+      {q:'Three cores on the tray, each pulsing at its own speed. Which one is warm?',hint:'The monitor by the chair: your heart, 140 a minute and racing.',
+       opts:['The violet core: a slow, deep pulse, about once a second','The grey core: a quick pulse, a little over twice a second','The cracked core: no pulse at all'],a:1,
+       ok:'Kairos: This one. It’s keeping time with me.',no:'Cold glass. Marr writes something down, and doesn’t say what.'}]},()=>nx());go();}},
+  {cut:[
+    pn('lab',[['kairos',0.45,0.7,1,{glow:1}],['npc',0.6,0.68,-1,{col:MARRC}]],[
+      ['n','The grey core warms in his palm. It pulses with his heart: once, twice, together.'],
+      ['n','And the white room goes away.']],{...NIGHT,fx:'flash',mus:'sorrow'})]},
+  {mission:'g7mem'},
+  {cut:[
+    pn('lab',[['kairos',0.45,0.7,1,{hurt:1}],['npc',0.6,0.68,-1,{col:MARRC}],['dess',0.76,0.7,-1]],[
+      ['n','The white room comes back. The core in his hand is cold and dark.'],
+      ['kairos','There was a kitchen. A man. He was going to be back by supper.'],
+      ['th','I can still see the drawing. The sun had a face.',{if:'g7_seen'}],
+      ['n','Marr’s pen has stopped.'],
+      ['marr','You went inside it.'],
+      ['marr','Nobody goes inside it. We read them. We listen. Nobody goes in.'],
+      ['dess','Doctor. The cabinet.'],
+      ['n','Every core in the cabinet is pulsing now. In time with his heart. The glass cracks from the top down.']],{...NIGHT,fx:'shake',mus:'disaster'})]},
+  {mission:'containment'},
+  {cut:[
+    pn('lab',[['kairos',0.45,0.7,1,{hurt:1}],['npc',0.62,0.68,-1,{col:MARRC}],['dess',0.78,0.7,-1]],[
+      ['n','The last Vice comes apart into smoke and a new, small core. The alarms wind down.'],
+      ['n','Marr was behind the observation glass the whole time. He hasn’t stopped writing.'],
+      ['marr','Remarkable. Truly.'],
+      ['marr','Change the order, Dess. Not a consultation. Observation, retained indefinitely.'],
+      ['marr','Transfer him to the retention wing tonight. Twenty-three fifteen, once the night shift has signed in.'],
+      ['dess','Retained indefinitely.'],
+      ['dess','He came in for a consultation. He walked in.'],
+      ['marr','And the numbers are interesting. Write it up.'],
+      ['th','She writes it. Her pen stops on the word “retained.” I watch her read it twice.'],
+      ['th','Like she’s seen it somewhere before. Somewhere she wasn’t allowed to look.']],{...NIGHT,mus:'sorrow'}),
+    pn('lab',[['dess',0.5,0.7,1]],[
+      ['n','Later. The lab is dark. Dess stands at the shelf where her father put the gold core.'],
+      ['n','She takes a blank from the drawer. Same size. Same weight. No song.'],
+      ['n','She puts the blank on the shelf.'],
+      ['n','She puts the gold core in her coat, and buttons it.'],
+      ['dess','…Little star.']],{...NIGHT,focus:[0.5,0.55],zoom:0.12,mus:'sorrow'})]},
 
   // ═════════ ACT III · WHAT WAS TAKEN
   // ───────── SCENE 9: Lucas remembers
-  {sc:'Scene 9 · There Wasn’t a Cat',cut:[
-    pn('orphanage',[['lucan',0.45,0.7,1,{moving:1}]],[
+  {sc:'Scene 9 · The Long Way',cut:[
+    pn('office',[['lucan',0.45,0.7,1,{moving:1}]],[
+      ['n','The Concord Office after hours. One lamp in the archive. Senior clerks have keys.'],
       ['lucan','“There wasn’t a cat.”',{if:'c_truth'}],
       ['lucan','“Wrong person.” He was lying. Why would a stranger lie about that?',{if:'c_lie'}],
+      ['lucan','He shouted at a clerk about a woman who made him up a birthday.',{if:'c_office_plead'}],
+      ['lucan','“Then your book is wrong.” Nobody says that to the book.',{if:'c_office_angry'}],
+      ['lucan','Records don’t go missing. I said it myself. So where did his go?']],{...NIGHT,cap:'That evening. The Concord Office archive.',mus:'sorrow'})]},
+  {mission:'archive'},
+  {cut:[
+    pn('orphanage',[['lucan',0.45,0.7,1,{moving:1}]],[
       ['lucan','Home is east. I’m walking north.'],
-      ['lucan','I’ve never been to St. Hesper’s in my life. I know every turn.']],{...NIGHT,cap:'That evening. Lucas walks home the long way.',mus:'sorrow'})]},
+      ['lucan','I’ve never been to St. Hesper’s in my life. I know every turn.']],{...NIGHT,cap:'Lucas walks home the long way.',mus:'sorrow'})]},
   {mission:'longway'},
   {cut:[
+    pn('orphanage',[['npc',0.62,0.68,-1,{col:NUNC}],['lucan',0.44,0.7,1]],[
+      ['n','The gate of St. Hesper’s. An old nun with a lamp, locking up for the night. She looks at him for a long time.'],
+      ['matron','You were the other boy.'],
+      ['?',[
+        {t:'“The other boy”?',r:[['matron','There were two of you. Always two. He was the one who counted. You were the one who stole the bread.'],['matron','Then there was the fire.']]},
+        {t:'What fire?',r:[['matron','The kitchen. Eleven years ago. The curtains went up, and the door stuck.'],['matron','There were two of you in there.']]}],'She knows me.'],
+      ['matron','He pulled you out, Lucas. Through the fire. His hands… he had a fever for three weeks.'],
+      ['matron','And the Chancellor was at the door the next morning. He’d come for the clever one. The clever one couldn’t stand.'],
+      ['lucan','So he took me.'],
+      ['matron','So he took you. And you went, because you were nine, and he had a carriage.'],
+      ['matron','Come in. The old wing is the same. Take as long as you need.']],{...NIGHT,mus:'sorrow'})]},
+  {mission:'hesper_now'},
+  {cut:[
+    pn('orphanage',[['lucan',0.45,0.7,1]],[
+      ['n','On the roof, among the chimneys, something waits. A Vice, bigger than the ones in the street. It turns toward him like it knows his name.'],
+      ['lucan','You’ve got something of mine.']],{...NIGHT,fx:'shake',mus:'disaster'})]},
+  {mission:'lucas_alone',party:['lucan']},
+  {cut:[
+    pn('orphanage',[['lucan',0.5,0.7,1]],[
+      ['n','The Vice comes apart into smoke. Its core rolls across the slates and stops against his shoe.'],
+      ['n','He picks it up. It’s warm.']],{...NIGHT,fx:'flash',mus:'sorrow'}),
     pn('orphanage',[['kairos',0.44,0.72,1,KID],['lucan',0.56,0.72,-1,KID]],[
       ['kidl','If Sister Agathe catches us, we say the cat did it.'],
       ['kidk','There isn’t a cat.'],
@@ -6141,53 +6349,78 @@ const CH1_SEQ=[
       ['n','And the fire stops.'],
       ['n','The flames hang still like paper cutouts. The smoke stops in the air. Only one boy is still moving.'],
       ['kidk','That sound again… tick, tick, tick. Not now. Please, not now.'],
-      ['kidk','…Okay. Whatever this is, it’s helping. Lucas, give me your hand. Don’t let go.']],{...FROZEN,fire:1}),
-    pn('orphanage',[['npc',0.32,0.68,1,{col:NUNC}],['npc',0.5,0.68,-1,{col:CRANEC,hat:'#1A1A28'}],['kairos',0.66,0.74,-1,{...KID,fall:1}],['lucan',0.78,0.72,-1,KID]],[
-      ['matron','He pulled the other boy out through the fire, Chancellor. His hands are badly burned. He has a fever.'],
-      ['crane','I came for the boy who counts. The one with the memory.'],
-      ['matron','He may not recover for weeks. And the other boy keeps saying the fire stopped. Smoke does strange things to children.'],
-      ['crane','And the Vices on your roof last night?'],
-      ['matron','The first in years. We don’t know why they came.'],
-      ['crane','I don’t have weeks.'],
-      ['crane','Give me the other one.'],
-      ['kidl','But I— Kairos is—'],
-      ['crane','You’ll forget him soon enough. The Church will see to that.']],{cap:'The next morning.',mus:'sorrow'}),
+      ['kidk','…Okay. Whatever this is, it’s helping. Lucas, give me your hand. Don’t let go.']],{...FROZEN,fire:1})]},
+  {mission:'morning'},
+  {cut:[
+    pn('orphanage',[['lucan',0.5,0.72,1,KID]],[
+      ['n','The window. The boy with the bandaged hands is asleep. The driver calls again.'],
+      ['?',[
+        {t:'Knock on the glass. “I’ll come back for you.”',f:'c_lucas_door',r:[['n','He knocks, twice, softly. The sleeping boy doesn’t wake.'],['kidl','I’ll come back for you. I promise. I’ll remember.']]},
+        {t:'Keep walking. Don’t look.',f:'lucas_walked',r:[['n','He doesn’t look. It’s easier not to look.'],['th','Nine years old, and already I knew how to walk past a window.']]}],'The carriage is waiting.'],
+      ['n','At the carriage he looks up. The old clock tower above the orphanage, stopped, the way it always was.'],
+      ['kidk','(a boy’s voice, from somewhere he can’t see) Inspection’s over at nine. Meet at the tower.']],{cap:'The morning after.',mus:'sorrow'}),
     pn('orphanage',[['lucan',0.5,0.7,1,{hurt:1}]],[
-      ['lucan','The fire stopped. Everything stopped, and he was the only one moving.'],
-      ['lucan','He burned his hands for me. And today I asked him if I knew him.'],
       ['lucan','That night the Church gave me a silver cup. “So the new life can begin clean.” I slept for two days.'],
       ['lucan','When I woke up he was just… gone. I thought that’s what growing up felt like.']],{...NIGHT,fx:'flash',mus:'sorrow'}),
-    pn('office',[['lucan',0.4,0.7,1],['npc',0.62,0.68,-1,{col:CRANEC,hat:'#1A1A28'}]],[
-      ['n','The Chancellor’s study. Midnight. One lamp.'],
-      ['lucan','You went to St. Hesper’s for a boy who counted.'],
-      ['crane','I went for an heir.'],
-      ['lucan','You went for him. He was sick, so you took me.'],
-      ['crane','I took the child who could leave that day. That is what adoption is, Lucas.'],
-      ['lucan','And the cup?'],
-      ['crane','You cried for a month. The Church offered mercy. I accepted it on your behalf. I would do it again.'],
-      ['lucan','He burned his hands for me.'],
-      ['crane','And I gave you everything else. The name. The house. The desk you are so good at. Everything you have, I gave you.'],
-      ['lucan','I know.'],
-      ['crane','Then go to bed. Tomorrow you’ll feel differently.'],
-      ['n','There is a silver cup on the shelf behind the desk. Lucas has walked past it every day for eleven years.'],
-      ['n','He doesn’t answer. He takes his coat.']],{...NIGHT,cap:'The Crane house.',mus:'sorrow'})]},
-  {cut:[
-    pn('yard',[['ines',0.35,0.7,1],['bram',0.47,0.7,1],['noemi',0.6,0.7,-1],['theo',0.7,0.7,-1]],[
+    pn('orphanage',[['lucan',0.5,0.7,1]],[
+      ['n','The roof of St. Hesper’s. The core in his hand has gone cold.'],
+      ['lucan','The fire. His hands. A window. The tower.'],
+      ['lucan','That’s all. Not the years. Not what he was to me. Just that he was something.'],
+      ['lucan','And eleven years of being someone else’s son, which I also remember perfectly well.'],
+      ['lucan','I said I’d come back.',{if:'c_lucas_door'}],
+      ['lucan','I walked past his window.',{if:'lucas_walked'}],
+      ['lucan','He’s at the Institute. Marr has him.']],{...NIGHT,mus:'sorrow'}),
+    pn('office',[['lucan',0.45,0.7,1]],[
+      ['n','The Concord Office again, past nine. His clearance opens the transfer register.'],
+      ['n','“Subject K. Order of Dr. E. Marr: observation, retained indefinitely. Transfer to the retention wing, 23:15, after night sign-in.”'],
+      ['lucan','Retained indefinitely.'],
+      ['n','He takes a courier pass from the drawer and signs it. Under his own name, in ink, where anyone could read it.'],
+      ['lucan','Twenty-three hundred, courier lift. That gives me fifteen minutes before they move him.'],
+      ['th','Eleven years without an error. This is the first one, and I’m signing it.']],{...NIGHT,cap:'21:30.',mus:'tense'})]},
+
+  // ───────── SCENE 9.5: the plan
+  {sc:'Scene 9.5 · The Plan',cut:[
+    pn('yard',[['ines',0.35,0.7,1],['bram',0.47,0.7,1],['theo',0.62,0.7,-1]],[
       ['bram','We just let them take him. We stood there.'],
       ['ines','We let them take him so we’d still be free to get him back.'],
-      ['theo','The Institute is a fortress. We don’t even know which floor.'],
-      ['noemi','Someone in that building knows.'],
-      ['n','A knock at the door. Everyone freezes.']],{...NIGHT,cap:'The same night. A Garrison safehouse.',mus:'tense'}),
-    pn('yard',[['ines',0.35,0.7,1],['bram',0.47,0.7,1],['noemi',0.6,0.7,-1],['theo',0.7,0.7,-1],['lucan',0.86,0.7,-1]],[
-      ['lucan','Third sub-level. The guards change shifts at eleven. That’s your gap.'],
-      ['ines','You’re the Chancellor’s son. This afternoon you said “next.”'],
+      ['theo','I know the public floors. I never got below sub-level one. He made sure of that.'],
+      ['n','On the table, Theo’s brass ticker starts to tap. Long, short, short.'],
+      ['theo','Naomi. Hold on, she’s fast and I’m out of practice.']],{...NIGHT,cap:'The same night. A Garrison safehouse.',mus:'tense'})]},
+  {fn:nx=>showPuzzle({head:'The ticker',title:'Naomi’s message',rounds:[
+      {q:'The tape: · – · ·  · –  · · –  – ·  – · ·  · – ·  – · – –',hint:'Theo’s code card (torn): A · –   D – · ·   L · – · ·   N – ·   U · · –   … the R and Y are on the missing half.',
+       opts:['LANTERN','LAUNDRY','LAUNDER','LUNATIC'],a:1,ok:'Theo: Laundry. Seven letters, ends long-short-long-long. Good.',no:'Theo: “Lunatic”? No. Count the letters on the tape.'},
+      {q:'The rest of the tape: CART 22·55 · SERVICE ……',hint:'Theo: Institute laundry goes out by the service yard. Everything else in that building goes through the front.',
+       opts:['SERVICE GATE','SERVICE STAIRS','SERVICE LIFT'],a:1,ok:'Theo: Stairs. The cart stops at the service stairs, and the stairs only open from inside.',no:'Theo: Not that. The cart doesn’t go anywhere you’d need a lift.'}]},
+      ok=>{if(sq&&sq.flags)sq.flags.ticker_decoded=true;try{setStoryFlag('ch1.ashlane');}catch(_){}nx();})},
+  {cut:[
+    pn('yard',[['ines',0.35,0.7,1],['bram',0.47,0.7,1],['theo',0.62,0.7,-1]],[
+      ['n','Laundry cart. 22:55. Service stairs.'],
+      ['theo','The Institute sends its linen to St. Lucia’s every night. The cart comes back up Ash Lane at five to eleven.'],
+      ['theo','Naomi can put three people in it.'],
+      ['ines','Three ride in. We open the service stairs from inside. Everyone else holds the yard.'],
+      ['bram','I don’t fit in a laundry cart.'],
+      ['ines','You’re holding the yard, Bram.'],
+      ['bram','Oh good.'],
+      ['ines','The shift changes at eleven. Whatever we do, we do it in the gap.']],{...NIGHT,mus:'tense'})]},
+
+  // ───────── SCENE 9.6: breakout
+  {sc:'Scene 9.6 · Breakout',cut:[
+    pn('lab',[['ines',0.35,0.7,1],['bram',0.47,0.7,1],['theo',0.6,0.7,-1]],[
+      ['n','22:55. The service yard. The cart rolls in under a heap of sheets.'],
+      ['n','And on the yard walls, one after another, lights turn toward it.'],
+      ['ines','Spotlights. Not the Institute’s. Those are Vices.'],
+      ['theo','Something here likes to watch.'],
+      ['ines','Then we put its eyes out. Bram, stand in the lines. Theo, anything that runs at the cart.']],{...NIGHT,mus:'tense'})]},
+  {mission:'lightsout'},
+  {cut:[
+    pn('lab',[['ines',0.3,0.7,1],['bram',0.42,0.7,1],['theo',0.54,0.7,1],['lucan',0.78,0.7,-1]],[
+      ['n','The service stairs. Behind them, a courier lift hums up from the archive tunnels. The gate slides open.'],
+      ['n','Lucas Crane steps out with a courier pass in his hand.'],
+      ['ines','You’re the Chancellor’s son. This morning you said “next.”'],
       ['lucan','This afternoon I didn’t remember a kitchen fire.'],
-      ['noemi','And now you do. All of it?'],
-      ['lucan','Pieces. A boy with burned hands. Bread. A cat that didn’t exist.'],
-      ['lucan','A few hours of memories against eleven years of being someone else. I don’t know which one is lying.'],
-      ['noemi','So why are you here?'],
-      ['lucan','Because I want to find out which one is me. I can’t do that if Marr takes him apart first.'],
-      ['ines','Good enough.'],
+      ['lucan','Third sub-level. They move him at quarter past. That’s our gap.'],
+      ['theo','How do you know that?'],
+      ['lucan','I read the register. Then I signed my name on a pass. I don’t have a lot of time to be useful.'],
       ['bram','…I’m going to hug you.'],
       ['lucan','Please don’t.'],
       ['bram','Later, then.']],{...NIGHT,mus:'warm'})]},
@@ -6197,7 +6430,7 @@ const CH1_SEQ=[
       ['lucan','I know the layout. Follow me, and don’t touch the tanks.'],
       ['theo','What’s in the tanks?'],
       ['lucan','Nothing you want on your hands.']],{...NIGHT,mus:'lab'})]},
-  {mission:'assault',pick:3,from:['ines','bram','noemi','theo','lucan'],prefer:['lucan','ines','noemi'],title:'Breakout · outside team',sub:'Kairos is locked inside. Pick three to fight down through the sub-levels.'},
+  {mission:'assault',pick:3,from:['ines','bram','theo','lucan'],prefer:['lucan','ines','bram'],title:'Breakout · outside team',sub:'Kairos is locked inside. Three of you fight down through the sub-levels.'},
   {cut:[pn('lab',[['kairos',0.5,0.7,1,{glow:1}]],[
       ['th','Alarms. Upstairs. Someone’s coming.'],
       ['th','The minute. How did it feel? Like holding your breath. Like grabbing the second hand.'],
@@ -6212,35 +6445,49 @@ const CH1_SEQ=[
     pn('lab',[['kairos',0.36,0.7,1],['dess',0.56,0.7,-1],['lucan',0.74,0.7,-1],['ines',0.84,0.7,-1]],[
       ['n','A sealed steel door. Kairos from one side, the others from the stairs. And Dess, already there, holding her father’s key card.'],
       ['kairos','Lucas?'],
-      ['lucan','I remembered. Some of it. The bread. The fire. Your hands.'],
+      ['lucan','I remembered. Some of it. The fire. Your hands. A window.'],
       ['lucan','I don’t know who I am to you yet.'],
       ['kairos','You don’t have to know tonight.'],
       ['lucan','Later, then. We move.'],
       ['dess','He’s going to know it was me.'],
       ['kairos','Then why are you helping?'],
       ['dess','Because that core called me “little star.” And when I told him, he only asked if he could make it say it again.'],
+      ['dess','And because I read the order. “Retained indefinitely.” I’ve seen those words before, on a file he never let me open.'],
       ['dess','And you told him to go first. Nobody talks to him like that. I almost laughed.',{if:'c_marr_joke'}],
       ['dess','You said “okay” to him. Everyone does. He makes it the easiest word in the room.',{if:'c_marr_comply'}],
       ['dess','You never said a word to him. He wrote “subject uncooperative” three times.',{if:'c_marr_silent'}],
       ['kairos','Good.',{if:'c_marr_silent'}],
+      ['dess','You went inside a core. I saw the numbers. Nobody does that.',{if:'g7_seen'}],
       ['dess','I’m taking the cores. Not all of them. The ones with people in them. Help me listen.']],{...NIGHT,mus:'tense'})]},
   {fn:nx=>showPuzzle({head:'Dess’s cores',title:'Which ones are people?',rounds:[
-      {q:'Dess holds a core to her ear, then yours. What do you hear?',hint:'A hum. Steady. The same pitch as the lamps in this room.',opts:['Someone’s lullaby','The lab’s generator, soaked into the glass','A heartbeat'],a:1,ok:'Dess: Empty. Leave it.',no:'Dess: Listen again. It’s the same note as the lamps.'},
+      {q:'Dess holds a core to her ear, then yours. What do you hear?',hint:'A hum. Steady. The same pitch as the lamps in this room.',opts:['Someone’s lullaby','The lab’s generator, soaked into the glass','A heartbeat'],a:1,ok:'Dess: Right. Just the building. Leave it.',no:'Dess: Listen again. Does it change, or is it the room?'},
       {q:'The next one.',hint:'A man counting coins, losing count, and laughing at himself.',opts:['A person. Take it.','Interference. Leave it.'],a:0,ok:'Dess: Somebody’s Tuesday. We take it.',no:'Dess: Machines don’t laugh at themselves.'},
-      {q:'The last shelf. Marr’s shelf. A core sits in the slot where he put “little star”.',hint:'Dess taps it. Nothing. Not a hum, not a voice. Just cold glass.',opts:['That’s her mother’s core','It’s a blank. Someone swapped it'],a:1,no:'Dess: Listen. There’s nothing in there.'}]},()=>nx())},
+      {q:'The last shelf. Marr’s shelf. A core sits in the slot where he put “little star”.',hint:'Dess taps it. Nothing. Not a hum, not a voice. Just cold glass.',opts:['That’s her mother’s core','It’s a blank. Someone swapped it'],a:1,ok:'Dess: …Yes.',no:'Dess: Listen to it. There’s nothing in it.'}]},()=>nx())},
   {cut:[
     pn('lab',[['dess',0.5,0.7,1,{glow:1}],['kairos',0.36,0.7,1]],[
       ['dess','It’s a blank. I swapped them this afternoon, while he was writing about you.'],
       ['dess','He’s been running tests on an empty crystal for six hours.'],
       ['kairos','Dess.'],
       ['dess','Don’t. If I think about it I’ll put it back.'],
-      ['n','She opens her hand. The real core is in it. A small blue figure of light rises out: a little girl, who waves at Dess and floats at her side.'],
+      ['n','She opens her coat. The real core is in her hand. A small blue figure of light rises out: a little girl, who waves at Dess and floats at her side.'],
       ['dess','Hi. Will you help us get out?'],
       ['th','The girl of light has a freckle under her left eye.'],
-      ['th','So does Dess.']],{...NIGHT,mus:'sorrow'})]},
+      ['th','So does Dess.']],{...NIGHT,mus:'sorrow'}),
+    pn('lab',[['dess',0.5,0.7,1],['kairos',0.36,0.7,1],['lucan',0.68,0.7,-1]],[
+      ['n','Behind them, the cabinet. Rows of cores, still humming. The ones with people in them.'],
+      ['dess','We can’t carry them all. Not tonight.'],
+      ['?',[
+        {t:'Open the cabinet. Let them go.',f:'c_cores_free',r:[['n','Dess turns the key. The cores rise out of their slots, one by one, and drift up the stairwell like lanterns.'],['dess','I don’t know where they’ll go.'],['kairos','Neither do they. That’s better than a shelf.']]},
+        {t:'Leave them sealed. Come back for them.',f:'c_cores_keep',r:[['dess','We can’t carry the dead out tonight.'],['kairos','Then we come back. All of us.'],['dess','…I’m writing down the shelf numbers.']]}],'The ones with people in them.']],{...NIGHT,mus:'sorrow'})]},
   {join:'dess'},
-  {mission:'escape',pick:3,must:['dess'],prefer:['dess','kairos','lucan'],title:'Escape',sub:'Dess must go: her spirits are new. Try switching Lucas to Kairos.'},
-  {cut:[pn('street',[['lucan',0.45,0.7,1,{moving:1}],['kairos',0.58,0.7,1,{moving:1}]],[
+  {mission:'escape',pick:2,from:['kairos','lucan','ines','bram','theo'],prefer:['kairos','lucan'],title:'Escape',sub:'Dess has to open three seal doors. Pick two to keep them off her.'},
+  {cut:[
+    pn('lab',[['npc',0.5,0.62,1,{col:MARRC}]],[
+      ['n','High above the corridor, behind the observation glass, a man in a white coat watches them go. He doesn’t call the guards.'],
+      ['n','He writes.'],
+      ['marr','Subject retained. Observation continues.'],
+      ['marr','And file a report for the Council, please. A heretic break-in. Describe the large one, and the sergeant.']],{...NIGHT,mus:'tense'}),
+    pn('street',[['lucan',0.45,0.7,1,{moving:1}],['kairos',0.58,0.7,1,{moving:1}]],[
       ['lucan','I’m sorry.'],
       ['kairos','For what?'],
       ['lucan','For forgetting. For looking at the floor.'],
@@ -6249,7 +6496,37 @@ const CH1_SEQ=[
       ['kairos','I had errands. It was fine.'],
       ['lucan','It wasn’t fine.'],
       ['kairos','…No.'],
-      ['lucan','Then I’m going to be very annoying about catching up.']],{...NIGHT,mus:'warm'})]},
+      ['lucan','I have to ask my father something. Tonight, while I still remember the question.'],
+      ['kairos','Lucas—'],
+      ['lucan','I know. Later. I’m going to be very annoying about catching up.']],{...NIGHT,mus:'warm'}),
+    pn('street',[['ines',0.35,0.7,1],['bram',0.47,0.7,1],['kairos',0.58,0.7,-1],['dess',0.7,0.7,-1],['theo',0.22,0.7,1]],[
+      ['ines','The safehouse is burned. Marr saw Bram’s face. He’ll have the Garrison lists by morning.'],
+      ['theo','We need somewhere nobody checks.'],
+      ['kairos','I know a place. Nobody’s climbed it in eleven years.']],{...NIGHT,mus:'tense'})]},
+  {leave:'lucan'},
+
+  // ───────── SCENE 9.8: the Crane house
+  {sc:'Scene 9.8 · The Crane House',cut:[
+    pn('office',[['lucan',0.45,0.7,1,{moving:1}]],[
+      ['n','The Crane house. Half past midnight. One lamp is lit in the study.']],{...NIGHT,cap:'The Crane house.',mus:'sorrow'})]},
+  {mission:'crane_study'},
+  {cut:[
+    pn('office',[['lucan',0.4,0.7,1],['npc',0.62,0.68,-1,{col:CRANEC,hat:'#1A1A28'}]],[
+      ['lucan','You went to St. Hesper’s for a boy who counted.'],
+      ['crane','I went for an heir.'],
+      ['lucan','You went for him. He was sick, so you took me.'],
+      ['crane','I took the child who could leave that day. That is what adoption is, Lucas.'],
+      ['lucan','And the cup?'],
+      ['crane','You cried for a month. The Church offered mercy. I accepted it on your behalf. I would do it again.'],
+      ['lucan','He burned his hands for me.'],
+      ['crane','And I gave you everything else. The name. The house. The desk you are so good at. Everything you have, I gave you.'],
+      ['lucan','I know.'],
+      ['?',[
+        {t:'“Why me? Why did you want the one who counted?”',f:'c_crane_why',r:[['crane','Go to bed, Lucas.'],['lucan','That isn’t an answer.'],['crane','No. It isn’t.']]},
+        {t:'“Don’t send anyone after me.”',f:'c_crane_warn',r:[['crane','You signed a courier pass tonight. In ink.'],['crane','I won’t need to send anyone. The pass will do it for me.']]}],'Eleven years in this house.'],
+      ['crane','Tomorrow you’ll feel differently.'],
+      ['n','There is a silver cup on the shelf behind the desk. Lucas looks at it for a long time.'],
+      ['n','He doesn’t answer. He takes his coat. He doesn’t take anything else.']],{...NIGHT,mus:'sorrow'})]},
 
   // ───────── SCENE 10: the Inquisitor
   {sc:'Scene 10 · The Inquisitor',cut:[pn('rooftop',[['cass',0.68,0.66,-1],['kairos',0.4,0.7,1],['ines',0.3,0.7,1]],[
