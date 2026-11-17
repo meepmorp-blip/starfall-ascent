@@ -1328,7 +1328,7 @@ const CHARS={
     kit:{
       entrance:{name:'Borrowed Hour',el:null,desc:'He has no Rising, so he copies the Entrance of whoever he switched from, at 120% power. If he enters first, he dashes in with a slash.'},
       basic:{name:'Clock Hands',tap:'A fast 3-hit combo with both blades. The 3rd hit is a spinning finisher (200%).',hold:'Crosscurrent: a short jump forward into a wide spinning slash (220%).'},
-      sun:{name:'Riptide',short:'RIPTIDE',el:'Water',cd:5,dur:0,desc:'Dashes through a line of enemies for heavy damage (300%) and leaves a slowing water trail. Can be used twice: the second dash must come within 2.5s.'},
+      sun:{name:'Riptide',short:'RIPTIDE',el:'Water',cd:6,dur:0,desc:'Dashes through a line of enemies for heavy damage (300%) and leaves a slowing water trail. Can be used twice: the second dash must come within 2.5s.'},
       moon:{name:'Shell',short:'SHELL',el:'Water',cd:6,dur:1.2,desc:'A wide water pulse (120%), +10% ATK for 6s, and a short counter stance. If something hits him in the next 1.2s, he blocks it and releases a huge pulse (320%).'},
       combo:{name:'Trine · Flow',desc:'Use both skills in a row: his next 3 basic attacks are all finishers.'},
       ult:{name:'The Unwritten Minute',short:'MINUTE',dur:8,desc:'Stops time for 3 seconds. Then Overflow for 8s: +35% damage, and his next 10 basic attacks are all finishers.'},
@@ -1342,7 +1342,7 @@ const CHARS={
     mech:'Spotted: marked enemies take +15% damage from everyone. On the bench, she keeps sniping.',
     kit:{
       entrance:{name:'Overwatch Drop',el:'Fire',desc:'Fires a piercing shot at each of up to 3 nearby enemies as she lands (aims itself). Everything hit is Spotted.'},
-      basic:{name:'Rifle',tap:'Slow, heavy shots that aim themselves. If you’re moving, she skips a short step in that direction with each shot.',hold:'Headshot: a charged piercing shot that aims at the nearest enemy and always crits on Spotted enemies.'},
+      basic:{name:'Rifle',tap:'Slow, heavy shots that aim themselves and pass through up to 2 enemies. If you’re moving, she skips a short step in that direction with each shot.',hold:'Headshot: a charged piercing shot that aims at the nearest enemy and always crits on Spotted enemies.'},
       sun:{name:'Flare',short:'FLARE',el:'Earth',cd:9,dur:0,desc:'A flare round that Spots every enemy in a wide area. Spotted enemies take 15% more damage from everyone.'},
       moon:{name:'Soaking Round',short:'SOAK',el:'Water',cd:11,dur:5,desc:'Fires a water shell and rolls back. The splash leaves a pool for 5s: enemies in it are slowed and take 10% more damage.'},
       combo:{name:'Sextile · Crossfire',desc:'Flare then Soak: the pool Spots too. Soak then Flare: the flare explodes for damage.'},
@@ -1654,7 +1654,7 @@ const KIT_INFO={
   kairos:{tldr:'Main damage. Close range, a 3-hit combo, two dashes, and Ultimates full of finishers. His hits slow Vices and make them take more damage from everyone.',
     entrance:['Copies an Entrance ×120%'],basic:['100% ×2, 3rd: 200% spin','Hold: jump + 220% spin'],sun:['Dash 300% ×2','Slow trail'],moon:['Pulse 120% · ATK +10%','Counter 320%'],ult:['Stops time 3s','10 finishers · +35% dmg']},
   ines:{tldr:'Sniper sub-DPS. Spot enemies so the whole team hits 15% harder, soak them to slow them, then switch out: she keeps sniping.',
-    entrance:['Up to 3 piercing shots 160%','Spots'],basic:['160% ATK per shot','Hold: 200% pierce, crits on Spotted'],sun:['Spots an area (+15%)','Combo: explosion 250%'],moon:['Water pool 5s','Slow · +10% damage taken'],ult:['3s: 240% shot every 0.8s','Works off-field']},
+    entrance:['Up to 3 piercing shots 160%','Spots'],basic:['180% ATK per shot, passes through 2','Hold: 200% pierce, crits on Spotted'],sun:['Spots an area (+15%)','Combo: explosion 250%'],moon:['Water pool 5s','Slow · +10% damage taken'],ult:['3s: 240% shot every 0.8s','Works off-field']},
   bram:{tldr:'The wall. Light damage, big shields, knockback and Stagger. Even on the bench he stumbles into enemies every 4s.',
     entrance:['Always crits','Big knockback'],basic:['5-hit combo','5th: slam 200%','Hold: 220% + stun'],sun:['Clay Bram decoy','Blocks bullets'],moon:['Shield 40% of Bram’s HP'],ult:['Slam 500%','Dome 6s · team +15% dmg']},
   noemi:{tldr:'The doctor. Heals, boosts attack, does little damage. Hold to heal whoever is lowest, even on the bench.',
@@ -2019,14 +2019,25 @@ function resOf(def){
 function shake(m,t){if(!vol.shake)return;if(reduceMotion)m*=0.3;shakeM=Math.max(shakeM,m);shakeT=Math.max(shakeT,t);}
 function part(x,y,vx,vy,life,col,s){if(vol.fxLow&&(parts.length>60||rand()<0.65))return;if(parts.length<300)parts.push({x,y,vx,vy,life,max:life,col,s});}
 function burstParts(x,y,col,n,sp=140){for(let i=0;i<n;i++){const a=rand()*TAU,v=rr(sp*0.3,sp);part(x,y,Math.cos(a)*v,Math.sin(a)*v,rr(0.3,0.7),col,rr(1.5,3.2));}}
-function addText(x,y,txt,col,size,o={}){if(texts.length>50)texts.shift();texts.push({x,y,txt,col,size:size||11,life:o.life||0.9,max:o.life||0.9,bubble:!!o.bubble,follow:o.follow||null,rise:o.rise??22});}
-function dmgText(x,y,d,col){if(d>=1&&vol.nums)addText(x+rr(-6,6),y,String(Math.round(d)),col||C.paper,10,{life:0.55});}
+const TEXT_MAX=6;
+function objZones(){const z=[];if(room&&room.obj)z.push(room.obj);const m=typeof mis==='function'&&room?mis():null;if(m&&m.obj&&m.obj.hp>0)z.push(m.obj);return z;}
+function addText(x,y,txt,col,size,o={}){
+  if(!o.bubble&&!o.follow)for(const z of objZones()){const top=z.y-z.r-30;if(Math.abs(x-z.x)<z.r+36&&y>top&&y<z.y+z.r){x=z.x+(x<z.x?-1:1)*(z.r+40);}}
+  const t={x,y,txt,col,size:size||11,life:o.life||0.9,max:o.life||0.9,bubble:!!o.bubble,follow:o.follow||null,rise:o.rise??22,tg:o.tg||null,val:o.val||0,born:T};
+  texts.push(t);
+  let n=0;for(const q of texts)if(!q.bubble)n++;
+  while(n>TEXT_MAX){let i=texts.findIndex(q=>!q.bubble&&q.val&&q!==t);if(i<0)i=texts.findIndex(q=>!q.bubble&&q!==t);if(i<0)break;texts.splice(i,1);n--;}
+  return t;}
+function dmgText(x,y,d,col,tg){if(!vol.nums)return;
+  if(tg){const q=texts.find(q=>q.tg===tg&&q.val&&T-q.born<0.25);if(q){q.val+=d;if(q.val>=1){q.txt=String(Math.round(q.val));q.life=q.max;}return;}}
+  if(d>=1||tg)addText(x+rr(-6,6),y,String(Math.max(1,Math.round(d))),col||C.paper,10,{life:0.55,tg,val:Math.max(d,0.001)});}
 function ring(x,y,r,col,life){decals.push({x,y,r,life:life||0.45,max:life||0.45,ring:true,col});}
 function colorOf(e){return e.type==='gossip'?C.lime:e.type==='waxer'?C.wax:e.type==='deadline'?C.saturn:e.type==='devourer'?C.venus:e.type==='collector'?C.jupiter:e.type==='spotlight'?C.sun:C.mars;}
 
 // ═══════════════════════════════════════════ enemies
+const EARTH_SHIELDED=[0,0.45,0.45,0.35];
 function rollElite(){
-  if(room&&run&&room.def.kind==='rift'){if(room.def.mech==='earth'&&rand()<0.45)return 'shielded';return rand()<RIFT_TIER[run.tier||1].elite?pick(['hasted','shielded','volatile']):null;}
+  if(room&&run&&room.def.kind==='rift'){if(room.def.mech==='earth'&&rand()<EARTH_SHIELDED[run.tier||1])return 'shielded';return rand()<RIFT_TIER[run.tier||1].elite?pick(['hasted','shielded','volatile']):null;}
   if(!room||!run||room.def.kind!=='house')return null;
   const ch=room.def.id==='arena'?0.35:(run.roomNo>=3?0.1+0.04*(run.roomNo-3):0);
   return rand()<ch?pick(['hasted','shielded','volatile']):null;
@@ -2085,7 +2096,7 @@ function spawnGroup(){
 }
 function targetFor(e){
   {const mt=missionTarget(e);if(mt)return mt;}
-  if(room&&room.obj&&room.def.kind==='rift'){if(e.rt===undefined){let c=0;for(const q of enemies)if(q.rt&&!q.dead)c++;e.rt=c<WARD_CHASE_MAX&&rand()<0.5;}if(e.rt)return room.obj;}
+  if(room&&room.obj&&room.def.kind==='rift'){if(e.rt===undefined){if(e.gen){e.rt=false;return player;}let c=0;for(const q of enemies)if(q.rt&&!q.dead)c++;e.rt=c<WARD_CHASE_MAX&&rand()<0.5;}if(e.rt)return room.obj;}
   let best=null,bd=1e9;
   for(const a of allies){if(a.kind!=='guard')continue;const d=dist(e,a),rng=a.big?260:180;if(d<rng&&d<bd){bd=d;best=a;}}
   return best||player;
@@ -2097,7 +2108,7 @@ function hitEnemy(e,dmg,col){
   if(e.dummy&&tut)tut.hits++;
   e.hp-=dmg; e.flash=0.09; e.hitT=0.14; {const dx=e.x-player.x,dy=e.y-player.y,d=Math.hypot(dx,dy)||1;e.hdx=dx/d;e.hdy=dy/d;}
   if(e.type==='champion') e.lastHit=room.t;
-  dmgText(e.x,e.y-e.r-4,dmg,col);
+  dmgText(e.x,e.y-e.r-4,dmg,col,e);
   if(e.hp<=0) killEnemy(e);
 }
 function playerHit(t,dmg,o={}){
@@ -2159,8 +2170,10 @@ function playerHit(t,dmg,o={}){
   if(o.knock){const k=o.knock.f*(13/t.r)*(t.armor?0.5:1)*(t.type==='champion'?0.4:1)*(1+(sfx2.knock||0));t.kx+=o.knock.x*k;t.ky+=o.knock.y*k;}
   if(o.slow) t.slowT=Math.max(t.slowT,o.slow*(1+(sfx2.slow||0)));
   if(o.stun&&t.type!=='champion'){t.stunT=Math.max(t.stunT,o.stun);t.st='stun';}
+  if(t.sh>0&&(o.skill||o.ult)){const x=Math.min(t.sh,dmg*SKILL_SHIELD_X);t.sh-=x;if(t.sh<=0){t.sh=0;addText(t.x,t.y-(t.r||20)-24,'SHIELD BROKEN',C.earth,10,{life:0.8});sfx('break');}}
   hitEnemy(t,dmg,o.col);
 }
+const SKILL_SHIELD_X=1;
 function killEnemy(e){
   if(e.dead) return;
   memDrop(e);
@@ -2338,6 +2351,7 @@ function nearestTarget(x,y,maxD,ex){
   if(boss&&!boss.dead&&boss.entering<=0&&!(ex&&ex.has(boss))){const d=Math.hypot(boss.x-x,boss.y-y)-boss.r;if(d<bd){bd=d;best=boss;}}
   return best;
 }
+const AGNES_TAP=1.8;
 const RIP_WIN=2.5,RIP_RANGE=400;
 function ripValid(t){return t&&!t.dead&&(t===boss?t.entering<=0:t.spawnT<=0&&enemies.includes(t));}
 function ripAim(p){let t=p.ripWin>0&&ripValid(p.ripTgt)?p.ripTgt:null;
@@ -2440,7 +2454,7 @@ const KITS={
   ines:{chargeT:0.6,
     tap(p){const R=560;const t=nearestTarget(p.x,p.y,R,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(R);faceTo(a);
       {const v=inputVec(),m=Math.hypot(v.x,v.y);if(m>0.2){p.dodgeT=Math.max(p.dodgeT,0.12);p.dvx=v.x/m*300;p.dvy=v.y/m*300;}}
-      shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*1.6,mult:1+consumeSwift(),basic:true,spd:950,r:4,life:0.75,kind:'arrow',big:true,src:p,pn:0.9,col:'#FFD38A',knock:110}));p.atkCd=1/effAspd(p);sfx('heavy');shake(1.5,0.04);},
+      shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*AGNES_TAP,mult:1+consumeSwift(),basic:true,spd:950,r:4,life:0.75,kind:'arrow',big:true,src:p,pn:0.9,col:'#FFD38A',knock:110,pierce:true,maxHits:2}));p.atkCd=1/effAspd(p);sfx('heavy');shake(1.5,0.04);},
     hold(p){const R=600;const t=nearestTarget(p.x,p.y,R,null);let a;if(t){const dx=t.x-p.x,dy=t.y-(p.y-8),d=Math.hypot(dx,dy)||1;a={x:dx/d,y:dy/d};}else a=aimDir(R);faceTo(a);shots.push(mkShot(p.x,p.y-8,Math.atan2(a.y,a.x),{dmg:p.atk*2.0,mult:1+consumeSwift(),basic:true,spd:1100,r:6,life:0.8,pierce:true,big:true,kind:'arrow',src:p,pn:2,col:'#FFE6A3',knock:200,critMarked:true}));p.atkCd=0.5;sfx('laser');shake(3,0.08);},
     sun(p,combo){const at=aimPoint(p,420);let n=0;for(const t of allTargets())if(Math.hypot(t.x-at.x,t.y-at.y)<130){t.markT=8*debuffK();n++;}
       ring(at.x,at.y,130,C.gold,0.6);burstParts(at.x,at.y,C.gold,20,160);
@@ -2729,7 +2743,7 @@ function updateShots(dt){
     sfx('hit');for(let i=0;i<3;i++)part(s.x,s.y,rr(-80,80),rr(-80,80),0.22,s.col,1.6);
     if(s.ana)addText(hitT.x,hitT.y-(hitT.r||20)-14,'ANALYZED',C.mercury,10);
     if(s.o&&s.o.chain>0){let from=hitT,left=s.o.chain;const hs=new Set([hitT]);while(left-->0){let nb=null,bd=s.o.chainR||110;for(const e of allTargets()){if(hs.has(e))continue;const dd2=Math.hypot(e.x-from.x,e.y-from.y);if(dd2<bd){bd=dd2;nb=e;}}if(!nb)break;hs.add(nb);playerHit(nb,s.dmg*(s.o.chainK||0.6),{src:s.src,col:s.col,skill:s.o.skill});beams.push({a:{x:from.x,y:from.y},b:nb,life:0.15,col:s.col});from=nb;}}
-    if(!s.pierce)s.life=0;
+    if(!s.pierce||(s.o&&s.o.maxHits&&s.hit.size>=s.o.maxHits))s.life=0;
   }
   shots=shots.filter(s=>s.life>0);
 }
@@ -3033,18 +3047,20 @@ Object.assign(ROOMS,{
   rift_dust:{id:'rift_dust',kind:'rift',num:'Rift',name:'Festival Sparks',place:'Festival Square',theme:'plaza',mech:'dust',drop:'Stardust',
     ruleText:'Sparks fall over the square while Vices attack. Catch 15 sparks. Each one is Stardust.',pool:['gossip','hothead','spotlight','collector']},
 });
-const RIFT_TIER=[null,{rec:1,hp:1,atk:1,kills:12,elite:0.08},{rec:6,hp:1.6,atk:1.25,kills:16,elite:0.18},{rec:12,hp:2.4,atk:1.5,kills:20,elite:0.3}];
+const RIFT_TIER=[null,{rec:1,hp:1,atk:1,kills:12,elite:0.08},{rec:6,hp:1.6,atk:1.25,kills:16,elite:0.18},{rec:12,hp:2.1,atk:1.5,kills:20,elite:0.3}];
 const RIFT_PAR={rift_mastery:90,rift_fire:75,rift_water:80,rift_air:80,rift_earth:85,rift_xp:110,rift_dust:70,trialMercury:35,trialMars:30,boss:120};
 const RIFT_MODS=[
   {id:'burn',t:'Burns deal +50% damage'},{id:'shield',t:'Shields you get are 30% stronger'},
   {id:'regen',t:'Vices heal if nobody hits them for 3 seconds'},{id:'crit',t:'Crits deal +25% damage'}];
 const riftMod=()=>RIFT_MODS[Math.floor(Date.now()/86400000)%RIFT_MODS.length];
 const inRift=()=>!!(room&&room.def.kind==='rift');
-const modOn=id=>inRift()&&riftMod().id===id;
+const modOn=id=>inRift()&&riftMod().id===id&&!(id==='regen'&&MOD_SKIP_REGEN.includes(room.def.mech));
+const MOD_SKIP_REGEN=['water','air'];
+const modText=()=>riftMod().id==='regen'&&room&&MOD_SKIP_REGEN.includes(room.def.mech)?'Vices heal (off in this rift)':riftMod().t;
 let battleSel={tier:1,diff:0};
 function starKey(id,tier,diff){return id+(id==='boss'?'#d'+(diff|0):RIFTS.includes(id)?'#t'+tier:'');}
 function starsOf(k){return (save.stars&&save.stars[k])|0;}
-const WARD_CHASE_MAX=3,WARD_DPS=[0,3.5,3.6,3.75];
+const WARD_CHASE_MAX=3,WARD_HIT=[0,5,5,5],WARD_WIND=0.6,WARD_CD=1.2,WARD_REGEN=1.5;
 function riftInit(){
   const d=room.def,T0=RIFT_TIER[run.tier||1];
   room.hpScale*=T0.hp;room.atkScale*=T0.atk;room.k0=run.kills;room.cap=4+(run.tier||1);
@@ -3054,7 +3070,7 @@ function riftInit(){
   if(d.mech==='fire')room.emberCd=3;
   if(d.mech==='xp'){room.wave=0;room.waveCd=1.5;room.waveLeft=0;}
   if(d.mech==='dust'){room.sparkCd=1;room.collected=0;}
-  setBanner(d.name+' · Tier '+['','I','II','III'][run.tier||1],d.ruleText+'  •  Today: '+riftMod().t,4);
+  setBanner(d.name+' · Tier '+['','I','II','III'][run.tier||1],d.ruleText+'  •  Today: '+modText(),4);
 }
 function riftUpdate(dt){
   const d=room.def,tier=run.tier||1,got=run.kills-room.k0;
@@ -3076,8 +3092,17 @@ function riftUpdate(dt){
   }
   if(d.mech==='fire'){room.emberCd-=dt;if(room.emberCd<=0){room.emberCd=Math.max(1.6,3.4-0.5*tier);
     tels.push({x:clamp(player.x+rr(-30,30),AX0+30,AX1-30),y:clamp(player.y+rr(-30,30),AY0+30,AY1-30),r:44,t:0,dur:1.0,dmg:8+3*tier});}}
-  if(d.mech==='water'){const o=room.obj;let n=0;for(const e of enemies)if(!e.dead&&e.spawnT<=0&&Math.hypot(e.x-o.x,e.y-o.y)<o.r+e.r)n++;
-    if(n){o.hp-=Math.min(n,WARD_CHASE_MAX)*WARD_DPS[tier]*dt;o.hit=0.2;}else if(o.hit>0)o.hit-=dt;
+  if(d.mech==='water'){const o=room.obj;let busy=false;
+    // only Vices chasing the patients (e.rt) hurt them: a 0.6 s wind-up you can interrupt, then one hit
+    for(const e of enemies){if(e.dead||!e.rt||e.spawnT>0)continue;
+      const near=Math.hypot(e.x-o.x,e.y-o.y)<o.r+e.r+6;
+      if(e.wardCd>0)e.wardCd-=dt;
+      if(!near||e.stunT>0||e.hitT>0){if(e.wardW>0&&(e.hitT>0||e.stunT>0))addText(e.x,e.y-e.r-12,'INTERRUPTED',C.water,9,{life:0.6});e.wardW=0;continue;}
+      busy=true;if(e.wardCd>0)continue;
+      e.wardW=(e.wardW||0)+dt;
+      if(e.wardW>=WARD_WIND){e.wardW=0;e.wardCd=WARD_CD;o.hp-=WARD_HIT[tier];o.hit=0.25;o.calm=0;burstParts(o.x+(e.x-o.x)*0.4,o.y+(e.y-o.y)*0.4,C.danger,6,90);sfx('impact');}}
+    if(busy)o.calm=0;else{o.calm=(o.calm||0)+dt;if(o.calm>1&&o.hp<o.max)o.hp=Math.min(o.max,o.hp+WARD_REGEN*dt);}
+    if(o.hit>0)o.hit-=dt;
     if(o.hp<=0){o.hp=0;finishRoom(false,'DENIED');return;}}
   if(d.mech==='air'){room.coreCd-=dt;if(room.coreCd<=0){room.coreCd=Math.max(5,10-tier*1.5);const [x,y]=pick(room.tanks);
       const e=makeEnemy('hothead',x,y+34,{instant:true,elite:null});e.core=1;e.coreT=6;e.spd=0;e.dmg=0;e.cdmg=0;e.r=12;e.hp=e.maxHp=Math.round(30*room.hpScale);enemies.push(e);sfx('charge');}
@@ -3091,7 +3116,11 @@ function drawRift(c){
     c.strokeStyle=alpha(o.hit>0?C.danger:'#9BE7B8',0.6+0.3*Math.sin(T*4));c.lineWidth=2;c.setLineDash([6,5]);circ(c,o.x,o.y,o.r);c.stroke();c.setLineDash([]);
     for(const [dx,dy] of [[-22,-8],[22,-8],[0,16]])drawNPC(c,o.x+dx,o.y+dy,{col:'#E8E2D4',face:dx<0?1:-1});
     c.fillStyle='rgba(0,0,0,0.6)';c.fillRect(o.x-40,o.y-o.r-14,80,7);c.fillStyle=k>0.35?'#9BE7B8':C.danger;c.fillRect(o.x-39,o.y-o.r-13,78*k,5);
-    c.fillStyle='#F6EBD2';c.font=`800 8px ${FONT_UI}`;c.textAlign='center';c.fillText('PATIENTS',o.x,o.y-o.r-18);}
+    c.fillStyle='#F6EBD2';c.font=`800 8px ${FONT_UI}`;c.textAlign='center';c.fillText('PATIENTS',o.x,o.y-o.r-18);
+    for(const e of enemies){if(e.dead||!e.rt||e.spawnT>0)continue;const dx=o.x-e.x,dy=o.y-e.y,dd=Math.hypot(dx,dy)||1;
+      if(dd>o.r+e.r+8){c.strokeStyle=alpha(C.danger,0.28);c.lineWidth=1.5;c.setLineDash([3,6]);c.beginPath();c.moveTo(e.x+dx/dd*(e.r+4),e.y+dy/dd*(e.r+4));c.lineTo(o.x-dx/dd*o.r,o.y-dy/dd*o.r);c.stroke();c.setLineDash([]);}
+      c.fillStyle=alpha(C.danger,0.85);c.beginPath();c.moveTo(e.x,e.y-e.r-5);c.lineTo(e.x-4,e.y-e.r-12);c.lineTo(e.x+4,e.y-e.r-12);c.closePath();c.fill();
+      if(e.wardW>0){c.strokeStyle=alpha(C.danger,0.9);c.lineWidth=2.5;c.beginPath();c.arc(e.x,e.y,e.r+5,-Math.PI/2,-Math.PI/2+TAU*e.wardW/WARD_WIND);c.stroke();}}}
 }
 function riftSub(){
   const d=room.def;if(!d||d.kind!=='rift')return '';
@@ -9792,7 +9821,7 @@ function render(){
   ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=C.void;ctx.fillRect(0,0,cv.width,cv.height);
   const inRoom=room&&player&&state!=='title';
   if(!inRoom){drawTitleBG();return;}
-  let sx=0,sy=0;if(shakeT>0){sx=rr(-shakeM,shakeM);sy=rr(-shakeM,shakeM);}
+  let sx=0,sy=0;if(shakeT>0){const sm=shakeM*clamp(Math.min(sw,sh)/600,0.65,1);sx=rr(-sm,sm);sy=rr(-sm,sm);}
   // the world is drawn into a low-res buffer and scaled up with hard pixels (pixel-art look); text and HUD stay crisp
   const PX=clamp(scale/1.45,0.6,1.1),bw=Math.ceil(W*PX),bh=Math.ceil(H*PX);
   if(wcv.width!==bw||wcv.height!==bh){wcv.width=bw;wcv.height=bh;}
@@ -9898,6 +9927,7 @@ function bar(x,y,w,hh,k,col,label,val){
   ctx.lineWidth=3;ctx.strokeStyle='rgba(8,7,12,0.85)';ctx.strokeText(label,x+6,y+hh/2+0.5);ctx.fillStyle='#FFF8E6';ctx.fillText(label,x+6,y+hh/2+0.5);
   ctx.textAlign='right';ctx.strokeText(val,x+w-6,y+hh/2+0.5);ctx.fillText(val,x+w-6,y+hh/2+0.5);
 }
+const STATUS_MAX=4;
 function drawHUD(){
   const p=player,x=safe.l+14,y=safe.t+12,w=clamp(sw*0.2,130,190),kit=KITS[p.id];
   bar(x,y,w,13,p.hp/p.maxHp,C.hp,nameOf(p.id).toUpperCase(),Math.ceil(p.hp)+'/'+p.maxHp);
@@ -9915,7 +9945,9 @@ function drawHUD(){
   if(p.lastSkill&&T-p.lastSkillT<=4){const other=p.lastSkill==='sun'?'moon':'sun';lines.push([C.gold,p.ch.aspect.toUpperCase()+' OPEN: cast '+p.ch.kit[other].name+' ('+(4-(T-p.lastSkillT)).toFixed(1)+'s)']);}
   if(p.swift>0)lines.push([C.mercury,'SWIFTNESS: next basic +'+Math.round(p.swift*100)+'%']);
   if(room.spot&&dist(p,room.spot)<room.spot.r)lines.push([C.gold,'IN THE SPOTLIGHT · x2 DAMAGE']);
-  if(room.def.kind==='rift'){lines.push([C.gold,riftSub()]);lines.push([C.ash,'Today: '+riftMod().t]);}
+  if(room.def.kind==='rift'){lines.push([C.gold,riftSub()]);lines.push([C.ash,'Today: '+modText()]);}
+  if(room.def.kind==='rift'){const rl=lines.splice(lines.length-2,2);lines.unshift(rl[0]);lines.push(rl[1]);}
+  if(lines.length>STATUS_MAX){const rest=lines.splice(STATUS_MAX-1);lines.push([C.paper,rest.map(l=>l[1].replace(/ ·.*$/,'').replace(/: .*$/,'')).join(' · ')]);}
   const maxLines=Math.max(2,Math.floor((ports[0].y-ports[0].r-8-ly)/15)+1);
   for(const [col,txt] of lines.slice(0,maxLines)){ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(x-3,ly-7,ctx.measureText(txt).width+6,14);ctx.fillStyle=col;ctx.fillText(txt,x,ly);ly+=15;}
   const d=room.def;ctx.textAlign='center';
@@ -10056,7 +10088,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(SF_DEV){window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={ch1MigrateSave:f=>ch1MigrateSave(f),mxMet:id=>mxMet(id),ch1MigKey:k=>ch1MigKey(k),ch1RosterAt:i=>ch1RosterAt(ch1Seq(),i),lose:()=>{if(team)for(const m of team.members)if(!m.down)memberDown(m);},bondPend:()=>save.bondPending||{},postFresh:k=>mxPostFresh(k),exitsOf:d=>mxExits(MX_DISTRICTS[d]).map(e=>e[1]),fug:()=>Object.keys(MX_FUG),snaps:()=>snapshots(),snap:f=>snapshotSave(f),storage:()=>storageState,persistReq:()=>requestPersistentStorage(),parseBackup:t=>{try{return parseBackup(t);}catch(e){return {error:e.message};}},backupDue:()=>backupDue(),beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,fx:()=>({shakeM,shakeT,slowReal}),swap:i=>swapTo(i,{}),sun:()=>KITS[player.id].sun(player,false),sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(SF_DEV){window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={ch1MigrateSave:f=>ch1MigrateSave(f),mxMet:id=>mxMet(id),ch1MigKey:k=>ch1MigKey(k),ch1RosterAt:i=>ch1RosterAt(ch1Seq(),i),lose:()=>{if(team)for(const m of team.members)if(!m.down)memberDown(m);},bondPend:()=>save.bondPending||{},postFresh:k=>mxPostFresh(k),exitsOf:d=>mxExits(MX_DISTRICTS[d]).map(e=>e[1]),fug:()=>Object.keys(MX_FUG),snaps:()=>snapshots(),snap:f=>snapshotSave(f),storage:()=>storageState,persistReq:()=>requestPersistentStorage(),parseBackup:t=>{try{return parseBackup(t);}catch(e){return {error:e.message};}},backupDue:()=>backupDue(),beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,fx:()=>({shakeM,shakeT,slowReal}),texts:()=>texts,hit:(e,d,o)=>playerHit(e,d,o||{}),mk:(t,x,y,o)=>{const e=makeEnemy(t,x,y,o||{});enemies.push(e);return e;},modText:()=>modText(),modOn:id=>modOn(id),tgt:e=>targetFor(e),swap:i=>swapTo(i,{}),sun:()=>KITS[player.id].sun(player,false),tap:()=>KITS[player.id].tap(player),sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
