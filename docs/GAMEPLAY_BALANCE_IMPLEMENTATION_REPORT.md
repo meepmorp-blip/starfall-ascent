@@ -142,3 +142,16 @@ The top-to-Agnes gap went from 3.2× to 2.5×. Kairos is still the strongest; Lu
 - **Full suite:** 88 runs and 2,735 checks with 4 running at a time; 87 runs passed.
 - **The one failure:** `meridian` desk ("pinning the roster advances the quest") failed under parallel load. It passed when rerun alone: 2 runs, 82/82.
 - **Save compatibility:** the save-protection and Chapter 1 save-migration tests pass, and no save fields were added.
+
+## Final fixes (release)
+The final values and results are in `docs/GAMEPLAY_RELEASE_REPORT.md`.
+- **Air:** hatched elites add at most +4 to the goal, and cores pause while 2 hatched elites are alive. Tier III Tank: 170 → 108 s.
+- **Kairos:** soft cleave on his basic swings (the 2 nearest take full damage, the rest 50%). Group damage 436 → 361; single-target unchanged.
+- **Sparks:** the bot now collects sparks. Sparks were found to ignore tier, so they now scale by tier (life, spawn rate, distance). Clears take about 21 / 26 / 31 s.
+- **Ward:** body-blocking a chaser stops its wind-up.
+- **Bot harness:** spark collection, optional bullet-dodging, and reacting to wind-ups.
+
+## Full suite (release)
+- **Full suite:** 88 runs and 2,753 checks with 4 running at a time; 87 runs passed.
+- **The one failure:** `balance_pass` ("ignoring the chasers still loses", Tier III) hit its 60 s wall-clock limit because the game runs slower under parallel load. Alone it passed twice (20.9 s), and the limit is now 150 s.
+- **Save checks:** the save-protection and Chapter 1 save-migration tests pass.

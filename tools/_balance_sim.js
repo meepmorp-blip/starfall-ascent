@@ -4,13 +4,13 @@ const MODE=process.env.MODE||'rifts';
 (async()=>{const {server,url}=await serve();const b=await chromium.launch();const p=await b.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
  await p.addInitScript(()=>localStorage.setItem('starfall-ascent-prefs',JSON.stringify({music:0,sfx:0,tutDone:true,guideSeen:true,tips:false})));
  await p.goto(url+(process.env.SIMPAGE||'_sim.html'));await p.waitForTimeout(800);
- await p.evaluate(()=>{
-  window.__bot={on:false,swapT:0,dmgIn:0,log:{}};
+ await p.evaluate((DODGE)=>{
+  window.__bot={on:false,swapT:0,dmgIn:0,log:{}};window.process_DODGE=DODGE;
   const RANGED={ines:380,lucan:360,theo:300,noemi:260,dess:200,cass:150};
   window.__simStep=(dt)=>{const B=__bot;if(!B.on)return;const g=__sim.g();if(g.state!=='play'||!g.player)return;const p=g.player,kit=g.KITS[p.id];
    const live=g.enemies.filter(e=>!e.dead&&e.spawnT<=0);if(g.boss&&!g.boss.dead)live.push(g.boss);
    const o=g.room&&g.room.obj;let t=null,bd=1e9;
-   for(const e of live){let d=Math.hypot(e.x-p.x,e.y-p.y);if(o&&B.protect){const dO=Math.hypot(e.x-o.x,e.y-o.y);d=Math.min(d,dO*0.6)+ (e.rt?-80:0);}if(d<bd){bd=d;t=e;}}
+   for(const e of live){let d=Math.hypot(e.x-p.x,e.y-p.y);if(o&&B.protect){const dO=Math.hypot(e.x-o.x,e.y-o.y);d=Math.min(d,dO*0.6)+ (e.rt?-80:0)+(e.wardW>0?-400:0);}if(d<bd){bd=d;t=e;}}
    // dodge telegraphs
    let mx=0,my=0;for(const z of g.tels){const d=Math.hypot(p.x-z.x,p.y-z.y);if(d<z.r+p.r+6){mx+=(p.x-z.x)/(d||1);my+=(p.y-z.y)/(d||1);}}
    if(t){const want=RANGED[p.id]||46;const dx=t.x-p.x,dy=t.y-p.y,d=Math.hypot(dx,dy)||1;
@@ -19,9 +19,15 @@ const MODE=process.env.MODE||'rifts';
      if(p.atkCd<=0&&!p.dash&&d<want+40){B.tapN=(B.tapN||0)+1;if(B.tapN%6===5&&kit.hold)kit.hold(p);else kit.tap(p);}
      if(d<260){if(p.cd.sun<=0)__sim.cast('sun');if(p.cd.moon<=0)__sim.cast('moon');}
      if(g.team.pn>=100)__sim.ult();}
+   // optional: sidestep bullets heading at us (DODGE=1), roughly what an attentive player does
+   if(window.process_DODGE&&g.bullets)for(const b of g.bullets){const dx=p.x-b.x,dy=p.y-b.y,d=Math.hypot(dx,dy);if(d>70||d<1)continue;const v=Math.hypot(b.vx||0,b.vy||0)||1;if(((b.vx||0)*dx+(b.vy||0)*dy)/v/d<0.7)continue;
+     const px=-(b.vy||0)/v,py=(b.vx||0)/v,s=(px*dx+py*dy)>=0?1:-1;mx+=px*s*3;my+=py*s*3;}
+   // Sparks rift: go for the nearest spark (fighting on the way) unless badly hurt; movement toward the spark overrides spacing
+   if(g.sparks&&g.sparks.length&&p.hp>p.maxHp*0.3){let sp=null,sd=1e9;for(const s of g.sparks){const d=Math.hypot(s.x-p.x,s.y-p.y);if(d<sd){sd=d;sp=s;}}
+     if(sp){const tx=(sp.x-p.x)/(sd||1),ty=(sp.y-p.y)/(sd||1);mx=mx*0.3+tx*2;my=my*0.3+ty*2;B.sparkSeen=(B.sparkSeen||0)+dt;}}
    const m=Math.hypot(mx,my);if(m>0.01){p.x=Math.max(g.AX0+14,Math.min(g.AX1-14,p.x+mx/m*p.speed*dt));p.y=Math.max(g.AY0+14,Math.min(g.AY1-14,p.y+my/m*p.speed*dt));}
    B.swapT+=dt;if(B.swapT>B.swapEvery&&g.team.swapCd<=0){B.swapT=0;const n=g.team.members.length;for(let k=1;k<n;k++){const i=(g.team.ai+k)%n;if(!g.team.members[i].down){__sim.swap(i);break;}}}
-  };});
+  };},process.env.DODGE==='1');
  const run=async(party,id,tier,lvl,opt={})=>p.evaluate(async([party,id,tier,lvl,opt])=>{
    const g0=__sim.g();for(const c of party)g0.save.chars[c].lvl=lvl;
    __sf.battle(party,id,0,{tier});const B=__bot;B.on=true;B.protect=opt.protect!==false;B.swapEvery=opt.swap||7;B.swapT=0;B.tapN=0;
@@ -34,7 +40,7 @@ const MODE=process.env.MODE||'rifts';
      if(opt.trace&&t%2===0)(window.__tr=window.__tr||[]).push([t,g.player.id,g.player.x|0,g.player.y|0,g.player.hp|0,g.player.atkCd.toFixed(2),'iframe',g.player.iframe.toFixed(1),'dodge',g.player.dodgeT.toFixed(1),!!g.player.dash,g.run.kills,g.enemies.filter(e=>!e.dead).map(e=>e.type[0]+(e.x|0)+','+(e.y|0)).join(' ')].join(' '));}
    B.on=false;const g=__sim.g();const st=g.state;const lab=g.T;
    const maxHp=g.team.members.reduce((a,m)=>a+m.maxHp,0);
-   const res={t:+t.toFixed(1),end:g.bigStamp?g.bigStamp.text:st,won:(g.run&&g.run.kills)||0,downs:g.team.members.filter(m=>m.down).length,hpLost:Math.round(hpLost/maxHp*100),minObj:Math.round(minObj),maxAlive,
+   const res={col:(g.room&&g.room.collected)|0,t:+t.toFixed(1),end:g.bigStamp?g.bigStamp.text:st,won:(g.run&&g.run.kills)||0,downs:g.team.members.filter(m=>m.down).length,hpLost:Math.round(hpLost/maxHp*100),minObj:Math.round(minObj),maxAlive,
      atk:g.team.members.map(m=>m.id+':'+Math.round(m.atk)+'/'+Math.round(m.maxHp)).join(' ')};
    // read stamp text to know win/loss
    return res;},[party,id,tier,lvl,opt]);

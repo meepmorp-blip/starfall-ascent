@@ -2372,6 +2372,11 @@ function aimDir(range){
 }
 function faceTo(a){player.fx=a.x;player.fy=a.y;if(Math.abs(a.x)>0.1)player.face=a.x>0?1:-1;}
 function allTargets(){const l=enemies.filter(e=>!e.dead&&e.spawnT<=0);if(boss&&!boss.dead&&boss.entering<=0)l.push(boss);return l;}
+// cleave: the o.cleave nearest targets take full damage, the rest o.cleaveK
+function cleaveK(o,t,x,y,R){if(!o.cleave)return 1;const dt=Math.hypot(t.x-x,t.y-y);let closer=0;
+  for(const u of allTargets())if(u!==t&&Math.hypot(u.x-x,u.y-y)<dt&&Math.hypot(u.x-x,u.y-y)-u.r<=(R||200))closer++;
+  return closer<o.cleave?1:o.cleaveK;}
+const KAI_CLEAVE=2,KAI_CLEAVE_K=0.5;
 function meleeArc(a,range,half,dmg,o){
   const p=player,ang=Math.atan2(a.y,a.x);let n=0;
   for(const t of allTargets()){
@@ -2379,7 +2384,7 @@ function meleeArc(a,range,half,dmg,o){
     if(d>range) continue;
     if(d>6&&angDiff(Math.atan2(dy,dx),ang)>half) continue;
     const dd=Math.hypot(dx,dy)||1;
-    playerHit(t,dmg,Object.assign({},o,{knock:o.knock?{x:dx/dd,y:dy/dd,f:o.knock}:null,pn:n<1?o.pn:0}));
+    playerHit(t,dmg*cleaveK(o,t,p.x,p.y),Object.assign({},o,{knock:o.knock?{x:dx/dd,y:dy/dd,f:o.knock}:null,pn:n<1?o.pn:0}));
     n++;
   }
   swings.push({x:p.x,y:p.y,ang,r:range+p.r,half,life:0.16,max:0.16,col:o.col||C.paper});
@@ -2388,7 +2393,7 @@ function meleeArc(a,range,half,dmg,o){
 function radial(x,y,R,dmg,o){
   let n=0;
   for(const t of allTargets()){const dx=t.x-x,dy=t.y-y,d=Math.hypot(dx,dy);if(d-t.r>R)continue;const dd=d||1;
-    playerHit(t,dmg,Object.assign({},o,{knock:o.knock?{x:dx/dd,y:dy/dd,f:o.knock}:null,pn:n<1?o.pn:0}));n++;}
+    playerHit(t,dmg*cleaveK(o,t,x,y,R),Object.assign({},o,{knock:o.knock?{x:dx/dd,y:dy/dd,f:o.knock}:null,pn:n<1?o.pn:0}));n++;}
   ring(x,y,R,o.col||C.paper);
   return n;
 }
@@ -2429,12 +2434,12 @@ const KITS={
   kairos:{chargeT:0.45,
     tap(p){const a=aimDir(160);faceTo(a);const mult=1+consumeSwift();let st=comboN(p,3);
       if(p.finN>0){p.finN--;st=2;}
-      if(st===2){radial(p.x,p.y,72,p.atk*2.0,{basic:true,mult,kslow:1,knock:140,pn:1.2,col:'#7FE3F0',src:p});swings.push({x:p.x,y:p.y,ang:0,r:66,half:Math.PI,life:0.2,max:0.2,col:'#7FE3F0'});finisherFx(p,'#7FE3F0');p.atkCd=(p.finN>0?0.9:1.25)/effAspd(p);sfx('heavy');return;}
-      meleeArc(a,52,0.9,p.atk*1.0,{basic:true,mult,kslow:1,knock:45,pn:0.8,col:st%2?'#7FE3F0':C.paper,src:p});
+      if(st===2){radial(p.x,p.y,72,p.atk*2.0,{basic:true,mult,kslow:1,knock:140,pn:1.2,col:'#7FE3F0',src:p,cleave:KAI_CLEAVE,cleaveK:KAI_CLEAVE_K});swings.push({x:p.x,y:p.y,ang:0,r:66,half:Math.PI,life:0.2,max:0.2,col:'#7FE3F0'});finisherFx(p,'#7FE3F0');p.atkCd=(p.finN>0?0.9:1.25)/effAspd(p);sfx('heavy');return;}
+      meleeArc(a,52,0.9,p.atk*1.0,{basic:true,mult,kslow:1,knock:45,pn:0.8,col:st%2?'#7FE3F0':C.paper,src:p,cleave:KAI_CLEAVE,cleaveK:KAI_CLEAVE_K});
       p.x=clamp(p.x+a.x*5,AX0+p.r,AX1-p.r);p.y=clamp(p.y+a.y*5,AY0+p.r,AY1-p.r);p.atkCd=1/effAspd(p);sfx('slash');},
     hold(p){p.lastAtkT=T;const a=aimDir(150);faceTo(a);
       p.x=clamp(p.x+a.x*42,AX0+p.r,AX1-p.r);p.y=clamp(p.y+a.y*42,AY0+p.r,AY1-p.r);p.iframe=Math.max(p.iframe,0.15);
-      radial(p.x,p.y,84,p.atk*2.2*(1+consumeSwift()),{basic:true,kslow:1,knock:160,pn:1.6,col:'#7FE3F0',src:p});
+      radial(p.x,p.y,84,p.atk*2.2*(1+consumeSwift()),{basic:true,kslow:1,knock:160,pn:1.6,col:'#7FE3F0',src:p,cleave:KAI_CLEAVE,cleaveK:KAI_CLEAVE_K});
       swings.push({x:p.x,y:p.y,ang:0,r:80,half:Math.PI,life:0.22,max:0.22,col:'#7FE3F0'});ring(p.x,p.y,84,C.water,0.35);shake(3,0.1);p.atkCd=0.5;sfx('heavy');},
     sun(p,combo){const a=ripAim(p);faceTo(a);startDash(a,{dist:170,time:0.18,kind:'riptide',dmg:p.atk*3,knock:90,kslow:1,skill:'sun'});
       zones.push({kind:'slowpool',x:p.x+a.x*85,y:p.y+a.y*85,r:70,t:3,max:3});sfx('splash');
@@ -2967,9 +2972,12 @@ function enterRoom(id,opt={}){
   state='play';
   if(def.kind==='house'&&rand()<0.5)setTimeout(()=>{if(state==='play'&&room&&room.def===def)spawnChest();},2500+rand()*5000);
 }
-function spawnSpark(){
-  for(let i=0;i<12;i++){const x=rr(AX0+40,AX1-40),y=rr(AY0+40,AY1-40);if(Math.hypot(x-player.x,y-player.y)>130){sparks.push({x,y,life:4.5,max:4.5});return;}}
-  sparks.push({x:rr(AX0+40,AX1-40),y:rr(AY0+40,AY1-40),life:4.5,max:4.5});
+// Sparks rift tiers: sparks fade sooner, land farther away and come a little slower (trialMercury keeps Tier I values)
+const SPARK_LIFE=[4.5,4.5,3.8,3.2],SPARK_FAR=[130,130,170,210],SPARK_CD=[0.9,0.9,1.1,1.3];
+function sparkTier(){return room&&room.def.mech==='dust'&&run?run.tier||1:1;}
+function spawnSpark(){const k=sparkTier(),L=SPARK_LIFE[k];
+  for(let i=0;i<12;i++){const x=rr(AX0+40,AX1-40),y=rr(AY0+40,AY1-40);if(Math.hypot(x-player.x,y-player.y)>SPARK_FAR[k]){sparks.push({x,y,life:L,max:L});return;}}
+  sparks.push({x:rr(AX0+40,AX1-40),y:rr(AY0+40,AY1-40),life:L,max:L});
 }
 function updateRoom(dt){
   const d=room.def;
@@ -3060,7 +3068,8 @@ const modText=()=>riftMod().id==='regen'&&room&&MOD_SKIP_REGEN.includes(room.def
 let battleSel={tier:1,diff:0};
 function starKey(id,tier,diff){return id+(id==='boss'?'#d'+(diff|0):RIFTS.includes(id)?'#t'+tier:'');}
 function starsOf(k){return (save.stars&&save.stars[k])|0;}
-const WARD_CHASE_MAX=3,WARD_HIT=[0,5,5,5],WARD_WIND=0.6,WARD_CD=1.2,WARD_REGEN=1.5;
+const WARD_CHASE_MAX=3,WARD_HIT=[0,5,5,5],WARD_WIND=0.6,WARD_CD=1.2,WARD_REGEN=1.5,WARD_GUARD=22;
+const AIR_HATCH_MAX=4,AIR_HATCH_LIVE=2;
 function riftInit(){
   const d=room.def,T0=RIFT_TIER[run.tier||1];
   room.hpScale*=T0.hp;room.atkScale*=T0.atk;room.k0=run.kills;room.cap=4+(run.tier||1);
@@ -3081,7 +3090,7 @@ function riftUpdate(dt){
       if(room.wave>=5){finishRoom(true,'CLEARED');return;}
       room.waveCd-=dt;if(room.waveCd<=0){room.wave++;room.waveLeft=2+room.wave*2;room.waveCd=1.8;setBanner('Wave '+room.wave+' of 5','',1.2);}}
   } else if(d.mech==='dust'){
-    room.sparkCd-=dt;if(sparks.length<2&&room.sparkCd<=0){spawnSpark();room.sparkCd=0.9;}
+    room.sparkCd-=dt;if(sparks.length<2&&room.sparkCd<=0){spawnSpark();room.sparkCd=SPARK_CD[tier];}
     for(const sp of sparks){sp.life-=dt;if(Math.hypot(sp.x-player.x,sp.y-player.y)<player.r+13){sp.got=true;room.collected++;burstParts(sp.x,sp.y,C.gold,12,120);sfx('spark');addText(sp.x,sp.y-14,'+'+3*tier+' STARDUST',C.gold,10,{life:0.8});}else if(sp.life<=0)sp.got=true;}
     sparks=sparks.filter(sp=>!sp.got);
     if(room.spawnCd<=0&&aliveCount()<room.cap){enemies.push(spawnEdge(poolType()));room.spawnCd=1.6;}
@@ -3097,6 +3106,7 @@ function riftUpdate(dt){
     for(const e of enemies){if(e.dead||!e.rt||e.spawnT>0)continue;
       const near=Math.hypot(e.x-o.x,e.y-o.y)<o.r+e.r+6;
       if(e.wardCd>0)e.wardCd-=dt;
+      if(near&&player&&!player.down&&Math.hypot(e.x-player.x,e.y-player.y)<e.r+player.r+WARD_GUARD){e.wardW=0;continue;} // body-blocked
       if(!near||e.stunT>0||e.hitT>0){if(e.wardW>0&&(e.hitT>0||e.stunT>0))addText(e.x,e.y-e.r-12,'INTERRUPTED',C.water,9,{life:0.6});e.wardW=0;continue;}
       busy=true;if(e.wardCd>0)continue;
       e.wardW=(e.wardW||0)+dt;
@@ -3104,10 +3114,10 @@ function riftUpdate(dt){
     if(busy)o.calm=0;else{o.calm=(o.calm||0)+dt;if(o.calm>1&&o.hp<o.max)o.hp=Math.min(o.max,o.hp+WARD_REGEN*dt);}
     if(o.hit>0)o.hit-=dt;
     if(o.hp<=0){o.hp=0;finishRoom(false,'DENIED');return;}}
-  if(d.mech==='air'){room.coreCd-=dt;if(room.coreCd<=0){room.coreCd=Math.max(5,10-tier*1.5);const [x,y]=pick(room.tanks);
+  if(d.mech==='air'){let hl=0;for(const e of enemies)if(e.hatched&&!e.dead)hl++;if(hl<AIR_HATCH_LIVE)room.coreCd-=dt;if(room.coreCd<=0){room.coreCd=Math.max(5,10-tier*1.5);const [x,y]=pick(room.tanks);
       const e=makeEnemy('hothead',x,y+34,{instant:true,elite:null});e.core=1;e.coreT=6;e.spd=0;e.dmg=0;e.cdmg=0;e.r=12;e.hp=e.maxHp=Math.round(30*room.hpScale);enemies.push(e);sfx('charge');}
     for(const e of enemies)if(e.core&&!e.dead&&e.spawnT<=0){e.coreT-=dt;e.x=e.x;if(e.coreT<=0){e.dead=true;burstParts(e.x,e.y,'#B49CFF',20,160);
-      const z=makeEnemy(pick(['hothead','waxer','gossip']),e.x,e.y,{instant:true,elite:pick(['hasted','shielded','volatile'])});enemies.push(z);room.spawned++;room.budget++;addText(e.x,e.y-24,'OVERLOAD',C.danger,12,{life:1});sfx('boom');}}}
+      const z=makeEnemy(pick(['hothead','waxer','gossip']),e.x,e.y,{instant:true,elite:pick(['hasted','shielded','volatile'])});z.hatched=1;enemies.push(z);room.spawned++;if((room.hatchN|0)<AIR_HATCH_MAX){room.hatchN=(room.hatchN|0)+1;room.budget++;}addText(e.x,e.y-24,'OVERLOAD',C.danger,12,{life:1});sfx('boom');}}}
   if(modOn('regen'))for(const e of enemies){if(e.dead||e.core)continue;e.idle=(e.hitT>0?0:(e.idle||0)+dt);if(e.idle>3&&e.hp<e.maxHp)e.hp=Math.min(e.maxHp,e.hp+e.maxHp*0.04*dt);}
 }
 function drawRift(c){

@@ -36,8 +36,8 @@ const {chromium,devices}=require('playwright'),serve=require('./serve');
  ok(!w.regenOn&&/off in this rift/.test(w.modText),'daily "Vices heal" is off in the Ward and says so: '+w.modText);
  // ignoring the patients still fails
  for(const tier of [1,3]){await p.evaluate(t=>{__sf.battle(['kairos','ines','bram'],'rift_water',8,{tier:t});},tier);await wait(300);
-  const f=await p.evaluate(async()=>{const t0=performance.now();while(performance.now()-t0<60000){const q=__sf.p(),rm=__sf.room();if(!rm||!rm.obj)return -1;q.x=60;q.y=60;q.iframe=9;for(const m of __sf.team().members)m.hp=m.maxHp;if(rm.obj.hp<=0)return (performance.now()-t0)/1000;await new Promise(r=>setTimeout(r,100));}return 99;});
-  ok(f>0&&f<60,'Tier '+tier+': ignoring the chasers still loses ('+f.toFixed(1)+' s)');}
+  const f=await p.evaluate(async()=>{const t0=performance.now();while(performance.now()-t0<150000){const q=__sf.p(),rm=__sf.room();if(!rm||!rm.obj)return -1;q.x=60;q.y=60;q.iframe=9;for(const m of __sf.team().members)m.hp=m.maxHp;if(rm.obj.hp<=0)return (performance.now()-t0)/1000;await new Promise(r=>setTimeout(r,100));}return 99;});
+  ok(f>0&&f<150,'Tier '+tier+': ignoring the chasers still loses ('+f.toFixed(1)+' s)');}
  // regen modifier still on in a normal rift
  await p.evaluate(()=>{__sf.battle(['kairos','ines','bram'],'rift_fire',8,{tier:1});});await wait(300);
  ok(await p.evaluate(()=>__sf.modOn('regen')),'daily "Vices heal" still applies in other rifts');
@@ -72,5 +72,21 @@ const {chromium,devices}=require('playwright'),serve=require('./serve');
  await ph.evaluate(()=>{__sf.battle(['kairos','ines','bram'],'rift_water',8,{tier:3});});await ph.waitForTimeout(3000);
  await ph.screenshot({path:'out/bp_phone_ward.png'});
  await p.evaluate(()=>{__sf.battle(['kairos','ines','bram'],'rift_water',8,{tier:3});});await wait(3000);await p.screenshot({path:'out/bp_desk_ward.png'});
+ // ── Kairos cleave: swing hits all, the 2 nearest take full damage, the rest half
+ await p.evaluate(()=>{__sf.battle(['kairos','ines','bram'],'rift_earth',8,{tier:1});});await wait(300);
+ const cv=await p.evaluate(async()=>{const q=__sf.p();for(const e of __sf.en())e.dead=true;__sf.room().spawnCd=999;q.x=300;q.y=220;q.fx=1;q.fy=0;q.finN=0;
+   const es=[0,1,2,3].map(i=>{const e=__sf.mk('hothead',330+i*6,212+i*6,{instant:true,elite:null});e.spawnT=0;e.hp=e.maxHp=1e5;e.spd=0;return e;});
+   q.atkCd=0;__sf.tap();return es.map(e=>Math.round(1e5-e.hp));});
+ ok(cv.every(d=>d>0)&&cv.filter(d=>d>=Math.max(...cv)*0.8).length===2,'Kairos swing hits all 4; 2 nearest take full damage ('+cv.join(',')+')');
+ // ── Air: hatched elites add at most 4 to the goal; no new cores while 2 hatched elites live
+ await p.evaluate(()=>{__sf.battle(['bram','noemi','cass'],'rift_air',12,{tier:3});});await wait(300);
+ const air=await p.evaluate(async()=>{const r=__sf.room();const b0=r.budget;r.coreCd=0;
+   for(let i=0;i<8;i++){for(const e of __sf.en())if(e.core){e.coreT=0;}await new Promise(res=>setTimeout(res,60));r.coreCd=0;for(const e of __sf.en())if(e.hatched)e.dead=true;await new Promise(res=>setTimeout(res,60));}
+   return {extra:r.budget-b0,n:r.hatchN|0};});
+ ok(air.extra<=4,'Air: hatched elites add at most 4 to the kill goal (+'+air.extra+', hatched '+air.n+')');
+ // ── Sparks scale by tier
+ for(const tier of [1,3]){await p.evaluate(t=>{__sf.battle(['kairos','ines','bram'],'rift_dust',8,{tier:t});},tier);await wait(2500);
+  const sp=await p.evaluate(()=>{const s=__sf.sparks();return s.length?s[0].max:null;});
+  ok(sp===(tier===1?4.5:3.2),'Sparks Tier '+tier+': lifetime '+sp+' s');}
  ok(errs.length===0,'no page errors'+(errs[0]?': '+errs[0]:''));
  console.log('DONE '+pass+'/'+(pass+fail));await b.close();server.close();})();

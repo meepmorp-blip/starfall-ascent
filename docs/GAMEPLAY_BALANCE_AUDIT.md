@@ -187,3 +187,6 @@ All five priorities were implemented. Full details are in `docs/GAMEPLAY_BALANCE
 | 6. Text clutter | Done: merge, cap of 6, objective clearance, 4-line status | Checked in tests and screenshots |
 | 7. Regen modifier | Done: off in the Ward and Air | |
 | 8. Ward rewards | Not changed (fair now) | |
+
+## Release follow-up
+All the implementation report's open items are resolved: the Air snowball, Kairos's group damage, and Sparks testing (which found and fixed tier-blind sparks). The only remaining item is the all-support party at Tier III; it's left as intended composition difficulty. See `docs/GAMEPLAY_RELEASE_REPORT.md`.
