@@ -1328,7 +1328,7 @@ const CHARS={
     kit:{
       entrance:{name:'Borrowed Hour',el:null,desc:'He has no Rising, so he copies the Entrance of whoever he switched from, at 120% power. If he enters first, he dashes in with a slash.'},
       basic:{name:'Clock Hands',tap:'A fast 3-hit combo with both blades. The 3rd hit is a spinning finisher (200%).',hold:'Crosscurrent: a short jump forward into a wide spinning slash (220%).'},
-      sun:{name:'Riptide',short:'RIPTIDE',el:'Water',cd:5,dur:0,desc:'Dashes through a line of enemies for heavy damage (300%) and leaves a slowing water trail. Can be used twice: the second dash must come within 3s.'},
+      sun:{name:'Riptide',short:'RIPTIDE',el:'Water',cd:5,dur:0,desc:'Dashes through a line of enemies for heavy damage (300%) and leaves a slowing water trail. Can be used twice: the second dash must come within 2.5s.'},
       moon:{name:'Shell',short:'SHELL',el:'Water',cd:6,dur:1.2,desc:'A wide water pulse (120%), +10% ATK for 6s, and a short counter stance. If something hits him in the next 1.2s, he blocks it and releases a huge pulse (320%).'},
       combo:{name:'Trine · Flow',desc:'Use both skills in a row: his next 3 basic attacks are all finishers.'},
       ult:{name:'The Unwritten Minute',short:'MINUTE',dur:8,desc:'Stops time for 3 seconds. Then Overflow for 8s: +35% damage, and his next 10 basic attacks are all finishers.'},
@@ -2085,7 +2085,7 @@ function spawnGroup(){
 }
 function targetFor(e){
   {const mt=missionTarget(e);if(mt)return mt;}
-  if(room&&room.obj&&room.def.kind==='rift'){if(e.rt===undefined)e.rt=rand()<0.5;if(e.rt)return room.obj;}
+  if(room&&room.obj&&room.def.kind==='rift'){if(e.rt===undefined){let c=0;for(const q of enemies)if(q.rt&&!q.dead)c++;e.rt=c<WARD_CHASE_MAX&&rand()<0.5;}if(e.rt)return room.obj;}
   let best=null,bd=1e9;
   for(const a of allies){if(a.kind!=='guard')continue;const d=dist(e,a),rng=a.big?260:180;if(d<rng&&d<bd){bd=d;best=a;}}
   return best||player;
@@ -2338,6 +2338,12 @@ function nearestTarget(x,y,maxD,ex){
   if(boss&&!boss.dead&&boss.entering<=0&&!(ex&&ex.has(boss))){const d=Math.hypot(boss.x-x,boss.y-y)-boss.r;if(d<bd){bd=d;best=boss;}}
   return best;
 }
+const RIP_WIN=2.5,RIP_RANGE=400;
+function ripValid(t){return t&&!t.dead&&(t===boss?t.entering<=0:t.spawnT<=0&&enemies.includes(t));}
+function ripAim(p){let t=p.ripWin>0&&ripValid(p.ripTgt)?p.ripTgt:null;
+  if(!t)t=nearestTarget(p.x,p.y,RIP_RANGE,null);p.ripTgt=t;
+  if(t){const dx=t.x-p.x,dy=t.y-p.y,d=Math.hypot(dx,dy)||1;return {x:dx/d,y:dy/d};}
+  return aimDir(220);}
 function aimDir(range){
   const p=player;
   if(aimByMouse&&mouse.inside){const dx=mouse.wx-p.x,dy=mouse.wy-p.y,d=Math.hypot(dx,dy)||1;if(d>8)return {x:dx/d,y:dy/d};}
@@ -2416,9 +2422,9 @@ const KITS={
       p.x=clamp(p.x+a.x*42,AX0+p.r,AX1-p.r);p.y=clamp(p.y+a.y*42,AY0+p.r,AY1-p.r);p.iframe=Math.max(p.iframe,0.15);
       radial(p.x,p.y,84,p.atk*2.2*(1+consumeSwift()),{basic:true,kslow:1,knock:160,pn:1.6,col:'#7FE3F0',src:p});
       swings.push({x:p.x,y:p.y,ang:0,r:80,half:Math.PI,life:0.22,max:0.22,col:'#7FE3F0'});ring(p.x,p.y,84,C.water,0.35);shake(3,0.1);p.atkCd=0.5;sfx('heavy');},
-    sun(p,combo){const a=aimDir(220);faceTo(a);startDash(a,{dist:170,time:0.18,kind:'riptide',dmg:p.atk*3,knock:90,kslow:1,skill:'sun'});
+    sun(p,combo){const a=ripAim(p);faceTo(a);startDash(a,{dist:170,time:0.18,kind:'riptide',dmg:p.atk*3,knock:90,kslow:1,skill:'sun'});
       zones.push({kind:'slowpool',x:p.x+a.x*85,y:p.y+a.y*85,r:70,t:3,max:3});sfx('splash');
-      if(!(p.ripWin>0)){p.ripRefund=1;p.ripWin=3;}else p.ripWin=0;
+      if(!(p.ripWin>0)){p.ripRefund=1;p.ripWin=RIP_WIN;}else{p.ripWin=0;p.ripTgt=null;}
       if(combo)p.finN=3;},
     moon(p,combo){p.counterT=1.2;p.countered=false;p.atkUpT=6;radial(p.x,p.y,100,p.atk*1.2,{kslow:1,knock:60,skill:'moon',col:C.water,src:p});ring(p.x,p.y,100,C.water,0.4);
       addText(p.x,p.y-40,'ATK +10%',C.water,10,{life:0.9});if(combo)p.finN=3;},
@@ -2427,7 +2433,7 @@ const KITS={
     update(p,dt){if(p.counterT>0){p.counterT-=dt;if(p.counterT<=0&&!p.countered&&p===player)ring(p.x,p.y,30,C.ash,0.3);}
       if(p.atkUpT>0)p.atkUpT-=dt;
       if(p.ripRefund){p.ripRefund=0;p.cd.sun=0;}
-      if(p.ripWin>0){p.ripWin-=dt;if(p.ripWin<=0){p.ripWin=0;p.cd.sun=p.ch.kit.sun.cd*starFx(p).sunCd;}}},
+      if(p.ripWin>0){p.ripWin-=dt;if(p.ripWin<=0){p.ripWin=0;p.ripTgt=null;p.cd.sun=p.ch.kit.sun.cd*starFx(p).sunCd;}}},
     status(p){const l=[];if(p.ultT>0)l.push(['#7FE3F0','OVERFLOW '+p.ultT.toFixed(1)+'s']);if(p.finN>0)l.push([C.gold,'FINISHERS ×'+p.finN]);if(p.ripWin>0)l.push([C.water,'RIPTIDE · 2nd dash '+p.ripWin.toFixed(1)+'s']);if(p.atkUpT>0)l.push([C.water,'ATK +10% '+p.atkUpT.toFixed(1)+'s']);if(p.counterT>0)l.push([C.water,'SHELL · counter ready '+p.counterT.toFixed(1)+'s']);return l;},
     sunUp:p=>p.ripWin||0, moonUp:p=>p.counterT},
   // ───────── Agnes: sniper, Spotted, off-field overwatch
@@ -2560,10 +2566,15 @@ function swapTo(i,o={}){
     const ms5=msOn(nm.id,5);nm.entCd=(ms5?6:8)-blv('uranus');const epw=(ms5?1.3:1)*skMul(nm.id,'entrance');
     if(nm.id==='kairos'&&old.id!=='kairos'){KITS[old.id].entrance(nm,1.2*epw,true);addText(nm.x,nm.y-40,'BORROWED HOUR · '+old.ch.kit.entrance.name.toUpperCase(),C.gold,10,{life:1.1});}
     else KITS[nm.id].entrance(nm,epw,false);
+    entranceFx(nm.id==='kairos'&&old.id!=='kairos'?old.id:nm.id,nm,nm.id==='kairos'&&old.id!=='kairos');
   }
   if(blv('uranus')>0){const l=blv('uranus');radial(nm.x,nm.y,95,nm.atk*0.6*l,{knock:300,col:C.uranus,src:nm});ring(nm.x,nm.y,80,C.uranus,0.4);shake(3,0.1);}
   return true;
 }
+const ENT_FX={kairos:[3,0.10,0.06],ines:[2.5,0.09,0.05],bram:[5,0.16,0.09],noemi:[1.5,0.08,0],theo:[2,0.08,0],lucan:[3,0.10,0.05],cass:[4.5,0.14,0.08],dess:[1.5,0.08,0]};
+function entranceFx(id,p,borrowed){const f=ENT_FX[id];if(!f)return;const k=borrowed?1.1:1;
+  shake(f[0]*k,f[1]);if(f[2]>0&&slowReal<f[2])slowReal=f[2];
+  ring(p.x,p.y,f[2]>0?60:46,p.ch.col,0.3);}
 function memberDown(m){
   if(run)run.downs=(run.downs|0)+1;
   if(m.down)return;
@@ -3033,6 +3044,7 @@ const modOn=id=>inRift()&&riftMod().id===id;
 let battleSel={tier:1,diff:0};
 function starKey(id,tier,diff){return id+(id==='boss'?'#d'+(diff|0):RIFTS.includes(id)?'#t'+tier:'');}
 function starsOf(k){return (save.stars&&save.stars[k])|0;}
+const WARD_CHASE_MAX=3,WARD_DPS=[0,3.5,3.6,3.75];
 function riftInit(){
   const d=room.def,T0=RIFT_TIER[run.tier||1];
   room.hpScale*=T0.hp;room.atkScale*=T0.atk;room.k0=run.kills;room.cap=4+(run.tier||1);
@@ -3065,7 +3077,7 @@ function riftUpdate(dt){
   if(d.mech==='fire'){room.emberCd-=dt;if(room.emberCd<=0){room.emberCd=Math.max(1.6,3.4-0.5*tier);
     tels.push({x:clamp(player.x+rr(-30,30),AX0+30,AX1-30),y:clamp(player.y+rr(-30,30),AY0+30,AY1-30),r:44,t:0,dur:1.0,dmg:8+3*tier});}}
   if(d.mech==='water'){const o=room.obj;let n=0;for(const e of enemies)if(!e.dead&&e.spawnT<=0&&Math.hypot(e.x-o.x,e.y-o.y)<o.r+e.r)n++;
-    if(n){o.hp-=n*(2.5+tier)*dt;o.hit=0.2;}else if(o.hit>0)o.hit-=dt;
+    if(n){o.hp-=Math.min(n,WARD_CHASE_MAX)*WARD_DPS[tier]*dt;o.hit=0.2;}else if(o.hit>0)o.hit-=dt;
     if(o.hp<=0){o.hp=0;finishRoom(false,'DENIED');return;}}
   if(d.mech==='air'){room.coreCd-=dt;if(room.coreCd<=0){room.coreCd=Math.max(5,10-tier*1.5);const [x,y]=pick(room.tanks);
       const e=makeEnemy('hothead',x,y+34,{instant:true,elite:null});e.core=1;e.coreT=6;e.spd=0;e.dmg=0;e.cdmg=0;e.r=12;e.hp=e.maxHp=Math.round(30*room.hpScale);enemies.push(e);sfx('charge');}
@@ -10044,7 +10056,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(SF_DEV){window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={ch1MigrateSave:f=>ch1MigrateSave(f),mxMet:id=>mxMet(id),ch1MigKey:k=>ch1MigKey(k),ch1RosterAt:i=>ch1RosterAt(ch1Seq(),i),lose:()=>{if(team)for(const m of team.members)if(!m.down)memberDown(m);},bondPend:()=>save.bondPending||{},postFresh:k=>mxPostFresh(k),exitsOf:d=>mxExits(MX_DISTRICTS[d]).map(e=>e[1]),fug:()=>Object.keys(MX_FUG),snaps:()=>snapshots(),snap:f=>snapshotSave(f),storage:()=>storageState,persistReq:()=>requestPersistentStorage(),parseBackup:t=>{try{return parseBackup(t);}catch(e){return {error:e.message};}},backupDue:()=>backupDue(),beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(SF_DEV){window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={ch1MigrateSave:f=>ch1MigrateSave(f),mxMet:id=>mxMet(id),ch1MigKey:k=>ch1MigKey(k),ch1RosterAt:i=>ch1RosterAt(ch1Seq(),i),lose:()=>{if(team)for(const m of team.members)if(!m.down)memberDown(m);},bondPend:()=>save.bondPending||{},postFresh:k=>mxPostFresh(k),exitsOf:d=>mxExits(MX_DISTRICTS[d]).map(e=>e[1]),fug:()=>Object.keys(MX_FUG),snaps:()=>snapshots(),snap:f=>snapshotSave(f),storage:()=>storageState,persistReq:()=>requestPersistentStorage(),parseBackup:t=>{try{return parseBackup(t);}catch(e){return {error:e.message};}},backupDue:()=>backupDue(),beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,fx:()=>({shakeM,shakeT,slowReal}),swap:i=>swapTo(i,{}),sun:()=>KITS[player.id].sun(player,false),sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,
