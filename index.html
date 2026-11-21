@@ -4282,6 +4282,10 @@ function missionExtra(m,dt){
   return false;
 }
 // markers are queued while people are drawn and painted after the whole scene, so walls and counters never cover them
+// story marks: '!' something to start or hand in · '?*' this can start a story · '?' worth a look
+const MK_STORY='#FFE08A';
+const LOOK_TRIG={'look.festbox':'side_festival_forgot','look.bakery.after':'bram_bread','look.prayerbook':'cass_prayer'};
+const mxTrig=id=>mxQState(id)==='undiscovered';
 const bubQ=[];function qBubble(...a){bubQ.push(a);}function flushBubbles(c){for(const a of bubQ)talkBubble(c,...a.slice(1));bubQ.length=0;}
 function talkBubble(c,x,y,t,fill,big){
   const w=big?20:18,h=big?20:16;
@@ -4306,18 +4310,18 @@ function drawExtra(c,m){
     if(n.draw){n.draw(c,n,m);continue;}
     if(n.spot){const k=0.6+0.4*Math.sin(T*3+n.x);c.fillStyle=alpha(C.gold,0.18*k);ell(c,n.x,n.y+6,16,6);c.fill();
       c.save();c.translate(n.x,n.y-10+Math.sin(T*2.5+n.x)*2);c.rotate(Math.PI/4);c.fillStyle=n.done?alpha('#F6EBD2',0.35):alpha('#FFE6A3',0.9);c.fillRect(-4,-4,8,8);c.restore();
-      if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)qBubble(c,n.x,n.y-28,n.mk,n.mk==='!'?C.gold:'#F6EBD2',n.mk==='!');}
+      if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)qBubble(c,n.x,n.y-28,n.mk==='?*'?'?':n.mk,n.mk==='!'?C.gold:n.mk==='?*'?MK_STORY:'#F6EBD2',n.mk!=='?');}
       else if(!n.done)qBubble(c,n.x,n.y-28,n.need&&open(n)?'!':'?',n.need&&open(n)?C.gold:'#F6EBD2',!!n.need);continue;}
     if(n.ch)drawChar(c,n.ch,n.x,n.y,n.kid?{face:n.face||1,t:T,scale:0.78,unarmed:1}:{face:n.face||1,t:T});
     else drawNPC(c,n.x,n.y-(n.mv?Math.abs(Math.sin(T*9+n.x*0.1))*1.5:0),{col:n.col,face:n.face||1,hair:n.hair,hat:n.hat,apron:n.apron,small:n.small,long:n.long});
     const top=n.y-(n.small?32:(n.hat?42:38))+Math.sin(T*4+n.x*0.05)*2.5;
-    if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)qBubble(c,n.x,top,n.mk,n.mk==='!'?C.gold:'#F6EBD2',n.mk==='!');}
+    if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)qBubble(c,n.x,top,n.mk==='?*'?'?':n.mk,n.mk==='!'?C.gold:n.mk==='?*'?MK_STORY:'#F6EBD2',n.mk!=='?');}
     else if(!n.done){if(n.need&&open(n))qBubble(c,n.x,top,'!',C.gold,true);else qBubble(c,n.x,top,'…','#F6EBD2',false);}
     if(n.label&&m.near!==n){const dl=Math.hypot(player.x-n.x,player.y-n.y);wlabel(n.x,n.y+21,n.label,{px:11,a:dl<170?1:0.6});}
   }
   const n=m.near;
   if(n&&state==='play'){
-    const vb=n.verb||(n.spot?'look':'talk'),txt=(isTouch?'Tap ⚔ to ':'F · ')+vb+(n.label&&!n.spot?' · '+n.label:n.ptitle?' · '+n.ptitle:''),top=n.spot?n.y-30:n.y-(n.small?36:(n.hat?46:42));
+    const vb=n.verb||(n.spot?'look':'talk'),txt=(isTouch?'Tap ⚔ to ':'F · ')+vb+(n.label&&!n.spot?' · '+n.label:n.ptitle?' · '+(typeof n.ptitle==='function'?n.ptitle():n.ptitle):''),top=n.spot?n.y-30:n.y-(n.small?36:(n.hat?46:42));
     wlabel(n.x,n._pa?top-4:n.y+27,txt,{px:13,pill:1});
   }
   if(m.M.hub)mxDrawOver(c,m);
@@ -4419,6 +4423,7 @@ const mxDoneQ=id=>{const q=mxS().q[id];return !!q&&q.s==='done';};
 function mxGateOk(Q){
   if(Q.kind==='hangout'&&Q.char==='lucan'&&lucasState()!=='rescued')return false; // present-day Lucas only after the rescue, whatever the quest says
   if(Q.when&&!Q.when.every(g=>MX_GATES[g]&&MX_GATES[g]()))return false;if(Q.story&&!Q.story())return false;return true;}
+const mxGateEraOk=Q=>!Q.when||Q.when.every(g=>MX_GATES[g]&&MX_GATES[g]());
 const mxPreOk=Q=>!Q.pre||Q.pre.every(mxDoneQ);
 const mxRepeatReady=id=>{const q=mxS().q[id],Q=MX_QUESTS[id];return !!(q&&q.s==='done'&&Q.repeat==='daily'&&q.day!==mxDay());};
 function mxQState(id){const x=mxS(),q=x.q[id],Q=MX_QUESTS[id];if(!Q)return null;
@@ -4538,7 +4543,7 @@ const MXO={flag:(k,t,o)=>Object.assign({id:k,t,ok:()=>mxF(k)},o||{}),item:(k,t,o
   quest:(qid,t,o)=>Object.assign({id:'quest:'+qid,t,ok:()=>mxDoneQ(qid)},o||{})};
 // ═══ Bond Stories (Pre-Chapter 2). Text rules: docs/quest_expansion/NARRATIVE_CANON_CHECKLIST.md
 Object.assign(MX_QUESTS,{
-  agnes_handmade:{title:'A Little Something Handmade',kind:'bond',char:'ines',when:['fugitive'],at:'tower',npc:'tower.h_agnes',giver:'Agnes · the Clock Tower',
+  agnes_handmade:{title:'A Little Something Handmade',hint:'Agnes has been at the workbench at night.',kind:'bond',char:'ines',when:['fugitive'],at:'tower',npc:'tower.h_agnes',giver:'Agnes · the Clock Tower',
     desc:'Agnes has been at the hideout workbench with something that is not Garrison issue. She calls it maintenance.',
     found:()=>mxF('bench.used'),
     offer:[['kairos','That’s not Garrison issue.'],['ines','It’s maintenance.'],['kairos','It has a pattern on it.'],
@@ -4550,7 +4555,7 @@ Object.assign(MX_QUESTS,{
       {id:'test',at:'tower',npc:'tower.h_agnes',t:'Test the sling with Agnes',ok:()=>mxF('won:mxf_roof_agnes')},
       {id:'end',at:'tower',npc:'tower.h_agnes',t:'Talk to Agnes',ok:()=>mxF('ag_end')}],
     reward:{bond:['ines'],dust:40,keep:1,frag:'chest',rec:{id:'rec.agnes',title:'Agnes’s practice piece'}},sets:['agnes.crafted']},
-  bram_bread:{title:'The Smell of Fresh Bread',kind:'bond',char:'bram',when:['fugitive'],at:'tower',npc:'tower.h_bram',giver:'Bram · the Clock Tower',
+  bram_bread:{title:'The Smell of Fresh Bread',hint:'Something sweet drifts from a window at St. Hesper’s. Bram would know what it is.',kind:'bond',char:'bram',when:['fugitive'],at:'tower',npc:'tower.h_bram',giver:'Bram · the Clock Tower',
     desc:'The bakery by St. Hesper’s smells like Bram’s grandmother’s kitchen, and he can’t remember the whole recipe.',
     found:()=>!!(mxS().looked||{})['look.bakery.after']||mxTalked('tower.h_bram')>0,talkFind:'tower.h_bram',
     offer:[['bram','Kairos. You came up past the bakery, right? Did you smell it?'],['kairos','The six o’clock batch.'],
@@ -4592,7 +4597,7 @@ Object.assign(MX_QUESTS,{
     steps:[{id:'ask',t:'Ask four people what they forgot last Monday',objs:[MXO.flag('sc_matteo','Old Matteo (Market Ring)',{at:'market',npc:'market.matteo'}),MXO.flag('sc_fish','The fish vendor (Market Ring)',{at:'market',npc:'market.fish'}),MXO.flag('sc_laund','The laundress (Ash Lane)',{at:'ashlane',npc:'ashlane.laundress'}),MXO.flag('sc_believer','The woman at the Cloister',{at:'chapel',npc:'chapel.believer'})]},
       {id:'back',at:'market',npc:'market.rosa',t:'Tell Rosa what they said',ok:()=>mxF('sc_done')}],
     reward:{dust:30,keep:1,rec:{id:'rec.sc',title:'Rosa’s Monday list'}},sets:['side.cups']}),
-  side_festival_forgot:SQ({title:'The Festival We Forgot',at:'hesper',npc:'hesper.agathe',giver:'Sister Agathe · St. Hesper’s',
+  side_festival_forgot:SQ({title:'The Festival We Forgot',hint:'Sister Agathe keeps a box of something old on the orphanage’s back step.',at:'hesper',npc:'hesper.agathe',giver:'Sister Agathe · St. Hesper’s',
     desc:'A box of Festival decorations older than the fountain. Sister Agathe remembers a different Festival, and not quite how.',
     found:()=>!!(mxS().looked||{})['look.festbox']||mxTalked('hesper.agathe')>=3,
     offer:[['matron','You found my box. Those were the Festival decorations when I was a girl. Before the fountain.'],
@@ -4618,7 +4623,7 @@ Object.assign(MX_QUESTS,{
       {id:'back',at:'ashlane',npc:'ashlane.ivo',t:'Go back to Ivo',ok:()=>mxF('bw_done')}],
     reward:{dust:30,rec:{id:'rec.bw',title:'A coin from nowhere'}},sets:['side.wall']})});
 Object.assign(MX_QUESTS,{
-  side_empty_chapel:SQ({title:'The Empty Chapel',at:'oldchapel',npc:'oldchapel.ottilie',giver:'Ottilie · St. Maren’s',story:()=>storyFlag('oldchapel.found'),
+  side_empty_chapel:SQ({title:'The Empty Chapel',hint:'Cassie knows a chapel nobody else goes to.',at:'oldchapel',npc:'oldchapel.ottilie',giver:'Ottilie · St. Maren’s',story:()=>storyFlag('oldchapel.found'),
     desc:'The keepers’ writings are loose about the floor again, and the reading lamp at St. Maren’s has not been lit in seventeen years.',
     offer:[['mxotti','You came back. Good. I need younger knees.'],['mxotti','Fen’s been copying, and the wind’s been reading. Four of our writings are loose about the floor again. Bring them to Fen and he’ll tell you where they go.'],
       ['mxotti','Then light the reading lamp. It’s been dark in here seventeen years. I’d like one night of it lit.']],
@@ -4627,7 +4632,7 @@ Object.assign(MX_QUESTS,{
       {id:'lamp',at:'oldchapel',t:'Light the reading lamp',ok:()=>mxF('ec_lamp')},
       {id:'end',at:'oldchapel',npc:'oldchapel.ottilie',t:'Talk to Ottilie',ok:()=>mxF('ec_end')}],
     reward:{dust:35,keep:1,rec:{id:'rec.ec',title:'The keepers’ shelf list'}},sets:['side.chapel']}),
-  side_unofficial_prayer:SQ({title:'The Unofficial Prayer',at:'ashlane',npc:'ashlane.lamplighter',pre:['side_empty_chapel'],giver:'The lamplighter · Ash Lane',
+  side_unofficial_prayer:SQ({title:'The Unofficial Prayer',hint:'The Ash Lane lamplighter is waiting to hear from a chapel.',at:'ashlane',npc:'ashlane.lamplighter',pre:['side_empty_chapel'],giver:'The lamplighter · Ash Lane',
     desc:'Someone chalks a sign under lamp number seven at night. By morning it is gone.',
     offer:[['mxlamp','You were at St. Maren’s. Ottilie told me. She tells me things; I light her lamps.'],
       ['mxlamp','Some nights, after I’ve lit number seven, somebody chalks a little sign under it. A circle with a line through. By morning it’s washed off.'],
@@ -4689,7 +4694,7 @@ const MX_QLINES=[
   {q:'side_beyond_wall',step:'check',npc:'market.fish',flag:'bw_coin',lines:[['mxfish','That coin? Never seen the stamp. A star with no rays. Weighs like silver, rings like tin.'],['mxfish','Could be from past the Wall. Could be a button with ambitions.']]},
   {q:'side_beyond_wall',step:'back',npc:'ashlane.ivo',flag:'bw_done',lines:[['kairos','The map is half traced. The stone isn’t from here. Nobody knows the coin.'],['mxivo','So I’m either a liar or a traveller. Most travellers are both, boy.'],['mxivo','Keep the coin. If you ever go east, you can tell me which.']]}];
 Object.assign(MX_QUESTS,{
-  lark_couldnt_save:{title:'The Things We Couldn’t Save',kind:'bond',char:'noemi',when:['fugitive'],at:'tower',npc:'tower.h_noemi',giver:'Naomi · the Clock Tower',
+  lark_couldnt_save:{title:'The Things We Couldn’t Save',hint:'Naomi keeps a chart at the hideout she never mentions.',kind:'bond',char:'noemi',when:['fugitive'],at:'tower',npc:'tower.h_noemi',giver:'Naomi · the Clock Tower',
     desc:'Before the Festival, Naomi and Theo had a patient they could not help. Four pages are missing from his folder, and Naomi wants them back in order.',
     found:()=>mxF('lt_chart')||mxTalked('tower.h_noemi')>=2,talkFind:'tower.h_noemi',
     offer:[['noemi','Kairos. Can I borrow you for a night? Not a fight. Paperwork. Worse.'],
@@ -4705,7 +4710,7 @@ Object.assign(MX_QUESTS,{
     reward:{bond:['noemi','theo'],dust:40,keep:1,frag:'chest',rec:{id:'rec.lark',title:'Naomi’s notebook'}},sets:['lark.casefile']}});
 const LT_BED=[0.86,0.5];
 Object.assign(MX_QUESTS,{
-  dess_experiment:{title:'The Girl in the Experiment',kind:'bond',char:'dess',when:['fugitive'],at:'tower',npc:'tower.h_dess',giver:'Dess · the Clock Tower',
+  dess_experiment:{hint:()=>'Dess says she’ll talk when everyone else has had their say. ('+MX_QUESTS.dess_experiment.pre.filter(mxDoneQ).length+' / '+MX_QUESTS.dess_experiment.pre.length+')',title:'The Girl in the Experiment',kind:'bond',char:'dess',when:['fugitive'],at:'tower',npc:'tower.h_dess',giver:'Dess · the Clock Tower',
     pre:['agnes_handmade','bram_bread','lark_couldnt_save','cass_prayer','lucas_mem_bread','lucas_mem_plan','lucas_mem_room'],autoFind:1,
     desc:'One of the cores Dess carried out of the Institute has started to glow gold when she holds it. The pattern matches an old file of her father’s: ANNEX.',
     onStart:()=>{storyFlags()['annex.found']=storyFlags()['annex.found']||Date.now();},
@@ -4788,7 +4793,7 @@ function lucasMemSeq(id){const P='orphanage';
 function lucasMemory(id){const d=mxS().at;const Q=MX_QUESTS[id];if(mxQState(id)!=='active'){mxDiscover(id);mxStart(id);}
   runSeq(lucasMemSeq(id),{roster:['kairos'],end:()=>{mxSet(Q.flag);mxS().at=d;persist();mxBegin();mxTick();}});}
 Object.assign(MX_QUESTS,{
-  lucas_mem_bread:{title:'The Things We Remember · The Bread Incident',kind:'memory',char:'lucan',when:['fugitive'],at:'hesper',flag:'lm_bread',giver:'A loose board by the bakery, St. Hesper’s',
+  lucas_mem_bread:{title:'The Things We Remember · The Bread Incident',hint:'Lucas grew up at St. Hesper’s too. Some of its old corners still remember him.',kind:'memory',char:'lucan',when:['fugitive'],at:'hesper',flag:'lm_bread',giver:'A loose board by the bakery, St. Hesper’s',
     desc:'A memory of Lucas, from before the Chancellor, before the fire. The first time you ever stole bread together.',found:()=>mxF('lm_seen_bread'),
     steps:[{id:'remember',at:'hesper',t:'Remember (the loose board by the bakery, St. Hesper’s)',ok:()=>mxF('lm_bread')}],
     reward:{bond:['lucan'],dust:20,rec:{id:'rec.lm1',title:'The end piece'}},sets:['lucas.mem1']},
@@ -4804,7 +4809,7 @@ const LUCAS_MEM_SPOTS=[['lucas_mem_bread','bread',0.28,0.42,'a loose board',[['n
   ['lucas_mem_plan','plan',0.74,0.44,'the tower door',[['n','The little door at the foot of the clock tower. You live up there now. It is still locked.']]],
   ['lucas_mem_room','room',0.62,0.26,'the dormitory window',[['n','Second floor, end window. The window bed.']]]];
 Object.assign(MX_QUESTS,{
-  cass_prayer:{title:'A Prayer of Her Own',kind:'bond',char:'cass',when:['fugitive'],at:'tower',npc:'tower.h_cass',giver:'Cassie · the Clock Tower',
+  cass_prayer:{title:'A Prayer of Her Own',hint:'Somebody lost a prayer book in the Cloister garden.',kind:'bond',char:'cass',when:['fugitive'],at:'tower',npc:'tower.h_cass',giver:'Cassie · the Clock Tower',
     desc:'A prayer book from a chapel the Church closed. Cassie knows every word of its prayer. She cannot remember who taught it to her.',
     found:()=>!!(mxS().looked||{})['look.prayerbook']||mxTalked('tower.h_cass')>=2,talkFind:'tower.h_cass',
     onStart:()=>{storyFlags()['oldchapel.found']=storyFlags()['oldchapel.found']||Date.now();},
@@ -5074,7 +5079,7 @@ function mxPeople(d){const L=[];
     L.push({id:'h_noemi',ch:'noemi',fx:0.78,fy:0.7,face:-1,label:'Naomi',say:()=>({amb:1,lines:[[['noemi','Sit. Hands. I’m checking those scars whether you like it or not.'],['noemi','Eat, sleep, then argue with me. In that order.'],['noemi','I wrote something new on my arm. I’ll tell you when I’m sure.']][mxTalked('tower.h_noemi')%3]]})});
     L.push({id:'h_theo',ch:'theo',fx:0.74,fy:0.3,face:-1,label:'Theo',say:()=>({amb:1,lines:[[['theo','Don’t lean on that gear. It’s holding up a surprising amount of tower.'],['theo','Every instrument I brought up here disagrees with every other one. I love it.'],['theo','Naomi says I need sleep. I say sleep is just waiting with your eyes shut.']][mxTalked('tower.h_theo')%3]]})});
     L.push({id:'h_cass',ch:'cass',fx:0.36,fy:0.6,face:1,label:'Cassie',say:()=>({amb:1,lines:[[['cass','I still say grace. I just don’t say it to them anymore.'],['cass','The bells for vespers. Six years I never missed them.'],['cass','If you’re going to stare at the city, at least stare at it with your back to a wall.']][mxTalked('tower.h_cass')%3]]})});
-    L.push({id:'h_dess',ch:'dess',fx:0.46,fy:0.32,face:1,label:'Dess',say:()=>({amb:1,lines:[[['dess','The cores hum louder at night. I’m writing down which ones. Just… in case.'],['dess','Sorry. I talk to the cores sometimes. They’re easier.'],['dess','Do you think he’s cold, wherever he is? Lucas. Sorry. I just wondered.']][mxTalked('tower.h_dess')%3]]})});
+    L.push({id:'h_dess',ch:'dess',fx:0.46,fy:0.32,face:1,label:'Dess',say:()=>mxQState('dess_experiment')==='locked_by_prerequisite'&&MX_QUESTS.dess_experiment.pre.filter(mxDoneQ).length>=4&&mxTalked('tower.h_dess')%2===0?{lines:[['dess','When everyone’s had their say… I’ve got something to show you. Not yet. Soon.']]}:({amb:1,lines:[[['dess','The cores hum louder at night. I’m writing down which ones. Just… in case.'],['dess','Sorry. I talk to the cores sometimes. They’re easier.'],['dess','Do you think he’s cold, wherever he is? Lucas. Sorry. I just wondered.']][mxTalked('tower.h_dess')%3]]})});
   }
   if(d==='annex')L.push({id:'q_dess',ch:'dess',fx:0.5,fy:0.3,face:1,label:'Dess',hide:()=>!mxAct('dess_experiment'),
       say:()=>{const sp=mxStepOf('dess_experiment');
@@ -5364,7 +5369,15 @@ function mxDrawObst(c,kind,x,y){
     c.fillStyle='#24160C';circ(c,x,y-17,6);c.fill();c.fillStyle='#D8C7A0';circ(c,x,y-17,5);c.fill();c.fillStyle='#B5523A';circ(c,x,y-17,2);c.fill();c.fillStyle='#D8C7A0';c.fillRect(x-5,y-11,10,9);c.fillStyle='rgba(0,0,0,0.15)';c.fillRect(x-5,y-6,10,4);}
   else if(kind==='cart'){c.fillStyle='rgba(0,0,0,0.3)';ell(c,x+15,y+9,17,4);c.fill();c.fillStyle='#24160C';c.fillRect(x-1,y-9,32,14);c.fillStyle='#C7D5E8';c.fillRect(x,y-8,30,12);c.fillStyle='#F2F2F2';c.fillRect(x+2,y-12,10,5);c.fillRect(x+14,y-12,12,5);c.fillStyle='#E84A4A';c.fillRect(x+18,y-11,4,3);
     c.fillStyle='#24160C';circ(c,x+5,y+6,3);c.fill();circ(c,x+25,y+6,3);c.fill();}}
+const wmLocOpen=id=>wmUnlocked(WORLD_LOCS.find(L=>L.id===id));
+function drawOldGate(c,n){c.fillStyle='rgba(20,14,8,0.35)';c.fillRect(n.x-14,n.y-26,28,34);c.strokeStyle='#4A3B2A';c.lineWidth=2;
+  for(let i=-10;i<=10;i+=5){c.beginPath();c.moveTo(n.x+i,n.y-26);c.lineTo(n.x+i,n.y+8);c.stroke();}c.beginPath();c.moveTo(n.x-14,n.y-26);c.lineTo(n.x+14,n.y-26);c.stroke();
+  c.fillStyle='#5E7A3E';for(const [dx,dy] of [[-12,-18],[-7,-4],[6,-22],[11,0],[2,-10]]){c.beginPath();c.arc(n.x+dx,n.y+dy,3,0,TAU);c.fill();}}
+function drawHatch(c,n){c.fillStyle='#3A2616';c.fillRect(n.x-15,n.y-10,30,20);c.strokeStyle='#5A3A22';c.lineWidth=2;c.strokeRect(n.x-15,n.y-10,30,20);
+  c.beginPath();c.moveTo(n.x-15,n.y);c.lineTo(n.x+15,n.y);c.stroke();c.fillStyle='#9A9AA2';c.fillRect(n.x-3,n.y-3,6,7);}
 const MX_LOOKS=[
+  {id:'look.oldgate',at:'ashlane',fx:0.955,fy:0.5,vis:()=>!wmLocOpen('oldchapel'),draw:drawOldGate,title:'An overgrown gate',text:[['n','An iron gate at the end of the lane, rusted shut and wound with ivy. Past it, a footpath bends toward a roofline you can just make out.'],['th','Somebody still sweeps the step on the far side. Somebody must know the way round.']]},
+  {id:'look.hatch',at:'tower',fx:0.9,fy:0.42,era:'fugitive',vis:()=>!wmLocOpen('annex'),draw:drawHatch,title:'A padlocked hatch',text:[['n','A trapdoor in the roof boards, padlocked from the other side. Cold air leaks up through the gaps, and a faint hum.'],['th','Dess looks at it more often than she lets on.']]},
   {id:'look.scarf',at:'market',fx:0.165,fy:0.68,title:'A scarf on the crates',text:[['n','A knitted scarf, folded neatly on the crates. A tag pinned to it: “If found, leave it here. I’ll come back for it.”'],['th','Somebody trusts this square.']]},
   {id:'look.coins',at:'plaza',fx:0.4,fy:0.66,title:'Coins in the fountain',text:[['n','Coins glint at the bottom of the basin, years of them. Nobody fishes them out.'],['th','Tessa says it’s bad luck. Tessa says a lot of things are bad luck.']]},
   {id:'look.helmet',at:'yard',fx:0.79,fy:0.3,title:'A dented helmet',text:[['n','A Garrison helmet with a dent the shape of a shield rim. Painted inside: “B. · size LARGE (larger)”.']]},
@@ -5400,9 +5413,9 @@ function mxExtras(d){const L=[],x=mxS();
   for(const ch of mxChests(d)){const n={id:'chest.'+ch.n,fx:ch.fx,fy:ch.fy,spot:1,verb:'open',tier:ch.tier,key:ch.key};
     n.opened=()=>mxChestOpen(ch);n.lines=()=>[];n.talk=(F,m,nn)=>mxOpenChest(nn);n.mkf=()=>null;n.draw=(c,nn)=>mxDrawChest(c,nn);L.push(n);}
   // things to read
-  for(const f of MX_LOOKS.filter(f=>f.at===d&&(!f.era||f.era===mxEra()))){const n={id:f.id,fx:f.fx,fy:f.fy,spot:1};
+  for(const f of MX_LOOKS.filter(f=>f.at===d&&(!f.era||f.era===mxEra())&&(!f.vis||f.vis()))){const n={id:f.id,fx:f.fx,fy:f.fy,spot:1};
     n.lines=()=>typeof f.text==='function'?f.text():f.text;n.talk=()=>{const y=mxS();y.looked=y.looked||{};y.looked[f.id]=1;persist();mxTick();};
-    n.mkf=()=>(mxS().looked||{})[f.id]?null:'?';L.push(n);}
+    n.mkf=()=>(mxS().looked||{})[f.id]?null:LOOK_TRIG[f.id]&&mxTrig(LOOK_TRIG[f.id])?'?*':'?';if(f.draw)n.draw=(c,nn)=>f.draw(c,nn);L.push(n);}
   if(d==='yard'){const n={id:'drill.board',fx:0.32,fy:0.28,spot:1,verb:'read'};
     n.lines=()=>{const best=(x.act&&x.act.drillBest)?' Best: '+x.act.drillBest.toFixed(1)+'s.':'';return [['n','AGNES’S DRILL COURSE. Six flags, in order, in '+DRILL_T+' seconds. No excuses.'+best],
       ['n',claimed('act:drill')?(claimed('act:drill:'+mxDay())?'You have run it today. The board still takes your time.':'Run it today for a little Stardust.'):'First clear: 40 Stardust and a Keepsake.']];};
@@ -5433,13 +5446,13 @@ function mxExtras(d){const L=[],x=mxS();
   if(d==='ward'&&mxEra()==='fugitive'&&!mxDoneQ('lark_couldnt_save')){
     const ch={id:'ward.chart',fx:0.6,fy:0.24,spot:1,verb:'read',ptitle:'a patient folder',
       lines:()=>mxStepOf('lark_couldnt_save')==='order'?[]:[['n','A patient folder on the nurses’ desk: ODELL, H. · RETIRED TEACHER. Half the pages are gone.'],['th','Dr. Lark’s handwriting on the cover: “Don’t file this yet.”']],
-      mkf:()=>mxStepOf('lark_couldnt_save')==='order'?'!':mxF('lt_chart')?null:'?'};
+      mkf:()=>mxStepOf('lark_couldnt_save')==='order'?'!':mxF('lt_chart')?null:mxTrig('lark_couldnt_save')?'?*':'?'};
     ch.talk=()=>{if(mxStepOf('lark_couldnt_save')==='order'){larkOrder();return;}mxSet('lt_chart');persist();mxTick();};L.push(ch);
     if(mxAct('lark_couldnt_save')&&!mxF('lt_reading')){const bed={id:'ward.bed',fx:LT_BED[0],fy:LT_BED[1],spot:1,verb:'look',ptitle:'Mr. Odell’s old bed',mkf:()=>'!',
         lines:()=>[['n','Theo’s box screams, then goes quiet. The needle doesn’t drop to zero. It drops below it.'],['th','An empty bed should read like an empty room. This reads like nothing was ever here at all.']]};
       bed.hide=function(){return mxStepOf('lark_couldnt_save')!=='read'||!(Math.hypot(player.x-this.x,player.y-this.y)<=66);};bed.talk=()=>{mxSet('lt_reading');persist();sfx('bless');mxTick();};L.push(bed);}}
   if(d==='tower'){
-    const wb={id:'tower.bench',fx:0.62,fy:0.66,spot:1,verb:'use',ptitle:'workbench',lines:()=>[],mkf:()=>mxStepOf('agnes_handmade')==='make'?'!':'?'};
+    const wb={id:'tower.bench',fx:0.62,fy:0.66,spot:1,verb:'use',ptitle:()=>mxTrig('agnes_handmade')?'workbench · Agnes left something here':'workbench',lines:()=>[],mkf:()=>mxStepOf('agnes_handmade')==='make'?'!':mxTrig('agnes_handmade')?'?*':'?'};
     wb.talk=()=>{if(mxStepOf('agnes_handmade')==='make'){agnesAssemble();return;}mxSet('bench.used');persist();state='panel';showBuilds(()=>{mxS().at='tower';persist();mxBegin();});};L.push(wb);
     if(mxStepOf('bram_bread')==='bake')for(const [cid,fx,fy,pt,say] of [['flour',0.14,0.72,'flour sack','Flour into the bowl. Bram sifts it twice.'],['knead',0.5,0.56,'mixing bowl','Hands in. Bram shows you how to fold it, slow.'],['rest',0.42,0.88,'by the lantern','A cloth over the bowl, by the warm lantern.'],['oven',0.26,0.5,'brick oven','Into the little oven Bram stacked from loose chimney bricks.']]){
       const st={id:'bake.'+cid,fx,fy,spot:1,verb:'use',ptitle:pt,cid,lines:()=>[],mkf:()=>(room.m.lit||[]).includes(cid)?null:'?',draw:(c,n)=>drawBakeStation(c,n,(room.m.lit||[]).includes(cid))};
@@ -5449,7 +5462,7 @@ function mxExtras(d){const L=[],x=mxS();
     const nb={id:'tower.board',fx:0.38,fy:0.24,spot:1,verb:'read',ptitle:'notice board',lines:()=>[],mkf:()=>mxQuestsAvailable().length?'!':'?'};nb.talk=()=>{state='panel';showJournal(()=>{closeOverlay();state='play';last=performance.now();},'stories');};L.push(nb);}
   if(d==='hesper'&&mxEra()==='fugitive')for(const [qid,k,fx,fy,pt,text] of LUCAS_MEM_SPOTS){
     const n={id:'mem.'+k,fx,fy,spot:1,verb:'remember',ptitle:pt,lines:()=>mxDoneQ(qid)?[['th','Just a '+pt.replace(/^(a|the) /,'')+'. You remember all of it now.']]:text,
-      mkf:()=>mxDoneQ(qid)?null:mxQState(qid)==='undiscovered'?'?':'!'};
+      mkf:()=>mxDoneQ(qid)?null:mxQState(qid)==='undiscovered'?'?*':'!'};
     n.hide=()=>['locked_by_story','locked_by_prerequisite'].includes(mxQState(qid));
     n.talk=()=>{mxSet('lm_seen_'+k);persist();if(!mxDoneQ(qid))lucasMemory(qid);};L.push(n);}
   if(d==='hesper'){const n=mxHideNpc();const q=n.at();n.x=q.x;n.y=q.y;L.push(n);}
@@ -5934,6 +5947,9 @@ function mxStoriesList(){const ids=Object.keys(MX_QUESTS).filter(id=>MX_STORY_KI
     st==='completed'&&Q.reward&&Q.reward.rec&&mxS().mem[Q.reward.rec.id]?h('p',{class:'rw'},'Kept in the Journal: '+Q.reward.rec.title):null);});
   if(!out.length)out.push(h('p',{class:'ss-info'},mxEra()==='fugitive'?'No stories found yet. Listen to the people around you, and to the party at the hideout.':'Stories open up after Chapter 1.'));
   if(locked)out.push(h('p',{class:'ss-info'},locked+' more '+(locked>1?'stories are':'story is')+' still hidden or locked.'));
+  if(locked&&mxEra()==='fugitive'){const rum=ids.filter(id=>MX_QUESTS[id].hint&&!vis.includes(id)&&mxGateEraOk(MX_QUESTS[id])).map(id=>{const t=MX_QUESTS[id].hint;return typeof t==='function'?t():t;});
+    if(rum.length){const k=mxDay()%rum.length,pick3=[0,1,2].slice(0,Math.min(3,rum.length)).map(i=>rum[(k+i)%rum.length]);
+      out.push(h('div',{class:'mx-q'},h('h4',null,'Rumours'),...pick3.map(t=>h('p',{class:'ob'},'· '+t))));}}
   const pend=save.bondPending||{};
   out.push(h('p',{class:'ss-info'},'Bond ♥: '+CH_ORDER.filter(id=>id!=='kairos').map(id=>nameOf(id)+' '+bondHearts(bondOf(id))+(pend[id]?' (+'+pend[id]+' waiting)':'')).join(' · ')+'. Each heart: +4% HP and attack in story battles.'));return out;}
 function showJournal(back,tab){
@@ -7751,13 +7767,21 @@ function showBuilds(back){
   render();openOverlay(root,'mode-select');
 }
 // ═══════════════════════════════════════════ guide
-const GUIDE_TABS=[['start','Start here','book'],['controls','Controls','move'],['combat','Combat','atk'],['team','Team','team'],['chars','Characters','star'],['enemies','Vices','skull'],['runs','Runs','door'],['builds','Builds','gem']];
+const GUIDE_TABS=[['start','Start here','book'],['controls','Controls','move'],['combat','Combat','atk'],['team','Team','team'],['chars','Characters','star'],['enemies','Vices','skull'],['runs','Runs','door'],['builds','Builds','gem'],['explore','Exploring','door']];
 function gcard(icon,title,text,keys){
   const gi=ICONS[icon]?h('span',{class:'gi'},ico(icon)):h('span',{class:'gi t'},icon);
   return h('div',{class:'gcard'},gi,h('div',null,h('b',null,title),h('p',null,text),keys?h('div',{class:'keys'},...keys.map(k=>h('kbd',null,k))):null));}
 function gtip(text,label){return h('div',{class:'gtip'},ico('star'),h('div',null,h('b',null,label||'Tip'),text));}
 function guidePage(tab){
   const T=isTouch;
+  if(tab==='explore')return [h('h2',null,'Exploring Meridian'),
+    h('p',{class:'lede'},'Meridian is the city between battles. Walk it, talk to people, and read what you find. Some of it only opens later.'),
+    gcard('!','Something for you','A gold ! over a person or object: they have something to give you, or you have something to hand in.'),
+    gcard('?','Worth a look','A pale ? is a sign, a notice or an odd corner. A brighter gold ? means this one could start a story.'),
+    gcard('door','Gold arrows','Walk off a gold arrow at the edge of a district to go to the next one. Once you have been somewhere, the world map (M, or the map button) takes you straight there.'),
+    gcard('book','The Journal','Quests and Stories show what you are doing and what to do next. Records lists the notices and secrets still to find, by district. When stories are still hidden, it passes on a rumour or two.'),
+    gcard('star','After Chapter 1','The city changes once Chapter 1 is over. Most stories, the hideout and its people open up then. Talk to your friends there more than once.'),
+    gtip('Some places are not on any road until somebody gives them away. A stamp in a book, a gate nobody uses, a friend who says “not yet”.','Secrets')];
   if(tab==='start')return [h('h2',null,'How Starfall works'),
     h('p',{class:'lede'},'You control one character at a time from a party of three. Fight the Vices (monsters) in each district, pick up Blessings, and beat the boss.'),
     h('ol',{class:'gsteps'},

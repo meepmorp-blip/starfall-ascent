@@ -42,7 +42,7 @@ await go('ashlane');await walk('KeyD','e',null);ok(await E(()=>__sf.mx().at)==='
 // discovery by talking to Cassie twice
 await go('tower');await interact('h_cass');ok(await st('cass_prayer')==='undiscovered','one talk with Cassie is small talk');await interact('h_cass');ok(await st('cass_prayer')==='available','a second talk finds her story');
 // discovery by the prayer book at the Cloister (fresh save)
-await load(save(1));await go('chapel');ok(await mark('look.prayerbook')==='?','a prayer book lies by the Cloister wall');
+await load(save(1));await go('chapel');ok(await mark('look.prayerbook')==='?*','a prayer book lies by the Cloister wall');
 let r=await interact('look.prayerbook');let text=r.lines.slice();ok(r.lines.some(l=>/ST\. MAREN/.test(l))&&await st('cass_prayer')==='available','reading it finds Cassie’s story');
 await go('tower');ok(await mark('h_cass')==='!','Cassie has a "!"');r=await interact('h_cass');text=text.concat(r.lines);
 ok(await st('cass_prayer')==='active'&&(await S()).story['oldchapel.found'],'Cassie offers it; St. Maren’s is now known');

@@ -44,7 +44,7 @@ await load(save(1));ok(await E(()=>__sf.lucas())==='captured','after the clear L
 await go('tower');ok(await E(()=>!__sf.m().npcs.some(n=>n.ch==='lucan')),'no present-day Lucas at the hideout');
 await go('hesper');
 const vis=await E(()=>__sf.m().npcs.filter(n=>/^mem\./.test(n.id)&&!n.hide()).map(n=>n.id));ok(vis.length===1&&vis[0]==='mem.bread','only the first memory can be found ('+vis.join(',')+')');
-ok(await mark('mem.bread')==='?','the loose board by the bakery has a "?"');
+ok(await mark('mem.bread')==='?*','the loose board by the bakery has the gold story "?"');
 {const hb=await hudHits(['mem.']);ok(hb.length===0,'memory objects are clear of the HUD'+(hb.length?': '+hb.join(','):''));}
 let text=[];
 // ── memory 1: The Bread Incident

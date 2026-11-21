@@ -38,7 +38,7 @@ await go('ward');ok(!(await E(()=>__sf.m().npcs.some(n=>n.id==='ward.chart'))),'
 await load(save(1));await interact('h_noemi');ok(await st('lark_couldnt_save')==='undiscovered','one talk with Naomi is just small talk');
 await interact('h_noemi');ok(await st('lark_couldnt_save')==='available','a second talk with Naomi finds her story');
 // discovery by the folder at St. Lucia's (fresh save)
-await load(save(1));await go('ward');ok(await mark('ward.chart')==='?','a patient folder lies on the nurses’ desk');
+await load(save(1));await go('ward');ok(await mark('ward.chart')==='?*','a patient folder lies on the nurses’ desk');
 let r=await interact('ward.chart');let text=r.lines.slice();ok(r.lines.some(l=>/ODELL/.test(l))&&await st('lark_couldnt_save')==='available','reading it finds Naomi’s story');
 ok(await E(()=>!!__sf.qplaces().tower),'the Clock Tower is marked');
 await go('tower');ok(await mark('h_noemi')==='!','Naomi has a "!"');r=await interact('h_noemi');text=text.concat(r.lines);
