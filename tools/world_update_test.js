@@ -81,7 +81,7 @@ const MODE=process.argv[2]||'desk';
  let bt=await bonds();ok(/Agnes/.test(bt)&&/Bram/.test(bt)&&/Dess/.test(bt)&&/Kairos/.test(bt),'Bond Stories tab lists every character');
  ok(/Not found yet · Agnes has been at the workbench/i.test(bt),'undiscovered stories show their rumour, not their title');
  await p.evaluate(()=>{__sf.qstart('agnes_handmade');const q=__sf.mx().q.agnes_handmade;q.n=1;});bt=await bonds();
- ok(/A Little Something Handmade · in progress: .*Activity · step 2 of 4/i.test(bt),'active story shows its current beat and progress');
+ ok(/A Little Something Handmade · in progress: .*— Activity · step 2 of 4/i.test(bt),'active story shows its current beat and progress');
  await p.evaluate(()=>{__sf.mx().q.agnes_handmade={s:'done',n:0};});bt=await bonds();ok(/✓ A Little Something Handmade/.test(bt),'completed story is ticked');
  ok(/after \d more stor(y|ies) \(\d \/ 7\)/.test(bt),'Dess’s story shows its requirement');
  await p.evaluate(()=>{__sf.persist&&__sf.persist();});await p.goto(url);await p.waitForTimeout(600);
@@ -103,6 +103,19 @@ const MODE=process.argv[2]||'desk';
  ok(k1===k0+1&&k2===k1,'first step into St. Maren’s: +1 Keepsake, once');
  for(const [d,id] of [['yard','look.roster.after'],['office','look.queue.after'],['ward','look.ward.after']]){await go(d);ok(await p.evaluate(id=>!!__sf.room().m.npcs.find(n=>n.id===id),id),d+': new after-Chapter-1 readable '+id);}
  await fresh(false);await go('yard');ok(await p.evaluate(()=>!__sf.room().m.npcs.find(n=>n.id==='look.roster.after')),'not shown before Chapter 1 ends');
+ // ══ Phase 6 · old saves keep working with every new screen ══
+ const FIX=require('./fixtures/ch1_old_saves.json');let fxOk=0;const fxBad=[];
+ for(const F of FIX){const e0=errs.length;
+   await p.evaluate(sv=>{localStorage.setItem('starfall-ascent-save',JSON.stringify(sv));},F.save);await p.goto(url);await p.waitForTimeout(500);
+   const r=await p.evaluate(async()=>{const s=__sf.save(),b={d:s.dust|0,k:s.keep|0,lv:s.chars.kairos.lvl,f:(s.frags||[]).length};
+     __sf.mx().at='ashlane';__sf.mxBegin();await new Promise(r=>setTimeout(r,500));
+     const c=__sf.room().m.npcs.find(n=>n.id==='ashlane.counter');c.talk();await new Promise(r=>setTimeout(r,150));const shopTxt=document.getElementById('overlay').innerText;document.querySelector('#overlay [data-back]').click();
+     __sf.mx().at='tower';__sf.mxBegin();await new Promise(r=>setTimeout(r,500));const bd=__sf.room().m.npcs.find(n=>n.id==='tower.board');if(bd){bd.talk();await new Promise(r=>setTimeout(r,150));
+       for(const re of [/^quests$/i,/^stories$/i,/bond stories/i,/^records/i]){const t=[...document.querySelectorAll('#overlay button')].find(e=>re.test(e.innerText.trim()));t&&t.click();await new Promise(r=>setTimeout(r,80));}
+       document.querySelector('#overlay [data-back]')&&document.querySelector('#overlay [data-back]').click();}
+     const s2=__sf.save();return {same:s2.dust===b.d&&(s2.keep|0)>=b.k&&s2.chars.kairos.lvl===b.lv&&(s2.frags||[]).length===b.f,shop:/Odds, ends/.test(shopTxt)};});
+   if(r.same&&r.shop&&errs.length===e0)fxOk++;else fxBad.push(F.name+' '+JSON.stringify(r)+(errs[e0]||''));}
+ ok(fxOk===FIX.length,'all '+FIX.length+' old-save fixtures: progress kept, shop, Journal tabs and hideout open without errors'+(fxBad.length?' · '+fxBad[0]:''));
  // the main-menu route is unchanged
  await p.evaluate(()=>{__sf.goHome&&__sf.goHome();});
  ok(errs.length===0,'no page errors'+(errs[0]?': '+errs[0]:''));

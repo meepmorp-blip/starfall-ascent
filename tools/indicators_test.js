@@ -42,9 +42,9 @@ await load(save(1));await go('tower');M=await marks();
 ok(M.h_bram==='?'&&M.h_noemi==='?'&&M.h_cass==='?','Bram, Naomi and Cassie show “?”: talking to them can reveal a story');
 ok(!M.h_agnes&&!M.h_theo,'Agnes (her story is found at the workbench) and Theo (no story of his own to find) show nothing');
 ok(!M.h_dess,'Dess’s locked story shows nothing');
-let r=await interact('h_bram');M=await marks();ok(M.h_bram==='!','after one talk Bram’s story is found: “?” becomes “!”');
+let r=await interact('h_bram');M=await marks();ok(M.h_bram==='!b','after one talk Bram’s story is found: “?” becomes the rose story “!”');
 r=await interact('h_noemi');M=await marks();ok(M.h_noemi==='?','Naomi needs a second conversation; still “?”');
-r=await interact('h_noemi');M=await marks();ok(M.h_noemi==='!','…and then “!”');
+r=await interact('h_noemi');M=await marks();ok(M.h_noemi==='!b','…and then the rose story “!”');
 // readables: ? until read
 ok(M['look.bedrolls']==='?','an unread readable shows “?”');await interact('look.bedrolls');M=await marks();ok(!M['look.bedrolls'],'and nothing once read');
 // a district after the clear: officials and townsfolk without quests show nothing
@@ -55,7 +55,7 @@ await go('plaza');M=await marks();ok(M.hanne==='!'&&!M.inspector&&!M.fwoman,'Fes
 await p.screenshot({path:`out/ind_${mode}_plaza.png`});
 // Dess: nothing while locked, “!” once unlocked
 {const sv=save(1);for(const id of ['agnes_handmade','bram_bread','lark_couldnt_save','cass_prayer','lucas_mem_bread','lucas_mem_plan','lucas_mem_room']){sv.mx.q[id]={s:'done',n:9};sv.claims['mxq:'+id]=1;}await load(sv);}
-await E(()=>__sf.qtick());await go('tower');M=await marks();ok(M.h_dess==='!','when her story unlocks, Dess shows “!”');
+await E(()=>__sf.qtick());await go('tower');M=await marks();ok(M.h_dess==='!b','when her story unlocks, Dess shows “!”');
 }catch(e){log.push('CRASH '+String(e.stack).split(String.fromCharCode(10)).slice(0,3).join(' '));}
 ok(errs.length===0,'no page errors'+(errs.length?': '+errs.join(' | '):''));
 console.log(log.join('\n'));fs.writeFileSync(`out/ind_${mode}_log.txt`,log.join('\n'));await b.close();server.close();})();

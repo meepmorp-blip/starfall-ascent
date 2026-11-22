@@ -55,7 +55,7 @@ const arr=await p.evaluate(()=>__sf.p().x-__sf.bounds()[0]);ok(arr<120,'arrive o
 const g=await npcPos('plaza.glasses');ok(!!g,'the glasses appear while the quest is active');
 await talk('plaza.glasses');I=await info();ok(I.items.includes('glasses'),'picked up the glasses');
 await talk('lseller');I=await info();ok(I.q.lanterns&&I.q.lanterns.s==='active','lantern seller starts "Lanterns for Vespers"');
-await talk('plaza.plaque');await talk('plaza.poster');await talk('plaza.scar');
+await talk('plaza.plaque');await talk('plaza.poster');await talk('plaza.scar');{const back=await p.evaluate(()=>{const b=document.querySelector('#overlay [data-back]');const t=b&&b.innerText;b&&b.click();return t;});ok(/Back to Festival Square/i.test(back||''),'the rift scar opens the Rifts (Back to Festival Square)');await p.waitForTimeout(900);}
 // fountain collision: walk straight at it and sample positions; the player must never be inside the basin
 const B=await p.evaluate(()=>__sf.bounds()),fx=(B[0]+B[2])/2,fyc=B[1]+(B[3]-B[1])*0.555;await walkTo(fx,fyc-100);let inside=0;await p.keyboard.down('KeyS');
 for(let i=0;i<20;i++){await p.waitForTimeout(60);const q=await p.evaluate(()=>__sf.p());if(Math.hypot(q.x-fx,q.y-fyc)<30)inside++;}

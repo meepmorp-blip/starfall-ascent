@@ -5426,7 +5426,7 @@ function drawOldGate(c,n){c.fillStyle='rgba(20,14,8,0.35)';c.fillRect(n.x-14,n.y
 function drawHatch(c,n){c.fillStyle='#3A2616';c.fillRect(n.x-15,n.y-10,30,20);c.strokeStyle='#5A3A22';c.lineWidth=2;c.strokeRect(n.x-15,n.y-10,30,20);
   c.beginPath();c.moveTo(n.x-15,n.y);c.lineTo(n.x+15,n.y);c.stroke();c.fillStyle='#9A9AA2';c.fillRect(n.x-3,n.y-3,6,7);}
 const MX_LOOKS=[
-  {id:'look.roster.after',at:'yard',fx:0.66,fy:0.3,era:'fugitive',title:'The rooftop roster',text:[['n','The evening roster, re-pinned. Two names near the top have a line through them, and a word in red: ABSENT.'],['th','Agnes would hate that the line isn’t straight.']]},
+  {id:'look.roster.after',at:'yard',fx:0.36,fy:0.26,era:'fugitive',title:'The rooftop roster',text:[['n','The evening roster, re-pinned. Two names near the top have a line through them, and a word in red: ABSENT.'],['th','Agnes would hate that the line isn’t straight.']]},
   {id:'look.queue.after',at:'office',fx:0.3,fy:0.52,era:'fugitive',title:'A new sign at the queue',text:[['n','Pasted over the number machine: ALL RECORDS REQUESTS SUSPENDED UNTIL FURTHER NOTICE. · THE REGISTRY'],['n','People still take a number. Habit.']]},
   {id:'look.ward.after',at:'ward',fx:0.3,fy:0.3,era:'fugitive',title:'A note on the nurses’ desk',text:[['n','In Naomi’s hand, pinned where the day nurses will see it: Bed four. Keep the drawing on the wall. Ask him about it every morning.'],['th','The fountain he’d never seen. She’s still checking.']]},
   {id:'look.oldgate',at:'ashlane',fx:0.955,fy:0.5,vis:()=>!wmLocOpen('oldchapel'),draw:drawOldGate,title:'An overgrown gate',text:[['n','An iron gate at the end of the lane, rusted shut and wound with ivy. Past it, a footpath bends toward a roofline you can just make out.'],['th','Somebody still sweeps the step on the far side. Somebody must know the way round.']]},
@@ -6026,7 +6026,7 @@ function recProgress(id){const Q=MX_QUESTS[id],q=mxS().q[id];if(!q||q.s==='done'
   const b=(REC_BEATS[id]||{})[sp.id];return {n:q.n+1,of:Q.steps.length,step:sp.t,beat:b?BEAT_LABEL[b]:null};}
 function recLine(id){const Q=MX_QUESTS[id],st=mxQState(id);
   if(st==='completed')return ['done','✓ '+Q.title];
-  if(st==='active'){const pr=recProgress(id);return ['active',Q.title+' · in progress'+(pr?': '+pr.step+' ('+(pr.beat?pr.beat+' · ':'')+'step '+pr.n+' of '+pr.of+')':'')];}
+  if(st==='active'){const pr=recProgress(id);return ['active',Q.title+' · in progress'+(pr?': '+pr.step+' — '+(pr.beat?pr.beat+' · ':'')+'step '+pr.n+' of '+pr.of:'')];}
   if(st==='available')return ['ready',Q.title+' · ready to start ('+(Q.giver||'talk to them')+')'];
   if(st==='locked_by_prerequisite'){const pre=Q.pre||[],dn=pre.filter(mxDoneQ).length;return ['lock','A story not yet open · after '+(pre.length-dn)+' more '+(pre.length-dn>1?'stories':'story')+' ('+dn+' / '+pre.length+')'];}
   if(st==='locked_by_story')return ['lock',mxEra()==='fugitive'?'A story not yet open · later in the story':'Opens after Chapter 1'];
