@@ -4284,7 +4284,7 @@ function missionExtra(m,dt){
 // markers are queued while people are drawn and painted after the whole scene, so walls and counters never cover them
 // story marks: '!' something to start or hand in · '?*' this can start a story · '?' worth a look
 const MK_STORY='#FFE08A',MK_BOND='#F2A6C2',MK_ACTIVE='#9BE7B8';
-function mkStyle(mk){return mk==='!'?['!',C.gold,true]:mk==='!b'?['!',MK_BOND,true]:mk==='!a'?['!',MK_ACTIVE,true]:mk==='?*'?['?',MK_STORY,true]:[mk,'#F6EBD2',false];}
+function mkStyle(mk){return mk==='shop'?['✦','#E9D9A6',false]:mk==='!'?['!',C.gold,true]:mk==='!b'?['!',MK_BOND,true]:mk==='!a'?['!',MK_ACTIVE,true]:mk==='?*'?['?',MK_STORY,true]:[mk,'#F6EBD2',false];}
 const MX_CHAR_KINDS=['bond','memory','hangout'];
 const LOOK_TRIG={'look.festbox':'side_festival_forgot','look.bakery.after':'bram_bread','look.prayerbook':'cass_prayer'};
 const mxTrig=id=>mxQState(id)==='undiscovered';
@@ -5312,6 +5312,33 @@ function mxBegin(fast){ensureAudio();const x=mxS();persist();newRun('explore',['
 const MXP=(fx,fy)=>({x:AX0+(AX1-AX0)*fx,y:AY0+(AY1-AY0)*fy});
 // ── the day: local calendar date, so chests turn over at the player's own midnight
 function mxDay(){if(SF_DEV&&window.__mxDay)return window.__mxDay;const d=new Date(),z=n=>(n<10?'0':'')+n;return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());}
+// Ash Lane shop. Stock resets weekly; 'once' items can only be bought one time per save.
+const SHOP_ITEMS=[
+  {id:'welcome',name:'The shopkeeper’s welcome',desc:'Three Keepsakes, wrapped in brown paper. “For a first-time customer.”',price:90,once:1,r:{keep:3}},
+  {id:'keep',name:'Keepsake',desc:'A small token from the Lane. Gives one character 120 Memories (use it in Builds).',price:60,week:3,r:{keep:1}},
+  {id:'mp',name:'Practice notes',desc:'Drill notes in a Garrison hand. +1 Skill Mastery for every character.',price:90,week:2,r:{mpAll:1}},
+  {id:'frag',name:'A sealed Star Fragment',desc:'Found in a lot from the old observatory. A random Fragment, often a good one.',price:140,week:2,frag:'rift2'}];
+const shopWeek=()=>Math.floor(Date.now()/604800000);
+function shopState(){save.shop=save.shop||{};const S=save.shop;if(S.wk!==shopWeek()){S.wk=shopWeek();S.n={};}S.n=S.n||{};S.once=S.once||{};return S;}
+function shopLeft(it){const S=shopState();return it.once?(S.once[it.id]?0:1):it.week-(S.n[it.id]|0);}
+function shopCan(it){if(shopLeft(it)<=0)return 'sold';if(it.frag&&save.frags.length>=150)return 'full';if((save.dust|0)<it.price)return 'poor';return 'ok';}
+function shopBuy(id){const it=SHOP_ITEMS.find(i=>i.id===id);if(!it||shopCan(it)!=='ok')return null;const S=shopState();
+  save.dust-=it.price;if(it.once)S.once[it.id]=1;else S.n[it.id]=(S.n[it.id]|0)+1;
+  let lines=[];if(it.r)lines=grantReward(it.r,null)||[];if(it.frag){gainFrag(it.frag);const f=save.frags[save.frags.length-1];lines.push('Fragment: '+f.sign+' '+f.deg+'° · '+SLOT_INFO[f.slot].name+(f.rar===2?' (Star-born)':''));}
+  persist();return lines;}
+function showShop(back){let confirm=null,note='';
+  const draw=()=>{openOverlay(h('div',{class:'form mx'},formHead('Ash Lane','The shop'),
+      h('h2',{style:'margin:2px 0 0'},'Odds, ends and good luck'),
+      h('p',{class:'ss-info',style:'margin:2px 0'},'You have ✦ '+(save.dust|0)+' Stardust · Keepsakes '+(save.keep|0)+' · Stock comes in every week.'),
+      note?h('p',{class:'ss-info',style:'color:#9BE7B8'},note):null,
+      h('div',{class:'mx-list'},...SHOP_ITEMS.map(it=>{const st=shopCan(it),left=shopLeft(it),c=confirm===it.id;
+        return h('div',{class:'mx-q'+(st==='sold'?' done':'')},h('h4',null,it.name,h('em',{class:'opt'},'✦ '+it.price),h('em',{class:'opt'},it.once?(left?'One only':'Bought'):left+' left this week')),
+          h('p',null,it.desc),
+          st==='poor'?h('p',{class:'rw'},'You need ✦ '+(it.price-(save.dust|0))+' more.'):st==='full'?h('p',{class:'rw'},'Your Fragment case is full (150). Salvage some in Builds first.'):null,
+          st==='sold'?null:h('div',{class:'row'},c?h('button',{class:'btn small',type:'button','data-buy':it.id,onclick:()=>{const L=shopBuy(it.id);confirm=null;if(L){note='Bought: '+it.name+(L.length?' · '+L.join(' · '):'');sfx('bless');}else sfx('nope');draw();}},'Confirm · ✦ '+it.price):null,
+            h('button',{class:'btn small'+(c?' outline':''),type:'button','data-shop':it.id,disabled:st==='ok'?null:'disabled',onclick:()=>{confirm=c?null:it.id;note='';sfx('select');draw();}},c?'Cancel':'Buy')));})),
+      h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:back},'Leave the shop'))),'mode-select');};
+  draw();}
 function mxDayState(){const x=mxS(),k=mxDay();
   if(!x.day||x.day.key!==k){x.day={key:k,opened:{},pages:{}};
     // drop yesterday's daily claims so the save does not grow every day (one-time claims are untouched)
@@ -5467,6 +5494,9 @@ function mxExtras(d){const L=[],x=mxS();
     if(mxAct('lark_couldnt_save')&&!mxF('lt_reading')){const bed={id:'ward.bed',fx:LT_BED[0],fy:LT_BED[1],spot:1,verb:'look',ptitle:'Mr. Odell’s old bed',mkf:()=>'!',
         lines:()=>[['n','Theo’s box screams, then goes quiet. The needle doesn’t drop to zero. It drops below it.'],['th','An empty bed should read like an empty room. This reads like nothing was ever here at all.']]};
       bed.hide=function(){return mxStepOf('lark_couldnt_save')!=='read'||!(Math.hypot(player.x-this.x,player.y-this.y)<=66);};bed.talk=()=>{mxSet('lt_reading');persist();sfx('bless');mxTick();};L.push(bed);}}
+  if(d==='ashlane'){const sc={id:'ashlane.counter',fx:0.78,fy:0.4,spot:1,verb:'shop',ptitle:'the shop counter',lines:()=>[],mkf:()=>'shop',
+      draw:(c,n)=>{c.fillStyle='#6B4A2A';c.fillRect(n.x-16,n.y-6,32,12);c.fillStyle='#8A6438';c.fillRect(n.x-16,n.y-8,32,3);c.fillStyle='#FFE08A';c.fillRect(n.x-3,n.y-14,6,6);}};
+    sc.talk=()=>{state='panel';showShop(()=>{closeOverlay();state='play';last=performance.now();});};L.push(sc);}
   if(d==='tower'){
     const wb={id:'tower.bench',fx:0.62,fy:0.66,spot:1,verb:'use',ptitle:()=>mxTrig('agnes_handmade')?'workbench · Agnes left something here':'workbench',lines:()=>[],mkf:()=>mxStepOf('agnes_handmade')==='make'?'!':mxTrig('agnes_handmade')?'?*':'?'};
     wb.talk=()=>{if(mxStepOf('agnes_handmade')==='make'){agnesAssemble();return;}mxSet('bench.used');persist();state='panel';showBuilds(()=>{mxS().at='tower';persist();mxBegin();});};L.push(wb);
