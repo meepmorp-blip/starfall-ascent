@@ -4284,7 +4284,7 @@ function missionExtra(m,dt){
 // markers are queued while people are drawn and painted after the whole scene, so walls and counters never cover them
 // story marks: '!' something to start or hand in · '?*' this can start a story · '?' worth a look
 const MK_STORY='#FFE08A',MK_BOND='#F2A6C2',MK_ACTIVE='#9BE7B8';
-function mkStyle(mk){return mk==='shop'?['✦','#E9D9A6',false]:mk==='!'?['!',C.gold,true]:mk==='!b'?['!',MK_BOND,true]:mk==='!a'?['!',MK_ACTIVE,true]:mk==='?*'?['?',MK_STORY,true]:[mk,'#F6EBD2',false];}
+function mkStyle(mk){return mk==='shop'?['✦','#E9D9A6',false]:mk==='act'?['⚔','#E9D9A6',false]:mk==='!'?['!',C.gold,true]:mk==='!b'?['!',MK_BOND,true]:mk==='!a'?['!',MK_ACTIVE,true]:mk==='?*'?['?',MK_STORY,true]:[mk,'#F6EBD2',false];}
 const MX_CHAR_KINDS=['bond','memory','hangout'];
 const LOOK_TRIG={'look.festbox':'side_festival_forgot','look.bakery.after':'bram_bread','look.prayerbook':'cass_prayer'};
 const mxTrig=id=>mxQState(id)==='undiscovered';
@@ -4391,9 +4391,9 @@ const MX_ORDER=['market','plaza','yard','chapel','ward','hesper','office','ashla
 const MX_STREETS=['market','plaza','yard','chapel','ward'];
 // future activities: where each one will open from (see MERIDIAN_GAMEPLAY_ROADMAP.md)
 const MX_ACTIVITIES={
-  rifts:{name:'Astral Rifts',at:'plaza',find:'plaza.scar',now:'Battle menu'},
+  rifts:{name:'Astral Rifts',at:'plaza',find:'plaza.scar',now:'here and Battle menu'},
   wboss:{name:'Weekly World Bosses',at:'market',find:'market.board',now:null},
-  trials:{name:'Constellation Trials',at:'yard',find:'yard.trials',now:'Battle menu'},
+  trials:{name:'Constellation Trials',at:'yard',find:'yard.trials',now:'here and Battle menu'},
   memory:{name:'Memory Expeditions',at:'chapel',find:'chapel.alcove',now:null},
   explore:{name:'Meridian Exploration',at:'market',now:'here'},
 };
@@ -4922,7 +4922,7 @@ const MX_FINDS=[
     on:()=>{if(mxStepOf('roster')==='post')mxSet('rosterPosted');}},
   {id:'plaza.plaque',at:'plaza',fx:0.5,fy:0.82,title:'The fountain inscription',text:[['n','Carved into the rim: RISEN FROM THE STONES, TWENTY YEARS AGO. A GIFT FROM HEAVEN. · THE CONCORD CHURCH'],['n','Silver cups are set out along the edge, waiting for the Festival.']]},
   {id:'plaza.poster',at:'plaza',fx:0.33,fy:0.4,title:'Festival poster',text:[['n','FESTIVAL OF THE MERCY · ONE CUP FOR EVERY CITIZEN · BRING YOUR FAMILY'],['n','Someone has added “AND YOUR NEIGHBOURS” in pencil.']]},
-  {id:'plaza.scar',at:'plaza',fx:0.2,fy:0.3,act:'rifts',title:'The rift scar',text:[['n','A star-shaped scorch in the paving, where a Vice came down last year. The air above it still hums when you stand close.'],['n','Astral Rifts are in the Battle menu. In a later update they will open from here.']]},
+  {id:'plaza.scar',at:'plaza',fx:0.2,fy:0.3,act:'rifts',title:'The rift scar',text:[['n','A star-shaped scorch in the paving, where a Vice came down last year. The air above it still hums when you stand close.'],['n','Reach into the scar to enter an Astral Rift. (They are in the Battle menu too.)']]},
   {id:'market.leather',at:'market',fx:0.33,fy:0.5,quest:'agnes_handmade',title:'A leather offcut',vis:()=>mxStepOf('agnes_handmade')==='gather'&&!mxHas('ag_leather'),
     text:[['n','A curl of good leather in the cobbler’s scrap bin behind the stalls. Thick, even, the right length for a sling.'],['th','Nobody will miss it. Agnes will notice if it’s the wrong kind.']],on:()=>{mxS().items.ag_leather=1;}},
   {id:'ashlane.spice',at:'ashlane',fx:0.64,fy:0.32,quest:'bram_bread',title:'A tin by the shop step',vis:()=>mxStepOf('bram_bread')==='gather'&&!mxHas('br_spice'),
@@ -4967,7 +4967,7 @@ const MX_FINDS=[
     text:[['n','Folded on the fountain rim between two silver cups, with a bread crust beside them: Matteo’s glasses.'],['th','The pigeons got the bread. The glasses survived.']],on:()=>{mxS().items.glasses=1;}},
   {id:'yard.tally',at:'yard',fx:0.13,fy:0.3,title:'The starfall tally',text:[['n','A chalk tally on the barracks wall, one column a night. Last night: eleven.'],['n','At the bottom of every column, the same line: “none past the rooftops”.']]},
   {id:'yard.map',at:'yard',fx:0.57,fy:0.66,hidden:1,title:'The map of Aster',reward:{dust:20},text:[['n','Pinned inside a crate lid: a Garrison map of Aster. Meridian is drawn in careful ink, every street.'],['n','Past the Wall the paper is blank. Eighty years blank.']]},
-  {id:'yard.trials',at:'yard',fx:0.5,fy:0.22,act:'trials',title:'The trial roster',text:[['n','TRIALS · MERCURY: THE ERRAND · MARS: SINGLE COMBAT · Sign at the Garrison.'],['n','Constellation Trials are in the Battle menu. In a later update they will open from here.']]},
+  {id:'yard.trials',at:'yard',fx:0.5,fy:0.22,act:'trials',title:'The trial roster',text:[['n','TRIALS · MERCURY: THE ERRAND · MARS: SINGLE COMBAT · Sign at the Garrison.'],['n','Sign the roster to take a Constellation Trial. (They are in the Battle menu too.)']]},
   {id:'chapel.hymn',at:'chapel',fx:0.38,fy:0.24,title:'The hymn board',text:[['n','SUNDAY · The Mercy is offered at every service. Come as you are; leave lighter.']]},
   {id:'chapel.cups',at:'chapel',fx:0.82,fy:0.64,title:'The silver cups',text:[['n','A shelf of small silver cups, each engraved with a date and one word: ADOPTION. WEDDING. FUNERAL. ADOPTION.'],['th','The Church keeps one for every big day in somebody’s life.']]},
   {id:'chapel.alcove',at:'chapel',fx:0.2,fy:0.64,act:'memory',title:'The quiet alcove',text:[['n','A stone alcove with one candle. The city’s noise drops away here, and old days feel close enough to touch.'],['n','Memory Expeditions will begin here in a later update.']]},
@@ -5229,9 +5229,10 @@ function mxNpcs(d){
     n.talk=()=>{const x=mxS(),first=!x.found[f.id];x.found[f.id]=1;if(f.on)f.on();
       if(first&&f.reward)grantReward(f.reward,'mxf:'+f.id);
       if(first&&!f.act&&!f.quest){if(!x.q.records)mxStart('records');setBanner('Record found · '+f.title,(f.reward?'+'+f.reward.dust+' Stardust · ':'')+mxRecordCount()+' of '+MX_RECORDS+' records',2.2);sfx('bless');}
-      persist();mxTick();};
+      persist();mxTick();if(f.act==='rifts'||f.act==='trials')openWorldActivity(f.act,d);};
+    if(f.act==='rifts'||f.act==='trials'){n.verb=f.act==='rifts'?'enter':'sign';n.ptitle=f.act==='rifts'?'Astral Rifts':'Constellation Trials';}
     n.hide=()=>(f.vis&&!f.vis())||(f.hidden&&!mxS().found[f.id]&&Math.hypot(player.x-n.x,player.y-n.y)>70);
-    n.mkf=()=>{if(f.id==='market.board'&&mxStepOf('roster')==='post')return '!';if(f.quest)return '!';return mxS().found[f.id]?null:'?';};return n;});
+    n.mkf=()=>{if(f.id==='market.board'&&mxStepOf('roster')==='post')return '!';if(f.quest)return '!';if(f.act==='rifts'||f.act==='trials')return mxS().found[f.id]?'act':'?';return mxS().found[f.id]?null:'?';};return n;});
   return P.concat(Fd,mxExtras(d));}
 for(const d of MX_ORDER){const D=MX_DISTRICTS[d];
   addMission('mx_'+d,{type:'walk',hub:1,dist:d,name:D.name,place:'Meridian',theme:D.theme,party:['kairos'],lvl:1,count:false,brief:D.blurb,npcs:()=>mxNpcs(d)});}
@@ -7223,7 +7224,13 @@ function showPause(){
         toggle('opt-shake','Screen shake','shake'),toggle('opt-fx','Reduce effects','fxLow'),toggle('opt-nums','Damage numbers','nums'),toggle('opt-tips','Beginner tips','tips')),
       isTouch?null:h('p',{class:'pz-keys'},'J attack · Space dodge · Q Sun · E Moon · R Ultimate · 1/2/3 switch'))),'mode-pause');
 }
-function goHome(){
+// battles opened from a place in Meridian return there afterwards (the Battle menu itself is unchanged)
+let battleFrom=null;
+function openWorldActivity(tab,d){battleFrom={d};state='panel';showPartySelect('battle',tab);}
+function backToWorld(){const d=battleFrom&&battleFrom.d;battleFrom=null;closeOverlay();if(!d){goHome();return;}mxS().at=d;persist();mxBegin(true);}
+const worldBack=()=>battleFrom?backToWorld():goHome();
+const worldBackLabel=()=>battleFrom?'Back to '+MX_DISTRICTS[battleFrom.d].name:'Home';
+function goHome(){battleFrom=null;
   state='title';room=null;boss=null;paused=false;playMusic('title');
   const it=(label,sub,go,cls)=>h('button',{class:'tm-item'+(cls||''),type:'button',onclick:()=>{ensureAudio();go();}},h('span',{class:'tm-l'},label),h('span',{class:'tm-s'},sub));
   const card=h('div',{class:'title-card tm'},
@@ -7288,7 +7295,7 @@ function dossier(id,action){
 // Battle modes are practice, outside the story: any character can join, even one not met yet or away in the story (Lucas, while captured).
 // Story fights never use this screen; they pick from the chapter's own roster.
 const practiceNote=()=>h('p',{class:'ss-info ps-practice',style:'margin:4px 0 6px;color:#E9D9A6'},'Practice mode · not part of the story. Anyone can join here, even before you meet them or while they are away in the story. Story fights use only who is with you.');
-function showPartySelect(mode){
+function showPartySelect(mode,tab){
   state='title';room=null;paused=false;playMusic('title');
   const prefs=loadPrefs();
   let party=mode==='story'?['kairos','ines','bram']:(Array.isArray(prefs.party)&&prefs.party.length===3&&prefs.party.every(id=>CHARS[id])?prefs.party.slice():['kairos','ines','bram']);
@@ -7296,7 +7303,7 @@ function showPartySelect(mode){
   let act=0;
   const team3=h('div',{class:'ps-team'}),roster=h('div',{class:'ps-roster'}),note=h('p',{class:'note ps-note'});
   const startBtn=h('button',{class:'btn light',type:'button','data-primary':'1',onclick:()=>{if(party.length<3)return;savePrefs({party});
-    showBattleMenu(party);}},mode==='story'?'Begin the chapter':'Choose a stage');
+    showBattleMenu(party,tab);}},mode==='story'?'Begin the chapter':'Choose a stage');
   const cvs=[],chips=[];let looping=false,lastT=0,lastChip=0;
   // one loop for the whole screen, ~22 fps (the poses are stepped), stopping when the screen is left
   const loop=()=>{if(!team3.isConnected){looping=false;return;}
@@ -7332,7 +7339,7 @@ function showPartySelect(mode){
   }
   const wrap=h('div',{class:'select ps'},
     h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},(mode==='story'?'Story':'Battle')+' · tap a slot, then a character'),h('h2',null,'Choose your party')),
-      h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>{goHome();}},'Back'),
+      h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>{worldBack();}},battleFrom?worldBackLabel():'Back'),
         h('button',{class:'btn outline',type:'button',onclick:()=>{showBuilds(()=>showPartySelect(mode));}},'Builds'),startBtn)),
     mode==='story'?null:practiceNote(),team3,roster,note);
   render();
@@ -7382,7 +7389,7 @@ function showBattleMenu(party,tab){
   openOverlay(h('div',{class:'select bm'},
     h('div',{class:'select-head'},h('div',null,h('p',{class:'eyebrow'},'Practice · '+party.map(nameOf).join(' · ')+' · avg Lv '+avg),h('h2',null,'Where to?')),
       h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>{showPartySelect('battle');}},'Party'),
-        h('button',{class:'btn outline',type:'button',onclick:()=>{showBuilds(()=>showBattleMenu(party,tab));}},'Builds'),h('button',{class:'btn outline',type:'button',onclick:()=>{goHome();}},'Home'))),
+        h('button',{class:'btn outline',type:'button',onclick:()=>{showBuilds(()=>showBattleMenu(party,tab));}},'Builds'),h('button',{class:'btn outline',type:'button','data-world':battleFrom?'1':null,onclick:()=>{worldBack();}},worldBackLabel()))),
     tabs,body),'mode-select');
 }
 function showTrainingDone(cid){
@@ -7442,8 +7449,8 @@ function showBattleResult(ok){
     h('nav',{class:'vr-acts'},
       it('Retry','',()=>{startBattle(party,stageId,lvl,opt);},' primary',{'data-primary':'1'}),
       it('Stages','',()=>{showBattleMenu(party,run.practice?'practice':ROOMS[stageId]&&ROOMS[stageId].kind==='rift'?'rifts':stageId==='boss'?'boss':/^trial/.test(stageId)?'trials':'rifts');}),
-      it('Builds','',()=>showBuilds(goHome)),
-      it('Home','',()=>goHome(),'',{'data-back':'1'}))),'mode-select');
+      it('Builds','',()=>showBuilds(worldBack)),
+      it(worldBackLabel(),'',()=>worldBack(),'',{'data-back':'1'}))),'mode-select');
 }
 function doorCard(id,i){
   const d=ROOMS[id];let tag,reward,res=null;

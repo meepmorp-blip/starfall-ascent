@@ -60,5 +60,21 @@ const MODE=process.argv[2]||'desk';
  await p.goto(url);await p.waitForTimeout(700);
  sv=await p.evaluate(()=>({o:__sf.save().shop&&__sf.save().shop.once.welcome,n:__sf.save().shop&&__sf.save().shop.n.keep,k:__sf.save().keep}));
  ok(sv.o===1&&sv.n===3&&sv.k===6,'purchases persist after a reload ('+JSON.stringify(sv)+')');
+ // ══ Phase 3 · Rifts and Trials from the city ══
+ await fresh(true);
+ const ov=()=>p.evaluate(()=>{const o=document.getElementById('overlay');return o&&!o.hidden?o.innerText:'';});
+ for(const [d,id,tabRe,cardRe,dist] of [['plaza','plaza.scar',/Today’s rift condition/i,/St\. Lucia’s Ward/,'Festival Square'],['yard','yard.trials',/Best|No best time/i,/Mercury|Errand/i,'Garrison Yard']]){
+  await go(d);await p.evaluate(id=>{__sf.room().m.npcs.find(n=>n.id===id).talk();},id);await p.waitForTimeout(400);
+  ok(/Choose a stage/i.test(await ov()),d+': the '+(d==='plaza'?'rift scar':'trial roster')+' opens party select');
+  await p.evaluate(()=>document.querySelector('#overlay [data-primary]').click());await p.waitForTimeout(400);
+  let t=await ov();ok(tabRe.test(t)&&new RegExp('Back to '+dist,'i').test(t),d+': the Battle menu opens on the right tab, with “Back to '+dist+'”');
+  await p.evaluate(re=>{const c=[...document.querySelectorAll('#overlay .bm-card')].find(e=>new RegExp(re,'i').test(e.innerText));c&&c.click();},cardRe.source);await p.waitForTimeout(800);
+  const k=await p.evaluate(()=>{const r=__sf.room();return r&&r.def?r.def.kind:null;});ok(k==='rift'||k==='trial',d+': the normal battle starts ('+k+')');
+  await p.evaluate(()=>{__sf.clearRoom();__sf.win();});await p.waitForTimeout(3200);t=await ov();
+  ok(new RegExp('Back to '+dist,'i').test(t),d+': results offer “Back to '+dist+'”');
+  await p.evaluate(()=>document.querySelector('#overlay [data-back]').click());await p.waitForTimeout(900);
+  const at=await p.evaluate(()=>{const r=__sf.room();return r&&r.m&&r.m.M?r.m.M.dist:null;});ok(at===d,d+': back in '+dist+' after the battle ('+at+')');}
+ // the main-menu route is unchanged
+ await p.evaluate(()=>{__sf.goHome&&__sf.goHome();});
  ok(errs.length===0,'no page errors'+(errs[0]?': '+errs[0]:''));
  console.log('DONE '+pass+'/'+(pass+fail));await b.close();server.close();})();
