@@ -2508,12 +2508,13 @@ function nearestTarget(x,y,maxD,ex){
   return best;
 }
 const AGNES_TAP=1.8;
-const RIP_WIN=2.5,RIP_RANGE=400;
+const RIP_WIN=2.5,RIP_RANGE=400,RIP_DIST=170;
 function ripValid(t){return t&&!t.dead&&(t===boss?t.entering<=0:t.spawnT<=0&&enemies.includes(t));}
-function ripAim(p){let t=p.ripWin>0&&ripValid(p.ripTgt)?p.ripTgt:null;
-  if(!t)t=nearestTarget(p.x,p.y,RIP_RANGE,null);p.ripTgt=t;
-  if(t){const dx=t.x-p.x,dy=t.y-p.y,d=Math.hypot(dx,dy)||1;return {x:dx/d,y:dy/d};}
-  return aimDir(220);}
+// every cast (first or second dash) goes for the nearest real enemy at that moment, and the dash
+// ends just past it instead of always flying the full 170 px (decoys don't count)
+function ripAim(p){const ex=new Set(enemies.filter(e=>e.decoy));const t=nearestTarget(p.x,p.y,RIP_RANGE,ex);p.ripTgt=t;
+  if(t){const dx=t.x-p.x,dy=t.y-p.y,d=Math.hypot(dx,dy)||1;return {x:dx/d,y:dy/d,dist:clamp(d+(t.r||12)+18,60,RIP_DIST)};}
+  const a=aimDir(220);return {x:a.x,y:a.y,dist:120};}
 function aimDir(range){
   const p=player;
   if(aimByMouse&&mouse.inside){const dx=mouse.wx-p.x,dy=mouse.wy-p.y,d=Math.hypot(dx,dy)||1;if(d>8)return {x:dx/d,y:dy/d};}
@@ -2597,8 +2598,8 @@ const KITS={
       p.x=clamp(p.x+a.x*42,AX0+p.r,AX1-p.r);p.y=clamp(p.y+a.y*42,AY0+p.r,AY1-p.r);p.iframe=Math.max(p.iframe,0.15);
       radial(p.x,p.y,84,p.atk*2.2*(1+consumeSwift()),{basic:true,kslow:1,knock:160,pn:1.6,col:'#7FE3F0',src:p,cleave:KAI_CLEAVE,cleaveK:KAI_CLEAVE_K});
       swings.push({x:p.x,y:p.y,ang:0,r:80,half:Math.PI,life:0.22,max:0.22,col:'#7FE3F0'});ring(p.x,p.y,84,C.water,0.35);shake(3,0.1);p.atkCd=0.5;sfx('heavy');},
-    sun(p,combo){const a=ripAim(p);faceTo(a);startDash(a,{dist:170,time:0.18,kind:'riptide',dmg:p.atk*3,knock:90,kslow:1,skill:'sun'});
-      zones.push({kind:'slowpool',x:p.x+a.x*85,y:p.y+a.y*85,r:70,t:3,max:3});sfx('splash');
+    sun(p,combo){const a=ripAim(p);faceTo(a);startDash(a,{dist:a.dist,time:Math.max(0.1,0.18*a.dist/RIP_DIST),kind:'riptide',dmg:p.atk*3,knock:90,kslow:1,skill:'sun'});
+      zones.push({kind:'slowpool',x:p.x+a.x*a.dist/2,y:p.y+a.y*a.dist/2,r:70,t:3,max:3});sfx('splash');
       if(!(p.ripWin>0)){p.ripRefund=1;p.ripWin=RIP_WIN;}else{p.ripWin=0;p.ripTgt=null;}
       if(combo)p.finN=3;},
     moon(p,combo){p.counterT=1.2;p.countered=false;p.atkUpT=6;radial(p.x,p.y,100,p.atk*1.2,{kslow:1,knock:60,skill:'moon',col:C.water,src:p});ring(p.x,p.y,100,C.water,0.4);
