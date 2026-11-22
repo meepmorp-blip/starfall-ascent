@@ -155,3 +155,31 @@ The approved mechanics are never changed to pass the gate.
 
 ### What still needs your iPhone
 See §7: readability, flanking The Last Stand by joystick, The Humming Core with the sound off, and frame rate in a busy Tier III Rift.
+
+## S10 · Final QA (done)
+| Check | Result |
+|---|---|
+| Full suite | **96 runs, 2,987 checks, all passing** (on the final S7–S9 code) |
+| `ch1_enemies_test` (S1–S9) | 42/42 on desktop and on phone |
+| `forgotten_memory_test` | 9/9 on desktop and on phone. The fight is identical; the Memory is never a target |
+| Save compatibility | Only new `claims` keys (`vice:*`). The 19 old-save fixtures load and open every screen (`world_update` and the save suites pass) |
+| Existing enemies | Seven Vices and the Champion have identical stats (an S1 test) |
+| Story fights | No pool changes (an S8 test checks the Cistern Stair) |
+| In-game close-ups | Each new Vice captured on desktop (1280 × 720) and iPhone landscape (844 × 390) in a real Rift. They match the approved Phase 2 sheets; Candlewisp's link and The Last Stand's facing read at phone size |
+| Frame time (desktop, headless) | Busy Tier III Air Rift with all five new types plus normal spawns (13 alive): median 16.7 ms, 95th percentile 16.8 ms, max 16.8 ms (steady 60 fps). **Not representative of an iPhone** |
+
+### Manual iPhone checklist (needs your device)
+1. **Readability:** each new Vice at play size in Garrison Yard (dirt), Ash Lane Blaze (rooftops) and the Drowned Canals.
+2. **Paperling:** decoys don't make aiming feel broken (touch facing); the blue seal versus the crease is visible.
+3. **The Last Stand:** flanking with the joystick feels possible; the 0.8 s rush lane is readable; the 1.2 s open window is usable.
+4. **The Humming Core:** play it **with the silent switch on**. The ring alone tells safe (teal dots), warning (gold diamonds) and danger (orange wave).
+5. **Candlewisp:** the gold link is visible against grass, stone and rooftops.
+6. **Crumbkin:** the huddle warning (gold dashed ring) gives time to react.
+7. **Forgotten Memory:** objects fall at the three memory lines, the cup rolls to Lucas at the end, and nothing else changed.
+8. **Guide → Vices:** new entries appear only after meeting them.
+9. **Performance:** 20 minutes of Tier III Rifts with new Vices; watch frame rate and heat.
+
+### Not done (by design)
+- No push, merge or deploy.
+- Option B for #14 was not built.
+- Concord Enforcer and Correction Marksman are reserved for Chapter 2.
