@@ -132,3 +132,26 @@ The approved mechanics are never changed to pass the gate.
 2. Branch: continue on `ch1-enemy-design`, or cut `ch1-enemies` from `main`?
 3. Confirm the Guide presentation: the canon seven plus "Others you’ve met".
 4. A separate go-ahead to start **S1** (code changes).
+
+---
+
+## Implementation log
+| Stage | Commit | Result |
+|---|---|---|
+| S1 | `c0c45a0` | Codex entries, colours, Memories, elite exclusions, `minLine()`, met record. Existing enemies identical. Full suite 94/94 |
+| S2–S6 | `8b2ae47` | All five Vices implemented (behaviour plus drawing ported from the approved sheets), with shared hooks. Committed together because they share hooks. Behaviour tests 33/33 on desktop and phone. Full suite 94/94 |
+| S7–S9 | this commit | The Memory presence (Option A), debut placements, Guide "Others you've met" |
+
+### Deviations from the spec (recorded)
+- **Paperling decoys:** projectiles always pass through decoys. The spec said they should hit a decoy that was the auto-aim target, which would need per-shot target tracking across many call sites. Decoys still misdirect auto-aim, still pop to melee and area attacks, and expire after 4 s.
+- **Candlewisp is not in St. Lucia's Ward.** At the S8 balance gate, the patients' lowest HP at Tier III dropped (Damage 55→45, Support 18→7, Tank 31→21 on average), so by the agreed rule it was removed. It debuts in Ash Lane Blaze (Tier II+), the Cloister and the Drowned Canals.
+- **Spawn weights.** The Last Stand (35%) and Paperling (50%) get a reduced chance of adding their pool slot. Their first gate run made Earth Tier II–III and Air Tier III clears 45–84% longer. The bot always attacks the shield from the front, the worst case.
+
+### S8 balance gate (bot that sidesteps bullets, 3–4 runs per cell)
+- **Win rates:** within ±1 in every cell; Earth Tier III Support improved, 1/4 → 3/4.
+- **Clear times after tuning:** Earth, Air and Fire at Tier II–III range from −26% to +19%. That is the same size as the swing in Tier I cells, which contain no new Vices (±20–28%), so it is sample noise at this size.
+- **The large +45–84% jumps are gone.**
+- **Ward:** its enemy pool is unchanged from the current release.
+
+### What still needs your iPhone
+See §7: readability, flanking The Last Stand by joystick, The Humming Core with the sound off, and frame rate in a busy Tier III Rift.

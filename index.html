@@ -1964,6 +1964,12 @@ const VICE_INFO={
   laststand:['The Last Stand','Mars · the one who stayed behind','Guard. Its shield blocks attacks from the front and covers Vices behind it. Flank it, or hit it after its rush.'],
   hummingcore:['The Humming Core','Moon · a song in a core','Rhythm. Watch the ring on the floor: teal is safe, gold is the warning, the orange wave hurts. Step out of it.'],
 };
+// memory lines for the new Vices, shown in the Guide once met (Phase 1 fragments)
+const VICE_MEMORY={crumbkin:'Flour first. Hands second. Then you wait somewhere warm and let it rise on its own.',
+  paperling:'Dear —. I’m sorry about the —. I should have —. (Folded twice. Never sent.)',
+  candlewisp:'Four o’clock. The fever broke at four. She’d counted every hour to it.',
+  laststand:'“Go. I’ve got the door.” He didn’t have the door. He had the time it took.',
+  hummingcore:'No words. Four notes, the last one held a little too long, like someone not ready to stop.'};
 const CANON_VICES=['hothead','gossip','waxer','spotlight','deadline','devourer','collector'];
 const NEW_VICES=['crumbkin','paperling','candlewisp','laststand','hummingcore'];
 // elite types a Vice may not roll (spec: no double shields, no Shielded fodder or supports)
@@ -2103,7 +2109,29 @@ function spawnEdge(type,o){const p=edgePoint();
     if(n<=0)return makeEnemy('gossip',p.x,p.y,o);for(let i=1;i<n;i++){const a=i/n*TAU;enemies.push(makeEnemy('crumbkin',p.x+Math.cos(a)*18,p.y+Math.sin(a)*18,o));}}
   return makeEnemy(type,p.x,p.y,o);}
 const aliveCount=()=>{let n=0;for(const e of enemies)if(!e.dead)n++;return n;};
-function poolType(){let t=pick(room.def.pool);if(run.roomNo<=1&&(t==='deadline'||t==='devourer'))t='hothead';return t;}
+// Debut of the five new Vices: Rifts and Runs only (never story fights), with tiers and caps from the approved spec.
+// Each entry adds one extra slot to the room's pool when its rule passes.
+const VICE_DEBUT=[
+  {t:'crumbkin',rift:{rift_xp:1,rift_dust:1},house:['house3'],cap:8},
+  {t:'paperling',rift:{rift_earth:2,rift_air:2},house:['house10'],cap:3,w:0.5},
+  {t:'candlewisp',rift:{rift_fire:2},house:['house7','house12'],cap:2},  // kept out of St. Lucia's Ward: the S8 balance gate showed lower patient HP at Tier III
+  {t:'laststand',rift:{rift_earth:2,rift_air:3},house:['house1'],houseFrom:4,cap:1,cap3:2,w:0.35},
+];
+// the Humming Core: a rare one-off (10% of Institute Overload fights at Tier II+, 15% of Drowned Canals rooms), at most one per fight
+const HC_DEBUT={rift:{rift_air:[2,0.10]},house:{house12:0.15}};
+function debutOK(D){const d=room.def,tier=(run&&run.tier)||1;
+  if(d.kind==='rift')return D.rift[d.id]!=null&&tier>=D.rift[d.id];
+  if(d.kind==='house')return D.house.includes(d.id)&&(run.roomNo|0)>=(D.houseFrom||0);return false;}
+function viceAlive(t){return enemies.filter(e=>!e.dead&&e.type===t&&!e.decoy).length;}
+function poolType(){const d=room.def;
+  if(d.kind==='rift'||d.kind==='house'){
+    if(room.hcRoll==null){const r=d.kind==='rift'?HC_DEBUT.rift[d.id]:null,h=d.kind==='house'?HC_DEBUT.house[d.id]:null;
+      room.hcRoll=r?((run.tier||1)>=r[0]&&rand()<r[1]):h?rand()<h:false;room.hcAfter=3+Math.floor(rand()*4);room.hcN=0;}
+    room.hcN=(room.hcN|0)+1;if(room.hcRoll&&!room.hcDone&&room.hcN>=room.hcAfter){room.hcDone=true;return 'hummingcore';}
+    const extra=VICE_DEBUT.filter(D=>debutOK(D)&&(D.w==null||rand()<D.w)&&viceAlive(D.t)<((D.cap3&&(run.tier||1)>=3)?D.cap3:D.cap)).map(D=>D.t);
+    if(extra.length){const all=d.pool.concat(extra),t=pick(all);if(NEW_VICES.includes(t))return t;}
+  }
+  let t=pick(d.pool);if(run.roomNo<=1&&(t==='deadline'||t==='devourer'))t='hothead';return t;}
 function spawnGroup(){
   const d=room.def;
   if(d.rule==='pairs'){
@@ -3637,8 +3665,29 @@ function updateMission(dt){
     if(Math.hypot(m.exit.x-p.x,m.exit.y-p.y)<m.exit.r){finishRoom(true,'ESCAPED');return;}
   }
 }
+// ── The Memory That Carried Him (Option A): a presence at the roof's edge in Forgotten Memory only.
+// Not an enemy: no hitbox, never targeted, never damages, not counted. Its objects fall at the three existing memory beats.
+const MEM_OBJS=['bread','blanket','cup'];
+function memAt(){return {x:AX1-64,y:AY0+74};}
+function memPresenceDrop(m){const a=memAt(),k=MEM_OBJS[(m.memPh|0)-1];if(!k)return;(m.mdrops=m.mdrops||[]).push({k,x:a.x-26+((m.memPh|0)-2)*16,y:a.y+34,t:0});}
+function memPresenceEnd(m){const cup=(m.mdrops||[]).find(d=>d.k==='cup');if(cup)m.cupRoll={x0:cup.x,y0:cup.y,t:0};}
+function drawMemoryPresence(c,m){const a=memAt(),ph=m.memPh|0;
+  c.save();c.globalAlpha=0.94;c.translate(a.x,a.y);VD.memory(c,{phase:ph,keepM:true,sway:Math.sin(T*1.4)*1.5});c.restore();
+  for(const d of (m.mdrops||[])){d.t+=1/60;const f=Math.min(1,d.t/0.5),y=d.y-30*(1-f*f);
+    if(d.k==='cup'&&m.cupRoll){continue;}
+    c.save();c.translate(d.x,y);
+    if(d.k==='bread'){VD.el(c,0,0,3.6,2.4,'#D9A15A','#1A1410',0.6);VD.el(c,0.6,-0.4,2.4,1.4,'#F1E3C4');}
+    else if(d.k==='blanket'){c.fillStyle='#6A5A4A';c.beginPath();c.moveTo(-5,-3);c.lineTo(5,-2);c.lineTo(-1,5);c.closePath();c.fill();c.strokeStyle='#1A1410';c.lineWidth=0.6;c.stroke();c.strokeStyle='#8A4A3A';c.beginPath();c.moveTo(-4,-1);c.lineTo(3,-0.5);c.stroke();}
+    else{drawCup(c);}
+    c.restore();}
+  if(m.cupRoll){const r=m.cupRoll;r.t+=1/60;const k=Math.min(1,r.t/1.2),e=1-(1-k)*(1-k),tx=player.x+10,ty=player.y+6;
+    c.save();c.translate(r.x0+(tx-r.x0)*e,r.y0+(ty-r.y0)*e);c.rotate(e*Math.PI*4);drawCup(c);c.restore();}
+}
+function drawCup(c){c.fillStyle='rgba(232,238,245,0.25)';c.beginPath();c.arc(0,-2,5,0,TAU);c.fill();c.fillStyle='#E8EEF5';c.beginPath();c.moveTo(-3,-5);c.lineTo(3,-5);c.lineTo(2.2,1);c.lineTo(-2.2,1);c.closePath();c.fill();
+  c.strokeStyle='#1A1410';c.lineWidth=0.7;c.stroke();c.fillStyle='#9AA6B4';c.fillRect(-1,1,2,2);c.fillRect(-2.2,2.8,4.4,1);}
 function drawMission(c){
   const m=mis();if(!m)return;
+  {const MM=room&&room.def&&MISSIONS[room.def.mission];if(MM&&MM.memory)drawMemoryPresence(c,m);}
   const fz=m.frozen;
   if(m.split){drawSplit(c,m);ch1RunnerGlow(c);}
   drawExtra(c,m);
@@ -4404,8 +4453,8 @@ function missionExtra(m,dt){
     m.spawnCd-=dt;
     if(m.spawnCd<=0&&m.spawned<M.kills&&aliveCount()<M.max){enemies.push(spawnEdge(pick(M.pool)));m.spawned++;m.spawnCd=rr(0.6,1.4);}
     if(M.memory){const ph=Math.min(3,Math.floor(got/(M.kills/4)));while((m.memPh|0)<ph){m.memPh=(m.memPh|0)+1;slowReal=0.9;shake(5,0.3);sfx('bless');
-      setBanner('Remembering · '+m.memPh,M.memory[m.memPh-1],2.6);team.atkBuffV=0.1*m.memPh;team.atkBuffT=999;addText(p.x,p.y-40,'+10% · REMEMBERING',C.gold,12,{life:1.4});}}
-    if(got>=M.kills){if(M.memory){team.atkBuffV=0;team.atkBuffT=0;}finishRoom(true,'CLEAR');return true;}
+      setBanner('Remembering · '+m.memPh,M.memory[m.memPh-1],2.6);memPresenceDrop(m);team.atkBuffV=0.1*m.memPh;team.atkBuffT=999;addText(p.x,p.y-40,'+10% · REMEMBERING',C.gold,12,{life:1.4});}}
+    if(got>=M.kills){if(M.memory){team.atkBuffV=0;team.atkBuffT=0;memPresenceEnd(m);}finishRoom(true,'CLEAR');return true;}
     if(m.spawned>=M.kills&&aliveCount()===0)m.spawned=got;
     return true;
   }
@@ -8089,6 +8138,11 @@ function guidePage(tab){
     h('p',{class:'lede'},'Each Vice fights differently. Learn how to beat each one.'),
     h('div',{class:'gcards'},...CANON_VICES.map(k=>[k,VICE_INFO[k]]).map(([k,v])=>{const card=gcard('•',v[0],v[2]);const gi=card.querySelector('.gi');gi.textContent='';gi.classList.add('gv');gi.style.setProperty('--vc',colorOf({type:k}));const vc=viceIcon(k);if(vc)gi.append(vc);
       card.querySelector('b').append(h('span',{class:'seglabel',style:'display:block;margin-top:2px'},v[1]));return card;})),
+    h('div',{class:'sect'},ico('skull'),'Others you’ve met'),
+    ...(()=>{const met=NEW_VICES.filter(k=>save.claims&&save.claims['vice:'+k]);
+      if(!met.length)return [h('p',{class:'ss-info'},'Not every memory takes the shape of the seven. The ones you meet will be written here.')];
+      return [h('div',{class:'gcards'},...met.map(k=>{const v=VICE_INFO[k],card=gcard('•',v[0],v[2]);const gi=card.querySelector('.gi');gi.textContent='';gi.classList.add('gv');gi.style.setProperty('--vc',colorOf({type:k}));const vc=viceIcon(k);if(vc)gi.append(vc);
+        card.querySelector('b').append(h('span',{class:'seglabel',style:'display:block;margin-top:2px'},v[1]));card.querySelector('p').after(h('p',{class:'gmem',style:'font-style:italic;opacity:0.85;margin-top:4px'},VICE_MEMORY[k]));return card;}))];})(),
     h('div',{class:'sect'},ico('ult'),'Elites (glowing outline)'),
     h('div',{class:'gcards'},...Object.values(ELITE_INFO).map(v=>gcard('!',v[0],v[1]))),
     gtip('Kill order: Waxer (the healer) first, then Collector (it steals Pneuma), then the rest.')];
@@ -9285,7 +9339,7 @@ function drawAlly(a){
 
 // ═══════════════════════════════════════════ art: enemies + boss
 function viceIcon(type){const cv=document.createElement('canvas');cv.width=96;cv.height=96;const g=cv.getContext('2d'),keep=ctx,kp=player;
-  try{g.scale(2,2);ctx=g;if(!player)player={x:60,y:24};drawEnemyBody({type,x:24,y:25,r:16,dx:1,dy:0,seed:1,flash:0,hitT:0,spawnT:0,slowT:0,hp:1,maxHp:1,vx:0,vy:0,face:1,t:0,st:'idle',stT:0,aim:0,dead:false});return cv;}
+  try{g.scale(2,2);ctx=g;if(!player)player={x:60,y:24};drawEnemyBody({type,x:24,y:25,r:16,dx:1,dy:0,seed:1,flash:0,hitT:0,spawnT:0,slowT:0,hp:1,maxHp:1,fa:Math.PI/2,beat:1,vx:0,vy:0,face:1,t:0,st:'idle',stT:0,aim:0,dead:false});return cv;}
   catch(e){return null;}finally{ctx=keep;player=kp;}}
 // ═══ Chapter 1 new Vices: drawing (ported from the approved concept sheets, tools/enemy_concepts) ═══
 const VD=(()=>{const OUT='#1A1410',BG='#0B0C12',GOLD='#FFD166';const shadow=()=>{};
@@ -9509,7 +9563,7 @@ function memory(g,o){const v=o.view||'front',sway=o.sway||0,ph=o.phase||0,curl=o
     // bread heel tucked in the left fold: crust, crumb, a bite gone
     if(ph<1){g.save();g.translate(-9.5,-1);g.rotate(-0.2);el(g,0,0,3.6,2.4,BREAD,OUT,0.6);el(g,0.6,-0.4,2.4,1.4,'#F1E3C4');ln(g,-2.6,-0.8,2,-1.6,'#B07A3A',0.5);el(g,3,0.4,1,1,BLKT);g.restore();}
     // three marbles caught in the right fold, each with a swirl
-    if(ph<2)for(const [x,y,c] of [[8,3.5,MARBLE],[10.4,5.4,'#9BE37A'],[7.4,6.6,'#F2A6C2']]){el(g,x,y,1.4,1.4,c,OUT,0.4);arcS(g,x,y,0.7,0,Math.PI,'#FFFFFF',0.35);px(g,x-0.6,y-0.7,'#FFFFFF',0.4);}
+    if(ph<2||o.keepM)for(const [x,y,c] of [[8,3.5,MARBLE],[10.4,5.4,'#9BE37A'],[7.4,6.6,'#F2A6C2']]){el(g,x,y,1.4,1.4,c,OUT,0.4);arcS(g,x,y,0.7,0,Math.PI,'#FFFFFF',0.35);px(g,x-0.6,y-0.7,'#FFFFFF',0.4);}
     // the folded intake page: ruled, a stamped corner
     g.save();g.translate(-1,9);g.rotate(0.08);rc(g,-3.4,-2.4,6.8,5,PAGE);g.strokeStyle=OUT;g.lineWidth=0.5;g.strokeRect(-3.4,-2.4,6.8,5);
       ln(g,-2.6,-1.2,2,-1.2,'#9A8F7E',0.35);ln(g,-2.6,0,1.4,0,'#9A8F7E',0.35);ln(g,-2.6,1.2,0.6,1.2,'#9A8F7E',0.35);
@@ -10629,7 +10683,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(SF_DEV){window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={ch1MigrateSave:f=>ch1MigrateSave(f),mxMet:id=>mxMet(id),ch1MigKey:k=>ch1MigKey(k),ch1RosterAt:i=>ch1RosterAt(ch1Seq(),i),lose:()=>{if(team)for(const m of team.members)if(!m.down)memberDown(m);},bondPend:()=>save.bondPending||{},postFresh:k=>mxPostFresh(k),exitsOf:d=>mxExits(MX_DISTRICTS[d]).map(e=>e[1]),fug:()=>Object.keys(MX_FUG),snaps:()=>snapshots(),snap:f=>snapshotSave(f),storage:()=>storageState,persistReq:()=>requestPersistentStorage(),parseBackup:t=>{try{return parseBackup(t);}catch(e){return {error:e.message};}},backupDue:()=>backupDue(),beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,minLine:()=>minLine(),spawnEdge:t=>{const e=spawnEdge(t);enemies.push(e);return e;},tels:()=>tels,bul:()=>bullets,shots:()=>shots,mkShot:(x,y,a,o)=>{const s=mkShot(x,y,a,o);shots.push(s);return s;},vices:()=>({info:VICE_INFO,canon:CANON_VICES,nv:NEW_VICES,excl:ELITE_EXCL}),col:t=>colorOf({type:t}),runMem:()=>run&&run.mem,Q:()=>MX_QUESTS,qst:id=>mxQState(id),qstart:id=>mxStart(id),place:d=>mxPlaceInfo(d),recIds:()=>MX_FINDS.filter(f=>!f.act&&!f.quest).map(f=>[f.id,f.at]),recMs:()=>mxRecordMilestones(),wmOpen:id=>wmUnlocked(WORLD_LOCS.find(L=>L.id===id)),flags:()=>storyFlags(),fx:()=>({shakeM,shakeT,slowReal}),texts:()=>texts,hit:(e,d,o)=>playerHit(e,d,o||{}),mk:(t,x,y,o)=>{const e=makeEnemy(t,x,y,o||{});enemies.push(e);return e;},modText:()=>modText(),modOn:id=>modOn(id),tgt:e=>targetFor(e),swap:i=>swapTo(i,{}),sun:()=>KITS[player.id].sun(player,false),tap:()=>KITS[player.id].tap(player),sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(SF_DEV){window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={ch1MigrateSave:f=>ch1MigrateSave(f),mxMet:id=>mxMet(id),ch1MigKey:k=>ch1MigKey(k),ch1RosterAt:i=>ch1RosterAt(ch1Seq(),i),lose:()=>{if(team)for(const m of team.members)if(!m.down)memberDown(m);},bondPend:()=>save.bondPending||{},postFresh:k=>mxPostFresh(k),exitsOf:d=>mxExits(MX_DISTRICTS[d]).map(e=>e[1]),fug:()=>Object.keys(MX_FUG),snaps:()=>snapshots(),snap:f=>snapshotSave(f),storage:()=>storageState,persistReq:()=>requestPersistentStorage(),parseBackup:t=>{try{return parseBackup(t);}catch(e){return {error:e.message};}},backupDue:()=>backupDue(),beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,minLine:()=>minLine(),spawnEdge:t=>{const e=spawnEdge(t);enemies.push(e);return e;},tels:()=>tels,bul:()=>bullets,shots:()=>shots,mkShot:(x,y,a,o)=>{const s=mkShot(x,y,a,o);shots.push(s);return s;},vices:()=>({info:VICE_INFO,canon:CANON_VICES,nv:NEW_VICES,excl:ELITE_EXCL}),col:t=>colorOf({type:t}),runMem:()=>run&&run.mem,Q:()=>MX_QUESTS,qst:id=>mxQState(id),qstart:id=>mxStart(id),place:d=>mxPlaceInfo(d),poolType:()=>poolType(),persist:()=>persist(),recIds:()=>MX_FINDS.filter(f=>!f.act&&!f.quest).map(f=>[f.id,f.at]),recMs:()=>mxRecordMilestones(),wmOpen:id=>wmUnlocked(WORLD_LOCS.find(L=>L.id===id)),flags:()=>storyFlags(),fx:()=>({shakeM,shakeT,slowReal}),texts:()=>texts,hit:(e,d,o)=>playerHit(e,d,o||{}),mk:(t,x,y,o)=>{const e=makeEnemy(t,x,y,o||{});enemies.push(e);return e;},modText:()=>modText(),modOn:id=>modOn(id),tgt:e=>targetFor(e),swap:i=>swapTo(i,{}),sun:()=>KITS[player.id].sun(player,false),tap:()=>KITS[player.id].tap(player),sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,

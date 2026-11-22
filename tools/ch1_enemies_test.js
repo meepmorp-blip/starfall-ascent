@@ -37,7 +37,8 @@ const MODE=process.argv[2]||'desk';
  // minimum line width: at least 2 screen px
  const ml=await p.evaluate(()=>__sf.minLine());const sc=MODE==='phone'?0.975:1.8;
  ok(Math.abs(ml*sc-Math.max(sc,2))<0.15,'telegraph and link lines are at least 2 screen px ('+(ml*sc).toFixed(2)+' px)');
- // the Guide still lists exactly the canon seven
+ // the Guide lists the canon seven, and no new Vice before it has been met
+ await p.evaluate(()=>{const c=__sf.save().claims;for(const k of ['crumbkin','paperling','candlewisp','laststand','hummingcore'])delete c['vice:'+k];__sf.persist();});
  await p.goto(url);await p.waitForTimeout(600);
  await p.evaluate(()=>{const b=[...document.querySelectorAll('button,.menu-item,[role=button]')].find(e=>/GUIDE/i.test(e.innerText||''));b&&b.click();});await p.waitForTimeout(400);
  await p.evaluate(()=>{const t=[...document.querySelectorAll('.gtab')].find(e=>/vices/i.test(e.innerText));t&&t.click();});await p.waitForTimeout(300);
@@ -132,6 +133,27 @@ const MODE=process.argv[2]||'desk';
    await new Promise(r=>{const iv=setInterval(()=>{if(e.beat===3){clearInterval(iv);r();}},20);});__sf.hit(e,1,{src:__sf.p()});const t0=performance.now();
    await new Promise(r=>{const iv=setInterval(()=>{if(e.beat===4||performance.now()-t0>3000){clearInterval(iv);r();}},20);});return (performance.now()-t0)/1000;});
  ok(dl>0.9,'hitting it on beat 3 holds the swell back a beat ('+dl.toFixed(2)+' s)');
+
+ // ══ S8 · debut placements (Rifts and Runs only) ══
+ const draw=(id,tier,n)=>E(async([id,tier,n])=>{__sf.battle(['bram'],id,8,{tier});await new Promise(r=>setTimeout(r,300));const c={};for(let i=0;i<n;i++){const t=__sf.poolType();c[t]=(c[t]||0)+1;}return c;},[id,tier,n]);
+ await p.goto(url);await p.waitForTimeout(500);
+ const ward3=await draw('rift_water',3,400),fire2=await draw('rift_fire',2,400),fire1=await draw('rift_fire',1,400),xp1=await draw('rift_xp',1,400),earth3=await draw('rift_earth',3,600),air2=await draw('rift_air',2,400);
+ ok(!ward3.candlewisp&&!ward3.crumbkin&&!ward3.paperling&&!ward3.laststand,'St. Lucia’s Ward stays as it is (Candlewisp kept out after the balance gate)');
+ ok(fire2.candlewisp>0&&!fire1.candlewisp,'Candlewisp appears in Ash Lane Blaze from Tier II only');
+ ok(xp1.crumbkin>0,'Crumbkins appear in Market Ring Waves');
+ ok(earth3.laststand>0&&earth3.paperling>0,'Garrison Yard Tier III can bring The Last Stand and Paperlings');
+ ok((air2.hummingcore||0)<=1,'at most one Humming Core per fight ('+(air2.hummingcore||0)+')');
+ const story=await E(async()=>{__sf.mission('cistern',['kairos','ines','bram']);await new Promise(r=>setTimeout(r,800));const r=__sf.room();return {pool:r.def.pool,kind:r.def.kind};});
+ ok(story.kind==='mission'&&!story.pool.some(t=>['crumbkin','paperling','candlewisp','laststand','hummingcore'].includes(t)),'story fights are untouched (Cistern Stair pool '+story.pool+')');
+ // ══ S9 · Guide: "Others you've met" ══
+ const guide=async(keep)=>{if(!keep){await p.goto(url);await p.waitForTimeout(500);}else{await p.evaluate(()=>{const b=document.querySelector('#overlay [data-back]');b&&b.click();});await p.waitForTimeout(300);}
+   await p.evaluate(()=>{const b=[...document.querySelectorAll('button,.menu-item,[role=button]')].find(e=>/GUIDE/i.test(e.innerText||''));b&&b.click();});await p.waitForTimeout(300);
+   await p.evaluate(()=>{const t=[...document.querySelectorAll('.gtab')].find(e=>/vices/i.test(e.innerText));t&&t.click();});await p.waitForTimeout(300);return p.evaluate(()=>document.getElementById('overlay').innerText);};
+ await E(()=>{const c=__sf.save().claims;for(const k of ['crumbkin','paperling','candlewisp','laststand','hummingcore'])delete c['vice:'+k];__sf.persist();});
+ let g=await guide();ok(/others you.ve met/i.test(g)&&!/Crumbkin|Paperling|Candlewisp|Last Stand|Humming Core/.test(g),'before meeting them, the Guide lists none of the new Vices');
+ await E(()=>{const c=__sf.save().claims;c['vice:crumbkin']=1;c['vice:laststand']=1;});
+ g=await guide(true);ok(/Crumbkin/.test(g)&&/The Last Stand/.test(g)&&!/Paperling/.test(g)&&/Flour first/.test(g),'after meeting them, each appears with how it fights and its memory line');
+ ok(['Hothead','Gossip','Waxer','Spotlight','Deadline','Devourer','Collector'].every(n=>g.includes(n))&&/The Seven Vices/i.test(g),'the canon seven are still listed first');
 
  ok(errs.length===0,'no page errors'+(errs[0]?': '+errs[0]:''));
  console.log('DONE '+pass+'/'+(pass+fail));await b.close();server.close();})();
