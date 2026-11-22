@@ -45,17 +45,17 @@ let r=await interact('h_agnes');ok(!r.lines.some(l=>/maintenance/.test(l))&&awai
 // Bram: discovered by the bakery window at St. Hesper's
 await go('hesper');r=await interact('look.bakery.after');ok(r.lines.some(l=>/Bram would know/.test(l))&&await st('bram_bread')==='available','the bakery window at St. Hesper’s discovers Bram’s story');
 ok(await E(()=>!!__sf.qplaces().tower),'and marks the Clock Tower');
-await go('tower');ok(await mark('h_bram')==='!','Bram has a "!"');
+await go('tower');ok(await mark('h_bram')==='!b','Bram has the rose story "!"');
 r=await interact('h_bram');ok(r.lines.some(l=>/cardamom|Sweet/i.test(l))&&await st('bram_bread')==='active','Bram offers his story and it starts');
 let text=r.lines.slice();
 // Agnes: the workbench discovers her story
 await interact('tower.bench');await p.waitForTimeout(300);ok(await E(()=>__sf.st())==='title','the workbench still opens Builds');
 await E(()=>__sf.mxBegin());await p.waitForTimeout(900);await go('tower');
-ok(await st('agnes_handmade')==='available'&&await mark('h_agnes')==='!','after using the workbench Agnes’s story is found ("!" on Agnes)');
+ok(await st('agnes_handmade')==='available'&&await mark('h_agnes')==='!b','after using the workbench Agnes’s story is found (rose "!" on Agnes)');
 r=await interact('h_agnes');text=text.concat(r.lines);ok(await st('agnes_handmade')==='active'&&await step('agnes_handmade')==='gather','Agnes offers her story and it starts');
 // ── gathering for both, interleaved (any order)
 ok(await E(()=>{const P=__sf.qplaces();return P.market&&P.ashlane&&P.hesper;}),'the Market Ring, Ash Lane and St. Hesper’s are marked');
-await go('ashlane');ok(await mark('laundress')==='!','the laundress has a "!"');
+await go('ashlane');ok(await mark('laundress')==='!a','the laundress has the green in-progress "!"');
 r=await interact('laundress');text=text.concat(r.lines);r=await interact('ashlane.spice');text=text.concat(r.lines);
 ok(await E(()=>__sf.mx().items.ag_thread&&__sf.mx().items.br_spice),'waxed thread from the laundress, cardamom from the shop step');
 await go('market');r=await interact('rosa');text=text.concat(r.lines);r=await interact('fish');text=text.concat(r.lines);

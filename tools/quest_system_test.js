@@ -56,7 +56,7 @@ ok(await E(()=>['tq_a','tq_b','tq_dess','tq_mem','tq_hang'].every(id=>__sf.qstat
 ok(await E(()=>__sf.qstate('tq_a'))==='undiscovered','an unlocked, unseen story is undiscovered');
 ok(await E(()=>__sf.qstate('tq_dess'))==='locked_by_prerequisite','the Dess-style story is locked by prerequisite');
 // ── 2. discovery through the world: NPC, readable, location
-ok(await E(()=>__sf.offerAt('market.matteo'))==='tq_a'&&await E(()=>__sf.m().npcs.find(n=>n.id==='matteo').mkf())==='!','the giver shows "!" over their head');
+ok(await E(()=>__sf.offerAt('market.matteo'))==='tq_a'&&await E(()=>__sf.m().npcs.find(n=>n.id==='matteo').mkf())==='!b','the giver shows the rose story "!" (bond kind)');
 ok(await E(()=>!!__sf.qplaces().market===false),'an undiscovered story does not mark the map yet');
 const o=await interact('matteo');ok(o.lines.some(l=>/test story/.test(l)),'talking to the giver gives the offer');
 ok(await E(()=>__sf.qstate('tq_a'))==='active','and starts the story (discovered + active)');

@@ -60,7 +60,7 @@ await go('oldchapel');ok(await mark('ottilie')==='!','Ottilie has a "!"');await 
 for(const k of ['ec_1','ec_2'])await talk('oldchapel.'+k);
 await p.reload();await p.waitForTimeout(600);await E(()=>__sf.mxBegin());await p.waitForTimeout(900);
 ok(await E(()=>__sf.mx().at)==='oldchapel'&&await step('side_empty_chapel')==='gather'&&await E(()=>__sf.mx().items.ec_2),'a reload keeps the writings found so far');
-for(const k of ['ec_3','ec_4'])await talk('oldchapel.'+k);ok(await step('side_empty_chapel')==='shelve'&&await mark('fen')==='!','all four found; Fen has a "!"');
+for(const k of ['ec_3','ec_4'])await talk('oldchapel.'+k);ok(await step('side_empty_chapel')==='shelve'&&await mark('fen')==='!a','all four found; Fen has the green in-progress "!"');
 await talk('fen');ok(await p.locator('.pzl-o').count()===3,'Fen’s shelving puzzle opens');await pick(1);ok(await E(()=>/goes with the singing/.test(document.body.textContent)),'a wrong shelf gets Fen’s hint');
 await p.locator('.pzl .btn.ghost').click();await p.waitForTimeout(300);ok(await step('side_empty_chapel')==='shelve','leaving keeps the step');
 await talk('fen');await pick(0);await pick(1);await pick(0);await pick(1);await p.waitForTimeout(400);ok(await step('side_empty_chapel')==='lamp','shelved');

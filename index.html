@@ -4283,7 +4283,9 @@ function missionExtra(m,dt){
 }
 // markers are queued while people are drawn and painted after the whole scene, so walls and counters never cover them
 // story marks: '!' something to start or hand in · '?*' this can start a story · '?' worth a look
-const MK_STORY='#FFE08A';
+const MK_STORY='#FFE08A',MK_BOND='#F2A6C2',MK_ACTIVE='#9BE7B8';
+function mkStyle(mk){return mk==='!'?['!',C.gold,true]:mk==='!b'?['!',MK_BOND,true]:mk==='!a'?['!',MK_ACTIVE,true]:mk==='?*'?['?',MK_STORY,true]:[mk,'#F6EBD2',false];}
+const MX_CHAR_KINDS=['bond','memory','hangout'];
 const LOOK_TRIG={'look.festbox':'side_festival_forgot','look.bakery.after':'bram_bread','look.prayerbook':'cass_prayer'};
 const mxTrig=id=>mxQState(id)==='undiscovered';
 const bubQ=[];function qBubble(...a){bubQ.push(a);}function flushBubbles(c){for(const a of bubQ)talkBubble(c,...a.slice(1));bubQ.length=0;}
@@ -4310,12 +4312,12 @@ function drawExtra(c,m){
     if(n.draw){n.draw(c,n,m);continue;}
     if(n.spot){const k=0.6+0.4*Math.sin(T*3+n.x);c.fillStyle=alpha(C.gold,0.18*k);ell(c,n.x,n.y+6,16,6);c.fill();
       c.save();c.translate(n.x,n.y-10+Math.sin(T*2.5+n.x)*2);c.rotate(Math.PI/4);c.fillStyle=n.done?alpha('#F6EBD2',0.35):alpha('#FFE6A3',0.9);c.fillRect(-4,-4,8,8);c.restore();
-      if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)qBubble(c,n.x,n.y-28,n.mk==='?*'?'?':n.mk,n.mk==='!'?C.gold:n.mk==='?*'?MK_STORY:'#F6EBD2',n.mk!=='?');}
+      if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)qBubble(c,n.x,n.y-28,...mkStyle(n.mk));}
       else if(!n.done)qBubble(c,n.x,n.y-28,n.need&&open(n)?'!':'?',n.need&&open(n)?C.gold:'#F6EBD2',!!n.need);continue;}
     if(n.ch)drawChar(c,n.ch,n.x,n.y,n.kid?{face:n.face||1,t:T,scale:0.78,unarmed:1}:{face:n.face||1,t:T});
     else drawNPC(c,n.x,n.y-(n.mv?Math.abs(Math.sin(T*9+n.x*0.1))*1.5:0),{col:n.col,face:n.face||1,hair:n.hair,hat:n.hat,apron:n.apron,small:n.small,long:n.long});
     const top=n.y-(n.small?32:(n.hat?42:38))+Math.sin(T*4+n.x*0.05)*2.5;
-    if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)qBubble(c,n.x,top,n.mk==='?*'?'?':n.mk,n.mk==='!'?C.gold:n.mk==='?*'?MK_STORY:'#F6EBD2',n.mk!=='?');}
+    if(m.near===n&&n._pa&&state==='play'){}else if(n.mk!==undefined){if(n.mk)qBubble(c,n.x,top,...mkStyle(n.mk));}
     else if(!n.done){if(n.need&&open(n))qBubble(c,n.x,top,'!',C.gold,true);else qBubble(c,n.x,top,'…','#F6EBD2',false);}
     if(n.label&&m.near!==n){const dl=Math.hypot(player.x-n.x,player.y-n.y);wlabel(n.x,n.y+21,n.label,{px:11,a:dl<170?1:0.6});}
   }
@@ -4438,6 +4440,11 @@ function mxDiscoverPass(){for(const id in MX_QUESTS){const Q=MX_QUESTS[id];if(mx
 function mxOfferAt(key){for(const id in MX_QUESTS){const Q=MX_QUESTS[id];if(Q.npc!==key||!Q.offer)continue;const st=mxQState(id);
     if(st==='available'||(st==='undiscovered'&&!Q.found))return id;}return null;}
 // what an NPC is wanted for: giving a quest, or the current step/objective of an active one
+// what kind of '!' an NPC shows: a new quest, a character story, or the next step of something in progress
+function mxNpcWant(key){const off=mxOfferAt(key);if(off)return MX_CHAR_KINDS.includes(MX_QUESTS[off].kind)?'story':'offer';
+  if(mxQLine(key))return 'active';const x=mxS();
+  for(const id in MX_QUESTS){const q=x.q[id];if(!q||q.s==='done')continue;const sp=MX_QUESTS[id].steps[q.n];if(!sp)continue;
+    if(sp.npc===key&&!mxStepOk(sp))return 'active';if(sp.objs&&sp.objs.some(o=>o.npc===key&&!o.ok()))return 'active';}return null;}
 function mxNpcWanted(key){if(mxOfferAt(key)||mxQLine(key))return true;const x=mxS();
   for(const id in MX_QUESTS){const q=x.q[id];if(!q||q.s==='done')continue;const sp=MX_QUESTS[id].steps[q.n];if(!sp)continue;
     if(sp.npc===key&&!mxStepOk(sp))return true;if(sp.objs&&sp.objs.some(o=>o.npc===key&&!o.ok()))return true;}return false;}
@@ -4873,6 +4880,15 @@ function bramEnding(){mxScene([pn(CAMPB,[['kairos',0.3,0.7,1],['bram',0.48,0.7,-
     ['th','For the first time since the Registry, the tower smells like somewhere people live.']])],()=>{mxSet('br_end');persist();mxTick();},['kairos','bram']);}
 const mxQuestsAvailable=()=>Object.keys(MX_QUESTS).filter(id=>mxQState(id)==='available');
 // places with something to do: the giver of an available quest, or where an active quest's current step happens
+// where a still-undiscovered story can be triggered (the object or person is not always where the story starts)
+const MX_TRIG_AT={side_festival_forgot:'hesper',bram_bread:'hesper',cass_prayer:'chapel',agnes_handmade:'tower',lark_couldnt_save:'ward',lucas_mem_bread:'hesper',lucas_mem_plan:'hesper',lucas_mem_room:'hesper'};
+function mxPlaceInfo(d){const x=mxS(),o={avail:[],active:[],trig:0,recF:0,recT:0};
+  for(const id in MX_QUESTS){const Q=MX_QUESTS[id],st=mxQState(id);
+    if(st==='available'&&Q.at===d)o.avail.push(id);
+    if(st==='active'){const sp=Q.steps[x.q[id].n];if(sp&&((sp.at===d&&!mxStepOk(sp))||(sp.objs&&sp.objs.some(b=>b.at===d&&!b.ok()))))o.active.push(id);}
+    if(st==='undiscovered'&&MX_TRIG_AT[id]===d)o.trig++;}
+  for(const f of MX_FINDS)if(f.at===d&&!f.act&&!f.quest){o.recT++;if(x.found[f.id])o.recF++;}
+  o.done=!!x.seen[d]&&o.recF>=o.recT&&!o.avail.length&&!o.active.length&&!o.trig;return o;}
 function mxQuestPlaces(){const x=mxS(),P={};for(const id in MX_QUESTS){const st=mxQState(id),Q=MX_QUESTS[id];
     if(st==='available'&&Q.at)P[Q.at]=1;if(st==='active'){const sp=Q.steps[x.q[id].n];if(sp&&sp.at&&!mxStepOk(sp))P[sp.at]=1;if(sp&&sp.objs)for(const o of sp.objs)if(o.at&&!o.ok())P[o.at]=1;}}return P;}
 function mxStart(id){const x=mxS(),Q=MX_QUESTS[id];if(!Q||(x.q[id]&&!mxRepeatReady(id)))return;if(!mxGateOk(Q)||!mxPreOk(Q))return;
@@ -5207,7 +5223,7 @@ function mxNpcs(d){
       n._then=r.then||null;if(r.amb&&!r.then&&!p.ch&&MX_VOICE[key])mxMurmur(MX_VOICE[key]);return r.lines;};
     n.route=MX_ROUTES[key]||null;n.voice=MX_VOICE[key]||null;if(p.hide)n.hide=p.hide;
     n.talk=()=>{const x=mxS();x.talk[key]=(x.talk[key]|0)+1;const t=n._then;n._then=null;if(t)t();persist();mxTick();};
-    n.mkf=()=>{if(mxNpcWanted(key))return '!';const k=p.mark&&p.mark();if(k)return k;return mxTalkHint(key)||mxPostFresh(key)?'?':null;};return n;});
+    n.mkf=()=>{const w=mxNpcWant(key);if(w)return w==='offer'?'!':w==='story'?'!b':'!a';const k=p.mark&&p.mark();if(k)return k;return mxTalkHint(key)||mxPostFresh(key)?'?':null;};return n;});
   const Fd=MX_FINDS.filter(f=>f.at===d).map(f=>{const n={id:f.id,fx:f.fx,fy:f.fy,spot:1,find:f};
     n.lines=()=>typeof f.text==='function'?f.text():f.text;
     n.talk=()=>{const x=mxS(),first=!x.found[f.id];x.found[f.id]=1;if(f.on)f.on();
@@ -5799,7 +5815,9 @@ const WORLD_LOCS=[
 const WORLD_ROADS=[['market','chapel'],['market','plaza'],['market','yard'],['market','ward'],['plaza','hesper'],['hesper','tower'],['chapel','office'],['ward','ashlane'],['ashlane','oldchapel'],['tower','annex'],['yard','canals']];
 // Chapter 1 progress: the furthest scene reached (0 = cold open), 99 once the chapter is complete
 function ch1Scene(){if((save.ch1Clears|0)>0||(save.ch1b&&save.ch1b.done))return 99;const k=save.ch1b&&save.ch1b.k;const m=k&&/^Scene (\d+)/.exec(k);return m?+m[1]:0;}
-function wmUnlocked(L){const n=L.need;if(!n)return true;if(n.ch1orFlag)return ch1Scene()>=n.ch1orFlag[0]||storyFlag(n.ch1orFlag[1]);if(n.flag&&!storyFlag(n.flag))return false;if(n.walk)return true;if(n.ch1)return ch1Scene()>=n.ch1;if(n.clear)return ch1Scene()>=99;return false;}
+function wmUnlocked(L){const n=L.need;if(!n)return true;if(n.ch1orFlag)return ch1Scene()>=n.ch1orFlag[0]||storyFlag(n.ch1orFlag[1]);if(n.flag&&!storyFlag(n.flag))return false;if(n.walk)return true;if(n.ch1)return ch1Scene()>=n.ch1;if(n.clear)return ch1Scene()>=99;if(n.ch)return chapterOpen(n.ch);return false;}
+// a later chapter counts as open only once its story sets 'chN.open' (Chapter 2 is not built yet)
+function chapterOpen(c){return c<=1?true:!!storyFlag('ch'+c+'.open');}
 function wmBuilt(L){return !!(L.d&&MX_DISTRICTS[L.d]);}
 // status: here · open (fast travel) · found (reachable on foot, not visited) · soon (unlocked, not built yet) · locked (story)
 function wmStatus(L){const x=mxS();if(!wmUnlocked(L))return 'locked';if(!wmBuilt(L))return 'soon';if(run&&run.mode==='explore'&&room&&room.m&&room.m.M&&room.m.M.dist===L.d)return 'here';return x.seen[L.d]?'open':'found';}
@@ -5821,7 +5839,14 @@ function showWorldMap(o){o=o||{};const from=o.from||'menu';
       h('p',null,st==='locked'&&!wmNameKnown(sel)?'Somewhere in the city you have not been yet.':sel.blurb),
       mxEra()==='fugitive'&&st!=='locked'&&sel.d?(MX_WATCHED.includes(sel.d)?h('p',{class:'wm-need'},'Patrols about. Keep your hood up.'):['tower','oldchapel','hesper','ashlane'].includes(sel.d)?h('p',{class:'wm-need'},sel.d==='tower'?'The hideout. Safe.':'Quiet. People here look the other way.'):null):null,
       st==='found'?h('p',{class:'wm-need'},sel.need&&sel.need.text?sel.need.text:'Walk there to discover it.'):st==='locked'?h('p',{class:'wm-need'},sel.need.text):st==='soon'?h('p',{class:'wm-need'},'This place is not open for exploring yet.'):null,
-      h('p',{class:'wm-legend'},'Gold: discovered · fast travel. Faded: not discovered. Lock: story. Tap a place, then Travel.'),
+      (st==='open'||st==='here')&&sel.d?(()=>{const I=mxPlaceInfo(sel.d),T=id=>MX_QUESTS[id].title,out=[];
+        if(I.active.length)out.push('In progress here: '+I.active.map(T).join(', '));
+        if(I.avail.length)out.push('Waiting here: '+I.avail.map(T).join(', '));
+        if(I.trig)out.push('Something here could start a story.');
+        out.push(I.recT?'Records found here: '+I.recF+' / '+I.recT:'');
+        if(I.done)out.push('Nothing left to find here for now.');
+        return h('div',{class:'wm-here'},...out.filter(Boolean).map(t=>h('p',{class:'wm-need'},t)));})():null,
+      h('p',{class:'wm-legend'},'! quest or story here · ✦ a story could start here · ✓ explored · padlock: story. Gold places: fast travel. Tap a place, then Travel.'),
       h('div',{class:'row'},h('button',{class:'btn',type:'button','data-primary':'1',disabled:st==='open'?null:'disabled',onclick:travel},st==='here'?'You are here':'Travel'),
         h('button',{class:'btn outline',type:'button','data-back':'1',onclick:close},'Close'))].filter(Boolean));};
   openOverlay(h('div',{class:'wm'},box,side),'mode-select');drawSide();
@@ -5862,6 +5887,10 @@ function drawWorldMap(c,sel){const r=c.getBoundingClientRect(),d=Math.min(window
     wmIcon(g,L.icon,x,y,k,on);
     if(st==='locked'){g.fillStyle='#24160C';g.fillRect(x+k*0.6,y+k*0.4,k*0.9,k*0.75);g.strokeStyle='#24160C';g.lineWidth=k*0.18;g.beginPath();g.arc(x+k*1.05,y+k*0.42,k*0.28,Math.PI,TAU);g.stroke();}
     if(st==='found'){g.fillStyle='#24160C';g.font=`900 ${Math.round(k*1.2)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='middle';g.fillText('?',x+k*0.95,y-k*0.8);}
+    if(L.d&&(st==='open'||st==='here')){const I=mxPlaceInfo(L.d);
+      if(I.done){g.globalAlpha=1;g.strokeStyle='#3E6B3A';g.lineWidth=k*0.22;g.lineCap='round';g.beginPath();g.moveTo(x-k*1.25,y+k*0.75);g.lineTo(x-k*1.0,y+k*1.0);g.lineTo(x-k*0.55,y+k*0.45);g.stroke();}
+      else if(!mxQuestPlaces()[L.d]&&I.trig){g.globalAlpha=1;const sx=x+k*1.05,sy=y-k*0.95,sr=k*0.42;g.fillStyle='#24160C';g.beginPath();g.arc(sx,sy,sr*1.05,0,TAU);g.fill();g.fillStyle='#FFE08A';
+        g.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,rr2=i%2?sr*0.38:sr*0.85;g.lineTo(sx+Math.cos(a)*rr2,sy+Math.sin(a)*rr2);}g.closePath();g.fill();}}
     if(L.d&&mxQuestPlaces()[L.d]&&st!=='locked'){g.globalAlpha=1;const bx=x-k*1.05,by=y-k*1.05,br=k*0.55+Math.sin(performance.now()/250)*k*0.05;g.fillStyle='#24160C';g.beginPath();g.arc(bx,by,br+k*0.12,0,TAU);g.fill();g.fillStyle='#FFD166';g.beginPath();g.arc(bx,by,br,0,TAU);g.fill();g.fillStyle='#24160C';g.font=`900 ${Math.round(k*0.85)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='middle';g.fillText('!',bx,by+k*0.04);}
     g.globalAlpha=1;
     const name=st==='locked'&&!wmNameKnown(L)?'???':L.name;g.font=`800 ${Math.round(u*0.36)}px ${FONT_UI}`;g.textAlign='center';g.textBaseline='top';
@@ -5942,9 +5971,15 @@ function showMeridian(){
 const MX_KIND_LABEL={bond:'Bond story',memory:'Memory',hangout:'Hangout',side:'World story'};
 function mxStoriesList(){const ids=Object.keys(MX_QUESTS).filter(id=>MX_STORY_KINDS.includes(MX_QUESTS[id].kind));
   const vis=ids.filter(id=>['available','active','completed'].includes(mxQState(id))),locked=ids.length-vis.length;
-  const out=vis.map(id=>{const Q=MX_QUESTS[id],st=mxQState(id);return h('div',{class:'mx-q'+(st==='completed'?' done':'')},h('h4',null,Q.title,h('em',{class:'opt'},MX_KIND_LABEL[Q.kind]),st==='completed'?h('em',{class:'opt'},'Done'):null),
+  const ord={active:0,available:1,completed:2};vis.sort((a,b)=>ord[mxQState(a)]-ord[mxQState(b)]);
+  const out=vis.map(id=>{const Q=MX_QUESTS[id],st=mxQState(id);return h('div',{class:'mx-q'+(st==='completed'?' done':'')},h('h4',null,Q.title,h('em',{class:'opt'},MX_KIND_LABEL[Q.kind]),st==='completed'?h('em',{class:'opt'},'Done'):st==='active'?h('em',{class:'opt'},'In progress'):null),
     h('p',null,Q.desc),st==='available'?h('p',{class:'ob'},'→ '+(Q.giver||'Find out more')):st==='active'?(()=>{const sp=Q.steps[mxS().q[id].n],pg=mxStepProg(sp);return h('p',{class:'ob'},'→ '+sp.t+(pg?' ('+pg+')':''));})():null,
+    st!=='completed'&&Q.at&&MX_DISTRICTS[Q.at]?h('p',{class:'rw'},'Where: '+(mxS().seen[Q.at]?MX_DISTRICTS[Q.at].name:'somewhere you have not been yet')+(Q.char?' · with '+nameOf(Q.char):'')):null,
     st==='completed'&&Q.reward&&Q.reward.rec&&mxS().mem[Q.reward.rec.id]?h('p',{class:'rw'},'Kept in the Journal: '+Q.reward.rec.title):null);});
+  // stories you know are coming but cannot start yet: shown without their title, with what they are waiting for
+  if(mxEra()==='fugitive')for(const id of ids){const Q=MX_QUESTS[id];if(mxQState(id)!=='locked_by_prerequisite'||!(mxS().qseen[id]||Q.autoFind))continue;
+    const pre=Q.pre||[],dn=pre.filter(mxDoneQ).length;
+    out.push(h('div',{class:'mx-q lock'},h('h4',null,(Q.char?'A story for '+nameOf(Q.char):'A world story'),h('em',{class:'opt'},'Locked')),h('p',{class:'ob'},'Waiting on '+(pre.length-dn)+' more '+(pre.length-dn>1?'stories':'story')+' first ('+dn+' / '+pre.length+')')));}
   if(!out.length)out.push(h('p',{class:'ss-info'},mxEra()==='fugitive'?'No stories found yet. Listen to the people around you, and to the party at the hideout.':'Stories open up after Chapter 1.'));
   if(locked)out.push(h('p',{class:'ss-info'},locked+' more '+(locked>1?'stories are':'story is')+' still hidden or locked.'));
   if(locked&&mxEra()==='fugitive'){const rum=ids.filter(id=>MX_QUESTS[id].hint&&!vis.includes(id)&&mxGateEraOk(MX_QUESTS[id])).map(id=>{const t=MX_QUESTS[id].hint;return typeof t==='function'?t():t;});
@@ -5961,7 +5996,11 @@ function showJournal(back,tab){
       Object.keys(x.items).length&&!done&&id==='glasses'&&x.items.glasses?h('p',{class:'rw'},'Carrying: Matteo’s glasses'):null,
       h('p',{class:'rw'},Q.giver+' · Reward: '+rw));};
   const ids=Object.keys(MX_QUESTS).filter(id=>x.q[id]&&!MX_STORY_KINDS.includes(MX_QUESTS[id].kind)).sort((a,b)=>(x.q[a].s==='done')-(x.q[b].s==='done')||(MX_QUESTS[a].kind==='main'?-1:1));
-  const quests=ids.length?ids.map(qCard):[h('p',{class:'ss-info'},'No quests yet. People in Meridian will ask for help when you talk to them.')];
+  const mainCard=(()=>{const sc=ch1Scene();const done=sc>=99;
+    return h('div',{class:'mx-q'},h('h4',null,'Main story',h('em',null,done?'Chapter 1 · done':'Chapter 1')),
+      h('p',null,done?'Chapter 1 is complete. Chapter 2, The Archive, is still to come. Until then, Meridian has stories of its own.':'The story continues from the Story menu.'),
+      h('p',{class:'ob'},'→ '+(done?'Explore Meridian: the hideout is at the Clock Tower, east of St. Hesper’s':'Story → Chapter 1'+(sc?' (you have reached Scene '+sc+')':''))));})();
+  const quests=[mainCard,...(ids.length?ids.map(qCard):[h('p',{class:'ss-info'},'No quests yet. People in Meridian will ask for help when you talk to them.')])];
   const recs=MX_FINDS.filter(f=>!f.quest).map(f=>{const got=x.found[f.id],D=MX_DISTRICTS[f.at];
     const txt=got?(typeof f.text==='function'?[]:f.text).filter(l=>l[0]==='n').map(l=>l[1]).join(' '):'';
     return h('div',{class:'mx-r'+(got?'':' lock')},h('b',null,got?f.title:'???'),h('span',null,D.name+(f.act?' · '+MX_ACTIVITIES[f.act].name:'')),got?h('p',null,txt||'Read on the board itself.'):h('p',null,f.hidden?'Something hidden, off the beaten path.':'Not found yet.'));});
@@ -10122,7 +10161,7 @@ function drawBigStamp(){
 }
 
 // ═══════════════════════════════════════════ test hook (playtesting only)
-if(SF_DEV){window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={ch1MigrateSave:f=>ch1MigrateSave(f),mxMet:id=>mxMet(id),ch1MigKey:k=>ch1MigKey(k),ch1RosterAt:i=>ch1RosterAt(ch1Seq(),i),lose:()=>{if(team)for(const m of team.members)if(!m.down)memberDown(m);},bondPend:()=>save.bondPending||{},postFresh:k=>mxPostFresh(k),exitsOf:d=>mxExits(MX_DISTRICTS[d]).map(e=>e[1]),fug:()=>Object.keys(MX_FUG),snaps:()=>snapshots(),snap:f=>snapshotSave(f),storage:()=>storageState,persistReq:()=>requestPersistentStorage(),parseBackup:t=>{try{return parseBackup(t);}catch(e){return {error:e.message};}},backupDue:()=>backupDue(),beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,fx:()=>({shakeM,shakeT,slowReal}),texts:()=>texts,hit:(e,d,o)=>playerHit(e,d,o||{}),mk:(t,x,y,o)=>{const e=makeEnemy(t,x,y,o||{});enemies.push(e);return e;},modText:()=>modText(),modOn:id=>modOn(id),tgt:e=>targetFor(e),swap:i=>swapTo(i,{}),sun:()=>KITS[player.id].sun(player,false),tap:()=>KITS[player.id].tap(player),sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
+if(SF_DEV){window.__sf_spots=MX_CHEST_SPOTS;window.__sf_hide=HIDE_SPOTS;window.__sf_folders=FOLDER_SPOTS;window.__sf_odd=()=>ODD_THINGS.map(o=>[o.x(),o.y()]);window.__sf_clutter=()=>({drawn:bgProps,derived:streetClutter()});window.__sf_exits=Object.fromEntries(Object.entries(MX_DISTRICTS).map(([k,v])=>[k,v.exits.map(e=>e[0])]));window.__sf={ch1MigrateSave:f=>ch1MigrateSave(f),mxMet:id=>mxMet(id),ch1MigKey:k=>ch1MigKey(k),ch1RosterAt:i=>ch1RosterAt(ch1Seq(),i),lose:()=>{if(team)for(const m of team.members)if(!m.down)memberDown(m);},bondPend:()=>save.bondPending||{},postFresh:k=>mxPostFresh(k),exitsOf:d=>mxExits(MX_DISTRICTS[d]).map(e=>e[1]),fug:()=>Object.keys(MX_FUG),snaps:()=>snapshots(),snap:f=>snapshotSave(f),storage:()=>storageState,persistReq:()=>requestPersistentStorage(),parseBackup:t=>{try{return parseBackup(t);}catch(e){return {error:e.message};}},backupDue:()=>backupDue(),beep:()=>room&&room.m&&room.m.beepT,src2:()=>[larkOrder,larkEnding].map(String).join(' '),src3:()=>[cassAltar,cassEnding].map(String).join(' '),src5:()=>JSON.stringify(MX_QUESTS.dess_experiment)+[dessRebuild,dessMemory].map(String).join(' '),annexGeo:()=>annexGeo(),sq2:()=>JSON.stringify(['side_empty_chapel','side_unofficial_prayer'].map(k=>MX_QUESTS[k]))+[ecShelve,upWitness].map(String).join(' '),sq:()=>JSON.stringify([MX_QLINES,['side_morning_after','side_names_paper','side_sunday_cups','side_festival_forgot','side_missing_page','side_beyond_wall'].map(k=>MX_QUESTS[k])]),src4:()=>JSON.stringify(['mem_bread','mem_plan','mem_room'].map(k=>MISSIONS[k].npcs()))+JSON.stringify(['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'].map(lucasMemSeq)),mem:id=>lucasMemory(id),oldGeo:()=>oldChapelGeo(),recs:()=>mxRecordCount(),src:()=>[agnesEnding,bramEnding,agnesAssemble].map(String).join(' '),lucas:()=>lucasState(),story:()=>storyFlags(),setStory:k=>setStoryFlag(k),qstart:id=>mxStart(id),qtick:()=>mxTick(),MXO:()=>MXO,offerAt:k=>mxOfferAt(k),wanted:k=>mxNpcWanted(k),goal:()=>mxGoal(),era:()=>mxEra(),qstate:id=>mxQState(id),qplaces:()=>mxQuestPlaces(),discover:id=>mxDiscover(id),mxFight:(t,cb)=>mxFight(mxFightTheme(t),['kairos'],ok=>{window.__mxFightResult=ok;}),mxScene:()=>mxScene([pn('roof',[['kairos',0.5,0.6,1]],[['n','A test scene on the tower.']])],()=>{window.__mxSceneDone=1;}),odd:()=>mxOdd,fold:()=>mxFold,hide:()=>mxHide,wm:()=>WORLD_LOCS.map(L=>({id:L.id,st:wmStatus(L)})),ch1Scene:()=>ch1Scene(),hud:()=>({obj:hudObj,btn,ports:typeof ports!=='undefined'?ports:[],sw,sh,scale,ox,oy,safe,touch:isTouch,wl:wlLastPx}),mxChests:d=>mxChests(d),mxDay:()=>mxDayState(),grant:(r,k)=>grantReward(r,k),keepUse:(id,n)=>useKeepsakes(id,n),renown:()=>[mxRenown(),mxRank(),mxClaimable()],save:()=>save,builds:()=>showBuilds(goHome),bounds:()=>[AX0,AY0,AX1,AY1,W,H],mx:()=>mxS(),mxBegin:()=>mxBegin(),mxMenu:()=>showMeridian(),mxGo:d=>{mxFrom=null;enterRoom('m_mx_'+d);},mxQ:MX_QUESTS,mxFinds:MX_FINDS,idle:drawCharIdle,idleCfg:IDLE_CFG,idleAct:IDLE_ACT,party:()=>showPartySelect('battle'),builds:()=>showBuilds(goHome),themes:()=>Object.keys(ATMO),themeShot:(t,k)=>{k=k||1;const c=document.createElement('canvas');c.width=W*k;c.height=H*k;const g=c.getContext('2d');g.setTransform(k,0,0,k,0,0);paintTheme(g,t);bakeGrade(g,t);return c.toDataURL();},charPng:(id,o,sz)=>{const c=document.createElement('canvas');c.width=c.height=sz||96;const g=c.getContext('2d');g.imageSmoothingEnabled=false;drawChar(g,id,c.width/2,c.height*0.7,Object.assign({face:1,scale:c.width/52,t:0,noShadow:true},o||{}));return c.toDataURL();},vicePng:k=>{const v=viceIcon(k);return v?v.toDataURL():null;},ids:()=>({chars:CH_ORDER.slice(),vices:Object.keys(VICE_INFO)}),room:()=>room,Q:()=>MX_QUESTS,qst:id=>mxQState(id),qstart:id=>mxStart(id),place:d=>mxPlaceInfo(d),wmOpen:id=>wmUnlocked(WORLD_LOCS.find(L=>L.id===id)),flags:()=>storyFlags(),fx:()=>({shakeM,shakeT,slowReal}),texts:()=>texts,hit:(e,d,o)=>playerHit(e,d,o||{}),mk:(t,x,y,o)=>{const e=makeEnemy(t,x,y,o||{});enemies.push(e);return e;},modText:()=>modText(),modOn:id=>modOn(id),tgt:e=>targetFor(e),swap:i=>swapTo(i,{}),sun:()=>KITS[player.id].sun(player,false),tap:()=>KITS[player.id].tap(player),sparks:()=>sparks,bgshot:k=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(cutBg(k),0,0);return c.toDataURL();},cutshot:t=>{if(!cut)return null;cut.t=t||2;drawCutPanel();return cut.cv.toDataURL();},sheet:()=>{let c=document.getElementById('sfsheet');if(!c){c=document.createElement('canvas');c.id='sfsheet';c.width=1000;c.height=300;c.style.cssText='position:fixed;left:0;top:0;z-index:99;background:#6A8A55;width:1000px;height:300px';document.body.append(c);}const g=c.getContext('2d');g.clearRect(0,0,1000,300);g.imageSmoothingEnabled=false;CH_ORDER.forEach((id,i)=>drawChar(g,id,62+i*122,200,{face:1,scale:5.5,t:0}));return 'ok';},kill:()=>{for(const e of enemies)if(!e.dead&&!e.cass)killEnemy(e);},ch1:f=>startCh1(f),ch1seq:()=>CH1||(CH1=ch1Seq()),bond:id=>bondOf(id),boss:()=>boss,p:()=>player,team:()=>team,en:()=>enemies,mission:(id,party)=>startMission(id,party,ok=>{window.__mres=ok;}),seq:()=>sq,m:()=>room&&room.m,cutNext:()=>cutAdvance(),cut:()=>cut&&{pi:cut.pi,li:cut.li},st:()=>state,win:()=>{if(room&&room.m)finishRoom(true,"CLEAR");},
   info:()=>({state,mode:run&&run.mode,party:run&&run.party,active:player&&player.id,roomNo:run&&run.roomNo,room:room&&room.def.id,
     hp:team&&team.members.map(m=>m.down?'down':Math.round(m.hp)),pn:team&&Math.round(team.pn),shield:team&&team.shield&&Math.round(team.shield.hp),
     cd:player&&{sun:+player.cd.sun.toFixed(1),moon:+player.cd.moon.toFixed(1)},allies:allies.length,zones:zones.map(z=>z.kind),enemies:enemies.length,

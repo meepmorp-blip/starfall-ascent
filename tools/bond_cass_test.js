@@ -44,7 +44,7 @@ await go('tower');await interact('h_cass');ok(await st('cass_prayer')==='undisco
 // discovery by the prayer book at the Cloister (fresh save)
 await load(save(1));await go('chapel');ok(await mark('look.prayerbook')==='?*','a prayer book lies by the Cloister wall');
 let r=await interact('look.prayerbook');let text=r.lines.slice();ok(r.lines.some(l=>/ST\. MAREN/.test(l))&&await st('cass_prayer')==='available','reading it finds Cassie’s story');
-await go('tower');ok(await mark('h_cass')==='!','Cassie has a "!"');r=await interact('h_cass');text=text.concat(r.lines);
+await go('tower');ok(await mark('h_cass')==='!b','Cassie has the rose story "!"');r=await interact('h_cass');text=text.concat(r.lines);
 ok(await st('cass_prayer')==='active'&&(await S()).story['oldchapel.found'],'Cassie offers it; St. Maren’s is now known');
 ok(await wmst('oldchapel')==='found'&&await E(()=>!!__sf.qplaces().ashlane),'the map shows St. Maren’s, and Ash Lane is marked');
 await go('ashlane');await walk('KeyD','e','oldchapel');let s=await S();ok(s.mx.at==='oldchapel'&&s.mx.seen.oldchapel,'walking off Ash Lane’s east end reaches St. Maren’s');

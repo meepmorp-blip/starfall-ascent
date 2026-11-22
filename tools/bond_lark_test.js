@@ -41,7 +41,7 @@ await interact('h_noemi');ok(await st('lark_couldnt_save')==='available','a seco
 await load(save(1));await go('ward');ok(await mark('ward.chart')==='?*','a patient folder lies on the nurses’ desk');
 let r=await interact('ward.chart');let text=r.lines.slice();ok(r.lines.some(l=>/ODELL/.test(l))&&await st('lark_couldnt_save')==='available','reading it finds Naomi’s story');
 ok(await E(()=>!!__sf.qplaces().tower),'the Clock Tower is marked');
-await go('tower');ok(await mark('h_noemi')==='!','Naomi has a "!"');r=await interact('h_noemi');text=text.concat(r.lines);
+await go('tower');ok(await mark('h_noemi')==='!b','Naomi has the rose story "!"');r=await interact('h_noemi');text=text.concat(r.lines);
 ok(await st('lark_couldnt_save')==='active'&&await step('lark_couldnt_save')==='pages','Naomi offers it and it starts');
 ok(await E(()=>!!__sf.qplaces().ward),'St. Lucia’s is marked');
 // at the ward: Naomi and Theo come along; the pages

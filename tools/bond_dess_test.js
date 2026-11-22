@@ -57,7 +57,7 @@ await load(withPre('lucas_mem_room',true));ok(await st('dess_experiment')==='loc
 for(const last of ['lucas_mem_room','agnes_handmade','lark_couldnt_save']){await load(withPre(last,false));await E(()=>__sf.qtick());
   const s0=await S();ok(s0.mx.q[last].s==='done'&&await st('dess_experiment')==='available'&&s0.mx.qseen.dess_experiment,'finishing '+last+' last unlocks and reveals Dess’s story');}
 ok(await E(()=>!!__sf.qplaces().tower),'the Clock Tower is marked');
-await go('tower');ok(await mark('h_dess')==='!','Dess has a "!"');
+await go('tower');ok(await mark('h_dess')==='!b','Dess has the rose story "!"');
 await p.screenshot({path:`out/dess_${mode}_unlock.png`});
 let r=await talk('h_dess');ok(r.lines.some(l=>/ANNEX/.test(l))&&await st('dess_experiment')==='active','Dess’s core glows gold; she asks you to come');
 let s=await S();ok(s.story['annex.found']&&await E(()=>Object.fromEntries(__sf.wm().map(o=>[o.id,o.st])).annex)==='found','the annex is on the map now');
