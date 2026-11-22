@@ -1,0 +1,411 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Chapter 1 enemy concept sheets</title>
+<style>body{margin:0;background:#0B0C12}canvas{display:block}</style></head>
+<body><canvas id="cv" width="1600" height="1000"></canvas>
+<script>
+// Concept sheets for the Chapter 1 Phase 2 enemies. NOT game code: drawing here is a visual reference only.
+// Sprites are drawn in world units (1 = 1 world px), rendered small, then scaled up with hard pixels, like the game.
+const TAU=Math.PI*2,cv=document.getElementById('cv'),G=cv.getContext('2d');
+const OUT='#1A1410',INK='#F6EBD2',GOLD='#FFD166',DIM='#9A8F7E',BG='#0B0C12',PANEL='#151622',LINE='#2A2B3C';
+const FONT='"Nunito","Segoe UI",system-ui,sans-serif';
+// ── helpers ──────────────────────────────────────────────
+const el=(g,x,y,rx,ry,f,s,lw)=>{g.beginPath();g.ellipse(x,y,rx,ry,0,0,TAU);if(f){g.fillStyle=f;g.fill();}if(s){g.strokeStyle=s;g.lineWidth=lw||1;g.stroke();}};
+const rc=(g,x,y,w,h,f)=>{g.fillStyle=f;g.fillRect(x,y,w,h);};
+const poly=(g,pts,f,s,lw)=>{g.beginPath();pts.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();if(f){g.fillStyle=f;g.fill();}if(s){g.strokeStyle=s;g.lineWidth=lw||1;g.stroke();}};
+const ln=(g,x1,y1,x2,y2,s,lw)=>{g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.strokeStyle=s;g.lineWidth=lw||1;g.stroke();};
+const al=(hex,a)=>{const n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;};
+// render a sprite function into a pixel canvas: res = pixels per world px, box = half-size in world px
+function sprite(fn,o,box,res){const n=Math.ceil(box*2*res),c=document.createElement('canvas');c.width=n;c.height=n;const g=c.getContext('2d');
+  g.translate(n/2,n/2);g.scale(res,res);g.imageSmoothingEnabled=false;fn(g,o||{});return c;}
+function blit(c,x,y,scale,alpha){G.save();G.imageSmoothingEnabled=false;if(alpha!=null)G.globalAlpha=alpha;G.drawImage(c,Math.round(x-c.width*scale/2),Math.round(y-c.height*scale/2),Math.round(c.width*scale),Math.round(c.height*scale));G.restore();}
+function silh(c){const s=document.createElement('canvas');s.width=c.width;s.height=c.height;const g=s.getContext('2d');g.drawImage(c,0,0);g.globalCompositeOperation='source-in';g.fillStyle='#E8E2D4';g.fillRect(0,0,s.width,s.height);return s;}
+function txt(t,x,y,o){o=o||{};G.font=`${o.w||600} ${o.s||13}px ${o.f||FONT}`;G.fillStyle=o.c||INK;G.textAlign=o.a||'left';G.textBaseline=o.b||'alphabetic';G.fillText(t,x,y);}
+function wrap(t,x,y,w,o){o=o||{};G.font=`${o.w||500} ${o.s||12}px ${FONT}`;const words=t.split(' ');let line='',yy=y;for(const wd of words){const tt=line?line+' '+wd:wd;if(G.measureText(tt).width>w&&line){txt(line,x,yy,o);line=wd;yy+=(o.lh||16);}else line=tt;}if(line)txt(line,x,yy,o);return yy;}
+function panel(x,y,w,h,title){G.fillStyle=PANEL;G.fillRect(x,y,w,h);G.strokeStyle=LINE;G.lineWidth=1;G.strokeRect(x+0.5,y+0.5,w-1,h-1);if(title)txt(title.toUpperCase(),x+12,y+20,{s:11,w:800,c:GOLD});}
+function shadow(g,r){el(g,0,r*0.78,r*0.95,r*0.32,'rgba(0,0,0,0.35)');}
+function arrow(x1,y1,x2,y2,c){G.strokeStyle=c||GOLD;G.lineWidth=1.5;G.beginPath();G.moveTo(x1,y1);G.lineTo(x2,y2);G.stroke();const a=Math.atan2(y2-y1,x2-x1);G.beginPath();G.moveTo(x2,y2);G.lineTo(x2-8*Math.cos(a-0.4),y2-8*Math.sin(a-0.4));G.lineTo(x2-8*Math.cos(a+0.4),y2-8*Math.sin(a+0.4));G.closePath();G.fillStyle=c||GOLD;G.fill();}
+
+// ── shared detail helpers (world units; sheets render at 4–6 px per unit, the game at ~1.1) ──
+const px=(g,x,y,c,s)=>{g.fillStyle=c;g.fillRect(x,y,s||0.5,s||0.5);};
+const arcS=(g,x,y,r,a0,a1,c,lw)=>{g.beginPath();g.arc(x,y,r,a0,a1);g.strokeStyle=c;g.lineWidth=lw||0.6;g.stroke();};
+function speckle(g,cx,cy,rx,ry,n,cols,seed,sz){let s=seed||7;const R=()=>{s=(s*9301+49297)%233280;return s/233280;};
+  for(let i=0;i<n;i++){const a=R()*TAU,d=Math.sqrt(R());px(g,cx+Math.cos(a)*rx*d,cy+Math.sin(a)*ry*d,cols[i%cols.length],sz||0.5);}}
+
+// ── 4 · CRUMBKIN ─────────────────────────────────────────
+// a little loaf that was baked with love: scored crust, flour-dusted cap, oven-mitt paws, a cracked serving plate
+const CRUST='#9A6236',CRUSTD='#6E4224',CRUSTL='#C08048',FLOUR='#F1E3C4',CORE_AMB='#F2B45A',PLATE='#D8D2C2',MITT='#C9B48A',MITTD='#9A8460';
+function crumbkin(g,o){const r=8,v=o.view||'front',b=(o.bounce||0),dmg=o.dmg,big=o.loaf;const s=big?2:1;g.scale(s,s);
+  shadow(g,r);g.translate(0,-b);
+  // cracked serving plate with a painted rim
+  el(g,0,r*0.62,r*1.0,r*0.34,PLATE,OUT,0.8);el(g,0,r*0.62,r*0.8,r*0.24,null,'#B8A890',0.5);
+  ln(g,-3,r*0.45,-1,r*0.8,'#8E887A',0.45);ln(g,-1,r*0.8,0.5,r*0.66,'#8E887A',0.4);
+  for(let i=0;i<6;i++){const a=i/6*TAU;px(g,Math.cos(a)*r*0.9-0.25,r*0.62+Math.sin(a)*r*0.3-0.25,'#9FB2CF');}
+  // stubby feet peeking out
+  if(v!=='back'){el(g,-3,r*0.5,1.3,0.8,CRUSTD,OUT,0.4);el(g,3,r*0.5,1.3,0.8,CRUSTD,OUT,0.4);}
+  // the loaf: base crust, baked gradient, darker belly
+  el(g,0,0,r*0.98,r*0.8,CRUSTD,OUT,0.9);el(g,0,-0.6,r*0.9,r*0.68,CRUST);el(g,-0.8,-2,r*0.7,r*0.45,CRUSTL);
+  speckle(g,0,-1,r*0.8,r*0.6,26,['#7E4C28','#B5794A','#D69A5E'],11);          // baked texture
+  // flour-dusted cap (also lifts contrast on dirt)
+  el(g,0,-r*0.42,r*0.66,r*0.26,al(FLOUR,0.85));speckle(g,0,-r*0.44,r*0.7,r*0.3,18,[FLOUR,'#FFFFFF'],3);
+  if(v!=='back'){
+    // three scored cuts, the middle one glowing (the core)
+    for(const dx of [-3.6,0,3.6]){g.save();g.translate(dx,-r*0.32);g.rotate(-0.55);el(g,0,0,1.7,0.6,dx===0?CORE_AMB:'#5A3418');if(dx===0){el(g,0,0,1.0,0.32,'#FFE6A3');}g.restore();}
+    el(g,0,-r*0.32,3.2,1.8,al(CORE_AMB,0.28));
+    // face: two warm dents and a tiny crumb mouth, a little too wide (cute, slightly uncanny)
+    if(v==='front'){el(g,-2.5,1,0.9,1.1,OUT);el(g,2.5,1,0.9,1.1,OUT);px(g,-2.7,0.6,'#FFE6A3',0.4);px(g,2.3,0.6,'#FFE6A3',0.4);
+      g.beginPath();g.moveTo(-2.2,3.2);g.quadraticCurveTo(0,4.4,2.2,3.2);g.strokeStyle=OUT;g.lineWidth=0.5;g.stroke();}
+    else{el(g,2.8,1,0.9,1.1,OUT);px(g,2.6,0.6,'#FFE6A3',0.4);}
+  } else {for(const y of [-2.5,-0.5,1.5])ln(g,-4,y,4,y+0.4,'#5A3418',0.5);}
+  // oven-mitt paws with quilted stitching
+  const mx=v==='side'?[r*0.9]:[-r*1.0,r*1.0];
+  for(const x of mx){const y=r*0.1+(o.swing?(x<0?-1.6:1.6):0);el(g,x,y,2.1,1.7,MITT,OUT,0.6);el(g,x+(x<0?-1.2:1.2),y-1,0.9,0.8,MITT,OUT,0.4);ln(g,x-1,y,x+1,y,MITTD,0.35);ln(g,x-0.9,y+0.7,x+0.9,y+0.7,MITTD,0.35);}
+  if(dmg){ln(g,-3,-4,-1,-1,'#3E2210',0.7);ln(g,-1,-1,-2,2,'#3E2210',0.6);ln(g,4,-3,5,0,'#3E2210',0.6);px(g,-1.6,-0.4,CORE_AMB,0.6);}
+  if(o.flour){for(let i=0;i<9;i++){const a=i*0.75;el(g,Math.cos(a)*(r+2),Math.sin(a)*(r*0.6)-2,0.7,0.7,al(FLOUR,0.85));}}
+}
+function crumb(g){el(g,0,0,1.7,1.2,CRUST,OUT,0.5);el(g,-0.3,-0.4,0.8,0.45,FLOUR);px(g,0.4,0.1,CORE_AMB,0.5);}
+
+// ── 5 · PAPERLING ────────────────────────────────────────
+// a bird folded from unsent letters: layered wing-sheets, an envelope body with a wax seal, ribbon-like paper tails
+const PAPER='#E8E2D4',PAPERD='#B8B0A0',PAPERL='#FFFCF0',INKB='#3A5A9A',RULE='#9FB2CF',INKW='#5A6E96';
+function wingSheet(g,side,lift,len,shade){g.save();g.scale(side,1);
+  poly(g,[[1.5,-1],[len*0.6,-4.2-lift],[len+2.5,-6-lift],[len+1.2,-3.6-lift],[len+2,-2.4-lift],[len*0.75,-0.6-lift*0.5],[len*0.5,2.5]],shade,OUT,0.6);
+  poly(g,[[len+2.5,-6-lift],[len+0.8,-5.4-lift],[len+1.6,-4.4-lift]],PAPERD,OUT,0.3);
+  ln(g,2.5,-0.5,len-0.5,-2.8-lift,RULE,0.3);ln(g,3,0.8,len*0.75,-0.8-lift*0.6,RULE,0.3);  // ruled lines
+  ln(g,len*0.35,-1.5-lift*0.4,len*0.6,1.2,al(OUT,0.5),0.3);g.restore();}                  // fold crease
+function paperling(g,o){const r=9,v=o.view||'front',f=o.flap||0,dmg=o.dmg,decoy=o.decoy;
+  el(g,0,r*1.05,r*0.75,r*0.22,'rgba(0,0,0,0.28)');g.translate(0,-(o.bob||0)-2);
+  const lift=f*2.4;
+  if(v==='side'){
+    poly(g,[[-r-2,1],[r,-2],[r*0.3,3.5]],PAPER,OUT,0.8);ln(g,-r,1,r-1,-1.5,RULE,0.3);
+    wingSheet(g,1,lift,8,PAPERD);wingSheet(g,1,lift*0.6,6,PAPER);
+    for(const [dy,c] of [[1.5,PAPER],[3,PAPERD]]){g.beginPath();g.moveTo(-r-1,dy);g.quadraticCurveTo(-r-5,dy+2+f,-r-8,dy-1);g.strokeStyle=c;g.lineWidth=1.1;g.stroke();}
+    el(g,1,0,1.4,1.4,INKB,OUT,0.4);
+  } else {
+    // paper tails: two curling strips of letter (behind)
+    for(const [x,c,k] of [[-1.6,PAPERD,1],[1.6,PAPER,-1]]){g.beginPath();g.moveTo(x,4);g.bezierCurveTo(x+k*2,8,x-k*3,10+f,x+k*1,13);g.strokeStyle=OUT;g.lineWidth=1.6;g.stroke();g.strokeStyle=c;g.lineWidth=1.0;g.stroke();}
+    // layered wings: back sheets (shade) then front sheets
+    wingSheet(g,-1,lift,r+3,PAPERD);wingSheet(g,1,lift,r+3,PAPERD);
+    wingSheet(g,-1,lift*0.6,r,PAPER);wingSheet(g,1,lift*0.6,r,PAPER);
+    // envelope body with flap
+    poly(g,[[0,-r*0.9],[r*0.55,-0.5],[0,r*0.7],[-r*0.55,-0.5]],v==='back'?PAPERD:PAPERL,OUT,0.9);
+    if(v!=='back'){poly(g,[[-r*0.5,-0.8],[0,2.2],[r*0.5,-0.8]],null,al(OUT,0.55),0.45);
+      // a few words of handwriting that trail off
+      ln(g,-2.5,-3.4,1.2,-3.4,INKW,0.35);ln(g,-2.8,-2.3,0.2,-2.3,INKW,0.35);ln(g,-2,-1.2,-0.8,-1.2,INKW,0.35);
+      if(!decoy){el(g,0,1.3,2.1,2.1,INKB,OUT,0.55);el(g,0,1.3,1.3,1.3,null,'#7FA0DA',0.35);px(g,-0.7,0.6,'#A8C4F0',0.6);
+        for(let i=0;i<6;i++){const a=i/6*TAU;px(g,Math.cos(a)*2.2-0.2,1.3+Math.sin(a)*2.2-0.2,INKB,0.45);}}  // wax drips
+      else{ln(g,0,-r*0.9,0,r*0.7,PAPERD,0.5);ln(g,-r*0.55,-0.5,r*0.55,-0.5,PAPERD,0.4);}}
+    else{ln(g,-3,-2,3,-2,RULE,0.35);ln(g,-2.5,0.5,2.5,0.5,RULE,0.35);}
+  }
+  if(dmg){ln(g,1.5,-6,3.5,-2,OUT,0.6);ln(g,3.5,-2,1.5,1,OUT,0.6);rc(g,-7,-3,1.2,1,BG);rc(g,6,-2,1,1.2,BG);}
+}
+function dart(g){poly(g,[[-4.5,0],[3,-1.4],[4.5,0],[3,1.4]],PAPERL,OUT,0.5);ln(g,-3,0,3,0,RULE,0.3);}
+
+// ── 7 · CANDLEWISP ───────────────────────────────────────
+// an old night-watch lantern: aged brass cage, leaded glass with a painted star, a candle stub, a blanket shawl trailing like a ghost
+const GLASS='#BFD8E8',BLANK='#7A6E8E',BLANKD='#5E5470',FLAME='#FFD38A',BRASS='#B8925A',BRASSD='#7A5E34',BRASSL='#E0BE80',VERD='#6FA08A';
+function candleLink(g,o){g.save();g.setLineDash([1.5,1.5]);g.strokeStyle=al(GOLD,0.95);g.lineWidth=0.9;g.beginPath();g.moveTo(0,-4);g.quadraticCurveTo(o.lx/2,o.ly/2-14,o.lx,o.ly-4);g.stroke();g.setLineDash([]);el(g,o.lx,o.ly,11,7,null,al(GOLD,0.8),0.8);g.restore();candlewisp(g,o);}
+function candlewisp(g,o){const r=9,v=o.view||'front',sw=o.sway||0,dmg=o.dmg,out=o.out;
+  el(g,2.5,r*1.35,r*0.6,r*0.2,'rgba(0,0,0,0.2)');g.translate(0,-3-sw*0.5);g.rotate(sw*0.06);
+  // ghostly trailing shawl: layered, frayed, fading at the hem
+  poly(g,[[-5.5,1],[5.5,1],[7,7+sw],[5,10],[3,8],[1,12],[-1,9],[-3,12+sw*0.5],[-5,9],[-7,10-sw]],BLANKD,OUT,0.8);
+  poly(g,[[-5,1],[5,1],[5.5,6+sw*0.5],[2,8],[-2,7.5],[-5.5,6-sw*0.5]],BLANK);
+  ln(g,-4.5,3.2,4.5,3.2,'#9A8EAE',0.5);ln(g,-4.8,4.4,4.8,4.4,'#5A5070',0.35);                   // woven stripes
+  for(const [x,y] of [[-6,10],[-2,11.6],[2,11],[6,9.6]])px(g,x,y,al('#C8C0D8',0.6),0.5);       // fraying threads
+  // brass cage: domed cap with a filigree, ring handle, corner posts with verdigris
+  poly(g,[[-5,-7],[5,-7],[3.5,-9],[-3.5,-9]],BRASS,OUT,0.7);arcS(g,0,-9,2.2,Math.PI,TAU,BRASSL,0.4);
+  el(g,0,-10.8,1.6,1.3,null,BRASS,0.8);px(g,-0.25,-12.4,BRASSD,0.5);
+  rc(g,-5,-7,10,1.2,BRASSD);rc(g,-4.5,1.2,9,1.6,BRASS);rc(g,-4.5,2.6,9,0.6,BRASSD);
+  // leaded glass panes (light blue), the centre pane painted with a little star
+  rc(g,-4.2,-5.8,8.4,7,al(GLASS,0.82));
+  for(const x of [-4.4,-1.4,1.4,4.0])rc(g,x,-5.8,0.5,7,BRASSD);rc(g,-4.2,-2.4,8.4,0.4,BRASSD);
+  px(g,-4.4,-0.4,VERD,0.6);px(g,4.0,-5,VERD,0.6);
+  if(v!=='back'){
+    if(!out){el(g,0,-1.8,6.5,7,al(FLAME,0.14));el(g,0,-1.8,2.6,3.6,al(FLAME,0.35));
+      rc(g,-0.9,-0.2,1.8,1.6,'#F1E3C4');el(g,0,-1.6,1.2,2.2,FLAME);el(g,0,-1.1,0.55,1.1,'#FFF6DA');}
+    else{rc(g,-0.9,-0.2,1.8,1.6,'#F1E3C4');for(let i=0;i<3;i++)ln(g,i*0.4,-0.4-i*1.4,0.8+i*0.3,-1.8-i*1.4,al('#9A9AA2',0.7-i*0.15),0.5);}
+    // painted star on the pane (the memory's small comfort)
+    poly(g,[[3,-5],[3.3,-4.2],[4,-4.1],[3.45,-3.6],[3.6,-2.9],[3,-3.3],[2.4,-2.9],[2.55,-3.6],[2,-4.1],[2.7,-4.2]],al('#FFE6A3',0.7));
+  } else {rc(g,-4.2,-5.8,8.4,7,al(BLANK,0.45));}
+  if(v==='side'){rc(g,-4.2,-5.8,2,7,al('#FFFFFF',0.22));}
+  if(dmg){ln(g,-3,-5,-1,-2,'#FFFFFF',0.6);ln(g,-1,-2,-2.5,0.5,'#FFFFFF',0.5);px(g,-3.6,-5.6,BG,0.8);}
+}
+
+// ── 11 · THE LAST STAND ──────────────────────────────────
+// a guardian made of mismatched armour, planted in a doorway stance behind an oversized battered shield;
+// helm with a faint ember-lit visor slit, a torn cloak behind, a repaired spear; the ember core is in the chest, hidden by the stance
+const IRON='#6E6A66',IROND='#4A4744',IRONL='#9A948C',RUST='#8A4A2A',BANNER='#4A5E7A',BANNERD='#36465E',EMBER='#E0563A',HAFT='#7A5A3A',LEATH='#5A4030';
+function laststand(g,o){const r=16,v=o.view||'front',dmg=o.dmg,down=o.down;
+  shadow(g,r);
+  // torn cloak behind (only edges show from the front)
+  poly(g,[[-9,-9],[9,-9],[11,10],[7,8],[4,12],[0,9],[-4,12],[-7,8],[-11,10]],v==='back'?BANNER:BANNERD,OUT,0.8);
+  if(v==='back'){ln(g,-6,-4,6,-6,al('#C8D2E0',0.35),0.6);ln(g,-7,2,7,0,al('#C8D2E0',0.25),0.5);}
+  // planted legs: greaves, one forward one back (a braced stance)
+  rc(g,-6,7,4,7,IROND);rc(g,2,6,4,8,IROND);el(g,-4,9,2,1.3,IRONL,OUT,0.4);el(g,4,8.5,2,1.3,IRONL,OUT,0.4);rc(g,-6.6,13.4,5,2,LEATH);rc(g,1.4,13.4,5,2,LEATH);
+  // torso: layered plates, a rusted pauldron, a leather belt with a buckle
+  el(g,0,-1,8.5,8,IRON,OUT,1);rc(g,-7,-5,6,6,IROND);rc(g,1,-5,6.5,5,RUST);rc(g,-6,3,12,1.8,LEATH);rc(g,-1,3,2,1.8,'#C9B48A');
+  el(g,-8,-5,3.6,3,IRONL,OUT,0.7);el(g,8,-5,3.6,3,RUST,OUT,0.7);
+  for(const [x,y] of [[-5,-2],[4,-3],[-2,1]])px(g,x,y,'#C9C2B8',0.6);   // rivets
+  // ember core in the chest: from behind (through a gap in the back plate) or when the shield is down
+  if(v==='back'||down){el(g,0,-1,3.4,3.4,al(EMBER,0.35));el(g,0,-1,1.9,1.9,EMBER);el(g,-0.5,-1.6,0.6,0.6,'#FFC8A0');if(v==='back')rc(g,-2.5,-4.5,5,1.2,IROND);}
+  // helm: rounded with a cheek-guard and a visor slit lit faintly from within
+  el(g,0,-12,5.6,4.8,IROND,OUT,0.9);el(g,-1.5,-13.5,2.4,1.4,IRONL);
+  if(v!=='back'){rc(g,-3.6,-12.3,7.2,1.3,OUT);rc(g,-3,-12,6,0.6,al(EMBER,0.55));}
+  rc(g,-0.5,-17.5,1,1.8,RUST);                                          // a crest stub
+  // repaired spear: wrapped grip, a notched head
+  const sx=v==='side'?7:10;ln(g,sx,-19,sx+3,12,HAFT,1.5);rc(g,sx+0.6,-6,2.6,2.4,'#C9B48A');ln(g,sx+0.6,-5,sx+3,-5,LEATH,0.4);
+  poly(g,[[sx-1.2,-19],[sx,-23],[sx+1.4,-19]],IRONL,OUT,0.5);
+  // oversized shield: held forward with a gauntlet over the rim, dented, scored, a faded painted sun
+  if(!down&&v!=='back'){g.save();if(v==='side'){g.translate(-10,1);el(g,0,0,4,14,IRON,OUT,1.2);el(g,0.8,0,2.5,12,null,IRONL,0.7);rc(g,1.5,-2,2.5,4,IROND);}
+    else{g.translate(-4.5,1);
+      el(g,0,0,r*0.74,r*0.62,IRON,OUT,1.3);el(g,0,0,r*0.64,r*0.52,null,IRONL,0.8);el(g,0,0,r*0.46,r*0.36,null,'#5E5A56',0.6);
+      // faded painted sun on the face
+      for(let i=0;i<8;i++){const a=i/8*TAU;ln(g,Math.cos(a)*2.8,Math.sin(a)*2.2,Math.cos(a)*4.6,Math.sin(a)*3.6,al('#C9A25A',0.5),0.6);}
+      el(g,0,0,2.8,2.1,'#8E8A84',OUT,0.6);el(g,-0.6,-0.6,0.9,0.7,'#C9C2B8');
+      // dents, scratches, a gauntlet gripping the rim
+      el(g,-7,-3,1.4,1,IROND);el(g,6,4,1.5,1.1,IROND);ln(g,3,-6,6,-3,'#4A4744',0.4);ln(g,-5,4,-2,6,'#4A4744',0.4);
+      el(g,10.6,-1,2,1.6,IROND,OUT,0.6);px(g,10.2,-1.6,IRONL,0.6);
+      if(dmg){ln(g,-3,-7,1,0,OUT,0.9);ln(g,1,0,-1,8,OUT,0.9);ln(g,1,0,4,3,OUT,0.6);}}
+    g.restore();}
+  if(down){g.save();g.translate(-13,10);g.rotate(-0.45);el(g,0,0,10,5.6,IRON,OUT,1);el(g,0,0,8,4.4,null,IRONL,0.6);g.restore();
+    rc(g,-10,-1,3,3,IROND);}  // shield arm lowered
+}
+
+// ── 12 · THE HUMMING CORE ────────────────────────────────
+// a music-box memory come alive: a pinned brass cylinder turning between comb teeth, a wind-up key, a tiny gear train,
+// a sea-glass core in the drum, and faint sound-ripples rising
+const TEAL='#7FE3D0',TEALD='#3E9C8E',BRASS2='#B8925A',BRASS2D='#7A5E34',BRASS2L='#E0BE80',NIGHT='#1E2A3A';
+function gear(g,x,y,R,teeth,rot,c){g.save();g.translate(x,y);g.rotate(rot);el(g,0,0,R,R,c,OUT,0.4);for(let i=0;i<teeth;i++){g.save();g.rotate(i/teeth*TAU);rc(g,-0.35,-R-0.7,0.7,0.9,c);g.restore();}el(g,0,0,R*0.35,R*0.35,OUT);g.restore();}
+function hummingcore(g,o){const r=14,v=o.view||'front',spin=o.spin||0,dmg=o.dmg,still=o.still;
+  el(g,1,r*1.05,r*0.75,r*0.22,'rgba(0,0,0,0.25)');g.translate(0,-4+Math.sin(spin)*0.6);
+  // sound ripples rising (thin arcs), unless stopped
+  if(!still&&v!=='back')for(let i=0;i<3;i++){const rr=r*0.75+i*2.6+((spin*2)%2.6);arcS(g,0,-1,rr,-Math.PI*0.82,-Math.PI*0.18,al(TEAL,0.45-i*0.12),0.5);}
+  // comb plates with tuned teeth of different lengths, mounted on brass blocks
+  for(const sx of (v==='side'?[1]:[-1,1])){g.save();g.scale(sx,1);
+    rc(g,r*0.55,-7.5,1.8,15,BRASS2D);
+    for(let i=0;i<6;i++){const len=5.6-i*0.55;rc(g,r*0.68,-6.6+i*2.4,len,1.3,BRASS2);px(g,r*0.68+len-0.6,-6.6+i*2.4,BRASS2L,0.6);}
+    g.restore();}
+  // the drum: casing, pinned cylinder turning, sea-glass heart
+  el(g,0,0,r*0.66,r*0.54,NIGHT,OUT,1.1);el(g,0,0,r*0.58,r*0.45,TEALD);
+  for(let i=0;i<8;i++){const a=spin+i*TAU/8,x=Math.cos(a)*r*0.42,f=Math.sin(a);if(f>-0.2){rc(g,x-0.6,-r*0.38,1.2,r*0.76,al(TEAL,0.3+0.5*Math.max(0,f)));
+    for(let k=0;k<3;k++)px(g,x-0.3,-r*0.3+((i*3+k*5)%10)*0.6,al('#E0FFF8',0.4+0.5*Math.max(0,f)),0.6);}}               // pins on the cylinder
+  el(g,0,0,4,4,al('#E0FFF8',0.45));el(g,0,0,2.2,2.2,'#E0FFF8');el(g,-0.6,-0.6,0.7,0.7,'#FFFFFF');
+  // brass end-rings and a little gear train under the drum
+  el(g,0,0,r*0.66,r*0.54,null,BRASS2,0.7);
+  if(v!=='back'){gear(g,-4,6.6,1.9,8,spin,BRASS2);gear(g,0.2,7.4,1.4,6,-spin*1.4,BRASS2L);gear(g,3.8,6.6,1.9,8,spin,BRASS2);}
+  // wind-up key on top, turning
+  g.save();g.translate(0,-r*0.6);rc(g,-0.5,-2.4,1,2.4,BRASS2D);g.rotate(spin*0.5);el(g,-1.6,-3,1.4,1,null,BRASS2,0.6);el(g,1.6,-3,1.4,1,null,BRASS2,0.6);g.restore();
+  if(v==='back'){el(g,0,0,r*0.58,r*0.45,al(NIGHT,0.6));}
+  if(dmg){ln(g,-4,-4,-1,0,'#E0FFF8',0.6);ln(g,-1,0,-3,4,'#E0FFF8',0.6);rc(g,r*0.68+3,-6.6+2*2.4,2,1.3,BG);}  // a snapped comb tooth
+  if(still){el(g,0,0,r*0.58,r*0.45,al('#1A1410',0.45));}
+}
+function coreWithRing(g,o){g.save();g.translate(0,6);noteRing(g,30,o.lit,o.st,o.wr||0);g.restore();hummingcore(g,o);}
+function noteRing(g,R,lit,state,waveR){
+  for(let i=0;i<8;i++){const a=-Math.PI/2+i*TAU/8,x=Math.cos(a)*R,y=Math.sin(a)*R*0.62,on=i<lit;
+    if(state==='warn'){poly(g,[[x,y-3],[x+3,y],[x,y+3],[x-3,y]],on?GOLD:al(GOLD,0.35),OUT,0.6);
+      const ix=-Math.cos(a)*3,iy=-Math.sin(a)*3*0.62;poly(g,[[x+ix*2,y+iy*2],[x+ix*1.2-iy,y+iy*1.2+ix],[x+ix*1.2+iy,y+iy*1.2-ix]],GOLD);}
+    else{el(g,x,y,2.6,1.9,on?al(TEAL,0.9):null,on?'#E0FFF8':al(TEAL,0.5),0.8);}}
+  if(state==='warn'){el(g,0,0,R+3,(R+3)*0.62,null,GOLD,1);el(g,0,0,R+6,(R+6)*0.62,null,al(GOLD,0.5),0.8);}
+  if(state==='swell'){const n=36;g.beginPath();for(let i=0;i<=n;i++){const a=i/n*TAU,rr=waveR+(i%2?3:-1);const x=Math.cos(a)*rr,y=Math.sin(a)*rr*0.62;i?g.lineTo(x,y):g.moveTo(x,y);}
+    g.fillStyle=al('#E0563A',0.16);g.fill();g.strokeStyle='#FF9F43';g.lineWidth=1.6;g.stroke();}
+}
+
+// ── 14 · THE MEMORY THAT CARRIED HIM ─────────────────────
+// a tall, stooped figure in a worn orphanage blanket, layered like a hood and shawl; long thin hands hold the silver cup
+// to its chest; a heel of bread, three marbles and a folded intake page are caught in the folds
+const BLKT='#6A5A4A',BLKTD='#4A3E33',BLKTL='#8A7862',STRIPE='#8A4A3A',SOOT='#2A2420',ASH='#D8CDB8',CUP='#E8EEF5',CUPD='#9AA6B4',BREAD='#D9A15A',MARBLE='#6FA8E0',PAGE='#EDE3CC',HANDC='#C9BFB0';
+function memory(g,o){const v=o.view||'front',sway=o.sway||0,ph=o.phase||0,curl=o.curl;
+  el(g,0,18,16,5,'rgba(0,0,0,0.35)');g.rotate(sway*0.05);if(curl){g.translate(0,5);g.scale(1.08,0.78);}
+  // outer blanket: long, stooped, hem dragging and frayed; tears appear as phases pass
+  const cl=[[-6,-31],[6,-31],[11,-21],[13,-6],[15,8],[17,17],[11,14],[6,18],[1,15],[-4,18],[-9,14],[-16,17],[-14,6],[-12,-8],[-11,-21]];
+  poly(g,cl,BLKT,OUT,1.1);
+  // inner layer (shawl wrapped across the chest) and folds
+  poly(g,[[-10,-18],[10,-18],[12,-4],[0,2],[-12,-4]],BLKTL,OUT,0.6);
+  for(const [x1,y1,x2,y2] of [[-8,-14,-11,10],[8,-14,12,12],[-3,4,-5,16],[4,4,6,15],[-12,0,-14,14]])ln(g,x1,y1,x2,y2,BLKTD,0.8);
+  // dormitory-blanket stripes and a sewn patch with stitches
+  ln(g,-13,-1,13,-1,STRIPE,1);ln(g,-14,9,15,9,STRIPE,1);
+  rc(g,6,10,4.5,4,'#7A6A58');g.strokeStyle=OUT;g.lineWidth=0.4;g.strokeRect(6,10,4.5,4);for(let i=0;i<4;i++)px(g,6.3+i*1.1,9.8,ASH,0.4);
+  for(const x of [-15,-9,-3,3,9,15])px(g,x,15.5+(x%2),al(ASH,0.5),0.5);                         // frayed threads at the hem
+  if(ph>=1){poly(g,[[11,14],[13.5,9],[15,16]],BG);} if(ph>=2){poly(g,[[-16,17],[-12,11],[-9,14]],BG);poly(g,[[1,15],[2.5,11],[4,16]],BG);}
+  // hood: a deep hollow, no face; a faint pale glint where eyes would be
+  poly(g,[[-6.5,-31],[6.5,-31],[8,-24],[0,-20],[-8,-24]],BLKTD,OUT,0.8);el(g,0,-25.5,4.6,4.2,SOOT);
+  if(v==='front'){px(g,-2,-26,al(ASH,0.55),0.6);px(g,1.4,-26,al(ASH,0.55),0.6);}
+  if(v==='side'){el(g,2.4,-25,3,3.8,SOOT);}
+  if(v!=='back'){
+    // long thin hands holding the cup close (the core)
+    if(ph<3){el(g,0,-7,7,7,al(CUP,0.22));
+      poly(g,[[-3,-10],[3,-10],[2.2,-4],[-2.2,-4]],CUP,OUT,0.7);rc(g,-1,-4,2,2,CUPD);rc(g,-2.2,-2.2,4.4,1,CUPD);
+      rc(g,1.6,-10,1,1,CUPD);px(g,-2,-9.6,'#FFFFFF',0.6);arcS(g,0,-10,1.2,0,Math.PI,CUPD,0.4);}           // a dent in the rim
+    for(const sx of [-1,1]){g.save();g.scale(sx,1);ln(g,9,-15,4.5,-7,BLKTD,2.2);
+      poly(g,[[4.6,-8.6],[2.2,-8],[2,-6],[2.6,-4.6],[4.6,-5.2]],HANDC,OUT,0.5);for(let i=0;i<3;i++)ln(g,2.2,-7.4+i*1,3.6,-7.6+i*1,al(OUT,0.6),0.3);g.restore();}
+    // bread heel tucked in the left fold: crust, crumb, a bite gone
+    if(ph<1){g.save();g.translate(-9.5,-1);g.rotate(-0.2);el(g,0,0,3.6,2.4,BREAD,OUT,0.6);el(g,0.6,-0.4,2.4,1.4,'#F1E3C4');ln(g,-2.6,-0.8,2,-1.6,'#B07A3A',0.5);el(g,3,0.4,1,1,BLKT);g.restore();}
+    // three marbles caught in the right fold, each with a swirl
+    if(ph<2)for(const [x,y,c] of [[8,3.5,MARBLE],[10.4,5.4,'#9BE37A'],[7.4,6.6,'#F2A6C2']]){el(g,x,y,1.4,1.4,c,OUT,0.4);arcS(g,x,y,0.7,0,Math.PI,'#FFFFFF',0.35);px(g,x-0.6,y-0.7,'#FFFFFF',0.4);}
+    // the folded intake page: ruled, a stamped corner
+    g.save();g.translate(-1,9);g.rotate(0.08);rc(g,-3.4,-2.4,6.8,5,PAGE);g.strokeStyle=OUT;g.lineWidth=0.5;g.strokeRect(-3.4,-2.4,6.8,5);
+      ln(g,-2.6,-1.2,2,-1.2,'#9A8F7E',0.35);ln(g,-2.6,0,1.4,0,'#9A8F7E',0.35);ln(g,-2.6,1.2,0.6,1.2,'#9A8F7E',0.35);
+      el(g,2,1.3,1,0.8,null,al('#8A4A3A',0.8),0.4);poly(g,[[3.4,-2.4],[1.8,-2.4],[3.4,-0.8]],'#D8CDB8',OUT,0.3);g.restore();
+  } else {ln(g,-8,-15,8,-15,BLKTD,1);rc(g,-4,-3,8,1.2,al(ASH,0.35));ln(g,-6,5,6,5,STRIPE,0.9);}
+}
+function plateLane(g,len){g.fillStyle=al('#E0563A',0.18);g.fillRect(-len/2,-5,len,10);g.strokeStyle=al(GOLD,0.9);g.setLineDash([3,3]);g.lineWidth=1;g.strokeRect(-len/2,-5,len,10);g.setLineDash([]);
+  el(g,len/2-8,0,4,2.4,'#E8E2D4',OUT,0.6);el(g,len/2-8,-0.5,2.4,1.2,null,'#B8A890',0.4);}
+
+// ── sheet layout ─────────────────────────────────────────
+const BGIMG={yard:null,ward:null},GEO={};
+async function loadBg(){for(const k of ['yard','ward']){const im=new Image();im.src='bg_'+k+'.png';await im.decode();BGIMG[k]=im;GEO[k]=await (await fetch('bg_'+k+'.json')).json();}}
+function sheet(S){
+  G.fillStyle=BG;G.fillRect(0,0,1600,1000);
+  // header
+  txt(S.num+' · '+S.name,24,40,{s:28,w:800,c:INK});txt(S.tag,24,62,{s:13,w:700,c:GOLD});
+  wrap(S.memory,24,84,760,{s:13,c:DIM,lh:17});
+  txt('Concept reference · not game art · STARFALL: THE ASCENT · Chapter 1 enemies',1576,36,{s:11,c:DIM,a:'right'});
+  // A hero
+  panel(24,110,360,400,'Full body · front');const hero=sprite(S.fn,Object.assign({view:'front'},S.heroO||{}),S.box,4);blit(hero,204,320,S.heroScale||(300/hero.width));
+  // B views
+  panel(394,110,420,195,'Views');[['front',0],['side',1],['back',2]].forEach(([v,i])=>{const c=sprite(S.fn,{view:v},S.box,4);blit(c,394+75+i*135,215,(S.viewScale||(120/c.width)));txt(v,394+75+i*135,292,{s:11,c:DIM,a:'center'});});
+  // C silhouette (large + at game resolution)
+  panel(394,315,420,195,'Silhouette');{const c=silh(sprite(S.fn,{view:'front'},S.box,4));blit(c,480,420,120/c.width*1.1);
+    const g1=silh(sprite(S.fn,{view:'front'},S.box,1.1));blit(g1,640,420,1.8);txt('true size, desktop',640,470,{s:10,c:DIM,a:'center'});
+    blit(g1,740,420,0.975);txt('true size, phone',740,470,{s:10,c:DIM,a:'center'});}
+  // D palette
+  panel(824,110,360,400,'Palette and materials');const pst=Math.min(44,355/S.palette.length);S.palette.forEach(([hex,name,use],i)=>{const y=140+i*pst;G.fillStyle=hex;G.fillRect(844,y,34,34);G.strokeStyle=LINE;G.strokeRect(844.5,y+0.5,33,33);
+    txt(name,890,y+14,{s:13,w:700});txt(hex+' · '+use,890,y+30,{s:11,c:DIM});});
+  // E core
+  panel(1194,110,382,400,'Core / weak point');{const c=sprite(S.fn,Object.assign({view:S.coreView||'front'},S.coreO||{}),S.box,6);const cx=1330,cy=290,k=(S.coreFit||260)/c.width;blit(c,cx,cy,k);
+    const [ax,ay]=S.coreAt;arrow(1230,170,cx+ax*6*k-6,cy+ay*6*k-6);txt('core',1230,160,{s:11,w:800,c:GOLD});wrap(S.coreText,1214,450,342,{s:12,lh:16});}
+  // F states
+  panel(24,520,790,220,'States: idle · move · attack · damaged · defeated');S.states.forEach((st,i)=>{const n=S.states.length,w=790/n,cx=24+w*i+w/2;const c=sprite(S.fn,Object.assign({view:'front'},st.o),S.box,4);
+    blit(c,cx,625,S.stateScale||(Math.min(w-20,150)/c.width));if(st.fx)st.fx(cx,625);txt(st.label,cx,708,{s:12,w:700,a:'center'});wrap(st.note,cx-w/2+10,724,w-20,{s:10,c:DIM,lh:13});});
+  // G attack and telegraphs
+  panel(824,520,752,220,'Key attacks and telegraphs');S.attacks();
+  // H gameplay scale
+  panel(24,750,1552,226,'At gameplay scale (real Rift screenshot; sprite drawn at the game’s own resolution)');gameScale(S);
+}
+// composite onto a crop of the real screenshot, at the game's resolution (world px × 1.1 buffer → × scale on screen)
+function gameScale(S){const k=S.bg||'yard',im=BGIMG[k],g=GEO[k],sc=g.scale;
+  // desktop crop 640×180 around the arena middle
+  const sx=100,sy=280,w=640,h=200;G.drawImage(im,sx,sy,w,h,44,774,w,h);G.strokeStyle=LINE;G.strokeRect(44.5,774.5,w,h);
+  const place=(wx,wy,o,fn,box)=>{const c=sprite(fn||S.fn,Object.assign({view:'front'},o||{}),box||S.box,1.1);const X=44+(g.ox+wx*sc)-sx,Y=774+(g.oy+wy*sc)-sy;blit(c,X,Y,sc/1.1);};
+  S.gamePlace(place,g);
+  txt('Desktop 1280×720 · 1.8 screen px per world px · '+(k==='yard'?'left: a real Shielded Hothead for size':'real patients and ward in frame for size'),44,990,{s:11,c:DIM});
+  // phone: same crop scaled to iPhone landscape (≈0.975 px per world px vs 1.8)
+  const ph=0.975/1.8;G.save();G.translate(720,774);G.drawImage(im,sx,sy,w,h,0,0,w*ph,h*ph);G.restore();
+  {const c=document.createElement('canvas');}
+  G.save();G.beginPath();G.rect(720,774,w*ph,h*ph);G.clip();
+  const placeP=(wx,wy,o,fn,box)=>{const c=sprite(fn||S.fn,Object.assign({view:'front'},o||{}),box||S.box,1.1);const X=720+((g.ox+wx*sc)-sx)*ph,Y=774+((g.oy+wy*sc)-sy)*ph;blit(c,X,Y,0.975/1.1);};
+  S.gamePlace(placeP,g);G.restore();G.strokeStyle=LINE;G.strokeRect(720.5,774.5,w*ph,h*ph);
+  txt('iPhone landscape · ≈0.98 px per world px',720,900,{s:11,c:DIM});
+  wrap(S.scaleNote,1100,800,450,{s:12,lh:17});
+}
+
+// ── the six sheets ───────────────────────────────────────
+const SHEETS={
+crumbkin:{num:'04',name:'Crumbkin',fn:crumbkin,box:12,tag:'Low · swarm · verb: HUDDLE · Rifts and Runs debut · [PROPOSED]',
+  memory:'Memory (anonymous): someone baking bread for the people they loved. Warm, fond, full. It should look made with care first, a little uncanny second.',
+  palette:[[CRUST,'Crust','body, scored top'],['#B5794A','Bake highlight','upper crust'],[FLOUR,'Flour','dust, cut lines'],[CORE_AMB,'Crumb-core','the glow under the middle cut'],[PLATE,'Serving plate','cracked base it sits on'],[MITT,'Oven mitts','hands'],[CRUSTD,'Cracked crust','damage state'],[CRUSTL,'Golden bake','sheen on the shoulders']],
+  coreText:'Core: the warm amber glow under the middle of three scored cuts. It brightens just before a crumb toss, and all of a huddle’s cores pulse together during the 1 s merge warning.',
+  
+  states:[{label:'Idle',o:{},note:'Soft settle; flour drifts.'},{label:'Move',o:{bounce:2,swing:1},note:'Bouncing waddle, mitts swing.'},
+    {label:'Toss (attack)',o:{swing:1,flour:1},note:'Scatters 3 crumbs (2 s hazards).',fx:(x,y)=>{for(const [dx,dy] of [[-46,-30],[44,-26],[6,-50]]){blit(sprite(crumb,{},3,4),x+dx,y+dy,1.4);}}},
+    {label:'Damaged',o:{dmg:1},note:'Crust cracks at 50%.'},{label:'Huddle → Warm Loaf',o:{loaf:1},note:'3+ left close for 4 s merge (1 s warning).'}],
+  stateScale:0.9,
+  attacks:()=>{const x0=850,y0=560;
+    txt('Crumb scatter',x0,y0,{s:13,w:800});wrap('Every 3–4 s, 3 crumbs land in 0.4 s and stay 2 s as small hazard dots. Never aimed at the player.',x0,y0+18,220,{s:11,c:DIM,lh:14});
+    for(const [dx,dy] of [[40,80],[90,96],[140,76]]){G.fillStyle=al('#E0563A',0.25);G.beginPath();G.arc(x0+dx,y0+dy+40,12,0,TAU);G.fill();blit(sprite(crumb,{},3,4),x0+dx,y0+dy+40,1.3);}
+    const x1=1100;txt('Huddle warning (1 s)',x1,y0,{s:13,w:800});wrap('Cores pulse in sync and a dashed gold ring draws them together. A stun or knockback on any member cancels it.',x1,y0+18,220,{s:11,c:DIM,lh:14});
+    G.setLineDash([5,4]);G.strokeStyle=GOLD;G.lineWidth=1.5;G.beginPath();G.ellipse(x1+110,y0+130,70,40,0,0,TAU);G.stroke();G.setLineDash([]);
+    for(const [dx,dy] of [[-40,-10],[30,-18],[0,20]]){blit(sprite(crumbkin,{},12,3),x1+110+dx,y0+130+dy,1.6);arrow(x1+110+dx*1.6,y0+130+dy*1.6,x1+110+dx*0.6,y0+130+dy*0.6,al(GOLD,0.8));}
+    const x2=1350;txt('Warm Loaf slam',x2,y0,{s:13,w:800});wrap('0.7 s wind-up: the crust glows from the cuts outward, then a short slam and knockback.',x2,y0+18,200,{s:11,c:DIM,lh:14});
+    G.fillStyle=al('#E0563A',0.2);G.beginPath();G.arc(x2+100,y0+140,46,0,TAU);G.fill();G.strokeStyle=al('#FF9F43',0.9);G.lineWidth=1.5;G.stroke();blit(sprite(crumbkin,{loaf:1},24,3),x2+100,y0+140,1.2);},
+  coreAt:[0,-2.3],gamePlace:(P)=>{for(const [x,y] of [[200,190],[214,182],[208,200],[224,194]])P(x,y,{});P(262,192,{loaf:1});},
+  scaleNote:'Readable at both sizes by the scored brown loaf with the amber dot, not by colour alone. It is the smallest Vice (r 8, like a Gossip child), so it always comes in groups of 3–4, and the Warm Loaf is clearly bigger. Brown and amber separate it from the lime Gossip and the cream Waxer.'},
+paperling:{num:'05',name:'Paperling',fn:paperling,box:16,tag:'Low · harasser · verb: MISDIRECT · Rifts and Runs debut · [PROPOSED]',
+  memory:'Memory: a message never sent. Letters folded and kept, apologies started and stopped. Unfinished. Mercury’s quieter face: Gossip is words lost, Paperling is words never said.',
+  palette:[[PAPER,'Letter paper','wings and body'],[PAPERD,'Folded shade','undersides, back, decoys'],[RULE,'Ruled lines','faint writing lines'],[INKB,'Ink seal','the core'],['#7FA0DA','Seal shine','highlight'],['#FFFCF0','Dart','paper darts']],
+  coreText:'Core: the ink-blue wax seal on the envelope body, with a few drips. Decoys have no seal, only a fold crease, which is the difference you can see. A Spotted mark lands only on the real one.',
+  
+  states:[{label:'Idle',o:{bob:0,flap:0},note:'Hovers, bobbing 6 px.'},{label:'Move',o:{flap:1,bob:2},note:'Wing-sheets flap.'},
+    {label:'Darts (attack)',o:{flap:-1},note:'2 darts in a 20° spread, every 2.2 s.',fx:(x,y)=>{blit(sprite(dart,{},5,4),x+70,y-14,1.8);blit(sprite(dart,{},5,4),x+70,y+14,1.8);}},
+    {label:'Damaged',o:{dmg:1},note:'Tears at 50%.'},{label:'Decoy fold',o:{decoy:1},note:'1 HP decoy, no seal, 4 s. At most 2.'}],
+  stateScale:1.0,
+  attacks:()=>{const x0=850,y0=560;
+    txt('Paper darts',x0,y0,{s:13,w:800});wrap('Short ivory streaks, 220 px/s. Visible against grass, stone and the ward floor.',x0,y0+18,220,{s:11,c:DIM,lh:14});
+    blit(sprite(paperling,{},13,3),x0+40,y0+110,1.4);for(const a of [-0.17,0.17]){G.strokeStyle=al('#FFFCF0',0.6);G.lineWidth=2;G.beginPath();G.moveTo(x0+60,y0+110);G.lineTo(x0+200,y0+110+Math.tan(a)*140);G.stroke();}
+    const x1=1100;txt('Decoy fold (0.5 s shuffle)',x1,y0,{s:13,w:800});wrap('Paper shuffles (lines jitter) for 0.5 s, then a folded copy drops. Auto-aim may pick it: misdirection, not blindness.',x1,y0+18,230,{s:11,c:DIM,lh:14});
+    blit(sprite(paperling,{},13,3),x1+60,y0+120,1.5);blit(sprite(paperling,{decoy:1},13,3),x1+160,y0+120,1.5);txt('real (seal)',x1+60,y0+186,{s:10,c:DIM,a:'center'});txt('decoy (crease)',x1+160,y0+186,{s:10,c:DIM,a:'center'});
+    const x2=1350;txt('Re-fold once',x2,y0,{s:13,w:800});wrap('At 0 HP it bursts to scraps, then re-folds at 40% after 1.5 s. Hit it during the re-fold, or make it Wet, to end it.',x2,y0+18,200,{s:11,c:DIM,lh:14});
+    for(let i=0;i<5;i++){G.save();G.translate(x2+70+i*18,y0+120+(i%2)*12);G.rotate(i);G.fillStyle=PAPER;G.fillRect(-4,-3,8,6);G.restore();}},
+  coreAt:[0,-2],gamePlace:(P)=>{P(205,186,{});P(232,176,{flap:1});P(258,196,{decoy:1});},
+  scaleNote:'A bird folded from letters: pointed layered wings and two curling paper tails make the only bright-white, angular, winged Vice, so it can’t be confused with the round ones. The blue seal dot is what tells real from decoy at gameplay size; on phones the decoy also lacks the shadow wobble.'},
+candlewisp:{num:'07',name:'Candlewisp',fn:candlewisp,box:15,tag:'Low · support · verb: SHELTER · Rifts and Runs debut (Tier II+) · [PROPOSED]',
+  memory:'Memory: someone keeping watch beside a sick bed through a long night. Steadfast, quiet. The Moon’s tender side, close to St. Lucia’s, without touching its story.',
+  palette:[[GLASS,'Lantern glass','pale, slightly see-through'],[BRASS,'Brass','lantern frame and ring'],[FLAME,'Flame','the core'],[BLANK,'Folded blanket','cloak trailing below'],['#9A8EAE','Blanket fold','stripe'],['#9A9AA2','Smoke','link broken / defeated'],[VERD,'Verdigris','aged brass corners']],
+  coreText:'Core: the flame inside the glass. While it shelters an ally, a thin gold thread runs from the flame to that ally. When a hit interrupts it, the flame gutters to smoke for 2 s, so you can see the shelter is down.',
+  
+  states:[{label:'Idle',o:{sway:0},note:'Floats; flame flickers.'},{label:'Move',o:{sway:2},note:'Slow sway toward allies.'},
+    {label:'Watch (link)',o:{sway:-1},note:'Gold thread: the ally takes −35% damage.',fx:(x,y)=>{G.strokeStyle=al(GOLD,0.9);G.lineWidth=1.5;G.setLineDash([2,3]);G.beginPath();G.moveTo(x,y-10);G.quadraticCurveTo(x+40,y-50,x+70,y-10);G.stroke();G.setLineDash([]);G.strokeStyle=al(GOLD,0.6);G.beginPath();G.arc(x+70,y-10,12,0,TAU);G.stroke();}},
+    {label:'Damaged',o:{dmg:1},note:'Glass cracks.'},{label:'Interrupted',o:{out:1},note:'Flame to smoke for 2 s; link off.'}],
+  stateScale:1.0,
+  attacks:()=>{const x0=850,y0=560;
+    txt('Watch: the shelter link',x0,y0,{s:13,w:800});wrap('0.6 s link telegraph: the thread draws itself. The sheltered ally gets a faint gold ring. One link at a time.',x0,y0+18,230,{s:11,c:DIM,lh:14});
+    blit(sprite(candlewisp,{},13,3),x0+40,y0+120,1.5);G.strokeStyle=al(GOLD,0.9);G.lineWidth=1.5;G.setLineDash([2,3]);G.beginPath();G.moveTo(x0+40,y0+110);G.quadraticCurveTo(x0+110,y0+70,x0+180,y0+120);G.stroke();G.setLineDash([]);
+    G.strokeStyle=al(GOLD,0.7);G.beginPath();G.arc(x0+180,y0+125,18,0,TAU);G.stroke();txt('sheltered ally',x0+180,y0+160,{s:10,c:DIM,a:'center'});
+    const x1=1120;txt('Not a healer',x1,y0,{s:13,w:800});wrap('Waxer heals HP and throws wax. Candlewisp only reduces damage and never attacks (contact 0). Two supports means choosing an order.',x1,y0+18,220,{s:11,c:DIM,lh:14});
+    const x2=1360;txt('Breaking it',x2,y0,{s:13,w:800});wrap('Hit it (2 s break), stun it, knock the ally more than 160 px away, or Stagger it to 60 (out for 3 s).',x2,y0+18,200,{s:11,c:DIM,lh:14});},
+  coreAt:[0,-4.5],gamePlace:(P,g)=>{P(205,184,{});P(232,180,{sway:1,lx:-112,ly:24},candleLink,140);},
+  scaleNote:'Shown linked to the real Shielded Hothead on the left: the gold dotted thread and ring mark who is sheltered. The only Vice that floats: its shadow sits below and offset. A pale rectangle with a gold dot of flame, unlike every round body in the roster. The gold link line is thin but high-contrast against grass and stone.'},
+laststand:{num:'11',name:'The Last Stand',fn:laststand,box:25,tag:'Mid · guard · verb: COVER · Rifts and Runs debut (Tier II+) · [PROPOSED]',
+  memory:'Memory (anonymous): someone who stayed behind so others could get away. Resolve, and fear held down. It honours courage without glorifying war. Not a Garrison name, not a known battle.',
+  palette:[[IRON,'Iron','shield and plates'],[IROND,'Dark iron','helm, dents'],[RUST,'Rust','mismatched plate'],[BANNER,'Banner blue','torn strip down the back'],[HAFT,'Spear haft','repaired, wrapped'],[LEATH,'Leather','belt, boots, grip wrap'],[EMBER,'Ember','the core (back or shield down)']],
+  coreText:'Core: a red ember in the chest, hidden behind the shield. You see it from behind, during the 1.2 s after a shield rush, and during a Stagger stun, which are exactly the moments it takes full damage.',
+  coreView:'back',
+  states:[{label:'Idle',o:{},note:'Shield raised forward.'},{label:'Move',o:{view:'side'},note:'Heavy, measured walk; turns 90°/s.'},
+    {label:'Shield rush',o:{},note:'0.8 s thump and dust ring, then a 160 px rush.',fx:(x,y)=>{G.strokeStyle=al('#C9B48A',0.8);G.lineWidth=1.5;G.beginPath();G.ellipse(x,y+30,48,14,0,0,TAU);G.stroke();}},
+    {label:'Shield down',o:{down:1},note:'1.2 s open: ember visible.'},{label:'Damaged',o:{dmg:1},note:'Shield cracked at 50%.'}],
+  stateScale:0.62,
+  attacks:()=>{const x0=850,y0=560;
+    txt('Hold the line: 120° cover',x0,y0,{s:13,w:800});wrap('Frontal hits −70%. Vices up to 60 px behind it are covered too. Flank, or hit it while the shield is down.',x0,y0+18,230,{s:11,c:DIM,lh:14});
+    const cx=x0+110,cy=y0+130;G.fillStyle=al('#9FB2CF',0.18);G.beginPath();G.moveTo(cx,cy);G.arc(cx,cy,70,-Math.PI/2-1.05,-Math.PI/2+1.05);G.closePath();G.fill();G.strokeStyle=al('#9FB2CF',0.8);G.stroke();
+    blit(sprite(laststand,{},20,2.2),cx,cy,1.2);blit(sprite(crumbkin,{},12,2.2),cx,cy+40,1.0);txt('covered',cx+30,cy+48,{s:10,c:DIM});
+    const x1=1110;txt('Shield rush',x1,y0,{s:13,w:800});wrap('Ground thump with a dust ring (0.8 s), then a straight 160 px rush, 12 damage and knockback. The telegraph lane uses the game’s red-line style.',x1,y0+18,230,{s:11,c:DIM,lh:14});
+    G.fillStyle=al('#E0563A',0.2);G.fillRect(x1+40,y0+110,170,26);G.strokeStyle=al('#FF6B5A',0.9);G.strokeRect(x1+40,y0+110,170,26);arrow(x1+60,y0+123,x1+200,y0+123,'#FF6B5A');
+    const x2=1370;txt('Stagger',x2,y0,{s:13,w:800});wrap('Bash and charged attacks build Stagger through the shield. 100 = shield down for the full 2 s stun. No extra gauge.',x2,y0+18,190,{s:11,c:DIM,lh:14});},
+  coreAt:[0,-1],gamePlace:(P)=>{P(212,186,{});P(258,190,{view:'back'});},
+  scaleNote:'An armoured guardian planted behind a battered round shield: helm, spear and braced legs show around it, so it reads as a someone standing guard, and the shield shows which way it faces. Same size class as Deadline (r 15–16), but grey, rust and banner-blue where Deadline is a violet cabinet. Its ember only shows from behind.'},
+hummingcore:{num:'12',name:'The Humming Core',fn:hummingcore,box:20,tag:'Mid · special controller · verb: RHYTHM · rare in Rifts and Runs · [PROPOSED] working title',
+  memory:'Memory: a song hummed by a woman, heard through a Vice core. Who she is stays unresolved. No words and no "little star" line: only four notes, the last one held a little too long.',
+  palette:[[TEAL,'Sea-glass teal','the turning core'],[TEALD,'Deep teal','core body'],['#E0FFF8','Glow','centre light'],[BRASS2,'Brass comb','music-box fins'],[NIGHT,'Night','outline casing'],[GOLD,'Warning gold','beat 3: swell coming'],['#FF9F43','Swell','beat 4: the danger wave']],
+  coreText:'Core: the turning cylinder itself. It spins with the beat and stops dead when defeated. Hitting it on beat 3 delays the swell by one beat: the ring’s gold flash moves on to the next mark.',
+  
+  states:[{label:'Idle',o:{spin:0.3},note:'Turns slowly; drifts to centre.'},{label:'Move',o:{spin:1.2},note:'Barely moves (speed 30).'},
+    {label:'Swell (attack)',o:{spin:2},note:'Beat 4: wave to 140 px, 8 damage.',fx:(x,y)=>{G.save();G.translate(x,y+10);G.scale(2.2,2.2);noteRing(G,26,8,'swell',30);G.restore();}},
+    {label:'Damaged',o:{dmg:1},note:'Hum bends; ring flickers.'},{label:'Defeated',o:{still:1},note:'Stops turning; last note lingers.'}],
+  stateScale:0.62,
+  attacks:()=>{const x0=846,y0=548;txt('One bar of the lullaby: four beats, 0.75 s each. Read it by SHAPE, not only colour or sound.',x0,y0+20,{s:12,w:800});
+    const beats=[['Beat 1','calm',2,'SAFE · hollow teal notes light 2 by 2. Nearby Vices slowed, don’t attack.'],['Beat 2','calm',4,'SAFE · 4 notes lit.'],['Beat 3','warn',6,'WARNING · notes turn to gold diamonds, double ring, chevrons point in.'],['Beat 4','swell',8,'DANGER · jagged orange wave runs out to 140 px. Be outside it, or dodge through.']];
+    beats.forEach(([lab,st,lit,note],i)=>{const cx=x0+92+i*183,cy=y0+92;G.save();G.translate(cx,cy);G.scale(1.6,1.6);noteRing(G,28,lit,st,st==='swell'?40:0);G.restore();
+      blit(sprite(hummingcore,{spin:i},20,2),cx,cy-6,0.9);txt(lab,cx,cy+66,{s:12,w:800,a:'center',c:st==='calm'?TEAL:st==='warn'?GOLD:'#FF9F43'});wrap(note,cx-84,cy+82,170,{s:10,c:DIM,lh:12});});},
+  coreAt:[0,-4],gamePlace:(P)=>{P(205,192,{spin:1,lit:4,st:'calm'},coreWithRing,44);P(300,192,{spin:2,lit:6,st:'warn'},coreWithRing,44);},
+  bg:'yard',
+  scaleNote:'Shown at true size: left on a safe beat (hollow teal dots), right on the warning beat (gold diamonds, double ring). Floor ring under it: hollow teal dots (safe), gold diamonds plus a double ring (warning), jagged orange wave (danger). Shape and motion carry the beat for colour-blind players and with the sound off. The ring is drawn on the floor, under other Vices, so it never hides them.'},
+memory:{num:'14',name:'The Memory That Carried Him',fn:memory,box:34,tag:'Story mini-boss · Forgotten Memory (R9) · VISUAL CONCEPT approved · gameplay changes NOT approved (Phase 3)',
+  memory:'Memory [canon v1.2]: Lucas’s own taken childhood at St. Hesper’s. A tall, stooped shape in an orphanage blanket, holding things close: a heel of bread, three marbles, an intake page, and the silver cup held to its chest. Not a Collector: no purple, no coins.',
+  palette:[[BLKT,'Dormitory blanket','the cloak'],[BLKTD,'Blanket shadow','folds, arms'],[SOOT,'Soot','hood hollow (no face)'],[CUP,'Silver cup','the core'],[BREAD,'Bread heel','phase object'],[MARBLE,'Marbles','blue, green, pink'],[PAGE,'Intake page','folded paper'],[STRIPE,'Blanket stripe','dormitory weave'],[HANDC,'Hands','long, thin, holding the cup']],
+  coreText:'Core: the silver cup held to its chest, the only bright thing on it. The objects in the folds fall onto the roof one by one as the fight goes on (bread, then the marbles, then the cup last), and the cloak thins and tears.',
+  heroScale:1.15,viewScale:0.5,
+  states:[{label:'Idle',o:{sway:0},note:'Sways like rocking a child.'},{label:'Move',o:{sway:2},note:'Glides; the cloak drags.'},
+    {label:'Curl (guard)',o:{curl:1},note:'Concept: pulls the objects in.'},{label:'Object falls',o:{phase:1},note:'The bread falls; line plays.'},{label:'Taken back',o:{phase:3,sway:-1},note:'Cup rolls to Lucas.'}],
+  stateScale:0.5,
+  attacks:()=>{const x0=850,y0=560;txt('Attack concepts: visual only. The fight stays as it is until Phase 3.',x0,y0,{s:12,w:800,c:GOLD});
+    txt('Breakfast table',x0,y0+26,{s:12,w:800});G.save();G.translate(x0+100,y0+80);G.scale(1.2,1.2);plateLane(G,150);G.restore();wrap('Plates slide down gold-dashed lanes (0.6 s).',x0,y0+120,200,{s:10,c:DIM,lh:12});
+    const x1=1080;txt('Sixty',x1,y0+26,{s:12,w:800});G.strokeStyle=al(ASH,0.8);G.lineWidth=1;for(let i=0;i<12;i++){const a=i/12*TAU;txt(String((i+1)*5),x1+90+Math.cos(a)*55,y0+95+Math.sin(a)*34,{s:9,c:DIM,a:'center'});}
+    G.beginPath();G.ellipse(x1+90,y0+92,40,24,0,0,TAU);G.stroke();wrap('Numbers ring the roof; a pulse every 10th count.',x1,y0+148,200,{s:10,c:DIM,lh:12});
+    const x2=1310;txt('Smoke · the hand',x2,y0+26,{s:12,w:800});G.fillStyle=al('#9A9AA2',0.35);for(const [dx,dy,r] of [[40,80,22],[90,95,18],[60,110,16]]){G.beginPath();G.arc(x2+dx,y0+dy,r,0,TAU);G.fill();}
+    G.strokeStyle=al('#FF6B5A',0.9);G.lineWidth=2;G.beginPath();G.moveTo(x2+150,y0+60);G.quadraticCurveTo(x2+190,y0+90,x2+170,y0+120);G.stroke();wrap('Haze telegraph 0.8 s; the reach is a 1.0 s wind-up.',x2,y0+148,220,{s:10,c:DIM,lh:12});},
+  coreAt:[0,-6],gamePlace:(P)=>{P(230,205,{});},
+  bg:'ward',
+  scaleNote:'At gameplay size it reads as a tall dark cloak with one bright silver dot. Nothing like the small purple Collector. It is drawn 1.4× taller than its hit circle (r 24) so it towers over Lucas, as a memory of being small would.'},
+};
+window.render=async(k)=>{if(!BGIMG.yard)await loadBg();sheet(SHEETS[k]);return true;};
+window.KEYS=Object.keys(SHEETS);
+</script></body></html>
