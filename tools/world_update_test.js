@@ -74,6 +74,20 @@ const MODE=process.argv[2]||'desk';
   ok(new RegExp('Back to '+dist,'i').test(t),d+': results offer “Back to '+dist+'”');
   await p.evaluate(()=>document.querySelector('#overlay [data-back]').click());await p.waitForTimeout(900);
   const at=await p.evaluate(()=>{const r=__sf.room();return r&&r.m&&r.m.M?r.m.M.dist:null;});ok(at===d,d+': back in '+dist+' after the battle ('+at+')');}
+ // ══ Phase 4 · character stories (Recollection framework, shown as Bond Stories) ══
+ const bonds=async()=>{await go('tower');await p.evaluate(()=>{__sf.room().m.npcs.find(n=>n.id==='tower.board').talk();});await p.waitForTimeout(300);
+   return p.evaluate(()=>{const b=[...document.querySelectorAll('#overlay button')].find(e=>/bond stories/i.test(e.innerText));b&&b.click();return new Promise(r=>setTimeout(()=>{const t=document.getElementById('overlay').innerText;document.querySelector('#overlay [data-back]')&&document.querySelector('#overlay [data-back]').click();r(t);},300));});};
+ await fresh(true);
+ let bt=await bonds();ok(/Agnes/.test(bt)&&/Bram/.test(bt)&&/Dess/.test(bt)&&/Kairos/.test(bt),'Bond Stories tab lists every character');
+ ok(/Not found yet · Agnes has been at the workbench/i.test(bt),'undiscovered stories show their rumour, not their title');
+ await p.evaluate(()=>{__sf.qstart('agnes_handmade');const q=__sf.mx().q.agnes_handmade;q.n=1;});bt=await bonds();
+ ok(/A Little Something Handmade · in progress: .*Activity · step 2 of 4/i.test(bt),'active story shows its current beat and progress');
+ await p.evaluate(()=>{__sf.mx().q.agnes_handmade={s:'done',n:0};});bt=await bonds();ok(/✓ A Little Something Handmade/.test(bt),'completed story is ticked');
+ ok(/after \d more stor(y|ies) \(\d \/ 7\)/.test(bt),'Dess’s story shows its requirement');
+ await p.evaluate(()=>{__sf.persist&&__sf.persist();});await p.goto(url);await p.waitForTimeout(600);
+ ok(await p.evaluate(()=>__sf.mx().q.agnes_handmade&&__sf.mx().q.agnes_handmade.s==='done'),'story completion persists after a reload');
+ await fresh(false);await p.evaluate(()=>{const s=__sf.save();s.ch1b={k:'Scene 10',i:40};__sf.flags()['ch1.ashlane']=1;});
+ bt=await bonds();ok(/open up after Chapter 1/i.test(bt),'before the end of Chapter 1 the tab says when stories open');
  // the main-menu route is unchanged
  await p.evaluate(()=>{__sf.goHome&&__sf.goHome();});
  ok(errs.length===0,'no page errors'+(errs[0]?': '+errs[0]:''));

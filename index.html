@@ -5999,6 +5999,36 @@ function showMeridian(){
       it('Renown',mxClaimable()?mxClaimable()+' reward'+(mxClaimable()>1?'s':'')+' to claim':'Rank '+mxRank()+' of '+MX_RANKS.length,()=>showRenown(showMeridian),mxClaimable()?' guide-new':''),
       it('Back','Main menu',()=>goHome(),'',{'data-back':'1'}))),'mode-select');
 }
+// ── Character stories: the "Recollection" framework of the design docs (players see them as Bond Stories, because
+// "Recollection" already names character level and Dess's Ultimate). Every character story is an ordinary MX_QUESTS
+// entry (kind bond, memory or hangout, with char); this table only groups them per character and names each step's beat:
+//   intro (how it is found) · explore · activity (puzzle, craft, minigame) · combat (optional) · resolution
+// To add one: write the quest in MX_QUESTS (kind:'hangout', char, at, npc, steps, reward), list it here, and tag its steps.
+const STORY_LABEL='Bond Stories';
+const RECOLLECTIONS={
+  ines:{stories:['agnes_handmade']},bram:{stories:['bram_bread']},noemi:{stories:['lark_couldnt_save']},theo:{stories:['lark_couldnt_save']},
+  cass:{stories:['cass_prayer']},dess:{stories:['dess_experiment']},
+  lucan:{stories:['lucas_mem_bread','lucas_mem_plan','lucas_mem_room'],later:'Lucas himself is not here to tell the rest. Not yet.'},
+  kairos:{stories:[],later:'Kairos’s own story is still ahead of him.'}};
+const REC_BEATS={agnes_handmade:{gather:'explore',make:'activity',test:'combat',end:'resolution'},
+  bram_bread:{gather:'explore',bake:'activity',defend:'combat',end:'resolution'}};
+const BEAT_LABEL={explore:'Explore',activity:'Activity',combat:'Fight',resolution:'Ending'};
+function recProgress(id){const Q=MX_QUESTS[id],q=mxS().q[id];if(!q||q.s==='done')return null;const sp=Q.steps[q.n];if(!sp)return null;
+  const b=(REC_BEATS[id]||{})[sp.id];return {n:q.n+1,of:Q.steps.length,step:sp.t,beat:b?BEAT_LABEL[b]:null};}
+function recLine(id){const Q=MX_QUESTS[id],st=mxQState(id);
+  if(st==='completed')return ['done','✓ '+Q.title];
+  if(st==='active'){const pr=recProgress(id);return ['active',Q.title+' · in progress'+(pr?': '+pr.step+' ('+(pr.beat?pr.beat+' · ':'')+'step '+pr.n+' of '+pr.of+')':'')];}
+  if(st==='available')return ['ready',Q.title+' · ready to start ('+(Q.giver||'talk to them')+')'];
+  if(st==='locked_by_prerequisite'){const pre=Q.pre||[],dn=pre.filter(mxDoneQ).length;return ['lock','A story not yet open · after '+(pre.length-dn)+' more '+(pre.length-dn>1?'stories':'story')+' ('+dn+' / '+pre.length+')'];}
+  if(st==='locked_by_story')return ['lock',mxEra()==='fugitive'?'A story not yet open · later in the story':'Opens after Chapter 1'];
+  const t=Q.hint;return ['hint','Not found yet'+(t?' · '+(typeof t==='function'?t():t):'')];}
+function showBondsTab(){const out=[];
+  for(const id of CH_ORDER){const R=RECOLLECTIONS[id];if(!R)continue;const lines=R.stories.map(recLine);
+    out.push(h('div',{class:'mx-q'},h('h4',null,nameOf(id),id==='kairos'?null:h('em',{class:'opt'},'Bond '+bondHearts(bondOf(id)))),
+      ...lines.map(([k,t])=>h('p',{class:k==='done'?'rw':'ob'},(k==='done'?'':'→ ')+t)),
+      R.later?h('p',{class:'rw'},R.later):null,!lines.length&&!R.later?h('p',{class:'rw'},'Nothing yet.'):null));}
+  out.unshift(h('p',{class:'ss-info'},mxEra()==='fugitive'?'Your friends’ own stories. Most begin at the hideout in the Clock Tower; some start out in the city.':STORY_LABEL+' open up after Chapter 1.'));
+  return out;}
 const MX_KIND_LABEL={bond:'Bond story',memory:'Memory',hangout:'Hangout',side:'World story'};
 function mxStoriesList(){const ids=Object.keys(MX_QUESTS).filter(id=>MX_STORY_KINDS.includes(MX_QUESTS[id].kind));
   const vis=ids.filter(id=>['available','active','completed'].includes(mxQState(id))),locked=ids.length-vis.length;
@@ -6037,8 +6067,8 @@ function showJournal(back,tab){
     return h('div',{class:'mx-r'+(got?'':' lock')},h('b',null,got?f.title:'???'),h('span',null,D.name+(f.act?' · '+MX_ACTIVITIES[f.act].name:'')),got?h('p',null,txt||'Read on the board itself.'):h('p',null,f.hidden?'Something hidden, off the beaten path.':'Not found yet.'));});
   const tb=(k,label)=>h('button',{class:'btn'+(tab===k?'':' outline'),type:'button','aria-pressed':String(tab===k),onclick:()=>showJournal(back,k)},label);
   openOverlay(h('div',{class:'form mx'},formHead('Meridian','Journal'),
-    h('div',{class:'mx-tabs'},tb('quests','Quests'),tb('stories','Stories'),tb('records','Records '+mxRecordCount()+' / '+MX_RECORDS),tb('map','Map')),
-    h('div',{class:'mx-list'},...(tab==='stories'?mxStoriesList():tab==='quests'?quests:tab==='records'?recs:[mxMapGrid(),h('p',{class:'ss-info'},'Walk off a gold arrow at the edge of a district, or open the world map to travel.'),h('button',{class:'btn small',type:'button',onclick:()=>showWorldMap({from:'journal',back:()=>showJournal(back,'map')})},'Open the world map')])),
+    h('div',{class:'mx-tabs'},tb('quests','Quests'),tb('stories','Stories'),tb('bonds',STORY_LABEL),tb('records','Records '+mxRecordCount()+' / '+MX_RECORDS),tb('map','Map')),
+    h('div',{class:'mx-list'},...(tab==='stories'?mxStoriesList():tab==='bonds'?showBondsTab():tab==='quests'?quests:tab==='records'?recs:[mxMapGrid(),h('p',{class:'ss-info'},'Walk off a gold arrow at the edge of a district, or open the world map to travel.'),h('button',{class:'btn small',type:'button',onclick:()=>showWorldMap({from:'journal',back:()=>showJournal(back,'map')})},'Open the world map')])),
     h('div',{class:'row'},h('button',{class:'btn outline',type:'button','data-back':'1',onclick:()=>back()},'Back'))),'mode-select');
 }
 
