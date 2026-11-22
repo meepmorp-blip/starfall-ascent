@@ -88,6 +88,21 @@ const MODE=process.argv[2]||'desk';
  ok(await p.evaluate(()=>__sf.mx().q.agnes_handmade&&__sf.mx().q.agnes_handmade.s==='done'),'story completion persists after a reload');
  await fresh(false);await p.evaluate(()=>{const s=__sf.save();s.ch1b={k:'Scene 10',i:40};__sf.flags()['ch1.ashlane']=1;});
  bt=await bonds();ok(/open up after Chapter 1/i.test(bt),'before the end of Chapter 1 the tab says when stories open');
+ // ══ Phase 5 · exploration rewards ══
+ await fresh(true);
+ const rc=await p.evaluate(()=>{const ids=__sf.recIds(),x=__sf.mx(),s=__sf.save();const k0=s.keep|0,f0=s.frags.length;
+   for(const [id] of ids.slice(0,11))x.found[id]=1;__sf.recMs();const k11=s.keep|0;
+   x.found[ids[11][0]]=1;__sf.recMs();const k12=s.keep|0;__sf.recMs();const k12b=s.keep|0;
+   for(const [id] of ids.slice(12,20))x.found[id]=1;__sf.recMs();const f20=s.frags.length;
+   for(const [id] of ids)x.found[id]=1;__sf.recMs();const fall=s.frags.length,star=s.frags[s.frags.length-1].rar;
+   return {n:ids.length,k0,k11,k12,k12b,f0,f20,fall,star};});
+ ok(rc.k11===rc.k0&&rc.k12===rc.k0+1&&rc.k12b===rc.k12,'12 records: one Keepsake, granted once ('+JSON.stringify(rc)+')');
+ ok(rc.f20===rc.f0+1&&rc.fall===rc.f0+2&&rc.star===2,'20 records: a Fragment; all '+rc.n+': a Star-born Fragment');
+ const k0=await p.evaluate(()=>{__sf.flags()['oldchapel.found']=1;return __sf.save().keep|0;});
+ await go('oldchapel');const k1=await p.evaluate(()=>__sf.save().keep|0);await go('ashlane');await go('oldchapel');const k2=await p.evaluate(()=>__sf.save().keep|0);
+ ok(k1===k0+1&&k2===k1,'first step into St. Maren’s: +1 Keepsake, once');
+ for(const [d,id] of [['yard','look.roster.after'],['office','look.queue.after'],['ward','look.ward.after']]){await go(d);ok(await p.evaluate(id=>!!__sf.room().m.npcs.find(n=>n.id===id),id),d+': new after-Chapter-1 readable '+id);}
+ await fresh(false);await go('yard');ok(await p.evaluate(()=>!__sf.room().m.npcs.find(n=>n.id==='look.roster.after')),'not shown before Chapter 1 ends');
  // the main-menu route is unchanged
  await p.evaluate(()=>{__sf.goHome&&__sf.goHome();});
  ok(errs.length===0,'no page errors'+(errs[0]?': '+errs[0]:''));
