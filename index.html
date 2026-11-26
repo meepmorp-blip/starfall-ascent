@@ -294,7 +294,10 @@ html{background:var(--void);min-height:100lvh}
 .sk-ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#3B2617;color:#F6EBD2;flex:0 0 auto}
 .sk-bd{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.sk-k{font:800 9px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
 .sk-bar{display:flex;gap:3px}.sk-bar i{flex:1;height:6px;border-radius:3px;background:rgba(59,38,23,.18)}.sk-bar i.on{background:#C9A25A}.sk-bar i.lock{background:repeating-linear-gradient(45deg,rgba(59,38,23,.18) 0 3px,transparent 3px 6px)}
-.sk-fx{font:600 11px var(--f-form);color:var(--ink-soft)}.sk-max{font:900 12px var(--f-ui);color:#C9A25A}
+.sk-fx{font:600 11px var(--f-form);color:var(--ink-soft)}
+.sk-info{font:500 12px/1.4 var(--f-form);color:var(--ink)}.sk-info summary{cursor:pointer;font:800 11px var(--f-ui);color:var(--star-ink,#C9A25A);padding:4px 0;min-height:24px}.sk-info p{margin:3px 0}
+.sk-meta{font:600 11px/1.4 var(--f-form);color:var(--ink-soft);margin:3px 0}.sk-nums{margin:3px 0;padding-left:16px;font:700 12px/1.45 var(--f-form)}
+.sk-stats{display:flex;flex-wrap:wrap;gap:4px 14px;border:1.5px solid var(--ink-line);border-radius:8px;padding:6px 10px;margin:0 0 4px;font:600 12px var(--f-form);color:var(--ink-soft)}.sk-stats b{color:var(--ink)}.sk-max{font:900 12px var(--f-ui);color:#C9A25A}
 .bv-cmp{margin:0;font:600 12px var(--f-form);color:var(--ink-soft)}
 @media (max-height:520px){
   .vault{gap:6px}.vault .select-head .eyebrow{display:none}.vault .select-head h2{font-size:17px;margin:0}
@@ -8041,14 +8044,33 @@ function showBuilds(back){
           h('div',{class:'sc-stats'},pill('HP',m.maxHp),pill('ATK',m.atk),pill('DEF',Math.round(m.def*100)+'%'),pill('SPD',c.aspd.toFixed(1)+'/s'))));
     }
     function skillsView(){
-      const mp=cs.mp|0,K=c.kit;
+      const mp=cs.mp|0,K=c.kit,mm=makeMember(cid),atk=mm.atk,w=ROLE_W[c.roleKey],L=cs.lvl,KI=KIT_INFO[cid]||{};
+      const atkNext=L<MAX_LVL?+(c.atk*(1+w.atk*L)*(atk/(c.atk*(1+w.atk*(L-1))))).toFixed(1):null,hpNext=L<MAX_LVL?Math.round(mm.maxHp*(1+w.hp*L)/(1+w.hp*(L-1))):null;
+      // turn "300%" (of ATK) into real damage; skip heals, shields, buffs and stat bonuses
+      const dmgTxt=(t,mul)=>/heal|shield|hp|revive|spots/i.test(t)?t:t.replace(/([+×]?)(\d+)%(\s*\w*)/g,(m,pre,n,post)=>pre||/dmg|damage|crit|faster|speed|taken|longer/i.test(post)?m:n+'% ≈ '+Math.round(atk*n/100*mul)+' dmg'+post);
+      const dmgVals=(t,mul)=>[...dmgTxt(t,mul).matchAll(/≈ (\d+) dmg/g)].map(x=>x[1]);
+      function skInfo(k,lv,max){const d=K[k]||{},mul=1+0.05*(lv-1),nx=1+0.05*lv;
+        const text=k==='basic'?[h('p',null,h('b',null,'Tap: '),d.tap),h('p',null,h('b',null,'Hold: '),d.hold)]:[h('p',null,d.desc)];
+        const meta=[d.cd?'Cooldown '+d.cd+'s':null,d.dur?'Lasts '+d.dur+'s':null,d.el?d.el:null].filter(Boolean);
+        const nums=(KI[k]||[]);
+        const now=nums.flatMap(t=>dmgVals(t,mul)),nxt=nums.flatMap(t=>dmgVals(t,nx));
+        return h('details',{class:'sk-info'},h('summary',null,'Details & damage'),...text,
+          meta.length?h('p',{class:'sk-meta'},meta.join(' · ')):null,
+          nums.length?h('ul',{class:'sk-nums'},...nums.map(t=>h('li',null,dmgTxt(t,mul)))):null,
+          !max&&nxt.length?h('p',{class:'sk-meta'},'At skill Lv '+(lv+1)+': '+now.map((v,i)=>v+' → '+nxt[i]).join(' · ')+' dmg'):null);}
+      const statHead=h('div',{class:'sk-stats'},
+        h('span',null,h('b',null,'ATK '+atk),atkNext?' → '+atkNext+' at Lv '+(L+1):''),
+        h('span',null,h('b',null,'HP '+mm.maxHp),hpNext?' → '+hpNext:''),
+        h('span',null,h('b',null,'DEF '+Math.round(mm.def*100)+'%')),
+        h('p',{class:'sk-meta',style:'margin:2px 0 0;flex-basis:100%'},(KI.tldr||'')+' Damage below = % × ATK × skill level, with your fragments; before Turning Points, buffs and enemy defense.'));
       const row=k=>{const lv=skLv(cid,k),max=lv>=SKILL_MAX,capped=lv>=cs.lvl,cost=skCost(lv),can=!max&&!capped&&mp>=cost.mp&&save.dust>=cost.dust;
         const nm=k==='basic'?K.basic.name:K[k].name;
         return h('div',{class:'sk-row'},
           h('div',{class:'sk-ic'},ico(k==='entrance'?'rising':k==='basic'?'atk':k==='ult'?'star':k)),
           h('div',{class:'sk-bd'},h('div',{class:'sk-k'},SKILL_NAME[k]),h('b',null,nm),
             h('div',{class:'sk-bar'},...Array.from({length:SKILL_MAX},(_,i)=>h('i',{class:i<lv?'on':i<cs.lvl?'':'lock'}))),
-            h('div',{class:'sk-fx'},'Lv '+lv+' · +'+Math.round((skMul(cid,k)-1)*100)+'% power'+(max?' · max':' → Lv '+(lv+1)+': +'+Math.round(lv*5)+'%'))),
+            h('div',{class:'sk-fx'},'Lv '+lv+' · +'+Math.round((skMul(cid,k)-1)*100)+'% power'+(max?' · max':' → Lv '+(lv+1)+': +'+Math.round(lv*5)+'%')),
+            skInfo(k,lv,max)),
           max?h('span',{class:'sk-max'},'MAX')
             :h('button',{class:'btn small'+(can?'':' ghost'),type:'button',disabled:can?null:'disabled',title:capped?'Raise '+nameOf(cid)+' to Lv '+(lv+1)+' first':'',
               onclick:()=>{if(!can)return;cs.mp=mp-cost.mp;save.dust-=cost.dust;cs.sk=cs.sk||{};cs.sk[k]=lv+1;persist();msg=SKILL_NAME[k]+' → Lv '+(lv+1)+'.';sfx('bless');render();}},
@@ -8056,8 +8078,11 @@ function showBuilds(back){
       return h('div',{class:'form',style:'max-width:none;box-sizing:border-box;width:100%'},formHead('Skill Mastery · '+nameOf(cid),'Recollection Lv '+cs.lvl),
         h('div',{class:'row',style:'gap:8px;margin:0 0 6px;flex-wrap:wrap'},h('span',{class:'dustpill'},ico('up'),mp+' Mastery'),h('span',{class:'dustpill'},ico('star'),save.dust+' Stardust')),
         h('p',{class:'bv-tip'},'Every match gives Mastery to each party member. Each skill level adds +5% power (damage, heals, shields or buff strength). Skills can’t go above '+nameOf(cid)+'’s level.'),
+        statHead,
         msg?h('p',{class:'note',style:'color:var(--res-ink);margin:0 0 6px'},msg):null,
-        ...SKILLS.map(row));}
+        ...SKILLS.map(row),
+        K.combo?h('div',{class:'sk-row',style:'display:block'},h('b',null,'Combo · '+K.combo.name),h('p',{class:'sk-meta'},K.combo.desc)):null,
+        ...['p1','p2'].filter(p=>K[p]).map(p=>h('div',{class:'sk-row',style:'display:block'},h('b',null,'Passive · '+K[p].name),h('p',{class:'sk-meta'},K[p].desc))));}
   }
   render();openOverlay(root,'mode-select');
 }
@@ -8123,7 +8148,7 @@ function guidePage(tab){
       gcard('star','Bond ♥','How close a character is to Kairos, up to five hearts. Each heart gives them +4% HP and attack in story battles (Chapter 1 and Bond Stories), not in Rifts or Trials. It grows through talks in the story and by finishing Bond Stories in Meridian.')),
     gtip('A good loop: a support switches in → casts their Moon skill → switch to your main damage dealer → use everything → repeat.','Rotation')];
   if(tab==='chars')return [h('h2',null,'Characters'),
-    h('p',{class:'lede'},'A quick “how to play” for each one. Full details are on the party select screen.'),
+    h('p',{class:'lede'},'A quick “how to play” for each one. Full skill details and damage numbers: Builds → Skills → Details & damage.'),
     ...CH_ORDER.map(id=>{const c=CHARS[id],k=c.kit,hw=CHAR_HOW[id],cv=portrait(id,64);
       const rot=[];hw[1].forEach((x,i)=>{if(i)rot.push(h('span',{class:'arr'},'→'));rot.push(h('span',{class:'chip'},x));});
       return h('div',{class:'gchar',style:'--cc:'+c.col},cv,h('div',null,
