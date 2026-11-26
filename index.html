@@ -10376,7 +10376,7 @@ function paintTheme(g,theme){
 // title backdrop: Meridian at night, its clock tower, and the Starfall
 let tbc=document.createElement('canvas'),titleKey='';
 function ensureTitle(){
-  const key=sw+'|'+sh+'|'+dpr;if(key===titleKey)return;titleKey=key;
+  if(!(sw>0&&sh>0))return;const key=sw+'|'+sh+'|'+dpr;if(key===titleKey)return;titleKey=key;
   tbc.width=Math.ceil(sw*dpr);tbc.height=Math.ceil(sh*dpr);const g=tbc.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);
   const R=mulberry(77);
   const sky=g.createLinearGradient(0,0,0,sh);sky.addColorStop(0,'#090A14');sky.addColorStop(0.65,'#1A1424');sky.addColorStop(1,'#2A1A1A');g.fillStyle=sky;g.fillRect(0,0,sw,sh);
@@ -10393,7 +10393,7 @@ function ensureTitle(){
     g.strokeStyle=gr;g.lineWidth=1.6;g.beginPath();g.moveTo(sx,sy);g.lineTo(sx-l,sy-l*0.6);g.stroke();g.fillStyle='#FFF3C4';circ(g,sx,sy,1.6);g.fill();}
 }
 function drawTitleBG(){
-  ensureTitle();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(tbc,0,0);
+  ensureTitle();ctx.setTransform(1,0,0,1,0,0);if(tbc.width&&tbc.height)ctx.drawImage(tbc,0,0);
   ctx.setTransform(dpr,0,0,dpr,0,0);
   for(const a of amb){const sx=a.x/W*sw,sy=a.y/H*sh;ctx.fillStyle=alpha(C.fire,0.5+0.4*Math.sin(T*6+a.ph));ctx.fillRect(sx,sy,a.s*1.4,a.s*1.4);}
 }
